@@ -45,7 +45,7 @@ const DoctorLogin = () => {
         }
       }
     } catch (err) {
-      setError(err.message || 'Server connection failed.');
+      setError(err.response?.data?.message || err.message || 'Server connection failed.');
     } finally {
       setIsLoading(false);
     }
