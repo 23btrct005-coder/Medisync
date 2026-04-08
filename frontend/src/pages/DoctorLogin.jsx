@@ -45,7 +45,11 @@ const DoctorLogin = () => {
         }
       }
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Server connection failed.');
+      if (err.message === 'Network Error') {
+        setError('Network Connection Failed: If you are on a mobile phone, your Vercel frontend is still trying to talk to the localhost on your Macbook. Ensure your backend is deployed to Render, and you re-deployed Vercel with the VITE_API_URL variable.');
+      } else {
+        setError(err.response?.data?.message || err.message || 'Server connection failed.');
+      }
     } finally {
       setIsLoading(false);
     }
