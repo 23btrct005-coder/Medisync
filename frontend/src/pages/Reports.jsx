@@ -76,15 +76,18 @@ const Reports = () => {
 
   const capturePhoto = () => {
     if (videoRef.current && canvasRef.current) {
-      const width = videoRef.current.videoWidth;
-      const height = videoRef.current.videoHeight;
+      const width = videoRef.current.videoWidth || videoRef.current.clientWidth || 640;
+      const height = videoRef.current.videoHeight || videoRef.current.clientHeight || 480;
       canvasRef.current.width = width;
       canvasRef.current.height = height;
       const ctx = canvasRef.current.getContext('2d');
       ctx.drawImage(videoRef.current, 0, 0, width, height);
       
       canvasRef.current.toBlob(async (blob) => {
-        if (!blob) return;
+        if (!blob) {
+          alert("Capture failed: Browser could not process the photo payload. Please try again.");
+          return;
+        }
         const file = new File([blob], "scanned_report.jpg", { type: "image/jpeg" });
         
         stopCamera();
