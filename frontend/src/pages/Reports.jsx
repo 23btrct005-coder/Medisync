@@ -44,7 +44,11 @@ const Reports = () => {
       fetchReports();
     } catch (err) {
       console.error("Upload failed", err);
-      alert(err.response?.data?.message || "Failed to securely upload report.");
+      if (err.message === 'Network Error') {
+        alert("Server unreachable. The frontend cannot connect to the backend API. If you are on mobile, ensure your backend is deployed to a public server (like Render) and VITE_API_URL is set in Vercel.");
+      } else {
+        alert(err.response?.data?.message || "Failed to securely upload report.");
+      }
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = null;
@@ -100,7 +104,11 @@ const Reports = () => {
           fetchReports();
         } catch (err) {
            console.error("Upload failed", err);
-           alert(err.response?.data?.message || "Failed to securely upload report.");
+           if (err.message === 'Network Error') {
+             alert("Server unreachable. The frontend cannot connect to the backend API. Ensure your backend is deployed publicly.");
+           } else {
+             alert(err.response?.data?.message || "Failed to securely upload report. Please ensure your backend is running.");
+           }
         } finally {
           setUploading(false);
         }
