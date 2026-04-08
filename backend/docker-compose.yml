@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: medisync_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: medisync_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:

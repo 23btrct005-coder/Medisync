@@ -1,0 +1,49 @@
+package com.health.medisync.model;
+
+import jakarta.persistence.*;
+import java.time.LocalDate;
+
+@Entity
+@Table(name = "reports")
+public class Report {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "patient_id", nullable = false)
+    private Patient patient;
+
+    private String fileName;
+    private String fileType;
+
+    @Lob
+    @Column(columnDefinition = "LONGBLOB")
+    private byte[] fileData;
+    
+    private LocalDate uploadDate;
+
+    @Column(columnDefinition = "TEXT")
+    private String aiSummary;
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Patient getPatient() { return patient; }
+    public void setPatient(Patient patient) { this.patient = patient; }
+
+    public String getFileName() { return fileName; }
+    public void setFileName(String fileName) { this.fileName = fileName; }
+
+    public String getFileType() { return fileType; }
+    public void setFileType(String fileType) { this.fileType = fileType; }
+
+    public byte[] getFileData() { return fileData; }
+    public void setFileData(byte[] fileData) { this.fileData = fileData; }
+
+    public LocalDate getUploadDate() { return uploadDate; }
+    public void setUploadDate(LocalDate uploadDate) { this.uploadDate = uploadDate; }
+
+    public String getAiSummary() { return aiSummary; }
+    public void setAiSummary(String aiSummary) { this.aiSummary = aiSummary; }
+}
