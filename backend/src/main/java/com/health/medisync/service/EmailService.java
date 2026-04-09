@@ -34,12 +34,20 @@ public class EmailService {
     public void sendEmail(String to, String subject, String body) {
         // Redacted logging for security, but helps detect if token is missing
         String tokenHead = (apiToken != null && apiToken.length() >= 4) ? apiToken.substring(0, 4) : "[EMPTY]";
-        System.out.println("DEBUG: Using Mailtrap endpoint: " + apiUrl);
+        
+        // Sanitize URL (remove spaces, quotes, and trailing slashes)
+        String cleanUrl = apiUrl.trim().replace("\"", "").replace("'", "");
+        if (cleanUrl.endsWith("/")) {
+            cleanUrl = cleanUrl.substring(0, cleanUrl.length() - 1);
+        }
+        
+        System.out.println("DEBUG: Using Mailtrap endpoint: " + cleanUrl);
         System.out.println("DEBUG: Using Mailtrap token starting with: " + tokenHead + "...");
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(apiToken);
+        headers.set("Api-Token", apiToken); // Dual header for sandbox compatibility
 
         // Building Mailtrap JSON structure:
         // {
@@ -51,7 +59,6 @@ public class EmailService {
         Map<String, Object> payload = new HashMap<>();
         
         Map<String, String> fromMap = new HashMap<>();
-        // Fallback for Sandbox mode if fromEmail is not set
         String senderEmail = (fromEmail != null && !fromEmail.trim().isEmpty()) ? fromEmail : "no-reply@medisync.com";
         fromMap.put("email", senderEmail);
         fromMap.put("name", "MediSync Portal");
@@ -59,15 +66,17 @@ public class EmailService {
 
         Map<String, String> toMap = new HashMap<>();
         toMap.put("email", to);
+        toMap.put("name", to.split("@")[0]); // Add a name as some sandboxes require it
         payload.put("to", Collections.singletonList(toMap));
 
         payload.put("subject", subject);
         payload.put("text", body);
+        payload.put("html", "<b>" + subject + "</b><br><p>" + body.replace("\n", "<br>") + "</p>");
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
 
         try {
-            ResponseEntity<String> response = restTemplate.postForEntity(apiUrl, request, String.class);
+            ResponseEntity<String> response = restTemplate.postForEntity(cleanUrl, request, String.class);
             if (!response.getStatusCode().is2xxSuccessful()) {
                 throw new RuntimeException("Mailtrap API failed with status: " + response.getStatusCode() + " - " + response.getBody());
             }
