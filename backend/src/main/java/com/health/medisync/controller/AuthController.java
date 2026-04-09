@@ -146,8 +146,20 @@ public class AuthController {
         patient.setUser(user);
         patient.setName(request.get("name"));
         patient.setEmail(request.get("email"));
-        
-        // Correctly Map Age and Blood Group
+        patient.setGender(request.get("gender"));
+        patient.setDateOfBirth(request.get("dateOfBirth"));
+        patient.setPhone(request.get("phone"));
+        patient.setAlternatePhone(request.get("alternatePhone"));
+        patient.setStreet(request.get("street"));
+        patient.setCity(request.get("city"));
+        patient.setState(request.get("state"));
+        patient.setPinCode(request.get("pinCode"));
+        patient.setEmergencyContactName(request.get("emergencyContactName"));
+        patient.setEmergencyContactRelationship(request.get("emergencyContactRelationship"));
+        patient.setEmergencyContactPhone(request.get("emergencyContactPhone"));
+        patient.setBloodGroup(request.get("bloodGroup"));
+
+        // Auto-calculate age from DOB if age not directly provided
         if (request.containsKey("age") && request.get("age") != null && !request.get("age").isEmpty()) {
             try {
                 patient.setAge(Integer.parseInt(request.get("age")));
@@ -155,8 +167,7 @@ public class AuthController {
                 System.err.println("Invalid age format: " + request.get("age"));
             }
         }
-        patient.setBloodGroup(request.get("bloodGroup"));
-        
+
         patientRepository.save(patient);
 
         return ResponseEntity.ok(Map.of("message", "Patient registered and verified successfully!"));
