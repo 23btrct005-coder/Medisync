@@ -1,5 +1,7 @@
 package com.health.medisync.service;
 
+import com.health.medisync.model.EmailVerificationOtp;
+import com.health.medisync.repository.EmailVerificationOtpRepository;
 import com.health.medisync.model.Patient;
 import com.health.medisync.model.Doctor;
 import com.health.medisync.model.PasswordResetToken;
@@ -13,7 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
-
+import java.util.Random;
 import java.util.UUID;
 
 @Service
@@ -25,19 +27,22 @@ public class AuthService {
     private final EmailService emailService;
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
+    private final EmailVerificationOtpRepository emailVerificationOtpRepository;
 
     public AuthService(UserRepository userRepository, 
                        PasswordResetTokenRepository tokenRepository, 
                        PasswordEncoder passwordEncoder,
                        EmailService emailService,
                        PatientRepository patientRepository,
-                       DoctorRepository doctorRepository) {
+                       DoctorRepository doctorRepository,
+                       EmailVerificationOtpRepository emailVerificationOtpRepository) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
         this.patientRepository = patientRepository;
         this.doctorRepository = doctorRepository;
+        this.emailVerificationOtpRepository = emailVerificationOtpRepository;
     }
 
     @Transactional
@@ -113,5 +118,58 @@ public class AuthService {
 
     public EmailService getEmailService() {
         return this.emailService;
+    }
+
+    @Transactional
+    public void generateAndSendOtp(String email) {
+        // Delete any existing OTPs for this email
+        emailVerificationOtpRepository.deleteByEmail(email);
+        emailVerificationOtpRepository.flush();
+
+        // Generate 6-digit OTP
+        String otp = String.format("%06d", new Random().nextInt(1000000));
+        
+        EmailVerificationOtp verificationOtp = new EmailVerificationOtp(email, otp, 5); // 5 mins expiry
+        emailVerificationOtpRepository.save(verificationOtp);
+
+        System.out.println("DEBUG: Sending OTP " + otp + " to " + email);
+        emailService.sendOtpEmail(email, otp);
+    }
+
+    @Transactional
+    public void verifyOtp(String email, String otp) {
+        EmailVerificationOtp verificationOtp = emailVerificationOtpRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("No verification code found for this email."));
+
+        if (verificationOtp.isExpired()) {
+            emailVerificationOtpRepository.delete(verificationOtp);
+            throw new RuntimeException("Verification code has expired. Please request a new one.");
+        }
+
+        if (!verificationOtp.getOtp().equals(otp)) {
+            throw new RuntimeException("Invalid verification code.");
+        }
+
+        // OTP is valid! Find user and enable them
+        User user = userRepository.findByUsername(email).orElse(null);
+        if (user == null) {
+            // If username isn't email, try finding by role link
+            user = patientRepository.findByEmail(email)
+                    .map(Patient::getUser)
+                    .orElseGet(() -> doctorRepository.findByEmail(email)
+                            .map(Doctor::getUser)
+                            .orElse(null));
+        }
+
+        if (user != null) {
+            user.setEnabled(true);
+            userRepository.save(user);
+            System.out.println("SUCCESS: User " + email + " has been verified and enabled.");
+        } else {
+            throw new RuntimeException("User account not found for email: " + email);
+        }
+
+        // Success, delete the OTP
+        emailVerificationOtpRepository.delete(verificationOtp);
     }
 }

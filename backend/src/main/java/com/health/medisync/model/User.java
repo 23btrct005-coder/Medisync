@@ -20,7 +20,7 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-    private String role = "ROLE_PATIENT";
+    private boolean enabled = false;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -34,6 +34,8 @@ public class User implements UserDetails {
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
 
+    public void setEnabled(boolean enabled) { this.enabled = enabled; }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority(role));
@@ -42,5 +44,5 @@ public class User implements UserDetails {
     @Override public boolean isAccountNonExpired() { return true; }
     @Override public boolean isAccountNonLocked() { return true; }
     @Override public boolean isCredentialsNonExpired() { return true; }
-    @Override public boolean isEnabled() { return true; }
+    @Override public boolean isEnabled() { return this.enabled; }
 }

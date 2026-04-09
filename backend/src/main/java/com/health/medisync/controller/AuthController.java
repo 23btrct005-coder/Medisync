@@ -11,6 +11,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import com.health.medisync.model.Patient;
+import com.health.medisync.repository.PatientRepository;
 import com.health.medisync.model.User;
 import com.health.medisync.model.Doctor;
 import com.health.medisync.repository.UserRepository;
@@ -29,16 +31,19 @@ public class AuthController {
     private final JwtUtils jwtUtils;
     private final UserRepository userRepository;
     private final DoctorRepository doctorRepository;
+    private final PatientRepository patientRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
 
     public AuthController(AuthenticationManager authenticationManager, JwtUtils jwtUtils,
                           UserRepository userRepository, DoctorRepository doctorRepository,
+                          PatientRepository patientRepository,
                           PasswordEncoder passwordEncoder, AuthService authService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
         this.userRepository = userRepository;
         this.doctorRepository = doctorRepository;
+        this.patientRepository = patientRepository;
         this.passwordEncoder = passwordEncoder;
         this.authService = authService;
     }
@@ -79,7 +84,54 @@ public class AuthController {
         doctor.setSpecialization(request.get("specialization"));
         doctorRepository.save(doctor);
 
-        return ResponseEntity.ok(Map.of("message", "Doctor registered successfully!"));
+        // Send OTP
+        try {
+            authService.generateAndSendOtp(request.get("email"));
+        } catch (Exception e) {
+            System.err.println("OTP Sending Failed: " + e.getMessage());
+        }
+
+        return ResponseEntity.ok(Map.of("message", "Doctor registered successfully! Please check your email for the verification code."));
+    }
+
+    @PostMapping("/register/patient")
+    public ResponseEntity<?> registerPatient(@RequestBody Map<String, String> request) {
+        if (userRepository.findByUsername(request.get("username")).isPresent()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Error: Username is already taken!"));
+        }
+
+        User user = new User();
+        user.setUsername(request.get("username"));
+        user.setPassword(passwordEncoder.encode(request.get("password")));
+        user.setRole("ROLE_PATIENT");
+        userRepository.save(user);
+
+        Patient patient = new Patient();
+        patient.setUser(user);
+        patient.setName(request.get("name"));
+        patient.setEmail(request.get("email"));
+        patientRepository.save(patient);
+
+        // Send OTP
+        try {
+            authService.generateAndSendOtp(request.get("email"));
+        } catch (Exception e) {
+            System.err.println("OTP Sending Failed: " + e.getMessage());
+        }
+
+        return ResponseEntity.ok(Map.of("message", "Patient registered successfully! Please check your email for the verification code."));
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            String otp = request.get("otp");
+            authService.verifyOtp(email, otp);
+            return ResponseEntity.ok(Map.of("message", "Email verified successfully! You can now log in."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 
     @PostMapping("/forgot-password")

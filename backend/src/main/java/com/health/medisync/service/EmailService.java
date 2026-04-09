@@ -34,6 +34,14 @@ public class EmailService {
         return sendEmailInternal(to, "MediSync - Connection Test", "This is a diagnostic test of the Brevo integration.");
     }
 
+    public void sendOtpEmail(String to, String otp) {
+        String body = "Your MediSync Verification Code is: " + otp + "\n\nThis code will expire in 5 minutes.";
+        String result = sendEmailInternal(to, "MediSync - Email Verification", body);
+        if (result != null && result.startsWith("ERROR:")) {
+            throw new RuntimeException(result);
+        }
+    }
+
     public void sendEmail(String to, String subject, String body) {
         String result = sendEmailInternal(to, subject, body);
         if (result != null && result.startsWith("ERROR:")) {
