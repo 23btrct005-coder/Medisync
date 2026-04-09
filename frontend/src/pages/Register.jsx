@@ -1,6 +1,7 @@
+// Last Updated: 2026-04-09T17:58:00Z
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Activity, UserPlus, FileText, ArrowLeft, HeartPulse, CheckCircle, Mail, ShieldCheck } from 'lucide-react';
+import { Activity, UserPlus, FileText, ArrowLeft, HeartPulse, CheckCircle, Mail, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import api from '../api/axiosConfig';
 
 const Register = () => {
@@ -24,6 +25,10 @@ const Register = () => {
   const [emailVerified, setEmailVerified] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [verifying, setVerifying] = useState(false);
+
+  // UI States
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -115,7 +120,7 @@ const Register = () => {
         </button>
 
         <div className="text-center mb-10">
-          <div className="mx-auto h-16 w-16 bg-primary-50 text-primary-600 rounded-2xl flex items-center justify-center shadow-sm mb-4 transform -rotate-3 hover:rotate-0 transition-transform cursor-pointer">
+          <div className="mx-auto h-16 w-16 bg-primary-50 text-primary-600 rounded-2xl flex items-center justify-center shadow-sm mb-4 transform -rotate-3 hover:rotate-0 transition-transform cursor-pointer border border-primary-100">
             <UserPlus size={32} />
           </div>
           <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Create a Patient Account</h2>
@@ -152,7 +157,7 @@ const Register = () => {
                   disabled={emailVerified}
                   value={formData.email} 
                   onChange={handleChange}
-                  className={`block w-full rounded-xl border-slate-200 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm px-4 py-3 border transition-all ${emailVerified ? 'bg-green-50 border-green-200' : ''}`} 
+                  className={`block w-full rounded-xl border-slate-200 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm px-4 py-3 border transition-all ${emailVerified ? 'bg-green-50 border-green-200 pr-10' : ''}`} 
                   placeholder="e.g. john@example.com"
                 />
                 {!emailVerified && !otpSent && (
@@ -160,7 +165,7 @@ const Register = () => {
                     type="button"
                     onClick={handleSendOtp}
                     disabled={verifying}
-                    className="whitespace-nowrap bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-primary-700 disabled:opacity-50 transition-all shadow-sm"
+                    className="whitespace-nowrap bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-primary-700 disabled:opacity-50 transition-all shadow-sm active:scale-95"
                   >
                     {verifying ? 'Sending...' : 'Send Code'}
                   </button>
@@ -189,7 +194,7 @@ const Register = () => {
                     type="button"
                     onClick={handleVerifyOtp}
                     disabled={verifying || otpCode.length < 6}
-                    className="bg-primary-600 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-primary-700 disabled:opacity-50 shadow-md"
+                    className="bg-primary-600 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-primary-700 disabled:opacity-50 shadow-md transition-all active:scale-95"
                   >
                     {verifying ? '...' : 'Verify'}
                   </button>
@@ -235,15 +240,41 @@ const Register = () => {
               <h3 className="flex items-center text-sm font-bold text-slate-600 uppercase tracking-widest">
                 <ShieldCheck size={16} className="mr-2" /> 3. Security
               </h3>
-              <div>
+              <div className="relative">
                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">Password</label>
-                <input type="password" name="password" required value={formData.password} onChange={handleChange}
-                  className="block w-full rounded-xl border-slate-200 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm px-4 py-3 border transition-all" />
+                <input 
+                  type={showPassword ? "text" : "password"} 
+                  name="password" 
+                  required 
+                  value={formData.password} 
+                  onChange={handleChange}
+                  className="block w-full rounded-xl border-slate-200 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm px-4 py-3 border transition-all pr-10" 
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-8 text-slate-400 hover:text-primary-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
-              <div>
+              <div className="relative">
                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">Confirm Password</label>
-                <input type="password" name="confirmPassword" required value={formData.confirmPassword} onChange={handleChange}
-                  className="block w-full rounded-xl border-slate-200 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm px-4 py-3 border transition-all" />
+                <input 
+                  type={showConfirmPassword ? "text" : "password"} 
+                  name="confirmPassword" 
+                  required 
+                  value={formData.confirmPassword} 
+                  onChange={handleChange}
+                  className="block w-full rounded-xl border-slate-200 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm px-4 py-3 border transition-all pr-10" 
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-8 text-slate-400 hover:text-primary-600 transition-colors"
+                >
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
           </div>
@@ -267,3 +298,4 @@ const Register = () => {
 };
 
 export default Register;
+

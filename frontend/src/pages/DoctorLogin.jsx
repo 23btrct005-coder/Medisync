@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Stethoscope, Lock, User, PlusCircle, Mail, CheckCircle, ShieldCheck } from 'lucide-react';
+import { Stethoscope, Lock, User, PlusCircle, Mail, CheckCircle, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import api from '../api/axiosConfig';
 
 const DoctorLogin = () => {
@@ -18,6 +18,9 @@ const DoctorLogin = () => {
   const [emailVerified, setEmailVerified] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [verifying, setVerifying] = useState(false);
+
+  // UI States
+  const [showPassword, setShowPassword] = useState(false);
 
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -124,7 +127,7 @@ const DoctorLogin = () => {
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm font-medium border border-red-100 flex items-center">
+            <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm font-medium border border-red-100 flex items-center animate-in fade-in slide-in-from-top-2">
               <span className="mr-2">⚠️</span> {error}
             </div>
           )}
@@ -207,8 +210,22 @@ const DoctorLogin = () => {
                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                 <Lock size={18} />
               </div>
-              <input name="password" type="password" required placeholder="Security Passphrase" value={formData.password} onChange={handleChange}
-                className="pl-10 block w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-blue-500" />
+              <input 
+                name="password" 
+                type={showPassword ? "text" : "password"} 
+                required 
+                placeholder="Security Passphrase" 
+                value={formData.password} 
+                onChange={handleChange}
+                className="pl-10 pr-10 block w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-blue-500" 
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3.5 text-slate-400 hover:text-blue-600 transition-colors"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
           </div>
 
@@ -253,3 +270,4 @@ const DoctorLogin = () => {
 };
 
 export default DoctorLogin;
+gin;

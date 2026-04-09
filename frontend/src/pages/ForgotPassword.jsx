@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axiosConfig';
-import { KeyRound, Mail, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
+import { KeyRound, Mail, ArrowLeft, CheckCircle, AlertCircle, ExternalLink, Bug } from 'lucide-react';
 
 const ForgotPassword = () => {
   const [username, setUsername] = useState('');
@@ -42,7 +42,7 @@ const ForgotPassword = () => {
           {!success ? (
             <form onSubmit={handleSubmit} className="space-y-6">
               {error && (
-                <div className="p-3 bg-red-50 border border-red-100 text-red-600 rounded-lg text-sm flex items-start">
+                <div className="p-3 bg-red-50 border border-red-100 text-red-600 rounded-lg text-sm flex items-start animate-in fade-in slide-in-from-top-2">
                   <AlertCircle size={18} className="mr-2 shrink-0 mt-0.5" />
                   {error}
                 </div>
@@ -72,8 +72,8 @@ const ForgotPassword = () => {
               </button>
             </form>
           ) : (
-            <div className="text-center space-y-6">
-              <div className="inline-flex items-center justify-center p-3 bg-emerald-50 text-emerald-600 rounded-full">
+            <div className="text-center space-y-6 animate-in fade-in zoom-in-95 duration-500">
+              <div className="inline-flex items-center justify-center p-3 bg-primary-50 text-primary-600 rounded-full">
                 <CheckCircle size={48} />
               </div>
               <div>
@@ -91,23 +91,29 @@ const ForgotPassword = () => {
                 </p>
               </div>
 
-              {/* Keep the simulated link for easier testing during development */}
-              <details className="text-left">
-                <summary className="text-xs text-slate-400 cursor-pointer hover:text-slate-600 transition-colors">
-                  Technical Debug Details (Hide for Lab Environment)
-                </summary>
-                <div className="mt-2 p-3 bg-slate-100 rounded-lg border border-slate-200">
-                  <p className="text-[10px] font-mono text-slate-600 break-all">
-                    Reset Token: {simulatedToken}
-                  </p>
-                  <Link 
-                    to={`/reset-password?token=${simulatedToken}`} 
-                    className="text-primary-600 hover:underline font-mono text-[10px] mt-1 block"
-                  >
-                    Direct Reset URL &rarr;
-                  </Link>
-                </div>
-              </details>
+              {/* Development/Testing Helper Section */}
+              <div className="mt-8 pt-4 border-t border-slate-100">
+                <details className="text-left group">
+                  <summary className="list-none cursor-pointer flex items-center justify-between text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors">
+                    <span className="flex items-center"><Bug size={14} className="mr-1.5" /> Testing Sandbox Tools</span>
+                    <span className="group-open:rotate-180 transition-transform duration-200">▼</span>
+                  </summary>
+                  <div className="mt-3 p-4 bg-slate-100 rounded-xl border border-slate-200 space-y-3">
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Reset Token</p>
+                      <code className="block p-2 bg-white rounded border border-slate-200 text-[10px] font-mono text-slate-700 break-all select-all">
+                        {simulatedToken}
+                      </code>
+                    </div>
+                    <Link 
+                      to={`/reset-password?token=${simulatedToken}`} 
+                      className="flex items-center justify-center w-full p-2 bg-primary-50 text-primary-700 rounded-lg text-xs font-bold hover:bg-primary-100 transition-colors"
+                    >
+                      Open Reset Page <ExternalLink size={12} className="ml-1.5" />
+                    </Link>
+                  </div>
+                </details>
+              </div>
             </div>
           )}
 
@@ -124,3 +130,4 @@ const ForgotPassword = () => {
 };
 
 export default ForgotPassword;
+
