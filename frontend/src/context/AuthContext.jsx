@@ -58,9 +58,17 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (usernameInput, password) => {
-    alert("DEPLOYED_V12_CORS_HIGH_PRIORITY: Testing for " + usernameInput);
+    alert("DEPLOY_V13_HEALTH_CHECK: Testing for " + usernameInput);
     const username = usernameInput?.trim();
     console.log("DEBUG: LOGIN ATTEMPT FOR:", username);
+    
+    // Connectivity Check
+    try {
+      const health = await api.get('/auth/health');
+      console.log("DEBUG: HEALTH CHECK RESPONSE:", health.data);
+    } catch (hErr) {
+      console.error("DEBUG: HEALTH CHECK FAILED:", hErr);
+    }
     
     try {
       // 1. Fetch user from Supabase ONLY if username looks like an email

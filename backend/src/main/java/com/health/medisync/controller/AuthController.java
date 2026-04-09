@@ -38,6 +38,11 @@ public class AuthController {
         this.doctorRepository = doctorRepository;
         this.passwordEncoder = passwordEncoder;
     }
+    
+    @GetMapping("/health")
+    public ResponseEntity<String> healthCheck() {
+        return ResponseEntity.ok("OK - Auth Controller is reachable");
+    }
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody AuthRequest loginRequest) {
