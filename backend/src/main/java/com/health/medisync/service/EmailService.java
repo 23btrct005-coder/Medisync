@@ -16,15 +16,13 @@ import java.util.Map;
 @Service
 public class EmailService {
 
-    @Value("${mailtrap.token:}")
-    private String apiToken;
+    @Value("${resend.api.key:}")
+    private String apiKey;
 
-    @Value("${mailtrap.from.email:}")
+    @Value("${resend.from.email:onboarding@resend.dev}")
     private String fromEmail;
 
-    @Value("${mailtrap.endpoint:https://send.api.mailtrap.io/api/send}")
-    private String apiUrl;
-
+    private final String apiUrl = "https://api.resend.com/emails";
     private final RestTemplate restTemplate;
 
     public EmailService() {
@@ -32,72 +30,39 @@ public class EmailService {
     }
 
     public void sendEmail(String to, String subject, String body) {
-        // Redacted logging for security
-        String cleanToken = (apiToken != null) ? apiToken.trim() : "";
-        String tokenHead = (cleanToken.length() >= 4) ? cleanToken.substring(0, 4) : "[EMPTY]";
-        String tokenTail = (cleanToken.length() >= 4) ? cleanToken.substring(cleanToken.length() - 4) : "";
-        
-        // Sanitize URL (remove spaces, quotes, and trailing slashes)
-        String cleanUrl = apiUrl.trim().replace("\"", "").replace("'", "");
-        if (cleanUrl.endsWith("/")) {
-            cleanUrl = cleanUrl.substring(0, cleanUrl.length() - 1);
+        if (apiKey == null || apiKey.trim().isEmpty()) {
+            System.err.println("ERROR: Resend API Key is missing!");
+            return;
         }
-        
-        System.out.println("DEBUG: Using Mailtrap endpoint: " + cleanUrl);
-        System.out.println("DEBUG: Token Check - Length: " + cleanToken.length() + ", Start: " + tokenHead + "..., End: ..." + tokenTail);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(new MediaType("application", "json", java.nio.charset.StandardCharsets.UTF_8));
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        
-        // Use Api-Token for Sandbox, Bearer for Production
-        if (cleanUrl.contains("sandbox")) {
-            headers.set("Api-Token", cleanToken);
-        } else {
-            headers.setBearerAuth(cleanToken);
-        }
-        headers.set("User-Agent", "MediSync-Backend/1.0");
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(apiKey.trim());
 
-        // Building Mailtrap JSON structure:
-        // {
-        //   "from": {"email": "...", "name": "..."},
-        //   "to": [{"email": "..."}],
-        //   "subject": "...",
-        //   "text": "..."
-        // }
+        // Building Resend JSON structure
         Map<String, Object> payload = new HashMap<>();
-        
-        String senderEmail = (fromEmail != null && !fromEmail.trim().isEmpty()) ? fromEmail : "no-reply@medisync.com";
-        
-        Map<String, String> fromMap = new HashMap<>();
-        fromMap.put("email", senderEmail);
-        payload.put("from", fromMap);
-
-        Map<String, String> toMap = new HashMap<>();
-        toMap.put("email", to);
-        payload.put("to", Collections.singletonList(toMap));
-
+        payload.put("from", fromEmail);
+        payload.put("to", Collections.singletonList(to));
         payload.put("subject", subject);
+        // Resend prefers 'html' for better deliverability
+        payload.put("html", "<div style='font-family: sans-serif;'>" + body.replace("\n", "<br>") + "</div>");
         payload.put("text", body);
-        // Added category to help Mailtrap categorize the sandbox email
-        payload.put("category", "Integration Test");
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
 
-        System.out.println("DEBUG: JSON Payload being sent: " + payload.toString());
-
         try {
-            ResponseEntity<String> response = restTemplate.postForEntity(cleanUrl, request, String.class);
-            if (!response.getStatusCode().is2xxSuccessful()) {
-                throw new RuntimeException("Mailtrap API failed with status: " + response.getStatusCode() + " - " + response.getBody());
+            System.out.println("DEBUG: Sending email via Resend to: " + to);
+            ResponseEntity<String> response = restTemplate.postForEntity(apiUrl, request, String.class);
+            if (response.getStatusCode().is2xxSuccessful()) {
+                System.out.println("SUCCESS: Email sent successfully via Resend. ID: " + response.getBody());
             }
         } catch (HttpStatusCodeException e) {
             String errorBody = e.getResponseBodyAsString();
-            System.err.println("ERROR: Mailtrap API validation failed: " + errorBody);
-            throw new RuntimeException("Email delivery failed via Mailtrap API: " + e.getStatusCode() + " - " + errorBody);
+            System.err.println("ERROR: Resend API failed: " + e.getStatusCode() + " - " + errorBody);
+            throw new RuntimeException("Email delivery failed via Resend: " + errorBody);
         } catch (Exception e) {
-            System.err.println("ERROR: Mailtrap delivery failed: " + e.getMessage());
-            throw new RuntimeException("Email delivery failed via Mailtrap API: " + e.getMessage());
+            System.err.println("ERROR: Resend delivery failed: " + e.getMessage());
+            throw new RuntimeException("Email delivery failed via Resend: " + e.getMessage());
         }
     }
 
