@@ -17,19 +17,26 @@ public class MedisyncApplication {
 
     public static void main(String[] args) {
         // [STARTUP DIAGNOSTIC] - Check Environment BEFORE Spring context starts
-        String rawUrl = System.getenv("SPRING_DATASOURCE_URL");
+        String springUrl = System.getenv("SPRING_DATASOURCE_URL");
+        String legacyUrl = System.getenv("DB_URL");
+        String dbPass = System.getenv("SPRING_DATASOURCE_PASSWORD");
         String port = System.getenv("PORT");
+
         System.out.println("=================================================");
         System.out.println("[DIAGNOSTIC] JVM Started");
-        System.out.println("[DIAGNOSTIC] Raw DB_URL (env): " + maskPassword(rawUrl));
+        System.out.println("[DIAGNOSTIC] SPRING_DATASOURCE_URL: " + maskPassword(springUrl));
+        System.out.println("[DIAGNOSTIC] Legacy DB_URL: " + maskPassword(legacyUrl));
+        System.out.println("[DIAGNOSTIC] DB_PASSWORD Set: " + (dbPass != null && !dbPass.isEmpty() ? "YES" : "NO"));
         System.out.println("[DIAGNOSTIC] Port (env): " + port);
         System.out.println("=================================================");
+        System.out.flush(); // Force Render to show logs immediately
 
         try {
             SpringApplication.run(MedisyncApplication.class, args);
         } catch (Exception e) {
             System.err.println("[CRITICAL] Application failed to start: " + e.getMessage());
             e.printStackTrace();
+            System.err.flush();
         }
     }
 
