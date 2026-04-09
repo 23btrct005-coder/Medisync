@@ -16,6 +16,7 @@ import com.health.medisync.model.Doctor;
 import com.health.medisync.repository.UserRepository;
 import com.health.medisync.repository.DoctorRepository;
 
+import com.health.medisync.service.AuthService;
 import com.health.medisync.service.EmailService;
 import java.util.Map;
 
