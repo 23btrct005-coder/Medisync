@@ -66,16 +66,16 @@ public class AuthService {
         }
 
         if (userEmail != null) {
-            System.out.println("DEBUG: Sending real password reset email to: " + userEmail);
+            System.out.println("DEBUG: Attempting to send real password reset email to: " + userEmail);
             try {
                 emailService.sendPasswordResetEmail(userEmail, token);
             } catch (Exception e) {
-                System.err.println("CRITICAL: Failed to send email to " + userEmail + ". Error: " + e.getMessage());
-                // We still return the token in simulation mode or just error out. 
-                // For now, we'll log it and let the token be returned for manual testing if needed.
+                System.err.println("CRITICAL: Failed to send email to " + userEmail + ". Message: " + e.getMessage());
+                // Rethrow as a runtime exception so the Controller catches it and reports it to the UI
+                throw new RuntimeException("Email delivery failed: " + e.getMessage() + ". Please check your Render SMTP settings.");
             }
         } else {
-            System.err.println("WARNING: No email associated with user: " + username);
+            throw new RuntimeException("No email address found associated with username: " + username);
         }
         
         return token;

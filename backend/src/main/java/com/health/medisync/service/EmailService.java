@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 public class EmailService {
 
     private final JavaMailSender mailSender;
+    
+    @org.springframework.beans.factory.annotation.Value("${spring.mail.username}")
+    private String fromEmail;
 
     public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
@@ -18,7 +21,8 @@ public class EmailService {
         message.setTo(to);
         message.setSubject(subject);
         message.setText(body);
-        message.setFrom("MediSync Portal <noreply@medisync.com>");
+        // Use the authenticated username as the From address to prevent SMTP rejection
+        message.setFrom(fromEmail);
         
         mailSender.send(message);
     }
