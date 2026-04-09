@@ -87,7 +87,7 @@ public class AuthService {
                 throw new RuntimeException("Email delivery failed: " + e.getMessage() + ". Please check your Render SMTP settings.");
             }
         } else {
-            throw new RuntimeException("No email address found associated with username: " + username);
+            throw new RuntimeException("No email address found associated with input: " + input);
         }
         
         return token;
