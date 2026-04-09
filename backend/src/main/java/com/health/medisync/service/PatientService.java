@@ -49,6 +49,30 @@ public class PatientService {
             });
     }
 
+    public Patient updateProfile(String username, java.util.Map<String, Object> profileData) {
+        Patient patient = getPatientProfile(username);
+        
+        if (profileData.containsKey("name")) {
+            patient.setName((String) profileData.get("name"));
+        }
+        if (profileData.containsKey("age")) {
+            Object age = profileData.get("age");
+            if (age instanceof Integer) {
+                patient.setAge((Integer) age);
+            } else if (age instanceof String) {
+                patient.setAge(Integer.parseInt((String) age));
+            }
+        }
+        if (profileData.containsKey("bloodGroup")) {
+            patient.setBloodGroup((String) profileData.get("bloodGroup"));
+        } else if (profileData.containsKey("blood_group")) {
+            // Support snake_case from Supabase
+            patient.setBloodGroup((String) profileData.get("blood_group"));
+        }
+        
+        return patientRepository.save(patient);
+    }
+
     public void linkDoctor(String patientUsername, String doctorEmail) {
         Patient patient = getPatientProfile(patientUsername);
             

@@ -30,6 +30,13 @@ export const AuthProvider = ({ children }) => {
         const { data, error } = await supabase.from('patient').select('*').eq('email', email).single();
         if (error) throw error;
         setUser({ ...data, role });
+        
+        // Sync profile info to the backend
+        api.post('/patient/profile/sync', {
+          name: data.name,
+          age: data.age,
+          bloodGroup: data.blood_group
+        }).catch(err => console.error("Profile sync failed", err));
       } else {
         // Fallback for Doctor or original logic if still needed for doctors
         const endpoint = '/doctor/profile';
