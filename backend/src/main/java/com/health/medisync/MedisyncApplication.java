@@ -2,14 +2,10 @@ package com.health.medisync;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration;
-import org.springframework.boot.autoconfigure.r2dbc.R2dbcRepositoriesAutoConfiguration;
-import org.springframework.boot.autoconfigure.data.r2dbc.R2dbcDataAutoConfiguration;
-
-@SpringBootApplication(exclude = {
-    R2dbcAutoConfiguration.class,
-    R2dbcRepositoriesAutoConfiguration.class,
-    R2dbcDataAutoConfiguration.class
+@SpringBootApplication(excludeName = {
+    "org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration",
+    "org.springframework.boot.autoconfigure.r2dbc.R2dbcRepositoriesAutoConfiguration",
+    "org.springframework.boot.autoconfigure.data.r2dbc.R2dbcDataAutoConfiguration"
 })
 public class MedisyncApplication {
 
