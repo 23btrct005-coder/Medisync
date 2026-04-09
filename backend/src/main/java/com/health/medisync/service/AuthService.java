@@ -178,4 +178,15 @@ public class AuthService {
         // Success, delete the OTP
         emailVerificationOtpRepository.delete(verificationOtp);
     }
+
+    @Transactional
+    public void clearAllData() {
+        System.out.println("CRITICAL: Clearing all registered data from the database...");
+        tokenRepository.deleteAll();
+        emailVerificationOtpRepository.deleteAll();
+        patientRepository.deleteAll();
+        doctorRepository.deleteAll();
+        userRepository.deleteAll();
+        System.out.println("SUCCESS: Database has been wiped.");
+    }
 }

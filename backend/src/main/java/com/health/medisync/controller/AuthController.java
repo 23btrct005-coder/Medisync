@@ -228,4 +228,14 @@ public class AuthController {
         String result = emailService.testEmail(to);
         return ResponseEntity.ok(result);
     }
+
+    @PostMapping("/admin/cleanup")
+    public ResponseEntity<?> cleanupDatabase() {
+        try {
+            authService.clearAllData();
+            return ResponseEntity.ok(Map.of("message", "All registered data has been removed successfully."));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("message", "Cleanup failed: " + e.getMessage()));
+        }
+    }
 }

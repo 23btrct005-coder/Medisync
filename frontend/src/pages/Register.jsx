@@ -43,12 +43,23 @@ const Register = () => {
     }
     setVerifying(true);
     setError('');
+    
+    // Safety timeout: If the server doesn't respond in 15s, release the UI
+    const timeoutId = setTimeout(() => {
+      if (!otpSent && !emailVerified) {
+        setVerifying(false);
+        setError('Server is taking too long to respond. Please check your internet or try again later.');
+      }
+    }, 15000);
+
     try {
       await api.post('/auth/request-otp', { email: formData.email });
+      clearTimeout(timeoutId);
       setOtpSent(true);
       setSuccess('Verification code sent to your email.');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to send verification code.');
+      clearTimeout(timeoutId);
+      setError(err.response?.data?.message || 'Failed to send verification code. Please check your email and try again.');
     } finally {
       setVerifying(false);
     }

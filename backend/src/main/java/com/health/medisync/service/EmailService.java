@@ -7,6 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
@@ -27,7 +28,10 @@ public class EmailService {
     private final RestTemplate restTemplate;
 
     public EmailService() {
-        this.restTemplate = new RestTemplate();
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(5000); // 5 seconds
+        factory.setReadTimeout(5000);    // 5 seconds
+        this.restTemplate = new RestTemplate(factory);
     }
 
     public String testEmail(String to) {
@@ -109,6 +113,7 @@ public class EmailService {
                       resetUrl + "\n\n" +
                       "If you did not request this, please ignore this email.";
         
+        System.out.println("DEBUG: Sending recovery link to: " + to);
         sendEmail(to, subject, body);
     }
 }

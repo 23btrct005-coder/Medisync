@@ -34,11 +34,22 @@ const DoctorLogin = () => {
     }
     setVerifying(true);
     setError('');
+
+    // Safety timeout: If the server doesn't respond in 15s, release the UI
+    const timeoutId = setTimeout(() => {
+      if (!otpSent && !emailVerified) {
+        setVerifying(false);
+        setError('Connection timeout: The physician verification server is taking too long. Please try again.');
+      }
+    }, 15000);
+
     try {
       await api.post('/auth/request-otp', { email: formData.email });
+      clearTimeout(timeoutId);
       setOtpSent(true);
       setError(''); // Clear any previous errors
     } catch (err) {
+      clearTimeout(timeoutId);
       setError(err.response?.data?.message || 'Failed to send verification code.');
     } finally {
       setVerifying(false);
