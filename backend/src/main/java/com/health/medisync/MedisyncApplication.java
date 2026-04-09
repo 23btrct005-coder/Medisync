@@ -7,27 +7,26 @@ import org.springframework.context.event.EventListener;
 @SpringBootApplication
 public class MedisyncApplication {
 
-    @Value("${spring.datasource.url:Not Set}")
-    private String dbUrl;
-
-    @Value("${server.port:8080}")
-    private String port;
-
     public static void main(String[] args) {
-        SpringApplication.run(MedisyncApplication.class, args);
+        // [STARTUP DIAGNOSTIC] - Check Environment BEFORE Spring context starts
+        String rawUrl = System.getenv("DB_URL");
+        String port = System.getenv("PORT");
+        System.out.println("=================================================");
+        System.out.println("[DIAGNOSTIC] JVM Started");
+        System.out.println("[DIAGNOSTIC] Raw DB_URL (env): " + maskPassword(rawUrl));
+        System.out.println("[DIAGNOSTIC] Port (env): " + port);
+        System.out.println("=================================================");
+
+        try {
+            SpringApplication.run(MedisyncApplication.class, args);
+        } catch (Exception e) {
+            System.err.println("[CRITICAL] Application failed to start: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
-    @EventListener(ApplicationReadyEvent.class)
-    public void logDiagnostics() {
-        System.out.println("=================================================");
-        System.out.println("[DIAGNOSTIC] App started on port: " + port);
-        System.out.println("[DIAGNOSTIC] DB URL: " + maskPassword(dbUrl));
-        System.out.println("=================================================");
-    }
-
-    private String maskPassword(String url) {
-        if (url == null) return "null";
-        // Simple mask for security
+    private static String maskPassword(String url) {
+        if (url == null) return "Not Set";
         return url.replaceAll(":([^@/:]+)@", ":****@");
     }
 }
