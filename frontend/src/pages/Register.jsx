@@ -50,8 +50,18 @@ const Register = () => {
       setSuccess('Account created! Please check your email for the 6-digit verification code.');
       setIsVerificationStep(true);
     } catch (err) {
-      console.error(err);
-      const msg = err.response?.data?.message || 'Error occurred during registration';
+      console.error("Full Registration Error:", err);
+      
+      let msg = 'Error occurred during registration';
+      
+      if (err.code === 'ERR_NETWORK') {
+        msg = 'Network Error: Cannot connect to the server. Please check if your Backend is running on Render and your VITE_API_URL is correct.';
+      } else if (err.response?.status === 403 || err.response?.status === 0) {
+        msg = 'Connection Error (Possibly CORS): The server blocked the request. Ensure the Backend allows this origin.';
+      } else {
+        msg = err.response?.data?.message || err.message || msg;
+      }
+      
       setError(msg);
     } finally {
       setLoading(false);

@@ -24,7 +24,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping({"/api/auth", "/auth"})
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000", "https://medisync-react.vercel.app", "https://medisync-vert-five.vercel.app", "https://medisync-qvd6.onrender.com"}, maxAge = 3600, allowCredentials = "true")
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
@@ -75,6 +75,7 @@ public class AuthController {
         user.setUsername(request.get("username"));
         user.setPassword(passwordEncoder.encode(request.get("password")));
         user.setRole("ROLE_DOCTOR");
+        user.setEnabled(false); // New users must verify email
         userRepository.save(user);
 
         Doctor doctor = new Doctor();
@@ -104,12 +105,24 @@ public class AuthController {
         user.setUsername(request.get("username"));
         user.setPassword(passwordEncoder.encode(request.get("password")));
         user.setRole("ROLE_PATIENT");
+        user.setEnabled(false); // New users must verify email
         userRepository.save(user);
 
         Patient patient = new Patient();
         patient.setUser(user);
         patient.setName(request.get("name"));
         patient.setEmail(request.get("email"));
+        
+        // Correctly Map Age and Blood Group
+        if (request.containsKey("age") && request.get("age") != null && !request.get("age").isEmpty()) {
+            try {
+                patient.setAge(Integer.parseInt(request.get("age")));
+            } catch (NumberFormatException e) {
+                System.err.println("Invalid age format: " + request.get("age"));
+            }
+        }
+        patient.setBloodGroup(request.get("bloodGroup"));
+        
         patientRepository.save(patient);
 
         // Send OTP

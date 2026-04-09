@@ -56,8 +56,19 @@ const DoctorLogin = () => {
         }
       }
     } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.message || err.message || 'Server connection failed.');
+      console.error("Doctor Auth Error:", err);
+      
+      let msg = 'Server connection failed.';
+      
+      if (err.code === 'ERR_NETWORK') {
+        msg = 'Network Error: Cannot connect to our server. Please check your internet or ensure the API URL is correctly configured in Vercel.';
+      } else if (err.response?.status === 403 || err.response?.status === 0) {
+        msg = 'Connectivity issue: The server is rejecting the connection (CORS).';
+      } else {
+        msg = err.response?.data?.message || err.message || msg;
+      }
+      
+      setError(msg);
     } finally {
       setIsLoading(false);
     }
