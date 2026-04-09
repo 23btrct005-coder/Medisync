@@ -4,8 +4,20 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 
-@SpringBootApplication
+import org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration;
+import org.springframework.boot.autoconfigure.r2dbc.R2dbcRepositoriesAutoConfiguration;
+
+@SpringBootApplication(exclude = {
+    R2dbcAutoConfiguration.class,
+    R2dbcRepositoriesAutoConfiguration.class
+})
 public class MedisyncApplication {
+
+    static {
+        // Force long timeout for slow remote DB handshakes
+        System.setProperty("sun.net.client.defaultConnectTimeout", "30000");
+        System.setProperty("sun.net.client.defaultReadTimeout", "30000");
+    }
 
     public static void main(String[] args) {
         // [STARTUP DIAGNOSTIC] - Check Environment BEFORE Spring context starts
