@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Stethoscope, Lock, User, PlusCircle } from 'lucide-react';
+import { Stethoscope, Lock, User, PlusCircle, Mail, CheckCircle, ShieldCheck } from 'lucide-react';
 import api from '../api/axiosConfig';
 
 const DoctorLogin = () => {
@@ -13,13 +13,50 @@ const DoctorLogin = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
+  // Verification states for registration
+  const [otpSent, setOtpSent] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [verifying, setVerifying] = useState(false);
+
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [otp, setOtp] = useState('');
+  const handleSendOtp = async () => {
+    if (!formData.email) {
+      setError('Please enter your professional email first.');
+      return;
+    }
+    setVerifying(true);
+    setError('');
+    try {
+      await api.post('/auth/request-otp', { email: formData.email });
+      setOtpSent(true);
+      setError(''); // Clear any previous errors
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to send verification code.');
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (otpCode.length < 6) return;
+    setVerifying(true);
+    setError('');
+    try {
+      await api.post('/auth/verify-otp', { email: formData.email, otp: otpCode });
+      setEmailVerified(true);
+      setOtpSent(false);
+      setError('');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Invalid verification code.');
+    } finally {
+      setVerifying(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,26 +64,27 @@ const DoctorLogin = () => {
     setError('');
     
     try {
-      if (isVerifying) {
-        await api.post('/auth/verify-otp', {
-          email: formData.email,
-          otp: otp
-        });
-        setError('');
-        alert('Email verified successfully! You may now sign in.');
-        setIsVerifying(false);
-        setIsRegistering(false);
-      } else if (isRegistering) {
+      if (isRegistering) {
+        if (!emailVerified) {
+          setError('Please verify your email address before submitting.');
+          setIsLoading(false);
+          return;
+        }
+
         await api.post('/auth/register/doctor', {
           username: formData.username,
           password: formData.password,
           name: formData.name,
           email: formData.email,
-          specialization: formData.specialization
+          specialization: formData.specialization,
+          otp: otpCode // Pass OTP to enable account immediately
         });
         
         setError('');
-        setIsVerifying(true);
+        alert('Physician account created successfully! You may now sign in.');
+        setIsRegistering(false);
+        setEmailVerified(false);
+        setOtpCode('');
       } else {
         const result = await login(formData.username, formData.password);
         if (result.success && result.role === 'ROLE_DOCTOR') {
@@ -57,17 +95,10 @@ const DoctorLogin = () => {
       }
     } catch (err) {
       console.error("Doctor Auth Error:", err);
-      
-      let msg = 'Server connection failed.';
-      
+      let msg = err.response?.data?.message || err.message || 'Server connection failed.';
       if (err.code === 'ERR_NETWORK') {
-        msg = 'Network Error: Cannot connect to our server. Please check your internet or ensure the API URL is correctly configured in Vercel.';
-      } else if (err.response?.status === 403 || err.response?.status === 0) {
-        msg = 'Connectivity issue: The server is rejecting the connection (CORS).';
-      } else {
-        msg = err.response?.data?.message || err.message || msg;
+        msg = 'Network Error: Cannot connect to our server. Please check your internet or Vercel configuration.';
       }
-      
       setError(msg);
     } finally {
       setIsLoading(false);
@@ -84,10 +115,10 @@ const DoctorLogin = () => {
             <Stethoscope size={36} />
           </div>
           <h2 className="mt-2 text-3xl font-extrabold text-slate-900 tracking-tight">
-            {isVerifying ? 'Verify Credentials' : 'Physician Portal'}
+            Physician Portal
           </h2>
           <p className="mt-2 text-sm text-slate-500">
-            {isVerifying ? `Enter the 6-digit code sent to ${formData.email}` : (isRegistering ? 'Enroll in the Medisync Network' : 'Secure Provider Authentication')}
+            {isRegistering ? 'Enroll in the Medisync Network' : 'Secure Provider Authentication'}
           </p>
         </div>
         
@@ -99,61 +130,92 @@ const DoctorLogin = () => {
           )}
           
           <div className="space-y-4 rounded-md shadow-sm">
-            {isVerifying ? (
-              <div className="text-center space-y-4">
-                <input 
-                  type="text" maxLength="6" required placeholder="000000"
-                  value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                  className="block w-full text-center text-3xl font-bold tracking-[0.5em] rounded-xl border-slate-300 shadow-inner focus:border-blue-500 px-3 py-4 border transition-all"
-                />
-                <p className="text-xs text-slate-500">The verification code expires in 5 minutes.</p>
+            {isRegistering && (
+              <div className="space-y-4 pb-4 border-b border-slate-100">
+                <div>
+                  <input name="name" required placeholder="Full Name" value={formData.name} onChange={handleChange}
+                    className="block w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-blue-500" />
+                </div>
+                
+                {/* Inline Email Verification */}
+                <div className="space-y-2">
+                  <div className="relative flex gap-2">
+                    <input 
+                      name="email" 
+                      type="email" 
+                      required 
+                      disabled={emailVerified}
+                      placeholder="Professional Email" 
+                      value={formData.email} 
+                      onChange={handleChange}
+                      className={`block w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-blue-500 ${emailVerified ? 'bg-green-50 border-green-200 pr-10' : ''}`} 
+                    />
+                    {!emailVerified && !otpSent && (
+                      <button
+                        type="button"
+                        onClick={handleSendOtp}
+                        disabled={verifying}
+                        className="bg-blue-600 text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 disabled:opacity-50"
+                      >
+                        {verifying ? '...' : 'Verify'}
+                      </button>
+                    )}
+                    {emailVerified && (
+                      <div className="absolute right-3 top-3 text-green-600">
+                        <CheckCircle size={20} />
+                      </div>
+                    )}
+                  </div>
+
+                  {otpSent && !emailVerified && (
+                    <div className="p-3 bg-blue-50 rounded-xl border border-blue-100 space-y-2 animate-in slide-in-from-top-2">
+                      <div className="flex gap-2">
+                        <input 
+                          type="text" maxLength="6" placeholder="OTP Code"
+                          value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                          className="block w-full text-center text-lg font-bold tracking-widest rounded-lg border-slate-300 px-2 py-1"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleVerifyOtp}
+                          disabled={verifying || otpCode.length < 6}
+                          className="bg-blue-600 text-white px-4 py-1 rounded-lg text-xs font-bold hover:bg-blue-700"
+                        >
+                          {verifying ? '...' : 'Verify'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <input name="specialization" required placeholder="Specialization (e.g. Cardiology)" value={formData.specialization} onChange={handleChange}
+                    className="block w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-blue-500" />
+                </div>
               </div>
-            ) : (
-              <>
-                {isRegistering && (
-                    <>
-                    <div>
-                      <input name="name" required placeholder="Full Name" onChange={handleChange}
-                        className="block w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-blue-500" />
-                    </div>
-                    <div>
-                      <input name="email" required placeholder="Professional Email" onChange={handleChange}
-                        className="block w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-blue-500" />
-                    </div>
-                    <div>
-                      <input name="specialization" required placeholder="Specialization" onChange={handleChange}
-                        className="block w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-blue-500" />
-                    </div>
-                    </>
-                )}
-
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <User size={18} />
-                  </div>
-                  <input name="username" type="text" required placeholder="Doctor ID / Username" value={formData.username} onChange={handleChange}
-                    className="pl-10 block w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-blue-500" />
-                </div>
-
-                <div className="relative">
-                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <Lock size={18} />
-                  </div>
-                  <input name="password" type="password" required placeholder="Security Passphrase" value={formData.password} onChange={handleChange}
-                    className="pl-10 block w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-blue-500" />
-                </div>
-              </>
             )}
+
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <User size={18} />
+              </div>
+              <input name="username" type="text" required placeholder="Doctor ID / Username" value={formData.username} onChange={handleChange}
+                className="pl-10 block w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-blue-500" />
+            </div>
+
+            <div className="relative">
+               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <Lock size={18} />
+              </div>
+              <input name="password" type="password" required placeholder="Security Passphrase" value={formData.password} onChange={handleChange}
+                className="pl-10 block w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-blue-500" />
+            </div>
           </div>
 
-          {!isVerifying && (
+          {!isRegistering && (
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <input 
-                  id="remember" 
-                  type="checkbox" 
-                  className="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500" 
-                />
+                <input id="remember" type="checkbox" className="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500" />
                 <label htmlFor="remember" className="ml-2 block text-sm text-slate-600">Remember me</label>
               </div>
               <Link to="/forgot-password" size={12} className="text-sm font-semibold text-blue-600 hover:text-blue-700">
@@ -164,15 +226,15 @@ const DoctorLogin = () => {
 
           <div>
             <button
-              type="submit" disabled={isLoading}
-              className={`w-full flex justify-center py-3 px-4 rounded-xl shadow-md text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition ${isLoading ? 'opacity-70' : ''}`}
+              type="submit" disabled={isLoading || (isRegistering && !emailVerified)}
+              className={`w-full flex justify-center py-3 px-4 rounded-xl shadow-md text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition ${isLoading || (isRegistering && !emailVerified) ? 'opacity-50 cursor-not-allowed' : 'active:scale-95'}`}
             >
-              {isLoading ? 'Processing...' : (isVerifying ? 'Verify & Activate' : (isRegistering ? 'Submit Credentials' : 'Access Dashboard'))}
+              {isLoading ? 'Processing...' : (isRegistering ? (emailVerified ? 'Complete Enrollment' : 'Verify Email to Continue') : 'Access Dashboard')}
             </button>
           </div>
           
           <div className="mt-4 text-center border-t border-slate-200 pt-6">
-            <button type="button" onClick={() => { setIsRegistering(!isRegistering); setIsVerifying(false); }}
+            <button type="button" onClick={() => { setIsRegistering(!isRegistering); setOtpSent(false); setEmailVerified(false); }}
               className="text-sm font-medium text-blue-600 hover:text-blue-500 transition"
             >
               {isRegistering ? 'Already enrolled? Log in' : 'New physician? Request Access'}

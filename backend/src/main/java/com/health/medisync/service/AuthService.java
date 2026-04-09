@@ -138,19 +138,9 @@ public class AuthService {
 
     @Transactional
     public void verifyOtp(String email, String otp) {
-        EmailVerificationOtp verificationOtp = emailVerificationOtpRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("No verification code found for this email."));
-
-        if (verificationOtp.isExpired()) {
-            emailVerificationOtpRepository.delete(verificationOtp);
-            throw new RuntimeException("Verification code has expired. Please request a new one.");
-        }
-
-        if (!verificationOtp.getOtp().equals(otp)) {
-            throw new RuntimeException("Invalid verification code.");
-        }
-
-        // OTP is valid! Find user and enable them
+        verifyOtpStandalone(email, otp);
+        
+        // After standalone verification, we find the user and enable them
         User user = userRepository.findByUsername(email).orElse(null);
         if (user == null) {
             // If username isn't email, try finding by role link
@@ -166,7 +156,23 @@ public class AuthService {
             userRepository.save(user);
             System.out.println("SUCCESS: User " + email + " has been verified and enabled.");
         } else {
-            throw new RuntimeException("User account not found for email: " + email);
+            // In the NEW inline flow, this is normal if they haven't registered yet
+            System.out.println("INFO: Email " + email + " verified, but no user account exists yet to enable.");
+        }
+    }
+
+    @Transactional
+    public void verifyOtpStandalone(String email, String otp) {
+        EmailVerificationOtp verificationOtp = emailVerificationOtpRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("No verification code found for this email."));
+
+        if (verificationOtp.isExpired()) {
+            emailVerificationOtpRepository.delete(verificationOtp);
+            throw new RuntimeException("Verification code has expired. Please request a new one.");
+        }
+
+        if (!verificationOtp.getOtp().equals(otp)) {
+            throw new RuntimeException("Invalid verification code.");
         }
 
         // Success, delete the OTP

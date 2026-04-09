@@ -75,7 +75,19 @@ public class AuthController {
         user.setUsername(request.get("username"));
         user.setPassword(passwordEncoder.encode(request.get("password")));
         user.setRole("ROLE_DOCTOR");
-        user.setEnabled(false); // New users must verify email
+        
+        // Check if OTP is provided and valid for inline verification
+        boolean verified = false;
+        if (request.containsKey("otp")) {
+            try {
+                authService.verifyOtpStandalone(request.get("email"), request.get("otp"));
+                verified = true;
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Invalid or expired verification code."));
+            }
+        }
+        
+        user.setEnabled(verified);
         userRepository.save(user);
 
         Doctor doctor = new Doctor();
@@ -85,14 +97,17 @@ public class AuthController {
         doctor.setSpecialization(request.get("specialization"));
         doctorRepository.save(doctor);
 
-        // Send OTP
-        try {
-            authService.generateAndSendOtp(request.get("email"));
-        } catch (Exception e) {
-            System.err.println("OTP Sending Failed: " + e.getMessage());
+        if (!verified) {
+            // Send OTP for separate verification flow if not done inline
+            try {
+                authService.generateAndSendOtp(request.get("email"));
+            } catch (Exception e) {
+                System.err.println("OTP Sending Failed: " + e.getMessage());
+            }
+            return ResponseEntity.ok(Map.of("message", "Doctor registered successfully! Please check your email for the verification code."));
         }
 
-        return ResponseEntity.ok(Map.of("message", "Doctor registered successfully! Please check your email for the verification code."));
+        return ResponseEntity.ok(Map.of("message", "Doctor registered and verified successfully!"));
     }
 
     @PostMapping("/register/patient")
@@ -105,7 +120,19 @@ public class AuthController {
         user.setUsername(request.get("username"));
         user.setPassword(passwordEncoder.encode(request.get("password")));
         user.setRole("ROLE_PATIENT");
-        user.setEnabled(false); // New users must verify email
+        
+        // Check if OTP is provided and valid for inline verification
+        boolean verified = false;
+        if (request.containsKey("otp")) {
+            try {
+                authService.verifyOtpStandalone(request.get("email"), request.get("otp"));
+                verified = true;
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Invalid or expired verification code."));
+            }
+        }
+        
+        user.setEnabled(verified);
         userRepository.save(user);
 
         Patient patient = new Patient();
@@ -125,14 +152,17 @@ public class AuthController {
         
         patientRepository.save(patient);
 
-        // Send OTP
-        try {
-            authService.generateAndSendOtp(request.get("email"));
-        } catch (Exception e) {
-            System.err.println("OTP Sending Failed: " + e.getMessage());
+        if (!verified) {
+            // Send OTP for separate verification flow
+            try {
+                authService.generateAndSendOtp(request.get("email"));
+            } catch (Exception e) {
+                System.err.println("OTP Sending Failed: " + e.getMessage());
+            }
+            return ResponseEntity.ok(Map.of("message", "Patient registered successfully! Please check your email for the verification code."));
         }
 
-        return ResponseEntity.ok(Map.of("message", "Patient registered successfully! Please check your email for the verification code."));
+        return ResponseEntity.ok(Map.of("message", "Patient registered and verified successfully!"));
     }
 
     @PostMapping("/verify-otp")
@@ -141,7 +171,24 @@ public class AuthController {
             String email = request.get("email");
             String otp = request.get("otp");
             authService.verifyOtp(email, otp);
-            return ResponseEntity.ok(Map.of("message", "Email verified successfully! You can now log in."));
+            return ResponseEntity.ok(Map.of("message", "Email verified successfully!"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/request-otp")
+    public ResponseEntity<?> requestOtp(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            
+            // Check if user already exists
+            if (userRepository.findByUsername(email).isPresent()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Error: Email is already registered!"));
+            }
+            
+            authService.generateAndSendOtp(email);
+            return ResponseEntity.ok(Map.of("message", "Verification code sent to " + email));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
