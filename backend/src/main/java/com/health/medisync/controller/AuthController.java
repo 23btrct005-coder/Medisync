@@ -84,7 +84,11 @@ public class AuthController {
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
         try {
-            String token = authService.initiatePasswordReset(request.get("username"));
+            String username = request.get("username");
+            if (username == null || username.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Username is required"));
+            }
+            String token = authService.initiatePasswordReset(username);
             return ResponseEntity.ok(Map.of(
                 "message", "Password reset link has been simulated. Check backend logs.",
                 "token", token // Returning token for easy testing/simulation

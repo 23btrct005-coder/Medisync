@@ -30,8 +30,9 @@ public class AuthService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
 
-        // Delete any existing tokens for this user
+        // Cleanly delete any existing tokens for this user before creating a new one
         tokenRepository.deleteByUserId(user.getId());
+        tokenRepository.flush(); // Force immediate deletion to prevent @OneToOne conflicts
 
         String token = UUID.randomUUID().toString();
         PasswordResetToken resetToken = new PasswordResetToken(token, user, 30); // 30 mins expiry
