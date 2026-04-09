@@ -6,6 +6,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
@@ -50,7 +51,9 @@ public class EmailService {
         Map<String, Object> payload = new HashMap<>();
         
         Map<String, String> fromMap = new HashMap<>();
-        fromMap.put("email", fromEmail);
+        // Fallback for Sandbox mode if fromEmail is not set
+        String senderEmail = (fromEmail != null && !fromEmail.trim().isEmpty()) ? fromEmail : "no-reply@medisync.com";
+        fromMap.put("email", senderEmail);
         fromMap.put("name", "MediSync Portal");
         payload.put("from", fromMap);
 
@@ -68,6 +71,10 @@ public class EmailService {
             if (!response.getStatusCode().is2xxSuccessful()) {
                 throw new RuntimeException("Mailtrap API failed with status: " + response.getStatusCode() + " - " + response.getBody());
             }
+        } catch (HttpStatusCodeException e) {
+            String errorBody = e.getResponseBodyAsString();
+            System.err.println("ERROR: Mailtrap API validation failed: " + errorBody);
+            throw new RuntimeException("Email delivery failed via Mailtrap API: " + e.getStatusCode() + " - " + errorBody);
         } catch (Exception e) {
             System.err.println("ERROR: Mailtrap delivery failed: " + e.getMessage());
             throw new RuntimeException("Email delivery failed via Mailtrap API: " + e.getMessage());
