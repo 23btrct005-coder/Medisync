@@ -59,40 +59,41 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     try {
-      // 1. Fetch user from Supabase assuming username provided is the registered email
-      const { data: patient, error } = await supabase
-        .from('patient')
-        .select('*')
-        .eq('email', username)
-        .single();
-        
-      if (error || !patient) {
-        // Fallback to legacy Spring boot Auth if not found in Supabase
-        const response = await api.post('/auth/login', { username, password });
-        const { token, role } = response.data;
-        localStorage.setItem('token', token);
-        localStorage.setItem('role', role);
-        setUserRole(role);
-        await fallbackFetchUserProfile(role);
-        return { success: true, role };
+      // 1. Fetch user from Supabase ONLY if username looks like an email
+      if (username.includes('@')) {
+        try {
+          const { data: patient, error } = await supabase
+            .from('patient')
+            .select('*')
+            .eq('email', username)
+            .single();
+            
+          if (patient && !error) {
+            // Verify password with bcryptjs
+            const isMatch = await bcrypt.compare(password, patient.password);
+            if (isMatch) {
+              const token = 'supabase_dummy_jwt_' + patient.id;
+              const role = 'ROLE_PATIENT';
+              localStorage.setItem('token', token);
+              localStorage.setItem('role', role);
+              localStorage.setItem('userEmail', patient.email);
+              setUserRole(role);
+              await fetchUserProfile(role, patient.email);
+              return { success: true, role };
+            }
+          }
+        } catch (supabaseError) {
+          console.error("Supabase login check skipped or failed", supabaseError);
+        }
       }
 
-      // 2. Verify password with bcryptjs
-      const isMatch = await bcrypt.compare(password, patient.password);
-      if (!isMatch) {
-         return { success: false, message: 'Invalid credentials' };
-      }
-
-      // Simulate token
-      const token = 'supabase_dummy_jwt_' + patient.id;
-      const role = 'ROLE_PATIENT';
-      
+      // 2. Fallback to Spring Boot Auth (for Doctors or non-Supabase patients)
+      const response = await api.post('/auth/login', { username, password });
+      const { token, role } = response.data;
       localStorage.setItem('token', token);
       localStorage.setItem('role', role);
-      localStorage.setItem('userEmail', patient.email);
       setUserRole(role);
-      
-      await fetchUserProfile(role, patient.email);
+      await fallbackFetchUserProfile(role);
       return { success: true, role };
       
     } catch (error) {
