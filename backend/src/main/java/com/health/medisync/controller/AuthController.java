@@ -16,7 +16,7 @@ import com.health.medisync.model.Doctor;
 import com.health.medisync.repository.UserRepository;
 import com.health.medisync.repository.DoctorRepository;
 
-import com.health.medisync.service.AuthService;
+import com.health.medisync.service.EmailService;
 import java.util.Map;
 
 @RestController
@@ -106,5 +106,13 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
+    }
+
+    @GetMapping("/test-email")
+    public ResponseEntity<String> testEmail(@RequestParam String to) {
+        // This endpoint bypasses the auth flow to test the Brevo integration directly
+        EmailService emailService = authService.getEmailService();
+        String result = emailService.testEmail(to);
+        return ResponseEntity.ok(result);
     }
 }

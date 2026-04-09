@@ -30,20 +30,39 @@ public class EmailService {
         this.restTemplate = new RestTemplate();
     }
 
+    public String testEmail(String to) {
+        return sendEmailInternal(to, "MediSync - Connection Test", "This is a diagnostic test of the Brevo integration.");
+    }
+
     public void sendEmail(String to, String subject, String body) {
+        String result = sendEmailInternal(to, subject, body);
+        if (result != null && result.startsWith("ERROR:")) {
+            throw new RuntimeException(result);
+        }
+    }
+
+    private String sendEmailInternal(String to, String subject, String body) {
         if (apiKey == null || apiKey.trim().isEmpty()) {
-            System.err.println("ERROR: Brevo API Key is missing!");
-            return;
+            String err = "ERROR: Brevo API Key is missing!";
+            System.err.println(err);
+            return err;
         }
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("api-key", apiKey.trim());
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-        // Building Brevo JSON structure (SMTP API v3)
-        Map<String, Object> payload = new HashMap<>();
+        String cleanToken = apiKey.trim();
+        String tokenHead = (cleanToken.length() >= 4) ? cleanToken.substring(0, 4) : "[SHORT]";
+        String tokenTail = (cleanToken.length() >= 4) ? cleanToken.substring(cleanToken.length() - 4) : "";
         
+        System.out.println("DIAGNOSTIC: Attempting Brevo send to " + to);
+        System.out.println("DIAGNOSTIC: Token length: " + cleanToken.length() + " | Start: " + tokenHead + " | End: " + tokenTail);
+        System.out.println("DIAGNOSTIC: Sender Email: " + senderEmail);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(new MediaType("application", "json", java.nio.charset.StandardCharsets.UTF_8));
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        headers.set("api-key", cleanToken);
+        headers.set("User-Agent", "MediSync-Backend/1.0");
+
+        Map<String, Object> payload = new HashMap<>();
         Map<String, String> sender = new HashMap<>();
         sender.put("name", "MediSync Portal");
         sender.put("email", senderEmail);
@@ -54,25 +73,23 @@ public class EmailService {
         payload.put("to", Collections.singletonList(recipient));
 
         payload.put("subject", subject);
-        // Brevo uses 'htmlContent' for HTML emails
         payload.put("htmlContent", "<div style='font-family: sans-serif;'>" + body.replace("\n", "<br>") + "</div>");
         payload.put("textContent", body);
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
 
         try {
-            System.out.println("DEBUG: Sending email via Brevo to: " + to);
             ResponseEntity<String> response = restTemplate.postForEntity(apiUrl, request, String.class);
-            if (response.getStatusCode().is2xxSuccessful()) {
-                System.out.println("SUCCESS: Email sent via Brevo. Response: " + response.getBody());
-            }
+            return "SUCCESS: " + response.getBody();
         } catch (HttpStatusCodeException e) {
             String errorBody = e.getResponseBodyAsString();
-            System.err.println("ERROR: Brevo API failed: " + e.getStatusCode() + " - " + errorBody);
-            throw new RuntimeException("Email delivery failed via Brevo: " + errorBody);
+            String fullErr = "ERROR: Brevo API " + e.getStatusCode() + " - " + (errorBody.isEmpty() ? "[Empty Body]" : errorBody);
+            System.err.println(fullErr);
+            return fullErr;
         } catch (Exception e) {
-            System.err.println("ERROR: Brevo delivery failed: " + e.getMessage());
-            throw new RuntimeException("Email delivery failed via Brevo: " + e.getMessage());
+            String fullErr = "ERROR: Brevo Connection Failed - " + e.getMessage();
+            System.err.println(fullErr);
+            return fullErr;
         }
     }
 

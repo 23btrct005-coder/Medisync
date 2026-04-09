@@ -110,4 +110,8 @@ public class AuthService {
         // Success, delete the token
         tokenRepository.delete(resetToken);
     }
+
+    public EmailService getEmailService() {
+        return this.emailService;
+    }
 }
