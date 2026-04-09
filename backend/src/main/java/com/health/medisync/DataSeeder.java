@@ -96,5 +96,21 @@ public class DataSeeder implements CommandLineRunner {
             doctorRepository.save(akDoctor);
             System.out.println("ak2205 seeded successfully.");
         }
+
+        if (userRepository.findByUsername("doc@gmail.com").isEmpty()) {
+            User testDoc = new User();
+            testDoc.setUsername("doc@gmail.com");
+            testDoc.setPassword(passwordEncoder.encode("password"));
+            testDoc.setRole("ROLE_DOCTOR");
+            userRepository.save(testDoc);
+
+            Doctor doctor = new Doctor();
+            doctor.setUser(testDoc);
+            doctor.setName("Test Doctor (DOC)");
+            doctor.setEmail("doc@gmail.com");
+            doctor.setSpecialization("General");
+            doctorRepository.save(doctor);
+            System.out.println("doc@gmail.com seeded successfully.");
+        }
     }
 }
