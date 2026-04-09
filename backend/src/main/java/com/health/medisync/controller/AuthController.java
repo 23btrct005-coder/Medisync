@@ -20,7 +20,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping({"/api/auth", "/auth"})
-@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000", "https://medisync-react.vercel.app", "https://medisync-qvd6.onrender.com"}, maxAge = 3600, allowCredentials = "true")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
