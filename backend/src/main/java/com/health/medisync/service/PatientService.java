@@ -50,27 +50,50 @@ public class PatientService {
     }
 
     public Patient updateProfile(String username, java.util.Map<String, Object> profileData) {
+        System.out.println("DEBUG: Initiating profile sync for user: " + username);
         Patient patient = getPatientProfile(username);
         
-        if (profileData.containsKey("name")) {
-            patient.setName((String) profileData.get("name"));
-        }
-        if (profileData.containsKey("age")) {
-            Object age = profileData.get("age");
-            if (age instanceof Integer) {
-                patient.setAge((Integer) age);
-            } else if (age instanceof String) {
-                patient.setAge(Integer.parseInt((String) age));
-            }
-        }
-        if (profileData.containsKey("bloodGroup")) {
-            patient.setBloodGroup((String) profileData.get("bloodGroup"));
-        } else if (profileData.containsKey("blood_group")) {
-            // Support snake_case from Supabase
-            patient.setBloodGroup((String) profileData.get("blood_group"));
+        if (profileData.containsKey("name") && profileData.get("name") != null) {
+            String newName = (String) profileData.get("name");
+            System.out.println("DEBUG: Updating Name: " + patient.getName() + " -> " + newName);
+            patient.setName(newName);
         }
         
-        return patientRepository.save(patient);
+        if (profileData.containsKey("age") && profileData.get("age") != null) {
+            Object ageObj = profileData.get("age");
+            Integer ageValue = null;
+            
+            if (ageObj instanceof Number) {
+                ageValue = ((Number) ageObj).intValue();
+            } else if (ageObj instanceof String) {
+                try {
+                    ageValue = Integer.parseInt((String) ageObj);
+                } catch (NumberFormatException e) {
+                    System.err.println("DEBUG: Failed to parse age string: " + ageObj);
+                }
+            }
+            
+            if (ageValue != null) {
+                System.out.println("DEBUG: Updating Age: " + patient.getAge() + " -> " + ageValue);
+                patient.setAge(ageValue);
+            }
+        }
+        
+        String bloodGroup = null;
+        if (profileData.containsKey("bloodGroup")) {
+            bloodGroup = (String) profileData.get("bloodGroup");
+        } else if (profileData.containsKey("blood_group")) {
+            bloodGroup = (String) profileData.get("blood_group");
+        }
+        
+        if (bloodGroup != null) {
+            System.out.println("DEBUG: Updating Blood Group: " + patient.getBloodGroup() + " -> " + bloodGroup);
+            patient.setBloodGroup(bloodGroup);
+        }
+        
+        Patient saved = patientRepository.save(patient);
+        System.out.println("DEBUG: Profile sync completed successfully for: " + username);
+        return saved;
     }
 
     public void linkDoctor(String patientUsername, String doctorEmail) {

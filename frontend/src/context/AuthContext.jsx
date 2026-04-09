@@ -36,7 +36,8 @@ export const AuthProvider = ({ children }) => {
           name: data.name,
           age: data.age,
           bloodGroup: data.blood_group
-        }).catch(err => console.error("Profile sync failed", err));
+        }).then(() => console.log("Profile sync successful for " + email))
+          .catch(err => console.error("Profile sync failed for " + email, err));
       } else {
         // Fallback for Doctor or original logic if still needed for doctors
         const endpoint = '/doctor/profile';

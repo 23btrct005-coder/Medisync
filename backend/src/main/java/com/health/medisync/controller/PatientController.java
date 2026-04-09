@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/patient")
+@RequestMapping({"/api/patient", "/patient"})
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class PatientController {
 
