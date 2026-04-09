@@ -58,22 +58,24 @@ public class EmailService {
         // }
         Map<String, Object> payload = new HashMap<>();
         
-        Map<String, String> fromMap = new HashMap<>();
         String senderEmail = (fromEmail != null && !fromEmail.trim().isEmpty()) ? fromEmail : "no-reply@medisync.com";
+        
+        Map<String, String> fromMap = new HashMap<>();
         fromMap.put("email", senderEmail);
-        fromMap.put("name", "MediSync Portal");
         payload.put("from", fromMap);
 
         Map<String, String> toMap = new HashMap<>();
         toMap.put("email", to);
-        toMap.put("name", to.split("@")[0]); // Add a name as some sandboxes require it
         payload.put("to", Collections.singletonList(toMap));
 
         payload.put("subject", subject);
         payload.put("text", body);
-        payload.put("html", "<b>" + subject + "</b><br><p>" + body.replace("\n", "<br>") + "</p>");
+        // Added category to help Mailtrap categorize the sandbox email
+        payload.put("category", "Integration Test");
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
+
+        System.out.println("DEBUG: JSON Payload being sent: " + payload.toString());
 
         try {
             ResponseEntity<String> response = restTemplate.postForEntity(cleanUrl, request, String.class);
