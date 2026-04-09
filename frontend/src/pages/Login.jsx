@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Activity, Lock, User } from 'lucide-react';
 
@@ -92,6 +92,20 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <input 
+                id="remember" 
+                type="checkbox" 
+                className="h-4 w-4 text-primary-600 border-slate-300 rounded focus:ring-primary-500" 
+              />
+              <label htmlFor="remember" className="ml-2 block text-sm text-slate-600">Remember me</label>
+            </div>
+            <Link to="/forgot-password" className="text-sm font-semibold text-primary-600 hover:text-primary-700">
+                Forgot password?
+            </Link>
           </div>
 
           <div>

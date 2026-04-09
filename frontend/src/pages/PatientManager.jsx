@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axiosConfig';
-import { ArrowLeft, User, Activity, FileText, PlusCircle, Calendar } from 'lucide-react';
+import { ArrowLeft, User, Activity, FileText, PlusCircle, Calendar, Download, Loader2 } from 'lucide-react';
 
 const PatientManager = () => {
   const { id } = useParams();
@@ -17,6 +17,7 @@ const PatientManager = () => {
   const [newDiagnosis, setNewDiagnosis] = useState('');
   const [newPrescription, setNewPrescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [downloadingId, setDownloadingId] = useState(null);
 
   useEffect(() => {
     fetchPatientDetails();
@@ -60,6 +61,27 @@ const PatientManager = () => {
       alert("Failed to create record. Please try again.");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDownload = async (reportId, fileName) => {
+    setDownloadingId(reportId);
+    try {
+      const res = await api.get(`/reports/download/${reportId}`, {
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error("Download failed", err);
+      alert("Failed to download report. You might not have permission or the session expired.");
+    } finally {
+      setDownloadingId(null);
     }
   };
 
@@ -203,15 +225,30 @@ const PatientManager = () => {
          <div className="space-y-6">
             {reports.map((r) => (
                 <div key={r.id} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                   <div className="bg-indigo-50 px-6 py-4 border-b border-indigo-100 flex justify-between items-center">
-                      <div>
-                         <p className="font-semibold text-indigo-900">{r.fileName}</p>
-                         <p className="text-sm text-indigo-700/70 mt-0.5">Uploaded: {new Date(r.uploadDate).toLocaleDateString()}</p>
-                      </div>
-                      <span className="px-3 py-1 bg-white text-indigo-700 rounded-full text-xs font-bold shadow-sm uppercase tracking-wider">
-                         Analyzed
-                      </span>
-                   </div>
+                    <div className="bg-indigo-50 px-6 py-4 border-b border-indigo-100 flex justify-between items-center">
+                       <div>
+                          <p className="font-semibold text-indigo-900">{r.fileName}</p>
+                          <p className="text-sm text-indigo-700/70 mt-0.5">Uploaded: {new Date(r.uploadDate).toLocaleDateString()}</p>
+                       </div>
+                       <div className="flex items-center gap-3">
+                          <button 
+                             onClick={() => handleDownload(r.id, r.fileName)}
+                             disabled={downloadingId === r.id}
+                             className="flex items-center px-3 py-1.5 bg-white border border-indigo-200 text-indigo-600 rounded-lg text-xs font-bold shadow-sm hover:bg-white/80 transition-colors disabled:opacity-50"
+                             title="Download Original Document"
+                          >
+                             {downloadingId === r.id ? (
+                                <Loader2 size={14} className="animate-spin" />
+                             ) : (
+                                <Download size={14} className="mr-1.5" />
+                             )}
+                             {downloadingId === r.id ? 'Loading...' : 'Download File'}
+                          </button>
+                          <span className="px-3 py-1 bg-white text-indigo-700 rounded-full text-xs font-bold shadow-sm uppercase tracking-wider">
+                             Analyzed
+                          </span>
+                       </div>
+                    </div>
                    <div className="p-6 bg-white">
                       <h4 className="text-sm font-bold text-indigo-600 mb-3 flex items-center uppercase tracking-wider">
                          ✨ Groq AI Visualization

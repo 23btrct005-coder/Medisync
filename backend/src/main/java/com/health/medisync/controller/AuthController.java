@@ -16,6 +16,7 @@ import com.health.medisync.model.Doctor;
 import com.health.medisync.repository.UserRepository;
 import com.health.medisync.repository.DoctorRepository;
 
+import com.health.medisync.service.AuthService;
 import java.util.Map;
 
 @RestController
@@ -28,15 +29,17 @@ public class AuthController {
     private final UserRepository userRepository;
     private final DoctorRepository doctorRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
     public AuthController(AuthenticationManager authenticationManager, JwtUtils jwtUtils,
                           UserRepository userRepository, DoctorRepository doctorRepository,
-                          PasswordEncoder passwordEncoder) {
+                          PasswordEncoder passwordEncoder, AuthService authService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
         this.userRepository = userRepository;
         this.doctorRepository = doctorRepository;
         this.passwordEncoder = passwordEncoder;
+        this.authService = authService;
     }
     
     @GetMapping("/health")
@@ -76,5 +79,28 @@ public class AuthController {
         doctorRepository.save(doctor);
 
         return ResponseEntity.ok(Map.of("message", "Doctor registered successfully!"));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
+        try {
+            String token = authService.initiatePasswordReset(request.get("username"));
+            return ResponseEntity.ok(Map.of(
+                "message", "Password reset link has been simulated. Check backend logs.",
+                "token", token // Returning token for easy testing/simulation
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+        try {
+            authService.resetPassword(request.get("token"), request.get("password"));
+            return ResponseEntity.ok(Map.of("message", "Password has been reset successfully."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 }

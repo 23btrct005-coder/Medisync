@@ -1,8 +1,12 @@
 package com.health.medisync.service;
 
+import com.health.medisync.model.Doctor;
+import com.health.medisync.model.User;
 import com.health.medisync.model.Patient;
 import com.health.medisync.model.Report;
 import com.health.medisync.repository.ReportRepository;
+import com.health.medisync.repository.UserRepository;
+import com.health.medisync.repository.DoctorRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -14,11 +18,17 @@ public class ReportService {
     private final ReportRepository reportRepository;
     private final PatientService patientService;
     private final GroqAiService aiService;
+    private final UserRepository userRepository;
+    private final DoctorRepository doctorRepository;
 
-    public ReportService(ReportRepository reportRepository, PatientService patientService, GroqAiService aiService) {
+    public ReportService(ReportRepository reportRepository, PatientService patientService, 
+                         GroqAiService aiService, UserRepository userRepository,
+                         DoctorRepository doctorRepository) {
         this.reportRepository = reportRepository;
         this.patientService = patientService;
         this.aiService = aiService;
+        this.userRepository = userRepository;
+        this.doctorRepository = doctorRepository;
     }
 
     public Report uploadReport(String username, MultipartFile file) throws Exception {
@@ -47,13 +57,31 @@ public class ReportService {
     }
 
     public Report getReportForDownload(String username, Long id) {
-        Patient patient = patientService.getPatientProfile(username);
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        
         Report report = reportRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Report not found"));
+
+        if ("ROLE_PATIENT".equals(user.getRole())) {
+            Patient patient = patientService.getPatientProfile(username);
+            if (!report.getPatient().getId().equals(patient.getId())) {
+                throw new RuntimeException("Unauthorized access: This report does not belong to you.");
+            }
+        } else if ("ROLE_DOCTOR".equals(user.getRole())) {
+            Doctor doctor = doctorRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("Doctor profile not found"));
             
-        if (!report.getPatient().getId().equals(patient.getId())) {
-            throw new RuntimeException("Unauthorized access to report");
+            boolean isLinked = report.getPatient().getDoctors().stream()
+                .anyMatch(d -> d.getId().equals(doctor.getId()));
+            
+            if (!isLinked) {
+                throw new RuntimeException("Unauthorized access: You are not linked to this patient.");
+            }
+        } else {
+            throw new RuntimeException("Unauthorized access");
         }
+        
         return report;
     }
 }
