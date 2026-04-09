@@ -32,8 +32,10 @@ public class EmailService {
     }
 
     public void sendEmail(String to, String subject, String body) {
-        // Redacted logging for security, but helps detect if token is missing
-        String tokenHead = (apiToken != null && apiToken.length() >= 4) ? apiToken.substring(0, 4) : "[EMPTY]";
+        // Redacted logging for security
+        String cleanToken = (apiToken != null) ? apiToken.trim() : "";
+        String tokenHead = (cleanToken.length() >= 4) ? cleanToken.substring(0, 4) : "[EMPTY]";
+        String tokenTail = (cleanToken.length() >= 4) ? cleanToken.substring(cleanToken.length() - 4) : "";
         
         // Sanitize URL (remove spaces, quotes, and trailing slashes)
         String cleanUrl = apiUrl.trim().replace("\"", "").replace("'", "");
@@ -42,12 +44,19 @@ public class EmailService {
         }
         
         System.out.println("DEBUG: Using Mailtrap endpoint: " + cleanUrl);
-        System.out.println("DEBUG: Using Mailtrap token starting with: " + tokenHead + "...");
+        System.out.println("DEBUG: Token Check - Length: " + cleanToken.length() + ", Start: " + tokenHead + "..., End: ..." + tokenTail);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(apiToken);
-        headers.set("Api-Token", apiToken); // Dual header for sandbox compatibility
+        headers.setContentType(new MediaType("application", "json", java.nio.charset.StandardCharsets.UTF_8));
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        
+        // Use Api-Token for Sandbox, Bearer for Production
+        if (cleanUrl.contains("sandbox")) {
+            headers.set("Api-Token", cleanToken);
+        } else {
+            headers.setBearerAuth(cleanToken);
+        }
+        headers.set("User-Agent", "MediSync-Backend/1.0");
 
         // Building Mailtrap JSON structure:
         // {
