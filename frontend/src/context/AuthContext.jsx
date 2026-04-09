@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (usernameInput, password) => {
     localStorage.clear();
-    alert("DEPLOY_V16_MATCHED_ORIGIN_FIX: Testing for " + usernameInput);
+    alert("DEPLOY_V17_MANUAL_CORS_FIX: Testing for " + usernameInput);
     const username = usernameInput?.trim();
     console.log("DEBUG: LOGIN ATTEMPT FOR:", username);
     

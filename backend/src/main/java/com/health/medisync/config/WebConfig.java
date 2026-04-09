@@ -1,44 +1,51 @@
 package com.health.medisync.config;
- 
- import org.springframework.context.annotation.Bean;
- import org.springframework.context.annotation.Configuration;
- import org.springframework.core.Ordered;
- import org.springframework.boot.web.servlet.FilterRegistrationBean;
- import org.springframework.web.cors.CorsConfiguration;
- import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
- import org.springframework.web.filter.CorsFilter;
- import java.util.Arrays;
- 
- @Configuration
- public class WebConfig {
- 
-     @Bean
-     public FilterRegistrationBean<CorsFilter> corsFilter() {
-         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-         CorsConfiguration config = new CorsConfiguration();
-         config.setAllowCredentials(true);
-         config.setAllowedOrigins(Arrays.asList(
-             "http://localhost:5173",
-             "http://localhost:3000",
-             "https://medisync-react.vercel.app",
-             "https://medisync-vert-five.vercel.app",
-             "https://medisync-qvd6.onrender.com"
-         ));
-         config.setAllowedHeaders(Arrays.asList(
-             "Authorization", 
-             "Cache-Control", 
-             "Content-Type", 
-             "X-Supabase-User",
-             "Accept",
-             "X-Requested-With",
-             "Access-Control-Allow-Origin"
-         ));
-         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-         config.setExposedHeaders(Arrays.asList("Authorization", "Access-Control-Allow-Origin"));
-         source.registerCorsConfiguration("/**", config);
-         
-         FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
-         bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-         return bean;
-     }
- }
+
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+
+import java.io.IOException;
+
+@Configuration
+public class WebConfig {
+
+    @Bean
+    public FilterRegistrationBean<ManualCorsFilter> manualCorsFilterRegistration() {
+        FilterRegistrationBean<ManualCorsFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setFilter(new ManualCorsFilter());
+        registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        registrationBean.addUrlPatterns("/*");
+        return registrationBean;
+    }
+
+    private static class ManualCorsFilter implements Filter {
+        @Override
+        public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
+            HttpServletRequest request = (HttpServletRequest) req;
+            HttpServletResponse response = (HttpServletResponse) res;
+
+            String origin = request.getHeader("Origin");
+            
+            // Mirror the origin back if it's from a trusted source, or just allow all for this specific debug phase
+            if (origin != null) {
+                response.setHeader("Access-Control-Allow-Origin", origin);
+            }
+            
+            response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH");
+            response.setHeader("Access-Control-Max-Age", "3600");
+            response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept, X-Requested-With, X-Supabase-User, Cache-Control");
+            response.setHeader("Access-Control-Allow-Credentials", "true");
+            response.setHeader("Access-Control-Expose-Headers", "Authorization");
+
+            if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+                response.setStatus(HttpServletResponse.SC_OK);
+            } else {
+                chain.doFilter(req, res);
+            }
+        }
+    }
+}
