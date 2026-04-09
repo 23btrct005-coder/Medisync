@@ -1,15 +1,15 @@
-import org.springframework.beans.factory.annotation.Value;
+package com.health.medisync;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
-
 import org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration;
 import org.springframework.boot.autoconfigure.r2dbc.R2dbcRepositoriesAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.r2dbc.R2dbcDataAutoConfiguration;
 
 @SpringBootApplication(exclude = {
     R2dbcAutoConfiguration.class,
-    R2dbcRepositoriesAutoConfiguration.class
+    R2dbcRepositoriesAutoConfiguration.class,
+    R2dbcDataAutoConfiguration.class
 })
 public class MedisyncApplication {
 
