@@ -100,7 +100,30 @@ public class AuthController {
         doctor.setUser(user);
         doctor.setName(request.get("name"));
         doctor.setEmail(request.get("email"));
+        doctor.setGender(request.get("gender"));
+        doctor.setDateOfBirth(request.get("dateOfBirth"));
+        doctor.setPhone(request.get("phone"));
+        doctor.setAlternatePhone(request.get("alternatePhone"));
         doctor.setSpecialization(request.get("specialization"));
+        doctor.setMedicalDegree(request.get("medicalDegree"));
+        doctor.setAdditionalCertifications(request.get("additionalCertifications"));
+        doctor.setCollege(request.get("college"));
+        doctor.setMedicalLicenseNumber(request.get("medicalLicenseNumber"));
+        doctor.setHospital(request.get("hospital"));
+        doctor.setConsultationFee(request.get("consultationFee"));
+        doctor.setWorkingDays(request.get("workingDays"));
+        doctor.setConsultationTimings(request.get("consultationTimings"));
+        if (request.get("yearsOfExperience") != null && !request.get("yearsOfExperience").isEmpty()) {
+            try { doctor.setYearsOfExperience(Integer.parseInt(request.get("yearsOfExperience"))); }
+            catch (NumberFormatException ignored) {}
+        }
+        if (request.get("onlineConsultation") != null) {
+            doctor.setOnlineConsultation(Boolean.parseBoolean(request.get("onlineConsultation")));
+        }
+        if (request.get("age") != null && !request.get("age").isEmpty()) {
+            try { doctor.setAge(Integer.parseInt(request.get("age"))); }
+            catch (NumberFormatException ignored) {}
+        }
         doctorRepository.save(doctor);
 
         return ResponseEntity.ok(Map.of("message", "Doctor registered and verified successfully!"));
