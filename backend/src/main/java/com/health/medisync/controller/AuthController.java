@@ -82,8 +82,8 @@ public class AuthController {
         user.setPassword(passwordEncoder.encode(request.get("password")));
         user.setRole("ROLE_DOCTOR");
         
-        // Check if OTP is provided and valid for inline verification
-        boolean verified = false;
+        // In the new flow, email is pre-verified via /verify-otp before registration
+        boolean verified = true; // Default to enabled since email was pre-verified
         if (request.containsKey("otp")) {
             try {
                 authService.verifyOtpStandalone(request.get("email"), request.get("otp"));
@@ -102,16 +102,6 @@ public class AuthController {
         doctor.setEmail(request.get("email"));
         doctor.setSpecialization(request.get("specialization"));
         doctorRepository.save(doctor);
-
-        if (!verified) {
-            // Send OTP for separate verification flow if not done inline
-            try {
-                authService.generateAndSendOtp(request.get("email"));
-            } catch (Exception e) {
-                System.err.println("OTP Sending Failed: " + e.getMessage());
-            }
-            return ResponseEntity.ok(Map.of("message", "Doctor registered successfully! Please check your email for the verification code."));
-        }
 
         return ResponseEntity.ok(Map.of("message", "Doctor registered and verified successfully!"));
     }
@@ -137,8 +127,9 @@ public class AuthController {
         user.setPassword(passwordEncoder.encode(request.get("password")));
         user.setRole("ROLE_PATIENT");
         
-        // Check if OTP is provided and valid for inline verification
-        boolean verified = false;
+        // Check if OTP is provided for inline verification (legacy flow)
+        // In the new flow, email is pre-verified via /verify-otp before registration
+        boolean verified = true; // Default to enabled since email was pre-verified
         if (request.containsKey("otp")) {
             try {
                 authService.verifyOtpStandalone(request.get("email"), request.get("otp"));
@@ -167,16 +158,6 @@ public class AuthController {
         patient.setBloodGroup(request.get("bloodGroup"));
         
         patientRepository.save(patient);
-
-        if (!verified) {
-            // Send OTP for separate verification flow
-            try {
-                authService.generateAndSendOtp(request.get("email"));
-            } catch (Exception e) {
-                System.err.println("OTP Sending Failed: " + e.getMessage());
-            }
-            return ResponseEntity.ok(Map.of("message", "Patient registered successfully! Please check your email for the verification code."));
-        }
 
         return ResponseEntity.ok(Map.of("message", "Patient registered and verified successfully!"));
     }

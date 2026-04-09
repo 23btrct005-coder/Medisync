@@ -105,7 +105,8 @@ const Register = () => {
         password: formData.password,
         age: formData.age,
         bloodGroup: formData.blood_group,
-        otp: otpCode // Send OTP to backend to enable account immediately
+        // No OTP needed here — email was already verified via /verify-otp above
+        // The backend enables the user via verifyOtp() before this call
       });
 
       setSuccess('Registration successful! Redirecting to login...');

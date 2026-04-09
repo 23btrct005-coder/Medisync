@@ -91,7 +91,7 @@ const DoctorLogin = () => {
           name: formData.name,
           email: formData.email,
           specialization: formData.specialization,
-          otp: otpCode // Pass OTP to enable account immediately
+          // No OTP here — email was already verified via /verify-otp above
         });
         
         setError('');
