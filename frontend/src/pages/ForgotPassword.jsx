@@ -21,7 +21,7 @@ const ForgotPassword = () => {
       // In a real app, we wouldn't show the token here, but for this simulation we do
       setSimulatedToken(response.data.token);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to process request. Ensure the username is correct.');
+      setError(err.response?.data?.message || err.message || 'Failed to process request. Ensure the username is correct.');
     } finally {
       setLoading(false);
     }

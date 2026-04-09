@@ -27,8 +27,9 @@ export const AuthProvider = ({ children }) => {
   const fetchUserProfile = async (role, email) => {
     try {
       if (role === 'ROLE_PATIENT') {
-        const { data, error } = await supabase.from('patient').select('*').eq('email', email).single();
+        const { data, error } = await supabase.from('patient').select('*').eq('email', email).maybeSingle();
         if (error) throw error;
+        if (!data) throw new Error("Patient not found in Supabase");
         setUser({ ...data, role });
         
         // Sync profile info to the backend (Explicit email for reliability)
@@ -70,7 +71,7 @@ export const AuthProvider = ({ children }) => {
             .from('patient')
             .select('*')
             .eq('email', username)
-            .single();
+            .maybeSingle();
             
           if (patient && !error) {
             // Verify password

@@ -41,7 +41,7 @@ const Register = () => {
         .from('patient')
         .select('*')
         .eq('email', formData.email)
-        .single();
+        .maybeSingle();
 
       if (existingUser) {
          setError('User with this email already exists.');
