@@ -6,22 +6,19 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Base64;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class EmailService {
 
-    @Value("${mailgun.api.key}")
-    private String apiKey;
+    @Value("${mailtrap.token}")
+    private String apiToken;
 
-    @Value("${mailgun.domain}")
-    private String domain;
-
-    @Value("${mailgun.from.email}")
+    @Value("${mailtrap.from.email}")
     private String fromEmail;
 
     private final RestTemplate restTemplate;
@@ -31,37 +28,47 @@ public class EmailService {
     }
 
     public void sendEmail(String to, String subject, String body) {
-        String url = "https://api.mailgun.net/v3/" + domain + "/messages";
+        String url = "https://send.api.mailtrap.io/api/send";
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(apiToken);
+
+        // Building Mailtrap JSON structure:
+        // {
+        //   "from": {"email": "...", "name": "..."},
+        //   "to": [{"email": "..."}],
+        //   "subject": "...",
+        //   "text": "..."
+        // }
+        Map<String, Object> payload = new HashMap<>();
         
-        // Basic Auth for Mailgun: 'api:key-XXXX'
-        String auth = "api:" + apiKey;
-        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
-        headers.set("Authorization", "Basic " + encodedAuth);
+        Map<String, String> fromMap = new HashMap<>();
+        fromMap.put("email", fromEmail);
+        fromMap.put("name", "MediSync Portal");
+        payload.put("from", fromMap);
 
-        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-        map.add("from", fromEmail);
-        map.add("to", to);
-        map.add("subject", subject);
-        map.add("text", body);
+        Map<String, String> toMap = new HashMap<>();
+        toMap.put("email", to);
+        payload.put("to", Collections.singletonList(toMap));
 
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+        payload.put("subject", subject);
+        payload.put("text", body);
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
 
         try {
             ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
             if (!response.getStatusCode().is2xxSuccessful()) {
-                throw new RuntimeException("Mailgun API failed with status: " + response.getStatusCode());
+                throw new RuntimeException("Mailtrap API failed with status: " + response.getStatusCode() + " - " + response.getBody());
             }
         } catch (Exception e) {
-            System.err.println("ERROR: Mailgun delivery failed: " + e.getMessage());
-            throw new RuntimeException("Email delivery failed via Mailgun API: " + e.getMessage());
+            System.err.println("ERROR: Mailtrap delivery failed: " + e.getMessage());
+            throw new RuntimeException("Email delivery failed via Mailtrap API: " + e.getMessage());
         }
     }
 
     public void sendPasswordResetEmail(String to, String token) {
-        // Updated to use the correct Vercel production URL
         String resetUrl = "https://medisync-vert-five.vercel.app/reset-password?token=" + token;
         String subject = "MediSync - Password Reset Request";
         String body = "You requested a password reset for your MediSync account.\n\n" +
