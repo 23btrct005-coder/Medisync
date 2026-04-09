@@ -28,8 +28,9 @@ public class PatientController {
     
     @PostMapping("/profile/sync")
     public ResponseEntity<Patient> syncProfile(@RequestBody java.util.Map<String, Object> profileData, Authentication authentication) {
-        String username = authentication.getName();
-        return ResponseEntity.ok(patientService.updateProfile(username, profileData));
+        String authUsername = (authentication != null) ? authentication.getName() : null;
+        String bodyEmail = (String) profileData.get("email");
+        return ResponseEntity.ok(patientService.updateProfile(bodyEmail != null ? bodyEmail : authUsername, profileData));
     }
 
     @PostMapping("/link-doctor")

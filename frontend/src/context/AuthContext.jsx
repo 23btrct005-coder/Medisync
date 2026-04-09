@@ -31,13 +31,18 @@ export const AuthProvider = ({ children }) => {
         if (error) throw error;
         setUser({ ...data, role });
         
-        // Sync profile info to the backend
-        api.post('/patient/profile/sync', {
-          name: data.name,
-          age: data.age,
-          bloodGroup: data.blood_group
-        }).then(() => console.log("Profile sync successful for " + email))
-          .catch(err => console.error("Profile sync failed for " + email, err));
+        // Sync profile info to the backend (Explicit email for reliability)
+        try {
+          await api.post('/patient/profile/sync', {
+            email: data.email,
+            name: data.name,
+            age: data.age,
+            bloodGroup: data.blood_group
+          });
+          console.log("SUCCESS: Backend profile sync for " + email);
+        } catch (syncErr) {
+          console.error("ERROR: Backend profile sync failed for " + email, syncErr);
+        }
       } else {
         // Fallback for Doctor or original logic if still needed for doctors
         const endpoint = '/doctor/profile';

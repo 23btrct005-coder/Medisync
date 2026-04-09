@@ -42,14 +42,18 @@ public class PatientService {
                 Patient newPatient = new Patient();
                 newPatient.setUser(user);
                 newPatient.setEmail(username);
-                newPatient.setName("Bypass User " + username);
+                newPatient.setName(username);
                 newPatient.setAge(0);
                 newPatient.setBloodGroup("Unknown");
                 return patientRepository.save(newPatient);
             });
     }
 
-    public Patient updateProfile(String username, java.util.Map<String, Object> profileData) {
+    public Patient updateProfile(String overrideEmail, java.util.Map<String, Object> profileData) {
+        String username = (overrideEmail != null) ? overrideEmail : (String) profileData.get("email");
+        if (username == null) {
+            throw new RuntimeException("Email is required for profile sync");
+        }
         System.out.println("DEBUG: Initiating profile sync for user: " + username);
         Patient patient = getPatientProfile(username);
         
