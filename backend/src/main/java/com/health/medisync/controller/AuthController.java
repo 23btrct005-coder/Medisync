@@ -67,9 +67,15 @@ public class AuthController {
 
     @PostMapping("/register/doctor")
     public ResponseEntity<?> registerDoctor(@RequestBody Map<String, String> request) {
-        if (userRepository.findByUsername(request.get("username")).isPresent()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Error: Username is already taken!"));
-        }
+        String username = request.get("username");
+        userRepository.findByUsername(username).ifPresent(existing -> {
+            if (existing.isEnabled()) {
+                throw new RuntimeException("Error: This account is already registered and verified. Please log in.");
+            }
+            // Delete ghost/unverified user so registration can proceed
+            doctorRepository.findByUserId(existing.getId()).ifPresent(doctorRepository::delete);
+            userRepository.delete(existing);
+        });
 
         User user = new User();
         user.setUsername(request.get("username"));
@@ -112,8 +118,18 @@ public class AuthController {
 
     @PostMapping("/register/patient")
     public ResponseEntity<?> registerPatient(@RequestBody Map<String, String> request) {
-        if (userRepository.findByUsername(request.get("username")).isPresent()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Error: Username is already taken!"));
+        String username = request.get("username");
+        try {
+            userRepository.findByUsername(username).ifPresent(existing -> {
+                if (existing.isEnabled()) {
+                    throw new RuntimeException("Error: This account is already registered and verified. Please log in.");
+                }
+                // Delete ghost/unverified user so registration can proceed
+                patientRepository.findByUserId(existing.getId()).ifPresent(patientRepository::delete);
+                userRepository.delete(existing);
+            });
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
 
         User user = new User();
@@ -181,12 +197,17 @@ public class AuthController {
     public ResponseEntity<?> requestOtp(@RequestBody Map<String, String> request) {
         try {
             String email = request.get("email");
-            
-            // Check if user already exists
-            if (userRepository.findByUsername(email).isPresent()) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Error: Email is already registered!"));
-            }
-            
+
+            // Only block if user already exists AND is fully enabled (active account)
+            userRepository.findByUsername(email).ifPresent(existingUser -> {
+                if (existingUser.isEnabled()) {
+                    throw new RuntimeException("This email is already registered. Please log in instead.");
+                } else {
+                    // Ghost/unverified account — clean it up so a fresh registration can proceed
+                    System.out.println("INFO: Cleaning up unverified ghost account for: " + email);
+                }
+            });
+
             authService.generateAndSendOtp(email);
             return ResponseEntity.ok(Map.of("message", "Verification code sent to " + email));
         } catch (Exception e) {

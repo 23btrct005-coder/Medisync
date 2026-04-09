@@ -10,6 +10,9 @@ import com.health.medisync.repository.PasswordResetTokenRepository;
 import com.health.medisync.repository.UserRepository;
 import com.health.medisync.repository.PatientRepository;
 import com.health.medisync.repository.DoctorRepository;
+import com.health.medisync.repository.MedicalRecordRepository;
+import com.health.medisync.repository.ReportRepository;
+import com.health.medisync.repository.AccessRequestRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,14 +31,20 @@ public class AuthService {
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
     private final EmailVerificationOtpRepository emailVerificationOtpRepository;
+    private final MedicalRecordRepository medicalRecordRepository;
+    private final ReportRepository reportRepository;
+    private final AccessRequestRepository accessRequestRepository;
 
-    public AuthService(UserRepository userRepository, 
-                       PasswordResetTokenRepository tokenRepository, 
+    public AuthService(UserRepository userRepository,
+                       PasswordResetTokenRepository tokenRepository,
                        PasswordEncoder passwordEncoder,
                        EmailService emailService,
                        PatientRepository patientRepository,
                        DoctorRepository doctorRepository,
-                       EmailVerificationOtpRepository emailVerificationOtpRepository) {
+                       EmailVerificationOtpRepository emailVerificationOtpRepository,
+                       MedicalRecordRepository medicalRecordRepository,
+                       ReportRepository reportRepository,
+                       AccessRequestRepository accessRequestRepository) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.passwordEncoder = passwordEncoder;
@@ -43,6 +52,9 @@ public class AuthService {
         this.patientRepository = patientRepository;
         this.doctorRepository = doctorRepository;
         this.emailVerificationOtpRepository = emailVerificationOtpRepository;
+        this.medicalRecordRepository = medicalRecordRepository;
+        this.reportRepository = reportRepository;
+        this.accessRequestRepository = accessRequestRepository;
     }
 
     @Transactional
@@ -182,6 +194,10 @@ public class AuthService {
     @Transactional
     public void clearAllData() {
         System.out.println("CRITICAL: Clearing all registered data from the database...");
+        // Delete child records first to satisfy foreign-key constraints
+        accessRequestRepository.deleteAll();
+        reportRepository.deleteAll();
+        medicalRecordRepository.deleteAll();
         tokenRepository.deleteAll();
         emailVerificationOtpRepository.deleteAll();
         patientRepository.deleteAll();
