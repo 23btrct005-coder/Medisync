@@ -270,4 +270,3 @@ const DoctorLogin = () => {
 };
 
 export default DoctorLogin;
-gin;
