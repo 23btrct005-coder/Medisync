@@ -21,6 +21,7 @@ package com.health.medisync.config;
              "http://localhost:5173",
              "http://localhost:3000",
              "https://medisync-react.vercel.app",
+             "https://medisync-vert-five.vercel.app",
              "https://medisync-qvd6.onrender.com"
          ));
          config.setAllowedHeaders(Arrays.asList(
