@@ -118,8 +118,8 @@ const Register = () => {
           <div className="mx-auto h-16 w-16 bg-primary-50 text-primary-600 rounded-2xl flex items-center justify-center shadow-sm mb-4 transform -rotate-3 hover:rotate-0 transition-transform cursor-pointer">
             <UserPlus size={32} />
           </div>
-          <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Create Patient Account</h2>
-          <p className="mt-2 text-slate-500">Securely join the MEDISYNC healthcare network</p>
+          <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Create a Patient Account</h2>
+          <p className="mt-2 text-slate-500">Securely join the MEDISYNC healthcare portal</p>
         </div>
 
         {error && (
