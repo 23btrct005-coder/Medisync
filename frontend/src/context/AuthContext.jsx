@@ -57,10 +57,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (username, password) => {
+  const login = async (usernameInput, password) => {
+    alert("SYSTEM UPDATE APPLIED: Checking login for " + usernameInput);
+    const username = usernameInput?.trim();
+    console.log("DEBUG: LOGIN ATTEMPT FOR:", username);
+    
     try {
       // 1. Fetch user from Supabase ONLY if username looks like an email
-      if (username.includes('@')) {
+      if (username && username.includes('@')) {
+        console.log("DEBUG: PROCEEDING TO SUPABASE CHECK");
         try {
           const { data: patient, error } = await supabase
             .from('patient')
