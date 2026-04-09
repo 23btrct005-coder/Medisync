@@ -1,104 +1,121 @@
 import { useAuth } from '../context/AuthContext';
-import { User, Mail, Calendar, Droplet, UserCircle, Save } from 'lucide-react';
+import {
+  UserCircle, Mail, Phone, MapPin, Droplet, Calendar,
+  Activity, AlertCircle, Heart, ShieldCheck, Users
+} from 'lucide-react';
+
+const InfoRow = ({ icon: Icon, label, value, color = 'text-primary-500' }) => (
+  <div className="flex items-start gap-3 py-3 border-b border-slate-100 last:border-0">
+    <div className={`mt-0.5 shrink-0 ${color}`}><Icon size={18} /></div>
+    <div className="flex-1 min-w-0">
+      <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">{label}</p>
+      <p className="text-sm font-semibold text-slate-800 mt-0.5">{value || <span className="text-slate-300 font-normal">Not provided</span>}</p>
+    </div>
+  </div>
+);
+
+const Section = ({ title, icon: Icon, children }) => (
+  <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+    <div className="flex items-center gap-2 px-6 py-4 border-b border-slate-100 bg-slate-50">
+      <Icon size={18} className="text-primary-600" />
+      <h4 className="font-bold text-slate-700 text-sm uppercase tracking-wide">{title}</h4>
+    </div>
+    <div className="px-6 divide-y divide-slate-50">{children}</div>
+  </div>
+);
 
 const Profile = () => {
-  const { user } = useAuth();
-  
-  // Dummy form submission preventer since we don't have update API requirement
-  const handleSubmit = (e) => {
-      e.preventDefault();
-      // Toast notification would go here in a real app
-      alert("Profile updated successfully!");
-  };
+  const { user, loading } = useAuth();
 
-  if (!user) return null;
+  if (loading) return (
+    <div className="flex justify-center items-center p-20">
+      <div className="animate-spin text-primary-500"><Activity size={36} /></div>
+    </div>
+  );
+
+  if (!user) return (
+    <div className="text-center p-12 text-slate-400">
+      <AlertCircle size={40} className="mx-auto mb-3" />
+      <p>Could not load profile. Please log in again.</p>
+    </div>
+  );
+
+  const initials = user.name?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'P';
 
   return (
-    <div className="space-y-6">
-      <div className="mb-6">
+    <div className="max-w-4xl mx-auto space-y-6 pb-12">
+      {/* Header */}
+      <div className="mb-2">
         <h2 className="text-2xl font-bold text-slate-800">My Profile</h2>
-        <p className="text-slate-500 text-sm mt-1">Manage your personal and medical information</p>
+        <p className="text-slate-500 text-sm mt-1">Your personal and medical information on MEDISYNC</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Profile Summary Card */}
-        <div className="lg:col-span-1">
-          <div className="card text-center relative overflow-hidden">
-             <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-r from-primary-500 to-primary-700"></div>
-             
-             <div className="relative pt-8">
-                 <div className="mx-auto w-24 h-24 bg-white p-1 rounded-full shadow-md mb-4 flex items-center justify-center">
-                    <div className="w-full h-full bg-slate-100 rounded-full flex items-center justify-center text-primary-600">
-                      <UserCircle size={64} />
-                    </div>
-                 </div>
-                 <h3 className="text-xl font-bold text-slate-800">{user.name}</h3>
-                 <p className="text-sm text-slate-500 mb-6">Patient ID: #{user.id}</p>
-                 
-                 <div className="border-t border-slate-100 pt-4 px-4 pb-2 space-y-4 text-left">
-                    <div className="flex items-center text-slate-600">
-                        <Droplet size={18} className="mr-3 text-red-500" />
-                        <span className="text-sm font-medium">Blood Group:</span>
-                        <span className="ml-auto font-semibold text-slate-800">{user.bloodGroup}</span>
-                    </div>
-                    <div className="flex items-center text-slate-600">
-                        <Calendar size={18} className="mr-3 text-blue-500" />
-                        <span className="text-sm font-medium">Age:</span>
-                        <span className="ml-auto font-semibold text-slate-800">{user.age} Yrs</span>
-                    </div>
-                 </div>
-             </div>
+      {/* Identity Card */}
+      <div className="bg-gradient-to-r from-primary-700 to-primary-500 rounded-3xl p-8 text-white shadow-xl">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+          <div className="w-24 h-24 rounded-2xl bg-white/20 flex items-center justify-center text-3xl font-extrabold backdrop-blur-sm shrink-0">
+            {initials}
+          </div>
+          <div className="text-center sm:text-left">
+            <h3 className="text-2xl font-extrabold">{user.name || 'Patient'}</h3>
+            <p className="text-primary-200 text-sm mt-1">{user.email}</p>
+            <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-3">
+              {user.bloodGroup && (
+                <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                  <Droplet size={12} /> {user.bloodGroup}
+                </span>
+              )}
+              {user.gender && (
+                <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">{user.gender}</span>
+              )}
+              {user.age && (
+                <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">{user.age} yrs</span>
+              )}
+              <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">Patient ID: #{user.id}</span>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Profile Details Form */}
-        <div className="lg:col-span-2">
-            <div className="card">
-                <h3 className="text-lg font-semibold text-slate-800 border-b border-slate-100 pb-4 mb-6">Personal Details</h3>
-                
-                <form onSubmit={handleSubmit}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                    <User size={16} />
-                                </div>
-                                <input type="text" defaultValue={user.name} className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 sm:text-sm text-slate-800" readOnly />
-                            </div>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                    <Mail size={16} />
-                                </div>
-                                <input type="email" defaultValue={user.email} className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 sm:text-sm text-slate-800 bg-slate-50" readOnly />
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <h3 className="text-lg font-semibold text-slate-800 border-b border-slate-100 pb-4 mb-6 mt-8">Medical Information</h3>
-                    
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Known Allergies & Conditions</label>
-                        <textarea 
-                           rows={4} 
-                           defaultValue={user.medicalInfo} 
-                           className="block w-full p-3 border border-slate-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 sm:text-sm text-slate-800"
-                        />
-                    </div>
-                    
-                    <div className="mt-8 flex justify-end">
-                        <button type="submit" className="flex items-center px-6 py-2.5 bg-primary-600 text-white font-medium rounded-lg shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
-                            <Save size={18} className="mr-2" />
-                            Save Changes
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        {/* Personal Details */}
+        <Section title="Personal Details" icon={UserCircle}>
+          <InfoRow icon={UserCircle} label="Full Name" value={user.name} />
+          <InfoRow icon={Calendar} label="Date of Birth" value={user.dateOfBirth} color="text-blue-500" />
+          <InfoRow icon={Calendar} label="Age" value={user.age ? `${user.age} Years` : null} color="text-blue-500" />
+          <InfoRow icon={Users} label="Gender" value={user.gender} color="text-purple-500" />
+          <InfoRow icon={Droplet} label="Blood Group" value={user.bloodGroup} color="text-red-500" />
+        </Section>
+
+        {/* Contact Information */}
+        <Section title="Contact Information" icon={Phone}>
+          <InfoRow icon={Mail} label="Email Address" value={user.email} color="text-blue-500" />
+          <InfoRow icon={Phone} label="Mobile Number" value={user.phone} color="text-green-500" />
+          <InfoRow icon={Phone} label="Alternate Mobile" value={user.alternatePhone} color="text-green-400" />
+          <InfoRow icon={MapPin} label="Street / Area" value={user.street} color="text-orange-500" />
+          <InfoRow icon={MapPin} label="City" value={user.city} color="text-orange-500" />
+          <InfoRow icon={MapPin} label="State" value={user.state} color="text-orange-500" />
+          <InfoRow icon={MapPin} label="PIN Code" value={user.pinCode} color="text-orange-500" />
+        </Section>
+
+        {/* Emergency Contact */}
+        <Section title="Emergency Contact" icon={Heart}>
+          <InfoRow icon={UserCircle} label="Contact Name" value={user.emergencyContactName} color="text-red-500" />
+          <InfoRow icon={Users} label="Relationship" value={user.emergencyContactRelationship} color="text-pink-500" />
+          <InfoRow icon={Phone} label="Phone Number" value={user.emergencyContactPhone} color="text-red-400" />
+        </Section>
+
+        {/* Medical Info */}
+        <Section title="Medical Information" icon={ShieldCheck}>
+          <InfoRow icon={Droplet} label="Blood Group" value={user.bloodGroup} color="text-red-500" />
+          <div className="py-3">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Known Conditions / Allergies</p>
+            <p className="text-sm text-slate-700 leading-relaxed bg-slate-50 rounded-xl p-3">
+              {user.medicalInfo || <span className="text-slate-300">No medical info added</span>}
+            </p>
+          </div>
+        </Section>
 
       </div>
     </div>

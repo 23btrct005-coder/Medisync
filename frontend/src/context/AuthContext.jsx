@@ -26,32 +26,13 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserProfile = async (role, email) => {
     try {
-      if (role === 'ROLE_PATIENT') {
-        const { data, error } = await supabase.from('patient').select('*').eq('email', email).maybeSingle();
-        if (error) throw error;
-        if (!data) throw new Error("Patient not found in Supabase");
-        setUser({ ...data, role });
-        
-        // Sync profile info to the backend (Explicit email for reliability)
-        try {
-          await api.post('/patient/profile/sync', {
-            email: data.email,
-            name: data.name,
-            age: data.age,
-            bloodGroup: data.blood_group
-          });
-          console.log("SUCCESS: Backend profile sync for " + email);
-        } catch (syncErr) {
-          console.error("ERROR: Backend profile sync failed for " + email, syncErr);
-        }
-      } else {
-        // Fallback for Doctor or original logic if still needed for doctors
-        const endpoint = '/doctor/profile';
-        const response = await api.get(endpoint);
-        setUser({ ...response.data, role });
-      }
+      // Always fetch full profile from the Spring Boot backend
+      // which returns all registration fields (address, phone, emergency contact, etc.)
+      const endpoint = role === 'ROLE_DOCTOR' ? '/doctor/profile' : '/patient/profile';
+      const response = await api.get(endpoint);
+      setUser({ ...response.data, role });
     } catch (error) {
-      console.error("Error fetching profile from Supabase", error);
+      console.error("Error fetching profile from backend", error);
       logout();
     } finally {
       setLoading(false);
