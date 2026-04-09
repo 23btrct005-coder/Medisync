@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (usernameInput, password) => {
-    alert("SYSTEM UPDATE APPLIED: Checking login for " + usernameInput);
+    alert("DEPLOYED_V12_CORS_HIGH_PRIORITY: Testing for " + usernameInput);
     const username = usernameInput?.trim();
     console.log("DEBUG: LOGIN ATTEMPT FOR:", username);
     
