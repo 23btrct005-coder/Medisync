@@ -18,14 +18,26 @@ const DoctorLogin = () => {
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [otp, setOtp] = useState('');
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
     
     try {
-      if (isRegistering) {
-        const resp = await api.post('/auth/register/doctor', {
+      if (isVerifying) {
+        await api.post('/auth/verify-otp', {
+          email: formData.email,
+          otp: otp
+        });
+        setError('');
+        alert('Email verified successfully! You may now sign in.');
+        setIsVerifying(false);
+        setIsRegistering(false);
+      } else if (isRegistering) {
+        await api.post('/auth/register/doctor', {
           username: formData.username,
           password: formData.password,
           name: formData.name,
@@ -34,8 +46,7 @@ const DoctorLogin = () => {
         });
         
         setError('');
-        alert(resp.data.message || 'Registration successful! You may now sign in.');
-        setIsRegistering(false);
+        setIsVerifying(true);
       } else {
         const result = await login(formData.username, formData.password);
         if (result.success && result.role === 'ROLE_DOCTOR') {
@@ -45,11 +56,8 @@ const DoctorLogin = () => {
         }
       }
     } catch (err) {
-      if (err.message === 'Network Error') {
-        setError('Network Connection Failed: If you are on a mobile phone, your Vercel frontend is still trying to talk to the localhost on your Macbook. Ensure your backend is deployed to Render, and you re-deployed Vercel with the VITE_API_URL variable.');
-      } else {
-        setError(err.response?.data?.message || err.message || 'Server connection failed.');
-      }
+      console.error(err);
+      setError(err.response?.data?.message || err.message || 'Server connection failed.');
     } finally {
       setIsLoading(false);
     }
@@ -65,10 +73,10 @@ const DoctorLogin = () => {
             <Stethoscope size={36} />
           </div>
           <h2 className="mt-2 text-3xl font-extrabold text-slate-900 tracking-tight">
-            Physician Portal
+            {isVerifying ? 'Verify Credentials' : 'Physician Portal'}
           </h2>
           <p className="mt-2 text-sm text-slate-500">
-            {isRegistering ? 'Enroll in the Medisync Network' : 'Secure Provider Authentication'}
+            {isVerifying ? `Enter the 6-digit code sent to ${formData.email}` : (isRegistering ? 'Enroll in the Medisync Network' : 'Secure Provider Authentication')}
           </p>
         </div>
         
@@ -80,65 +88,80 @@ const DoctorLogin = () => {
           )}
           
           <div className="space-y-4 rounded-md shadow-sm">
-            {isRegistering && (
-                <>
-                <div>
-                  <input name="name" required placeholder="Full Name" onChange={handleChange}
-                    className="block w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-blue-500" />
+            {isVerifying ? (
+              <div className="text-center space-y-4">
+                <input 
+                  type="text" maxLength="6" required placeholder="000000"
+                  value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                  className="block w-full text-center text-3xl font-bold tracking-[0.5em] rounded-xl border-slate-300 shadow-inner focus:border-blue-500 px-3 py-4 border transition-all"
+                />
+                <p className="text-xs text-slate-500">The verification code expires in 5 minutes.</p>
+              </div>
+            ) : (
+              <>
+                {isRegistering && (
+                    <>
+                    <div>
+                      <input name="name" required placeholder="Full Name" onChange={handleChange}
+                        className="block w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-blue-500" />
+                    </div>
+                    <div>
+                      <input name="email" required placeholder="Professional Email" onChange={handleChange}
+                        className="block w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-blue-500" />
+                    </div>
+                    <div>
+                      <input name="specialization" required placeholder="Specialization" onChange={handleChange}
+                        className="block w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-blue-500" />
+                    </div>
+                    </>
+                )}
+
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <User size={18} />
+                  </div>
+                  <input name="username" type="text" required placeholder="Doctor ID / Username" value={formData.username} onChange={handleChange}
+                    className="pl-10 block w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-blue-500" />
                 </div>
-                <div>
-                  <input name="email" required placeholder="Professional Email" onChange={handleChange}
-                    className="block w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-blue-500" />
+
+                <div className="relative">
+                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <Lock size={18} />
+                  </div>
+                  <input name="password" type="password" required placeholder="Security Passphrase" value={formData.password} onChange={handleChange}
+                    className="pl-10 block w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-blue-500" />
                 </div>
-                <div>
-                  <input name="specialization" required placeholder="Specialization" onChange={handleChange}
-                    className="block w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-blue-500" />
-                </div>
-                </>
+              </>
             )}
-
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                <User size={18} />
-              </div>
-              <input name="username" type="text" required placeholder="Doctor ID / Username" value={formData.username} onChange={handleChange}
-                className="pl-10 block w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-blue-500" />
-            </div>
-
-            <div className="relative">
-               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                <Lock size={18} />
-              </div>
-              <input name="password" type="password" required placeholder="Security Passphrase" value={formData.password} onChange={handleChange}
-                className="pl-10 block w-full px-3 py-3 rounded-xl border border-slate-300 focus:ring-blue-500" />
-            </div>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input 
-                id="remember" 
-                type="checkbox" 
-                className="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500" 
-              />
-              <label htmlFor="remember" className="ml-2 block text-sm text-slate-600">Remember me</label>
+          {!isVerifying && (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <input 
+                  id="remember" 
+                  type="checkbox" 
+                  className="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500" 
+                />
+                <label htmlFor="remember" className="ml-2 block text-sm text-slate-600">Remember me</label>
+              </div>
+              <Link to="/forgot-password" size={12} className="text-sm font-semibold text-blue-600 hover:text-blue-700">
+                  Forgot password?
+              </Link>
             </div>
-            <Link to="/forgot-password" size={12} className="text-sm font-semibold text-blue-600 hover:text-blue-700">
-                Forgot password?
-            </Link>
-          </div>
+          )}
 
           <div>
             <button
               type="submit" disabled={isLoading}
               className={`w-full flex justify-center py-3 px-4 rounded-xl shadow-md text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition ${isLoading ? 'opacity-70' : ''}`}
             >
-              {isLoading ? 'Processing...' : (isRegistering ? 'Submit Credentials' : 'Access Dashboard')}
+              {isLoading ? 'Processing...' : (isVerifying ? 'Verify & Activate' : (isRegistering ? 'Submit Credentials' : 'Access Dashboard'))}
             </button>
           </div>
           
           <div className="mt-4 text-center border-t border-slate-200 pt-6">
-            <button type="button" onClick={() => setIsRegistering(!isRegistering)}
+            <button type="button" onClick={() => { setIsRegistering(!isRegistering); setIsVerifying(false); }}
               className="text-sm font-medium text-blue-600 hover:text-blue-500 transition"
             >
               {isRegistering ? 'Already enrolled? Log in' : 'New physician? Request Access'}

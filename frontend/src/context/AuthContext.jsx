@@ -63,46 +63,22 @@ export const AuthProvider = ({ children }) => {
     const username = usernameInput?.trim();
     
     try {
-      // 1. Fetch user from Supabase ONLY if it looks like a patient email
-      // This prevents status 406 (Not Acceptable) for IDs like ak2205
-      if (username && username.includes('@')) {
-        try {
-          const { data: patient, error } = await supabase
-            .from('patient')
-            .select('*')
-            .eq('email', username)
-            .maybeSingle();
-            
-          if (patient && !error) {
-            // Verify password
-            const isMatch = await bcrypt.compare(password, patient.password);
-            if (isMatch) {
-              const token = 'supabase_dummy_jwt_' + patient.id;
-              const role = 'ROLE_PATIENT';
-              localStorage.setItem('token', token);
-              localStorage.setItem('role', role);
-              localStorage.setItem('userEmail', patient.email);
-              setUserRole(role);
-              await fetchUserProfile(role, patient.email);
-              return { success: true, role };
-            }
-          }
-        } catch (supabaseError) {
-          // Silently fail and fall through to backend auth
-        }
-      }
-
-      // 2. Fallback to Spring Boot Auth (for Doctors or non-Supabase patients)
+      // Prioritize Spring Boot Backend for Auth
       const response = await api.post('/auth/login', { username, password });
       const { token, role } = response.data;
+      
       localStorage.setItem('token', token);
       localStorage.setItem('role', role);
+      localStorage.setItem('userEmail', username); // Store email for profile fetching
+      
       setUserRole(role);
-      await fallbackFetchUserProfile(role);
+      await fetchUserProfile(role, username);
       return { success: true, role };
       
     } catch (error) {
-      return { success: false, message: 'Invalid credentials' };
+      console.error("Login failed:", error);
+      const message = error.response?.data?.message || 'Invalid credentials or account not verified';
+      return { success: false, message };
     }
   };
 
