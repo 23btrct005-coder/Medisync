@@ -1,6 +1,8 @@
 // Last Updated: 2026-04-09T17:58:00Z
+// Triggering redeploy
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+// Updated at 2026-04-09: Unified theme and added password toggles
+import { useNavigate, Link } from 'react-router-dom';
 import { Activity, UserPlus, FileText, ArrowLeft, HeartPulse, CheckCircle, Mail, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import api from '../api/axiosConfig';
 
