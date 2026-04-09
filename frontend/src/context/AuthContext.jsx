@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (usernameInput, password) => {
     localStorage.clear();
-    alert("DEPLOY_V18_DYNAMIC_ORIGIN_FIX: Testing for " + usernameInput);
+    alert("DEPLOY_V19_SUPABASE_EXPANDED: Testing for " + usernameInput);
     const username = usernameInput?.trim();
     console.log("DEBUG: LOGIN ATTEMPT FOR:", username);
     
@@ -72,8 +72,8 @@ export const AuthProvider = ({ children }) => {
     }
     
     try {
-      // 1. Fetch user from Supabase ONLY if username looks like an email
-      if (username && username.includes('@')) {
+      // 1. Fetch user from Supabase (Relaxed check for IDs like ak2205)
+      if (username) {
         console.log("DEBUG: PROCEEDING TO SUPABASE CHECK");
         try {
           const { data: patient, error } = await supabase
