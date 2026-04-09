@@ -59,22 +59,12 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (usernameInput, password) => {
     localStorage.clear();
-    alert("DEPLOY_V19_SUPABASE_EXPANDED: Testing for " + usernameInput);
     const username = usernameInput?.trim();
-    console.log("DEBUG: LOGIN ATTEMPT FOR:", username);
-    
-    // Connectivity Check
-    try {
-      const health = await api.get('/auth/health');
-      console.log("DEBUG: HEALTH CHECK RESPONSE:", health.data);
-    } catch (hErr) {
-      console.error("DEBUG: HEALTH CHECK FAILED:", hErr);
-    }
     
     try {
-      // 1. Fetch user from Supabase (Relaxed check for IDs like ak2205)
-      if (username) {
-        console.log("DEBUG: PROCEEDING TO SUPABASE CHECK");
+      // 1. Fetch user from Supabase ONLY if it looks like a patient email
+      // This prevents status 406 (Not Acceptable) for IDs like ak2205
+      if (username && username.includes('@')) {
         try {
           const { data: patient, error } = await supabase
             .from('patient')
@@ -83,7 +73,7 @@ export const AuthProvider = ({ children }) => {
             .single();
             
           if (patient && !error) {
-            // Verify password with bcryptjs
+            // Verify password
             const isMatch = await bcrypt.compare(password, patient.password);
             if (isMatch) {
               const token = 'supabase_dummy_jwt_' + patient.id;
@@ -97,7 +87,7 @@ export const AuthProvider = ({ children }) => {
             }
           }
         } catch (supabaseError) {
-          console.error("Supabase login check skipped or failed", supabaseError);
+          // Silently fail and fall through to backend auth
         }
       }
 
