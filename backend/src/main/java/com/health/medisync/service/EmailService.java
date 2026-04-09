@@ -21,6 +21,9 @@ public class EmailService {
     @Value("${mailtrap.from.email:}")
     private String fromEmail;
 
+    @Value("${mailtrap.endpoint:https://send.api.mailtrap.io/api/send}")
+    private String apiUrl;
+
     private final RestTemplate restTemplate;
 
     public EmailService() {
@@ -28,7 +31,10 @@ public class EmailService {
     }
 
     public void sendEmail(String to, String subject, String body) {
-        String url = "https://send.api.mailtrap.io/api/send";
+        // Redacted logging for security, but helps detect if token is missing
+        String tokenHead = (apiToken != null && apiToken.length() >= 4) ? apiToken.substring(0, 4) : "[EMPTY]";
+        System.out.println("DEBUG: Using Mailtrap endpoint: " + apiUrl);
+        System.out.println("DEBUG: Using Mailtrap token starting with: " + tokenHead + "...");
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
