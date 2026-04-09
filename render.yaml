@@ -10,7 +10,7 @@ services:
     envVars:
       # ── Supabase PostgreSQL Connection ──
       - key: DB_URL
-        value: jdbc:postgresql://db.ctrnxgdtjtllzdfoynwo.supabase.co:6543/postgres?sslmode=require
+        value: jdbc:postgresql://db.ctrnxgdtjtllzdfoynwo.supabase.co:6543/postgres?ssl=true&sslmode=require&sslfactory=org.postgresql.ssl.NonValidatingFactory
       - key: DB_DRIVER
         value: org.postgresql.Driver
       - key: DB_USER
