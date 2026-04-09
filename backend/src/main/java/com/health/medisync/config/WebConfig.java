@@ -11,30 +11,6 @@ package com.health.medisync.config;
  import java.util.Collections;
  
  @Configuration
- public class WebConfig {
- 
-     @Bean
-     public FilterRegistrationBean<CorsFilter> corsFilter() {
-         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-         CorsConfiguration config = new CorsConfiguration();
-         config.setAllowCredentials(true);
-         // Dynamic origin pattern matching to support Vercel preview/branch URLs
-         config.setAllowedOriginPatterns(Collections.singletonList("*"));
-         config.setAllowedHeaders(Arrays.asList(
-             "Authorization", 
-             "Cache-Control", 
-             "Content-Type", 
-             "X-Supabase-User",
-             "Accept",
-             "X-Requested-With",
-             "Access-Control-Allow-Origin"
-         ));
-         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-         config.setExposedHeaders(Arrays.asList("Authorization", "Access-Control-Allow-Origin"));
-         source.registerCorsConfiguration("/**", config);
-         
-         FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
-         bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-         return bean;
-     }
- }
+public class WebConfig {
+    // Other web-specific configurations can go here (Interceptors, etc.)
+}
