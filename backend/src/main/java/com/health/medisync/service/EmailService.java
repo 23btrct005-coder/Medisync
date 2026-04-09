@@ -11,18 +11,19 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
 public class EmailService {
 
-    @Value("${resend.api.key:}")
+    @Value("${brevo.api.key:}")
     private String apiKey;
 
-    @Value("${resend.from.email:onboarding@resend.dev}")
-    private String fromEmail;
+    @Value("${brevo.sender.email:}")
+    private String senderEmail;
 
-    private final String apiUrl = "https://api.resend.com/emails";
+    private final String apiUrl = "https://api.brevo.com/v3/smtp/email";
     private final RestTemplate restTemplate;
 
     public EmailService() {
@@ -31,38 +32,47 @@ public class EmailService {
 
     public void sendEmail(String to, String subject, String body) {
         if (apiKey == null || apiKey.trim().isEmpty()) {
-            System.err.println("ERROR: Resend API Key is missing!");
+            System.err.println("ERROR: Brevo API Key is missing!");
             return;
         }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(apiKey.trim());
+        headers.set("api-key", apiKey.trim());
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
-        // Building Resend JSON structure
+        // Building Brevo JSON structure (SMTP API v3)
         Map<String, Object> payload = new HashMap<>();
-        payload.put("from", fromEmail);
-        payload.put("to", Collections.singletonList(to));
+        
+        Map<String, String> sender = new HashMap<>();
+        sender.put("name", "MediSync Portal");
+        sender.put("email", senderEmail);
+        payload.put("sender", sender);
+
+        Map<String, String> recipient = new HashMap<>();
+        recipient.put("email", to);
+        payload.put("to", Collections.singletonList(recipient));
+
         payload.put("subject", subject);
-        // Resend prefers 'html' for better deliverability
-        payload.put("html", "<div style='font-family: sans-serif;'>" + body.replace("\n", "<br>") + "</div>");
-        payload.put("text", body);
+        // Brevo uses 'htmlContent' for HTML emails
+        payload.put("htmlContent", "<div style='font-family: sans-serif;'>" + body.replace("\n", "<br>") + "</div>");
+        payload.put("textContent", body);
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
 
         try {
-            System.out.println("DEBUG: Sending email via Resend to: " + to);
+            System.out.println("DEBUG: Sending email via Brevo to: " + to);
             ResponseEntity<String> response = restTemplate.postForEntity(apiUrl, request, String.class);
             if (response.getStatusCode().is2xxSuccessful()) {
-                System.out.println("SUCCESS: Email sent successfully via Resend. ID: " + response.getBody());
+                System.out.println("SUCCESS: Email sent via Brevo. Response: " + response.getBody());
             }
         } catch (HttpStatusCodeException e) {
             String errorBody = e.getResponseBodyAsString();
-            System.err.println("ERROR: Resend API failed: " + e.getStatusCode() + " - " + errorBody);
-            throw new RuntimeException("Email delivery failed via Resend: " + errorBody);
+            System.err.println("ERROR: Brevo API failed: " + e.getStatusCode() + " - " + errorBody);
+            throw new RuntimeException("Email delivery failed via Brevo: " + errorBody);
         } catch (Exception e) {
-            System.err.println("ERROR: Resend delivery failed: " + e.getMessage());
-            throw new RuntimeException("Email delivery failed via Resend: " + e.getMessage());
+            System.err.println("ERROR: Brevo delivery failed: " + e.getMessage());
+            throw new RuntimeException("Email delivery failed via Brevo: " + e.getMessage());
         }
     }
 
