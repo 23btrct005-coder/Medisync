@@ -41,9 +41,21 @@ public class AuthService {
     }
 
     @Transactional
-    public String initiatePasswordReset(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+    public String initiatePasswordReset(String input) {
+        User user = userRepository.findByUsername(input).orElse(null);
+
+        if (user == null && input.contains("@")) {
+            // Try searching by email in Patient and Doctor repositories
+            user = patientRepository.findByEmail(input)
+                    .map(Patient::getUser)
+                    .orElseGet(() -> doctorRepository.findByEmail(input)
+                            .map(Doctor::getUser)
+                            .orElse(null));
+        }
+
+        if (user == null) {
+            throw new RuntimeException("No account found with username or email: " + input);
+        }
 
         // Cleanly delete any existing tokens for this user before creating a new one
         tokenRepository.deleteByUserId(user.getId());
