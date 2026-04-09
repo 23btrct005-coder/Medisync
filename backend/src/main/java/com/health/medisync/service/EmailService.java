@@ -64,7 +64,7 @@ public class EmailService {
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
 
         try {
-            ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+            ResponseEntity<String> response = restTemplate.postForEntity(apiUrl, request, String.class);
             if (!response.getStatusCode().is2xxSuccessful()) {
                 throw new RuntimeException("Mailtrap API failed with status: " + response.getStatusCode() + " - " + response.getBody());
             }
