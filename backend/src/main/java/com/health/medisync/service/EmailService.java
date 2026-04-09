@@ -15,10 +15,10 @@ import java.util.Map;
 @Service
 public class EmailService {
 
-    @Value("${mailtrap.token}")
+    @Value("${mailtrap.token:}")
     private String apiToken;
 
-    @Value("${mailtrap.from.email}")
+    @Value("${mailtrap.from.email:}")
     private String fromEmail;
 
     private final RestTemplate restTemplate;
