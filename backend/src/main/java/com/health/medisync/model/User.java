@@ -20,6 +20,7 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+    private String role = "ROLE_PATIENT";
     private boolean enabled = false;
 
     public Long getId() { return id; }
