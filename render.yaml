@@ -8,15 +8,24 @@ services:
     region: singapore
     healthCheckPath: /api/auth/health
     envVars:
+      # ── Supabase PostgreSQL Connection ──
       - key: DB_URL
-        value: jdbc:h2:mem:medisync_db;MODE=MySQL;DB_CLOSE_DELAY=-1
+        value: jdbc:postgresql://db.ctrnxgdtjtllzdfoynwo.supabase.co:5432/postgres
+      - key: DB_DRIVER
+        value: org.postgresql.Driver
       - key: DB_USER
-        value: sa
+        value: postgres
       - key: DB_PASSWORD
-        value: password
+        sync: false   # Set this manually in Render dashboard — your Supabase DB password
+      # ── App Config ──
       - key: JWT_SECRET
         value: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
       - key: GROQ_API_KEY
         value: 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
       - key: SERVER_PORT
         value: "8080"
+      # ── Brevo Email ──
+      - key: BREVO_API_KEY
+        sync: false   # Set this manually in Render dashboard
+      - key: BREVO_SENDER_EMAIL
+        sync: false   # Set this manually in Render dashboard
