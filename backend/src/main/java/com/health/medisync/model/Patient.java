@@ -38,8 +38,22 @@ public class Patient {
     private String emergencyContactRelationship;
     private String emergencyContactPhone;
 
+    // General Medical Info
     @Column(columnDefinition = "TEXT")
     private String medicalInfo;
+
+    // ── Critical Medical Fields (for QR Emergency Card) ──
+    @Column(columnDefinition = "TEXT")
+    private String allergies;           // e.g. Penicillin, Sulfa drugs
+
+    @Column(columnDefinition = "TEXT")
+    private String existingDiseases;    // e.g. Diabetes Type 2, Hypertension
+
+    @Column(columnDefinition = "TEXT")
+    private String currentMedications;  // e.g. Metformin 500mg, Amlodipine 5mg
+
+    @Column(columnDefinition = "TEXT")
+    private String pastSurgeries;       // e.g. Appendectomy 2018, CABG 2021
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -49,7 +63,7 @@ public class Patient {
     )
     private Set<Doctor> doctors = new HashSet<>();
 
-    // Getters & Setters
+    // ── Getters & Setters ──
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -93,16 +107,28 @@ public class Patient {
     public void setPinCode(String pinCode) { this.pinCode = pinCode; }
 
     public String getEmergencyContactName() { return emergencyContactName; }
-    public void setEmergencyContactName(String emergencyContactName) { this.emergencyContactName = emergencyContactName; }
+    public void setEmergencyContactName(String v) { this.emergencyContactName = v; }
 
     public String getEmergencyContactRelationship() { return emergencyContactRelationship; }
-    public void setEmergencyContactRelationship(String emergencyContactRelationship) { this.emergencyContactRelationship = emergencyContactRelationship; }
+    public void setEmergencyContactRelationship(String v) { this.emergencyContactRelationship = v; }
 
     public String getEmergencyContactPhone() { return emergencyContactPhone; }
-    public void setEmergencyContactPhone(String emergencyContactPhone) { this.emergencyContactPhone = emergencyContactPhone; }
+    public void setEmergencyContactPhone(String v) { this.emergencyContactPhone = v; }
 
     public String getMedicalInfo() { return medicalInfo; }
     public void setMedicalInfo(String medicalInfo) { this.medicalInfo = medicalInfo; }
+
+    public String getAllergies() { return allergies; }
+    public void setAllergies(String allergies) { this.allergies = allergies; }
+
+    public String getExistingDiseases() { return existingDiseases; }
+    public void setExistingDiseases(String existingDiseases) { this.existingDiseases = existingDiseases; }
+
+    public String getCurrentMedications() { return currentMedications; }
+    public void setCurrentMedications(String currentMedications) { this.currentMedications = currentMedications; }
+
+    public String getPastSurgeries() { return pastSurgeries; }
+    public void setPastSurgeries(String pastSurgeries) { this.pastSurgeries = pastSurgeries; }
 
     public Set<Doctor> getDoctors() { return doctors; }
     public void setDoctors(Set<Doctor> doctors) { this.doctors = doctors; }

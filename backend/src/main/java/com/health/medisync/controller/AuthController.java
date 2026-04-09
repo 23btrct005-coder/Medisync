@@ -181,6 +181,10 @@ public class AuthController {
         patient.setEmergencyContactRelationship(request.get("emergencyContactRelationship"));
         patient.setEmergencyContactPhone(request.get("emergencyContactPhone"));
         patient.setBloodGroup(request.get("bloodGroup"));
+        patient.setAllergies(request.get("allergies"));
+        patient.setExistingDiseases(request.get("existingDiseases"));
+        patient.setCurrentMedications(request.get("currentMedications"));
+        patient.setPastSurgeries(request.get("pastSurgeries"));
 
         // Auto-calculate age from DOB if age not directly provided
         if (request.containsKey("age") && request.get("age") != null && !request.get("age").isEmpty()) {
@@ -273,5 +277,30 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("message", "Cleanup failed: " + e.getMessage()));
         }
+    }
+
+    // ── PUBLIC Emergency Info Endpoint (no auth required — for QR scanning) ──
+    @GetMapping("/emergency/{patientId}")
+    public ResponseEntity<?> getEmergencyInfo(@PathVariable Long patientId) {
+        return patientRepository.findById(patientId)
+            .map(patient -> {
+                Map<String, Object> info = new java.util.LinkedHashMap<>();
+                info.put("id", patient.getId());
+                info.put("name", patient.getName());
+                info.put("age", patient.getAge());
+                info.put("gender", patient.getGender());
+                info.put("bloodGroup", patient.getBloodGroup());
+                info.put("dateOfBirth", patient.getDateOfBirth());
+                info.put("emergencyContactName", patient.getEmergencyContactName());
+                info.put("emergencyContactRelationship", patient.getEmergencyContactRelationship());
+                info.put("emergencyContactPhone", patient.getEmergencyContactPhone());
+                info.put("allergies", patient.getAllergies());
+                info.put("existingDiseases", patient.getExistingDiseases());
+                info.put("currentMedications", patient.getCurrentMedications());
+                info.put("pastSurgeries", patient.getPastSurgeries());
+                info.put("medicalInfo", patient.getMedicalInfo());
+                return ResponseEntity.ok(info);
+            })
+            .orElse(ResponseEntity.notFound().build());
     }
 }

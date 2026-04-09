@@ -1,12 +1,46 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Users, FileStack, Stethoscope, AlertCircle } from 'lucide-react';
+import { Users, FileStack, Stethoscope, AlertCircle, QrCode, X, Camera } from 'lucide-react';
 import api from '../api/axiosConfig';
+import { Html5QrcodeScanner } from 'html5-qrcode';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const DoctorDashboard = () => {
   const { user } = useAuth();
   const [patientEmail, setPatientEmail] = useState('');
   const [sending, setSending] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    let scanner = null;
+    if (showScanner) {
+      scanner = new Html5QrcodeScanner('qr-reader', {
+        fps: 10,
+        qrbox: { width: 250, height: 250 },
+      }, false);
+
+      scanner.render((decodedText) => {
+        // Extract ID from URL if necessary
+        const parts = decodedText.split('/');
+        const patientId = parts[parts.length - 1];
+        if (patientId && !isNaN(patientId)) {
+          scanner.clear();
+          setShowScanner(false);
+          // Navigate to the emergency page (public)
+          navigate(`/emergency/${patientId}`);
+        }
+      }, (error) => {
+        // console.warn(error);
+      });
+    }
+    return () => {
+      if (scanner) {
+        scanner.clear().catch(e => console.error("Failed to clear scanner", e));
+      }
+    };
+  }, [showScanner, navigate]);
 
   const handleSendRequest = async () => {
     if(!patientEmail) return;
@@ -78,6 +112,45 @@ const DoctorDashboard = () => {
             Reports dynamically uploaded from Patient portals are now integrated via the Supabase proxy. Navigate to the Directory to view individual patient reports and profiles.
          </p>
       </div>
+
+      {/* Floating QR Scan Button */}
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[90]">
+        <button 
+          onClick={() => setShowScanner(true)}
+          className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white font-black px-8 py-4 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border-2 border-white/20 transition-all hover:scale-105 active:scale-95 group"
+        >
+          <Camera size={24} className="group-hover:rotate-12 transition-transform" />
+          SCAN EMERGENCY QR
+        </button>
+      </div>
+
+      {/* Scanner Modal */}
+      {showScanner && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-300">
+           <div className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl relative animate-in zoom-in-95 duration-300 border border-slate-100 overflow-hidden">
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center">
+                    <QrCode size={24} />
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-800">Scanner Ready</h3>
+                </div>
+                <button 
+                  onClick={() => setShowScanner(false)}
+                  className="p-2 text-slate-400 hover:text-slate-600 transition hover:bg-slate-100 rounded-full"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div id="qr-reader" className="overflow-hidden rounded-2xl border-4 border-emerald-50 bg-slate-50"></div>
+              
+              <div className="mt-6 text-center text-sm text-slate-500 font-medium pb-2">
+                Focus the patient's QR code within the frame to access critical data instantly.
+              </div>
+           </div>
+        </div>
+      )}
     </div>
   );
 };

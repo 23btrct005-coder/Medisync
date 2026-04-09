@@ -17,6 +17,7 @@ import PatientManager from './pages/PatientManager';
 import DoctorProfile from './pages/DoctorProfile';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import EmergencyInfo from './pages/EmergencyInfo';
 
 const ProtectedRoute = ({ children, allowedRole }) => {
   const { user, userRole, loading } = useAuth();
@@ -38,6 +39,7 @@ function App() {
           <Route path="/doctor-login" element={<DoctorLogin />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/emergency/:patientId" element={<EmergencyInfo />} />
           
           {/* Patient Routes */}
           <Route path="/" element={

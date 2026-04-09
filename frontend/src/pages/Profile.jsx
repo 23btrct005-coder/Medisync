@@ -1,7 +1,9 @@
 import { useAuth } from '../context/AuthContext';
+import QRCode from 'react-qr-code';
 import {
   UserCircle, Mail, Phone, MapPin, Droplet, Calendar,
-  Activity, AlertCircle, Heart, ShieldCheck, Users
+  Activity, AlertCircle, Heart, ShieldCheck, Users,
+  AlertTriangle, Pill, Stethoscope, Scissors, Download, QrCode
 } from 'lucide-react';
 
 const InfoRow = ({ icon: Icon, label, value, color = 'text-primary-500' }) => (
@@ -41,6 +43,21 @@ const Profile = () => {
   );
 
   const initials = user.name?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'P';
+  const emergencyUrl = `${window.location.origin}/emergency/${user.id}`;
+
+  const handleDownloadQR = () => {
+    const svg = document.getElementById('patient-qr-svg');
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement('canvas');
+    canvas.width = 300; canvas.height = 300;
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.onload = () => { ctx.drawImage(img, 0, 0); canvas.toBlob(blob => {
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = `medisync-qr-${user.name?.replace(' ','_')}.png`; a.click();
+    }); };
+    img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12">
@@ -106,18 +123,84 @@ const Profile = () => {
           <InfoRow icon={Phone} label="Phone Number" value={user.emergencyContactPhone} color="text-red-400" />
         </Section>
 
-        {/* Medical Info */}
-        <Section title="Medical Information" icon={ShieldCheck}>
-          <InfoRow icon={Droplet} label="Blood Group" value={user.bloodGroup} color="text-red-500" />
+        {/* Critical Medical Sections */}
+        <Section title="Known Allergies" icon={AlertTriangle}>
           <div className="py-3">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Known Conditions / Allergies</p>
-            <p className="text-sm text-slate-700 leading-relaxed bg-slate-50 rounded-xl p-3">
-              {user.medicalInfo || <span className="text-slate-300">No medical info added</span>}
+            <p className="text-sm text-slate-700 leading-relaxed bg-red-50 rounded-xl p-3 border border-red-100">
+              {user.allergies || <span className="text-slate-300">None reported</span>}
+            </p>
+          </div>
+        </Section>
+
+        <Section title="Existing Medical Conditions" icon={Stethoscope}>
+          <div className="py-3">
+            <p className="text-sm text-slate-700 leading-relaxed bg-orange-50 rounded-xl p-3 border border-orange-100">
+              {user.existingDiseases || <span className="text-slate-300">None reported</span>}
+            </p>
+          </div>
+        </Section>
+
+        <Section title="Current Medications" icon={Pill}>
+          <div className="py-3">
+            <p className="text-sm text-slate-700 leading-relaxed bg-blue-50 rounded-xl p-3 border border-blue-100">
+              {user.currentMedications || <span className="text-slate-300">None reported</span>}
+            </p>
+          </div>
+        </Section>
+
+        <Section title="Past Major Surgeries" icon={Scissors}>
+          <div className="py-3">
+            <p className="text-sm text-slate-700 leading-relaxed bg-purple-50 rounded-xl p-3 border border-purple-100">
+              {user.pastSurgeries || <span className="text-slate-300">None reported</span>}
             </p>
           </div>
         </Section>
 
       </div>
+
+      {/* ── QR Emergency Card ── */}
+      {user.id && (
+        <div className="bg-gradient-to-br from-red-900 to-red-700 rounded-3xl p-8 text-white shadow-2xl">
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            <div className="shrink-0 text-center">
+              <div className="bg-white p-4 rounded-2xl shadow-xl inline-block">
+                <QRCode
+                  id="patient-qr-svg"
+                  value={emergencyUrl}
+                  size={160}
+                  bgColor="#ffffff"
+                  fgColor="#991b1b"
+                  level="H"
+                />
+              </div>
+              <button onClick={handleDownloadQR}
+                className="mt-3 flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-4 py-2 rounded-xl transition active:scale-95 mx-auto">
+                <Download size={14} /> Download QR
+              </button>
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <QrCode size={20} className="text-red-300" />
+                <h3 className="text-xl font-extrabold">Your Emergency Medical QR</h3>
+              </div>
+              <p className="text-red-200 text-sm leading-relaxed mb-4">
+                This unique QR code contains your critical medical information. In an emergency, any doctor or paramedic can scan this to instantly access:
+              </p>
+              <ul className="space-y-1.5 text-sm text-red-100">
+                <li className="flex items-center gap-2"><span className="text-yellow-300">🩸</span> Blood Group & Age</li>
+                <li className="flex items-center gap-2"><span className="text-yellow-300">📞</span> Emergency Contact</li>
+                <li className="flex items-center gap-2"><span className="text-yellow-300">⚠️</span> Known Allergies</li>
+                <li className="flex items-center gap-2"><span className="text-yellow-300">💊</span> Current Medications</li>
+                <li className="flex items-center gap-2"><span className="text-yellow-300">🏥</span> Existing Conditions & Past Surgeries</li>
+              </ul>
+              <p className="text-xs text-red-300 mt-4 font-medium">
+                💡 Print this QR and keep it in your wallet or on your phone's lock screen.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
