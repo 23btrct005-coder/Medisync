@@ -21,7 +21,7 @@ public class MedisyncApplication {
 
     public static void main(String[] args) {
         // [STARTUP DIAGNOSTIC] - Check Environment BEFORE Spring context starts
-        String rawUrl = System.getenv("DB_URL");
+        String rawUrl = System.getenv("SPRING_DATASOURCE_URL");
         String port = System.getenv("PORT");
         System.out.println("=================================================");
         System.out.println("[DIAGNOSTIC] JVM Started");

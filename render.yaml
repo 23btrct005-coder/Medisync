@@ -9,14 +9,14 @@ services:
     healthCheckPath: /api/auth/health
     envVars:
       # ── Supabase PostgreSQL Connection ──
-      - key: DB_URL
+      - key: SPRING_DATASOURCE_URL
         value: jdbc:postgresql://db.ctrnxgdtjtllzdfoynwo.supabase.co:6543/postgres?ssl=true&sslmode=require&sslfactory=org.postgresql.ssl.NonValidatingFactory
-      - key: DB_DRIVER
+      - key: SPRING_DATASOURCE_DRIVER_CLASS_NAME
         value: org.postgresql.Driver
-      - key: DB_USER
+      - key: SPRING_DATASOURCE_USERNAME
         value: postgres
-      - key: DB_PASSWORD
-        sync: false   # Set this manually in Render dashboard — your Supabase DB password
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false   # Set this manually in Render dashboard
       # ── App Config ──
       - key: JWT_SECRET
         value: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
