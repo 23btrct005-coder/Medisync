@@ -17,7 +17,12 @@ package com.health.medisync.config;
          UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
          CorsConfiguration config = new CorsConfiguration();
          config.setAllowCredentials(true);
-         config.addAllowedOriginPattern("*");
+         config.setAllowedOrigins(Arrays.asList(
+             "http://localhost:5173",
+             "http://localhost:3000",
+             "https://medisync-react.vercel.app",
+             "https://medisync-qvd6.onrender.com"
+         ));
          config.setAllowedHeaders(Arrays.asList(
              "Authorization", 
              "Cache-Control", 
