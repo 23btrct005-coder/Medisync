@@ -77,25 +77,37 @@ const ForgotPassword = () => {
                 <CheckCircle size={48} />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-800">Check Your Console</h3>
+                <h3 className="text-lg font-bold text-slate-800">Check Your Inbox</h3>
                 <p className="text-slate-500 mt-2">
-                  A verification link has been simulated. In a production environment, an email would be sent.
+                  If an account exists for <span className="font-semibold text-slate-700">{username}</span>, 
+                  a password reset link has been sent to the registered email address.
                 </p>
               </div>
               
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 text-left">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Simulated Reset Link</p>
-                <Link 
-                  to={`/reset-password?token=${simulatedToken}`} 
-                  className="text-primary-600 hover:underline font-mono text-xs break-all"
-                >
-                  http://localhost:5173/reset-password?token={simulatedToken}
-                </Link>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Important</p>
+                <p className="text-[11px] text-slate-500 leading-relaxed">
+                  The link will expire in 30 minutes. If you don't see it, check your spam folder or ensure your backend email settings are configured on Render.
+                </p>
               </div>
 
-              <p className="text-sm text-slate-500">
-                Found the link? Click it above to reset your password.
-              </p>
+              {/* Keep the simulated link for easier testing during development */}
+              <details className="text-left">
+                <summary className="text-xs text-slate-400 cursor-pointer hover:text-slate-600 transition-colors">
+                  Technical Debug Details (Hide for Lab Environment)
+                </summary>
+                <div className="mt-2 p-3 bg-slate-100 rounded-lg border border-slate-200">
+                  <p className="text-[10px] font-mono text-slate-600 break-all">
+                    Reset Token: {simulatedToken}
+                  </p>
+                  <Link 
+                    to={`/reset-password?token=${simulatedToken}`} 
+                    className="text-primary-600 hover:underline font-mono text-[10px] mt-1 block"
+                  >
+                    Direct Reset URL &rarr;
+                  </Link>
+                </div>
+              </details>
             </div>
           )}
 

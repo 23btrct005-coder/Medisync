@@ -1,12 +1,18 @@
 package com.health.medisync.service;
 
+import com.health.medisync.model.Patient;
+import com.health.medisync.model.Doctor;
 import com.health.medisync.model.PasswordResetToken;
 import com.health.medisync.model.User;
 import com.health.medisync.repository.PasswordResetTokenRepository;
 import com.health.medisync.repository.UserRepository;
+import com.health.medisync.repository.PatientRepository;
+import com.health.medisync.repository.DoctorRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 import java.util.UUID;
 
@@ -16,13 +22,22 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
+    private final PatientRepository patientRepository;
+    private final DoctorRepository doctorRepository;
 
     public AuthService(UserRepository userRepository, 
                        PasswordResetTokenRepository tokenRepository, 
-                       PasswordEncoder passwordEncoder) {
+                       PasswordEncoder passwordEncoder,
+                       EmailService emailService,
+                       PatientRepository patientRepository,
+                       DoctorRepository doctorRepository) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
+        this.patientRepository = patientRepository;
+        this.doctorRepository = doctorRepository;
     }
 
     @Transactional
@@ -38,8 +53,30 @@ public class AuthService {
         PasswordResetToken resetToken = new PasswordResetToken(token, user, 30); // 30 mins expiry
         tokenRepository.save(resetToken);
 
-        // Simulation: In a real app, send email here.
-        System.out.println("DEBUG: Password reset link: http://localhost:5173/reset-password?token=" + token);
+        // Fetch the user's email based on their role to send a real link
+        String userEmail = null;
+        if ("ROLE_PATIENT".equals(user.getRole())) {
+            userEmail = patientRepository.findByUserId(user.getId())
+                .map(Patient::getEmail)
+                .orElse(null);
+        } else if ("ROLE_DOCTOR".equals(user.getRole())) {
+            userEmail = doctorRepository.findByUserId(user.getId())
+                .map(Doctor::getEmail)
+                .orElse(null);
+        }
+
+        if (userEmail != null) {
+            System.out.println("DEBUG: Sending real password reset email to: " + userEmail);
+            try {
+                emailService.sendPasswordResetEmail(userEmail, token);
+            } catch (Exception e) {
+                System.err.println("CRITICAL: Failed to send email to " + userEmail + ". Error: " + e.getMessage());
+                // We still return the token in simulation mode or just error out. 
+                // For now, we'll log it and let the token be returned for manual testing if needed.
+            }
+        } else {
+            System.err.println("WARNING: No email associated with user: " + username);
+        }
         
         return token;
     }
