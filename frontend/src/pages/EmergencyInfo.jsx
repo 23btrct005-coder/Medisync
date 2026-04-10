@@ -79,6 +79,7 @@ const EmergencyInfo = () => {
     setRequesting(true);
     setRequestError('');
     try {
+      console.log(`Requesting access for patient ID: ${patientId}`);
       await api.post('/doctor/request-access', { patientId: Number(patientId) });
       setRequestSuccess(true);
     } catch (err) {

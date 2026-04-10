@@ -9,5 +9,6 @@ import java.util.Optional;
 
 public interface AccessRequestRepository extends JpaRepository<AccessRequest, Long> {
     List<AccessRequest> findByPatientAndStatus(Patient patient, String status);
+    List<AccessRequest> findByDoctor(Doctor doctor);
     Optional<AccessRequest> findByDoctorAndPatient(Doctor doctor, Patient patient);
 }

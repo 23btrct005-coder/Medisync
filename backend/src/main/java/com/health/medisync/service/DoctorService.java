@@ -89,6 +89,11 @@ public class DoctorService {
         return reportRepository.findByPatientId(patientId);
     }
 
+    public List<AccessRequest> getDoctorRequests(String doctorUsername) {
+        Doctor doctor = getDoctorProfile(doctorUsername);
+        return accessRequestRepository.findByDoctor(doctor);
+    }
+
     public MedicalRecord addMedicalRecord(String doctorUsername, Long patientId, MedicalRecordRequest request) {
         Doctor doctor = getDoctorProfile(doctorUsername);
         Patient patient = getPatientById(patientId);

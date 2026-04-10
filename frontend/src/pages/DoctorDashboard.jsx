@@ -11,7 +11,21 @@ const DoctorDashboard = () => {
   const [patientEmail, setPatientEmail] = useState('');
   const [sending, setSending] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
+  const [requests, setRequests] = useState([]);
   const navigate = useNavigate();
+ 
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+ 
+  const fetchRequests = async () => {
+    try {
+      const res = await api.get('/doctor/requests');
+      setRequests(res.data || []);
+    } catch (err) {
+      console.error("Failed to fetch doctor requests", err);
+    }
+  };
 
   useEffect(() => {
     let scanner = null;
@@ -105,12 +119,48 @@ const DoctorDashboard = () => {
         </div>
       </div>
       
-      <div className="flex-1 min-h-[300px] mt-6 bg-white border border-slate-200 rounded-2xl flex flex-col items-center justify-center text-center p-8 shadow-sm relative overflow-hidden">
-         <div className="absolute top-0 right-0 p-4 opacity-5"><AlertCircle size={200} /></div>
-         <h3 className="text-xl font-semibold text-slate-700 z-10">Cross-Platform Sync Established</h3>
-         <p className="text-slate-500 max-w-lg mt-2 z-10">
-            Reports dynamically uploaded from Patient portals are now integrated via the Supabase proxy. Navigate to the Directory to view individual patient reports and profiles.
-         </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        <div className="bg-white border border-slate-200 rounded-2xl flex flex-col p-6 shadow-sm relative overflow-hidden h-full">
+           <div className="flex items-center gap-2 mb-4">
+              <QrCode size={20} className="text-emerald-500" />
+              <h3 className="text-lg font-bold text-slate-800">Sent Access Requests</h3>
+           </div>
+           
+           {requests.length === 0 ? (
+             <div className="flex-1 flex flex-col items-center justify-center text-center py-4">
+                <AlertCircle size={40} className="text-slate-200 mb-2" />
+                <p className="text-slate-400 text-sm">No pending requests sent yet.</p>
+             </div>
+           ) : (
+             <div className="space-y-3 overflow-y-auto max-h-[180px] pr-1">
+                {requests.map(req => (
+                  <div key={req.id} className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-slate-800 truncate">Patient: {req.patient?.name || 'Unknown'}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{req.patient?.email}</p>
+                    </div>
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                      req.status === 'PENDING' ? 'bg-amber-100 text-amber-700' : 
+                      req.status === 'ACCEPTED' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                    }`}>
+                      {req.status}
+                    </span>
+                  </div>
+                ))}
+             </div>
+           )}
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-2xl flex flex-col p-6 shadow-sm relative overflow-hidden h-full">
+           <div className="absolute top-0 right-0 p-4 opacity-5"><AlertCircle size={120} /></div>
+           <h3 className="text-xl font-bold text-slate-800 mb-2">Sync Status</h3>
+           <p className="text-slate-500 text-sm leading-relaxed">
+              Reports dynamically uploaded from Patient portals are now integrated via the Supabase proxy. Navigate to the Directory to view individual patient reports and profiles.
+           </p>
+           <a href="/doctor-dashboard/patients" className="mt-auto pt-4 text-emerald-600 text-sm font-bold flex items-center gap-1 hover:gap-2 transition-all">
+              Go to Patient Directory &rarr;
+           </a>
+        </div>
       </div>
 
       {/* Floating QR Scan Button */}

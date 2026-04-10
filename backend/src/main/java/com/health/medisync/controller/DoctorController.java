@@ -57,11 +57,22 @@ public class DoctorController {
         return ResponseEntity.ok(doctorService.addMedicalRecord(username, id, request));
     }
 
+    @GetMapping("/requests")
+    public ResponseEntity<List<AccessRequest>> getMyRequests(Authentication authentication) {
+        return ResponseEntity.ok(doctorService.getDoctorRequests(authentication.getName()));
+    }
+
     @PostMapping("/request-access")
     public ResponseEntity<?> requestAccess(@RequestBody Map<String, Object> request, Authentication authentication) {
         try {
             if (request.containsKey("patientId")) {
-                Long patientId = Long.valueOf(request.get("patientId").toString());
+                Object pIdObj = request.get("patientId");
+                Long patientId;
+                if (pIdObj instanceof Number) {
+                    patientId = ((Number) pIdObj).longValue();
+                } else {
+                    patientId = Long.valueOf(pIdObj.toString().split("\\.")[0]);
+                }
                 doctorService.requestAccess(authentication.getName(), patientId);
             } else {
                 String patientEmail = (String) request.get("patientEmail");
