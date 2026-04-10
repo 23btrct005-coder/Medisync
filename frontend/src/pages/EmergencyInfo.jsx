@@ -49,22 +49,22 @@ const EmergencyInfo = () => {
   const navigate = useNavigate();
   const { userRole, user: currentUser } = useAuth();
   const [patient, setPatient] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [requesting, setRequesting] = useState(false);
+  const [requestSuccess, setRequestSuccess] = useState(false);
+  const [requestError, setRequestError] = useState('');
 
-  useEffect(() => {
-    const fetchEmergencyInfo = async () => {
-      try {
-        const res = await api.get(`/auth/emergency/${patientId}`);
-        setPatient(res.data);
-      } catch (err) {
-        setError('Patient not found or information unavailable.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchEmergencyInfo();
-  }, [patientId]);
+  const handleRequestAccess = async () => {
+    setRequesting(true);
+    setRequestError('');
+    try {
+      await api.post('/api/doctor/request-access', { patientId: Number(patientId) });
+      setRequestSuccess(true);
+    } catch (err) {
+      setRequestError(err.response?.data?.message || 'Failed to send request. You might already have access or a pending request.');
+    } finally {
+      setRequesting(false);
+    }
+  };
 
   if (loading) return (
     <div className="min-h-screen bg-red-50 flex items-center justify-center">
@@ -83,7 +83,7 @@ const EmergencyInfo = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-900 via-red-800 to-red-700 py-0">
+    <div className="min-h-screen bg-gradient-to-br from-red-900 via-red-800 to-red-700 py-0 font-sans">
       {/* Emergency Header Banner */}
       <div className="bg-red-600 px-6 py-4 text-center shadow-lg">
         <div className="flex items-center justify-center gap-3">
@@ -96,7 +96,7 @@ const EmergencyInfo = () => {
         </p>
       </div>
 
-      <div className="max-w-lg mx-auto px-4 py-6 space-y-4">
+      <div className="max-w-lg mx-auto px-4 py-6 space-y-4 pb-12">
 
         {/* Identity Card */}
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-red-400">
@@ -225,22 +225,44 @@ const EmergencyInfo = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 mt-8">
            <div className="flex flex-col items-center text-center">
               <Lock size={24} className="text-red-300 mb-2" />
-              <h4 className="text-white font-bold">Authorized Medical Access</h4>
-              <p className="text-red-100 text-sm mt-1 mb-4">Are you an attending physician? Log in to access full clinical history and reports.</p>
+              <h4 className="text-white font-bold tracking-tight">Authorized Medical Access</h4>
+              <p className="text-red-100 text-sm mt-1 mb-5">Physician? Request full access to view clinical history, lab reports, and full profile.</p>
               
+              {requestError && (
+                <div className="w-full mb-4 p-3 bg-red-900/50 border border-red-400/30 rounded-xl text-red-100 text-xs text-left flex items-start gap-2">
+                   <AlertTriangle size={14} className="shrink-0 mt-0.5 text-red-300" />
+                   {requestError}
+                </div>
+              )}
+
               {userRole === 'ROLE_DOCTOR' ? (
                 <button 
-                  onClick={() => navigate(`/doctor-dashboard/patients/${patientId}`)}
-                  className="w-full bg-white text-red-700 font-black py-3 rounded-2xl flex items-center justify-center gap-2 hover:bg-red-50 transition active:scale-95"
+                  onClick={handleRequestAccess}
+                  disabled={requesting || requestSuccess}
+                  className={`w-full ${requestSuccess ? 'bg-green-500 text-white' : 'bg-white text-red-700'} font-black py-4 rounded-2xl flex items-center justify-center gap-3 shadow-xl transition-all duration-300 active:scale-95 disabled:opacity-80 disabled:active:scale-100`}
                 >
-                  Access Full Records <ArrowRight size={18} />
+                  {requesting ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-red-700/30 border-t-red-700 rounded-full animate-spin" />
+                      Processing Request...
+                    </>
+                  ) : requestSuccess ? (
+                    <>
+                      <CheckCircle size={22} className="animate-in zoom-in duration-300" />
+                      Request Sent to Patient
+                    </>
+                  ) : (
+                    <>
+                      Request Full Access <ArrowRight size={20} />
+                    </>
+                  )}
                 </button>
               ) : (
                 <button 
                   onClick={() => navigate('/doctor-login')}
-                  className="w-full bg-red-600 border border-red-400 text-white font-black py-3 rounded-2xl flex items-center justify-center gap-2 hover:bg-red-500 transition active:scale-95"
+                  className="w-full bg-red-600 border border-white/20 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-red-500 transition shadow-xl active:scale-95"
                 >
-                  Doctor Login <ArrowRight size={18} />
+                  Physician Login <ArrowRight size={20} />
                 </button>
               )}
            </div>

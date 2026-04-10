@@ -55,11 +55,20 @@ public class DoctorService {
         Doctor doctor = getDoctorProfile(doctorUsername);
         Patient patient = patientRepository.findByEmail(patientEmail)
             .orElseThrow(() -> new RuntimeException("Patient with email " + patientEmail + " not found"));
+        createAccessRequest(doctor, patient);
+    }
 
+    public void requestAccess(String doctorUsername, Long patientId) {
+        Doctor doctor = getDoctorProfile(doctorUsername);
+        Patient patient = patientRepository.findById(patientId)
+            .orElseThrow(() -> new RuntimeException("Patient not found"));
+        createAccessRequest(doctor, patient);
+    }
+
+    private void createAccessRequest(Doctor doctor, Patient patient) {
         if (accessRequestRepository.findByDoctorAndPatient(doctor, patient).isPresent()) {
             throw new RuntimeException("Request already exists");
         }
-
         AccessRequest req = new AccessRequest();
         req.setDoctor(doctor);
         req.setPatient(patient);

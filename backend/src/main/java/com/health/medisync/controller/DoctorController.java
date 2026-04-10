@@ -58,10 +58,15 @@ public class DoctorController {
     }
 
     @PostMapping("/request-access")
-    public ResponseEntity<?> requestAccess(@RequestBody Map<String, String> request, Authentication authentication) {
+    public ResponseEntity<?> requestAccess(@RequestBody Map<String, Object> request, Authentication authentication) {
         try {
-            String patientEmail = request.get("patientEmail");
-            doctorService.requestAccess(authentication.getName(), patientEmail);
+            if (request.containsKey("patientId")) {
+                Long patientId = Long.valueOf(request.get("patientId").toString());
+                doctorService.requestAccess(authentication.getName(), patientId);
+            } else {
+                String patientEmail = (String) request.get("patientEmail");
+                doctorService.requestAccess(authentication.getName(), patientEmail);
+            }
             return ResponseEntity.ok(Map.of("message", "Request sent successfully"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
