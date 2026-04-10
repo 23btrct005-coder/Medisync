@@ -5,6 +5,7 @@ import com.health.medisync.model.Patient;
 import com.health.medisync.model.MedicalRecord;
 import com.health.medisync.model.MedicalRecordRequest;
 import com.health.medisync.model.Report;
+import com.health.medisync.model.AccessRequest;
 import com.health.medisync.service.DoctorService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
