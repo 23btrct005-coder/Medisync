@@ -19,13 +19,14 @@ public class MedisyncApplication {
         // [STARTUP DIAGNOSTIC] - Check Environment BEFORE Spring context starts
         String springUrl = System.getenv("SPRING_DATASOURCE_URL");
         String legacyUrl = System.getenv("DB_URL");
+        String dbUser = System.getenv("SPRING_DATASOURCE_USERNAME");
         String dbPass = System.getenv("SPRING_DATASOURCE_PASSWORD");
         String port = System.getenv("PORT");
 
         System.out.println("=================================================");
         System.out.println("[DIAGNOSTIC] JVM Started");
         System.out.println("[DIAGNOSTIC] SPRING_DATASOURCE_URL: " + maskPassword(springUrl));
-        System.out.println("[DIAGNOSTIC] Legacy DB_URL: " + maskPassword(legacyUrl));
+        System.out.println("[DIAGNOSTIC] DB_USER: " + dbUser);
         System.out.println("[DIAGNOSTIC] DB_PASSWORD Set: " + (dbPass != null && !dbPass.isEmpty() ? "YES" : "NO"));
         System.out.println("[DIAGNOSTIC] Port (env): " + port);
         System.out.println("=================================================");
