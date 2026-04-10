@@ -25,9 +25,9 @@ public class MedisyncApplication {
 
         System.out.println("=================================================");
         System.out.println("[DIAGNOSTIC] JVM Started");
+        System.out.println("[DIAGNOSTIC] IDENTITY forced: postgres.ctrnxgdtjtllzdfoynwo");
         System.out.println("[DIAGNOSTIC] SPRING_DATASOURCE_URL: " + maskPassword(springUrl));
-        System.out.println("[DIAGNOSTIC] DB_USER: " + dbUser);
-        System.out.println("[DIAGNOSTIC] DB_PASSWORD Set: " + (dbPass != null && !dbPass.isEmpty() ? "YES" : "NO"));
+        System.out.println("[DIAGNOSTIC] DB_USER env: " + dbUser);
         System.out.println("[DIAGNOSTIC] Port (env): " + port);
         System.out.println("=================================================");
         System.out.flush(); // Force Render to show logs immediately
