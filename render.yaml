@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: medisync-backend
+    name: medisync-f87y
     env: docker
     dockerContext: ./backend
     dockerfilePath: Dockerfile
