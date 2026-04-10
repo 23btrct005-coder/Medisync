@@ -7,7 +7,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 
+import org.springframework.context.annotation.Profile;
+
 @Component
+@Profile("local")
 public class DataSeeder implements CommandLineRunner {
 
     private final UserRepository userRepository;
