@@ -10,13 +10,9 @@ services:
     envVars:
       # ── Supabase PostgreSQL Connection ──
       - key: SPRING_DATASOURCE_URL
-        value: jdbc:postgresql://aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?ssl=true&sslmode=require&sslfactory=org.postgresql.ssl.NonValidatingFactory
+        value: jdbc:postgresql://aws-1-ap-south-1.pooler.supabase.com:5432/postgres?user=postgres.bwjmzottkkxrdztqqeju&password=Medisync123&ssl=true&sslmode=require&sslfactory=org.postgresql.ssl.NonValidatingFactory
       - key: SPRING_DATASOURCE_DRIVER_CLASS_NAME
         value: org.postgresql.Driver
-      - key: SPRING_DATASOURCE_USERNAME
-        value: postgres.ctrnxgdtjtllzdfoynwo
-      - key: SPRING_DATASOURCE_PASSWORD
-        sync: false   # Set this manually in Render dashboard
       # ── App Config ──
       - key: JWT_SECRET
         value: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970

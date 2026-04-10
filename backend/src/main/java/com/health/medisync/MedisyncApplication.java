@@ -25,7 +25,8 @@ public class MedisyncApplication {
 
         System.out.println("=================================================");
         System.out.println("[DIAGNOSTIC] JVM Started");
-        System.out.println("[DIAGNOSTIC] IDENTITY forced: postgres.ctrnxgdtjtllzdfoynwo");
+        System.out.println("[DIAGNOSTIC] FINAL MATCH: Mumbai aws-1 (3.111.225.200)");
+        System.out.println("[DIAGNOSTIC] PROJECT: bwjmzottkkxrdztqqeju");
         System.out.println("[DIAGNOSTIC] SPRING_DATASOURCE_URL: " + maskPassword(springUrl));
         System.out.println("[DIAGNOSTIC] DB_USER env: " + dbUser);
         System.out.println("[DIAGNOSTIC] Port (env): " + port);
