@@ -6,7 +6,7 @@ import api from '../api/axiosConfig';
 import {
   AlertTriangle, Droplet, User, Phone, Heart,
   Pill, Stethoscope, Scissors, Activity, Shield, Calendar, Users,
-  ArrowRight, Lock
+  CheckCircle, ArrowRight, Lock
 } from 'lucide-react';
 
 const Badge = ({ color, children }) => {
@@ -49,15 +49,37 @@ const EmergencyInfo = () => {
   const navigate = useNavigate();
   const { userRole, user: currentUser } = useAuth();
   const [patient, setPatient] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [requesting, setRequesting] = useState(false);
   const [requestSuccess, setRequestSuccess] = useState(false);
   const [requestError, setRequestError] = useState('');
+
+  useEffect(() => {
+    const fetchPatientData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await api.get(`/auth/emergency/${patientId}`);
+        setPatient(res.data);
+      } catch (err) {
+        console.error("Critical patient data fetch failed", err);
+        setError('Critical patient data could not be retrieved. Ensure the QR code is valid.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (patientId) {
+      fetchPatientData();
+    }
+  }, [patientId]);
 
   const handleRequestAccess = async () => {
     setRequesting(true);
     setRequestError('');
     try {
-      await api.post('/api/doctor/request-access', { patientId: Number(patientId) });
+      await api.post('/doctor/request-access', { patientId: Number(patientId) });
       setRequestSuccess(true);
     } catch (err) {
       setRequestError(err.response?.data?.message || 'Failed to send request. You might already have access or a pending request.');
