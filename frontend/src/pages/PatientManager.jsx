@@ -425,14 +425,37 @@ const PatientManager = () => {
                     {downloadingId === r.id ? 'Downloading...' : 'Download'}
                   </button>
                 </div>
-                <div className="p-6">
-                  <h4 className="text-xs font-extrabold text-indigo-600 mb-3 uppercase tracking-widest flex items-center gap-1.5">
-                    ✨ Groq AI Analysis
-                  </h4>
-                  {r.aiSummary
-                    ? <pre className="font-sans whitespace-pre-wrap leading-relaxed text-slate-700 text-sm">{r.aiSummary}</pre>
-                    : <p className="italic text-slate-400 text-sm">No AI analysis generated for this document.</p>
-                  }
+                <div className="p-6 divide-y divide-slate-100">
+                  <div className="pb-5">
+                    <h4 className="text-xs font-extrabold text-indigo-600 mb-3 uppercase tracking-widest flex items-center gap-1.5">
+                      ✨ Groq AI Context Summary
+                    </h4>
+                    {r.aiSummary
+                      ? <pre className="font-sans whitespace-pre-wrap leading-relaxed text-slate-700 text-sm">{r.aiSummary}</pre>
+                      : <p className="italic text-slate-400 text-sm">No clinical summary generated for this document.</p>
+                    }
+                  </div>
+
+                  {r.monaiDiagnosis && (
+                    <div className="pt-5">
+                      <h4 className="text-xs font-extrabold text-emerald-600 mb-3 uppercase tracking-widest flex items-center gap-1.5">
+                        🧬 MONAI Vision Diagnostic
+                      </h4>
+                      <div className="flex flex-wrap gap-4 items-center">
+                        <div className="bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-xl">
+                          <p className="text-[10px] font-bold text-emerald-600 uppercase">Detection Result</p>
+                          <p className="text-lg font-black text-emerald-900">{r.monaiDiagnosis}</p>
+                        </div>
+                        {r.monaiConfidence && (
+                          <div className="bg-blue-50 border border-blue-100 px-4 py-2 rounded-xl">
+                            <p className="text-[10px] font-bold text-blue-600 uppercase">AI Confidence</p>
+                            <p className="text-lg font-black text-blue-900">{(r.monaiConfidence * 100).toFixed(1)}%</p>
+                          </div>
+                        )}
+                        <span className="text-[10px] font-bold text-slate-400 italic">Engine: DenseNet-121 (Radiology)</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

@@ -28,6 +28,9 @@ public class Report {
     @Column(columnDefinition = "TEXT")
     private String aiSummary;
 
+    private String monaiDiagnosis;
+    private Double monaiConfidence;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -48,4 +51,10 @@ public class Report {
 
     public String getAiSummary() { return aiSummary; }
     public void setAiSummary(String aiSummary) { this.aiSummary = aiSummary; }
+
+    public String getMonaiDiagnosis() { return monaiDiagnosis; }
+    public void setMonaiDiagnosis(String monaiDiagnosis) { this.monaiDiagnosis = monaiDiagnosis; }
+
+    public Double getMonaiConfidence() { return monaiConfidence; }
+    public void setMonaiConfidence(Double monaiConfidence) { this.monaiConfidence = monaiConfidence; }
 }

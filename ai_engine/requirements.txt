@@ -1,0 +1,7 @@
+monai>=1.3.0
+torch>=2.0.0
+torchvision
+fastapi
+uvicorn
+python-multipart
+Pillow

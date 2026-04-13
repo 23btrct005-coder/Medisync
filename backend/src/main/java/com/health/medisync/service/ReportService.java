@@ -18,15 +18,17 @@ public class ReportService {
     private final ReportRepository reportRepository;
     private final PatientService patientService;
     private final GroqAiService aiService;
+    private final MonaiService monaiService;
     private final UserRepository userRepository;
     private final DoctorRepository doctorRepository;
 
     public ReportService(ReportRepository reportRepository, PatientService patientService, 
-                         GroqAiService aiService, UserRepository userRepository,
-                         DoctorRepository doctorRepository) {
+                         GroqAiService aiService, MonaiService monaiService, 
+                         UserRepository userRepository, DoctorRepository doctorRepository) {
         this.reportRepository = reportRepository;
         this.patientService = patientService;
         this.aiService = aiService;
+        this.monaiService = monaiService;
         this.userRepository = userRepository;
         this.doctorRepository = doctorRepository;
     }
@@ -47,6 +49,17 @@ public class ReportService {
             throw new RuntimeException("Security Block: The Name on the uploaded document does not match your profile. Uploads for other patients are prohibited.");
         }        
         report.setAiSummary(aiSummary);
+
+        // Advanced Vision Analysis using MONAI (for images only)
+        if (file.getContentType() != null && file.getContentType().startsWith("image/")) {
+            Map<String, Object> monaiResults = monaiService.analyzeXray(file.getBytes(), file.getOriginalFilename());
+            if (monaiResults != null) {
+                report.setMonaiDiagnosis((String) monaiResults.get("diagnosis"));
+                if (monaiResults.containsKey("confidence")) {
+                    report.setMonaiConfidence(Double.valueOf(monaiResults.get("confidence").toString()));
+                }
+            }
+        }
 
         return reportRepository.save(report);
     }
