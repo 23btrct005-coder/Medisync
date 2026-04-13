@@ -25,14 +25,26 @@ const InfoRow = ({ icon: Icon, label, value, color = 'text-primary-500' }) => (
 const PatientInfoCard = ({ patient }) => {
   const [expanded, setExpanded] = useState(true);
   const initials = patient.name?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'P';
+  const photoUrl = `${api.defaults.baseURL}/auth/patient/photo/${patient.id}`;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
       {/* Card Header / Summary Bar */}
       <div className="bg-gradient-to-r from-primary-700 to-primary-500 p-6 text-white">
         <div className="flex items-center gap-5">
-          <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center text-2xl font-extrabold shrink-0 backdrop-blur-sm">
-            {initials}
+          <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center text-2xl font-extrabold shrink-0 border-2 border-white/30 backdrop-blur-sm overflow-hidden">
+            <img 
+              src={photoUrl} 
+              alt={patient.name}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
+            />
+            <div className="hidden items-center justify-center w-full h-full">
+              {initials}
+            </div>
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-xl font-extrabold">{patient.name}</h3>

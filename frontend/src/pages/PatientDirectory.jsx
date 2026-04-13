@@ -65,8 +65,19 @@ const PatientDirectory = () => {
               className="card cursor-pointer group border-transparent hover:border-primary-200 transition-all duration-300"
             >
               <div className="flex items-center space-x-4 mb-4">
-                <div className="w-14 h-14 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold text-lg group-hover:scale-110 transition-transform">
-                  {patient.name.charAt(0)}
+                <div className="w-14 h-14 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold text-lg group-hover:scale-110 transition-transform overflow-hidden border-2 border-primary-50">
+                  <img 
+                    src={`${api.defaults.baseURL}/auth/patient/photo/${patient.id}`}
+                    alt={patient.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                  <div className="hidden items-center justify-center w-full h-full">
+                    {patient.name.charAt(0)}
+                  </div>
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-slate-800 group-hover:text-primary-600 transition-colors">{patient.name}</h3>
