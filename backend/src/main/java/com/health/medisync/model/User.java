@@ -3,6 +3,7 @@ package com.health.medisync.model;
 import jakarta.persistence.*;
 import java.util.Collection;
 import java.util.Collections;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,6 +19,7 @@ public class User implements UserDetails {
     private String username;
 
     @Column(nullable = false)
+    @JsonIgnore
     private String password;
 
     private String role = "ROLE_PATIENT";

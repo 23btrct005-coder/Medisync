@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -27,10 +27,9 @@ public class AdminController {
     }
 
     @GetMapping("/doctors/pending")
+    @Transactional(readOnly = true)
     public ResponseEntity<List<Doctor>> getPendingDoctors() {
-        List<Doctor> pending = doctorRepository.findAll().stream()
-                .filter(d -> !d.isApproved())
-                .collect(Collectors.toList());
+        List<Doctor> pending = doctorRepository.findByApprovedFalse();
         return ResponseEntity.ok(pending);
     }
 
