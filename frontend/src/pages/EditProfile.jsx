@@ -3,16 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
 import {
-  User, ShieldCheck, Heart, Activity, Save, ArrowLeft,
-  Mail, Phone, MapPin, Droplet, Calendar, AlertCircle,
-  CheckCircle, Pill, Stethoscope, Scissors, GraduationCap
+  CheckCircle, Pill, Stethoscope, Scissors, GraduationCap, Camera, Upload
 } from 'lucide-react';
 
 const EditProfile = () => {
   const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [photoLoading, setPhotoLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [photoPreview, setPhotoPreview] = useState(null);
 
   const [formData, setFormData] = useState({
     // Basic Info
@@ -78,8 +78,35 @@ const EditProfile = () => {
         pastSurgeries: user.pastSurgeries || '',
         medicalInfo: user.medicalInfo || ''
       });
+      setPhotoPreview(`${api.defaults.baseURL}/auth/patient/photo/${user.id}?t=${Date.now()}`);
     }
   }, [user]);
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Local preview
+    const reader = new FileReader();
+    reader.onloadend = () => setPhotoPreview(reader.result);
+    reader.readAsDataURL(file);
+
+    setPhotoLoading(true);
+    const formData = new FormData();
+    formData.append('photo', file);
+
+    try {
+      await api.post('patient/profile/photo', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      await refreshUser();
+      setMessage({ type: 'success', text: 'Profile photo updated successfully!' });
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Failed to upload photo.' });
+    } finally {
+      setPhotoLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -129,6 +156,32 @@ const EditProfile = () => {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-8">
+        
+        {/* ── Photo Section ── */}
+        <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 flex flex-col items-center">
+            <div className="relative group">
+                <div className="w-32 h-32 rounded-3xl overflow-hidden border-4 border-slate-50 shadow-inner bg-slate-100 flex items-center justify-center">
+                    {photoPreview ? (
+                        <img src={photoPreview} alt="Profile" className="w-full h-full object-cover" onError={(e) => e.target.style.display='none'} />
+                    ) : (
+                        <User size={48} className="text-slate-300" />
+                    )}
+                    {photoLoading && (
+                        <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center rounded-3xl">
+                            <Activity className="animate-spin text-primary-600" size={24} />
+                        </div>
+                    )}
+                </div>
+                <label className="absolute -bottom-2 -right-2 bg-primary-600 text-white p-3 rounded-2xl shadow-lg cursor-pointer hover:bg-primary-700 transition-all hover:scale-110 active:scale-95">
+                    <Camera size={20} />
+                    <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} disabled={photoLoading} />
+                </label>
+            </div>
+            <div className="mt-4 text-center">
+                <p className="text-sm font-bold text-slate-700">Profile Photo</p>
+                <p className="text-xs text-slate-500 mt-1">Click the camera icon to update your picture</p>
+            </div>
+        </div>
         
         {/* ── Section 1: Insurance Details ── */}
         <div className={sectionClass}>

@@ -10,6 +10,8 @@ import com.health.medisync.service.DoctorService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -89,5 +91,15 @@ public class DoctorController {
     public ResponseEntity<Doctor> syncProfile(@RequestBody Map<String, Object> updates, Authentication authentication) {
         String username = authentication.getName();
         return ResponseEntity.ok(doctorService.updateProfile(username, updates));
+    }
+
+    @PostMapping("/profile/photo")
+    public ResponseEntity<?> uploadPhoto(@RequestPart("photo") MultipartFile photo, Authentication authentication) {
+        try {
+            doctorService.updateProfilePhoto(authentication.getName(), photo.getBytes());
+            return ResponseEntity.ok(Map.of("message", "Photo updated successfully"));
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Failed to upload photo"));
+        }
     }
 }

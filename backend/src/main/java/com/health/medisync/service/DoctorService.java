@@ -150,4 +150,10 @@ public class DoctorService {
 
         return doctorRepository.save(doctor);
     }
+
+    public void updateProfilePhoto(String username, byte[] photoBytes) {
+        Doctor doctor = getDoctorProfile(username);
+        doctor.setProfilePicture(photoBytes);
+        doctorRepository.save(doctor);
+    }
 }

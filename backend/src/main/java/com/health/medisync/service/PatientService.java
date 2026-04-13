@@ -152,4 +152,10 @@ public class PatientService {
         request.setStatus("REJECTED");
         accessRequestRepository.save(request);
     }
+
+    public void updateProfilePhoto(String username, byte[] photoBytes) {
+        Patient patient = getPatientProfile(username);
+        patient.setProfilePicture(photoBytes);
+        patientRepository.save(patient);
+    }
 }
