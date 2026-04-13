@@ -7,6 +7,7 @@ import {
   MapPin, AlertCircle, User, Heart
 } from 'lucide-react';
 import api from '../api/axiosConfig';
+import ProfilePhotoUpload from '../components/ProfilePhotoUpload';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -35,6 +36,8 @@ const Register = () => {
     password: '',
     confirmPassword: '',
   });
+
+  const [profilePicture, setProfilePicture] = useState(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -114,7 +117,9 @@ const Register = () => {
     setLoading(true);
     setError('');
     try {
-      await api.post('auth/register/patient', {
+      const formDataToSend = new FormData();
+      
+      const userData = {
         username: formData.email,
         email: formData.email,
         name: formData.name,
@@ -132,6 +137,15 @@ const Register = () => {
         emergencyContactRelationship: formData.emergencyContactRelationship,
         emergencyContactPhone: formData.emergencyContactPhone,
         password: formData.password,
+      };
+
+      formDataToSend.append('userData', JSON.stringify(userData));
+      if (profilePicture) {
+        formDataToSend.append('profilePicture', profilePicture);
+      }
+
+      await api.post('auth/register/patient', formDataToSend, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
       setSuccess('Registration successful! Redirecting to login...');
       setTimeout(() => navigate('/login'), 2000);
@@ -230,6 +244,11 @@ const Register = () => {
               {/* ── SECTION 2: Personal Details ── */}
               <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
                 <h3 className={sectionHeadClass}><User size={16} />2. Personal Details</h3>
+                
+                <div className="flex justify-center mb-8">
+                  <ProfilePhotoUpload onFileSelect={setProfilePicture} />
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="md:col-span-2">
                     <label className={labelClass}>Full Name <span className="text-red-500">*</span></label>

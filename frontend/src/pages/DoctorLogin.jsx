@@ -8,6 +8,7 @@ import {
   ArrowLeft, BadgeCheck, HeartPulse
 } from 'lucide-react';
 import api from '../api/axiosConfig';
+import ProfilePhotoUpload from '../components/ProfilePhotoUpload';
 
 // ─── Doctor Registration Form ───────────────────────────────────────────────
 const DoctorRegisterForm = ({ onBack }) => {
@@ -28,6 +29,7 @@ const DoctorRegisterForm = ({ onBack }) => {
     // Account
     username: '', password: '', confirmPassword: '',
   });
+  const [profilePicture, setProfilePicture] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -80,8 +82,11 @@ const DoctorRegisterForm = ({ onBack }) => {
     if (!emailVerified) { setError('Please verify your email first.'); return; }
     if (formData.password !== formData.confirmPassword) { setError('Passwords do not match.'); return; }
     setLoading(true); setError('');
+    setLoading(true); setError('');
     try {
-      await api.post('auth/register/doctor', {
+      const formDataToSend = new FormData();
+      
+      const userData = {
         username: formData.username || formData.email,
         password: formData.password,
         name: formData.name, email: formData.email,
@@ -94,6 +99,15 @@ const DoctorRegisterForm = ({ onBack }) => {
         consultationFee: formData.consultationFee, workingDays: formData.workingDays,
         consultationTimings: formData.consultationTimings,
         onlineConsultation: formData.onlineConsultation,
+      };
+
+      formDataToSend.append('userData', JSON.stringify(userData));
+      if (profilePicture) {
+        formDataToSend.append('profilePicture', profilePicture);
+      }
+
+      await api.post('auth/register/doctor', formDataToSend, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
       setSuccess('Physician account created successfully! Redirecting to login...');
       setTimeout(() => onBack(), 2500);
@@ -185,6 +199,11 @@ const DoctorRegisterForm = ({ onBack }) => {
               {/* 2. Basic Details */}
               <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
                 <h3 className={sectionCls}><User size={16} />2. Basic Details</h3>
+                
+                <div className="flex justify-center mb-8">
+                  <ProfilePhotoUpload onFileSelect={setProfilePicture} />
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="md:col-span-2">
                     <label className={labelCls}>Full Name <span className="text-red-500">*</span></label>

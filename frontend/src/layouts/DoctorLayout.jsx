@@ -14,6 +14,8 @@ const DoctorLayout = () => {
     navigate('/login');
   };
 
+  const photoUrl = user?.id ? `${api.defaults.baseURL}/auth/doctor/photo/${user.id}` : null;
+
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
       <DoctorSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
@@ -27,9 +29,22 @@ const DoctorLayout = () => {
             <span className="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight">MEDISYNC <span className="hidden sm:inline-block text-sm font-medium text-primary-600 ml-2 border border-primary-200 bg-primary-50 px-2 py-1 rounded-full">Doctor Portal</span></span>
         </div>
         <div className="flex items-center space-x-2 sm:space-x-6">
-          <div className="hidden sm:flex items-center space-x-2">
-            <span className="text-sm font-medium text-slate-700">{user?.name || "Doctor"}</span>
-            <UserCircle size={28} className="text-primary-600" />
+          <div className="hidden sm:flex items-center space-x-3">
+            <span className="text-sm font-bold text-slate-700">{user?.name || "Doctor"}</span>
+            <div className="h-9 w-9 rounded-full overflow-hidden border-2 border-primary-100 bg-primary-50 flex items-center justify-center">
+              {photoUrl ? (
+                <img 
+                  src={photoUrl} 
+                  alt={user?.name} 
+                  className="h-full w-full object-cover"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'block';
+                  }}
+                />
+              ) : null}
+              <UserCircle size={28} className={`${photoUrl ? 'hidden' : 'block'} text-primary-600`} />
+            </div>
           </div>
           <button onClick={handleLogout} className="p-2 text-slate-400 hover:text-red-500 transition-colors flex items-center">
             <LogOut size={20} className="sm:mr-1" /> <span className="hidden sm:inline text-sm font-medium">Logout</span>

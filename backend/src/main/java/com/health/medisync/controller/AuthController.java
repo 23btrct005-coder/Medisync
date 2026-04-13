@@ -21,7 +21,11 @@ import com.health.medisync.repository.DoctorRepository;
 
 import com.health.medisync.service.AuthService;
 import com.health.medisync.service.EmailService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
 import java.util.Map;
+import java.io.IOException;
 
 @RestController
 @RequestMapping({"/api/auth", "/auth"})
@@ -66,9 +70,15 @@ public class AuthController {
         return ResponseEntity.ok(new AuthResponse(jwt, role));
     }
 
-    @PostMapping("/register/doctor")
+    @PostMapping(value = "/register/doctor", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Transactional
-    public ResponseEntity<?> registerDoctor(@RequestBody Map<String, String> request) {
+    public ResponseEntity<?> registerDoctor(
+            @RequestPart("userData") String userDataJson,
+            @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture) throws IOException {
+        
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, String> request = mapper.readValue(userDataJson, Map.class);
+
         String username = request.get("username");
         userRepository.findByUsername(username).ifPresent(existing -> {
             boolean hasProfile = doctorRepository.findByUserId(existing.getId()).isPresent();
@@ -127,14 +137,25 @@ public class AuthController {
             try { doctor.setAge(Integer.parseInt(request.get("age"))); }
             catch (NumberFormatException ignored) {}
         }
+
+        if (profilePicture != null && !profilePicture.isEmpty()) {
+            doctor.setProfilePicture(profilePicture.getBytes());
+        }
+
         doctorRepository.save(doctor);
 
         return ResponseEntity.ok(Map.of("message", "Doctor registered and verified successfully!"));
     }
 
-    @PostMapping("/register/patient")
+    @PostMapping(value = "/register/patient", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Transactional
-    public ResponseEntity<?> registerPatient(@RequestBody Map<String, String> request) {
+    public ResponseEntity<?> registerPatient(
+            @RequestPart("userData") String userDataJson,
+            @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture) throws IOException {
+
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, String> request = mapper.readValue(userDataJson, Map.class);
+
         String username = request.get("username");
         try {
             userRepository.findByUsername(username).ifPresent(existing -> {
@@ -197,6 +218,10 @@ public class AuthController {
             } catch (NumberFormatException e) {
                 System.err.println("Invalid age format: " + request.get("age"));
             }
+        }
+
+        if (profilePicture != null && !profilePicture.isEmpty()) {
+            patient.setProfilePicture(profilePicture.getBytes());
         }
 
         patientRepository.save(patient);
@@ -304,6 +329,28 @@ public class AuthController {
                 info.put("pastSurgeries", patient.getPastSurgeries());
                 info.put("medicalInfo", patient.getMedicalInfo());
                 return ResponseEntity.ok(info);
+            })
+            .orElse(ResponseEntity.notFound().build());
+    }
+
+    // ── Profile Photo Serving Endpoints ──
+
+    @GetMapping(value = "/doctor/photo/{id}", produces = {MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE})
+    public ResponseEntity<byte[]> getDoctorPhoto(@PathVariable Long id) {
+        return doctorRepository.findById(id)
+            .map(doctor -> {
+                if (doctor.getProfilePicture() == null) return ResponseEntity.notFound().<byte[]>build();
+                return ResponseEntity.ok().body(doctor.getProfilePicture());
+            })
+            .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping(value = "/patient/photo/{id}", produces = {MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE})
+    public ResponseEntity<byte[]> getPatientPhoto(@PathVariable Long id) {
+        return patientRepository.findById(id)
+            .map(patient -> {
+                if (patient.getProfilePicture() == null) return ResponseEntity.notFound().<byte[]>build();
+                return ResponseEntity.ok().body(patient.getProfilePicture());
             })
             .orElse(ResponseEntity.notFound().build());
     }

@@ -3,6 +3,8 @@ package com.health.medisync.model;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "patients")
@@ -62,6 +64,10 @@ public class Patient {
         inverseJoinColumns = @JoinColumn(name = "doctor_id")
     )
     private Set<Doctor> doctors = new HashSet<>();
+
+    @JdbcTypeCode(SqlTypes.BINARY)
+    @Column(name = "profile_picture")
+    private byte[] profilePicture;
 
     // ── Getters & Setters ──
     public Long getId() { return id; }
@@ -132,4 +138,7 @@ public class Patient {
 
     public Set<Doctor> getDoctors() { return doctors; }
     public void setDoctors(Set<Doctor> doctors) { this.doctors = doctors; }
+
+    public byte[] getProfilePicture() { return profilePicture; }
+    public void setProfilePicture(byte[] profilePicture) { this.profilePicture = profilePicture; }
 }

@@ -23,6 +23,9 @@ CREATE TABLE IF NOT EXISTS reports (
     upload_date DATE,
     CONSTRAINT fk_reports_patient FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
 );
+-- Profile Photo Support
+ALTER TABLE doctors ADD COLUMN IF NOT EXISTS profile_picture BYTEA;
+ALTER TABLE patients ADD COLUMN IF NOT EXISTS profile_picture BYTEA;
 
 -- 3. Create Patient-Doctor junction table if it doesn't exist
 CREATE TABLE IF NOT EXISTS patient_doctors (

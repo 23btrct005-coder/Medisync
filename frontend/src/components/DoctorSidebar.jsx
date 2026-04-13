@@ -1,10 +1,13 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Users, LogOut, Activity, UserCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/axiosConfig';
 
 const DoctorSidebar = ({ isOpen, setIsOpen }) => {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  const photoUrl = user?.id ? `${api.defaults.baseURL}/auth/doctor/photo/${user.id}` : null;
 
   const handleLogout = () => {
     logout();
@@ -14,7 +17,26 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
   const navItems = [
     { name: 'Dashboard', path: '/doctor-dashboard', icon: <LayoutDashboard size={20} /> },
     { name: 'Patient Directory', path: '/doctor-dashboard/patients', icon: <Users size={20} /> },
-    { name: 'My Profile', path: '/doctor-dashboard/profile', icon: <UserCircle size={20} /> },
+    { 
+      name: 'My Profile', 
+      path: '/doctor-dashboard/profile', 
+      icon: (
+        <div className="h-5 w-5 rounded-full overflow-hidden border border-slate-700 bg-slate-800 flex items-center justify-center -ml-1 mr-1">
+          {photoUrl ? (
+            <img 
+              src={photoUrl} 
+              alt={user?.name} 
+              className="h-full w-full object-cover"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'block';
+              }}
+            />
+          ) : null}
+          <UserCircle size={14} className={`${photoUrl ? 'hidden' : 'block'} text-slate-400`} />
+        </div>
+      )
+    },
   ];
 
   return (

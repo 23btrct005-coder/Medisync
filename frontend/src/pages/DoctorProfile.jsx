@@ -42,6 +42,7 @@ const DoctorProfile = () => {
   );
 
   const initials = user.name?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'DR';
+  const photoUrl = `${api.defaults.baseURL}/auth/doctor/photo/${user.id}`;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12">
@@ -54,8 +55,19 @@ const DoctorProfile = () => {
       {/* Identity Card */}
       <div className="bg-gradient-to-r from-blue-900 to-blue-600 rounded-3xl p-8 text-white shadow-xl">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-          <div className="w-24 h-24 rounded-2xl bg-white/20 flex items-center justify-center text-3xl font-extrabold backdrop-blur-sm shrink-0">
-            {initials}
+          <div className="w-24 h-24 rounded-2xl bg-white/20 overflow-hidden flex items-center justify-center backdrop-blur-sm shrink-0 border-2 border-white/30">
+            <img 
+              src={photoUrl} 
+              alt={user.name}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
+            />
+            <div className="hidden items-center justify-center w-full h-full text-3xl font-extrabold uppercase bg-blue-500/50">
+                {initials}
+            </div>
           </div>
           <div className="text-center sm:text-left">
             <h3 className="text-2xl font-extrabold">{user.name || 'Doctor'}</h3>

@@ -5,6 +5,7 @@ import {
   Activity, AlertCircle, Heart, ShieldCheck, Users,
   AlertTriangle, Pill, Stethoscope, Scissors, Download, QrCode
 } from 'lucide-react';
+import api from '../api/axiosConfig';
 
 const InfoRow = ({ icon: Icon, label, value, color = 'text-primary-500' }) => (
   <div className="flex items-start gap-3 py-3 border-b border-slate-100 last:border-0">
@@ -44,6 +45,7 @@ const Profile = () => {
 
   const initials = user.name?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'P';
   const emergencyUrl = `${window.location.origin}/emergency/${user.id}`;
+  const photoUrl = `${api.defaults.baseURL}/auth/patient/photo/${user.id}`;
 
   const handleDownloadQR = () => {
     const svg = document.getElementById('patient-qr-svg');
@@ -70,8 +72,19 @@ const Profile = () => {
       {/* Identity Card */}
       <div className="bg-gradient-to-r from-primary-700 to-primary-500 rounded-3xl p-8 text-white shadow-xl">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-          <div className="w-24 h-24 rounded-2xl bg-white/20 flex items-center justify-center text-3xl font-extrabold backdrop-blur-sm shrink-0">
-            {initials}
+          <div className="w-24 h-24 rounded-2xl bg-white/20 flex overflow-hidden items-center justify-center backdrop-blur-sm shrink-0 border-2 border-white/30">
+            <img 
+              src={photoUrl} 
+              alt={user.name}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
+            />
+            <div className="hidden items-center justify-center w-full h-full text-3xl font-extrabold uppercase bg-primary-600/50">
+                {initials}
+            </div>
           </div>
           <div className="text-center sm:text-left">
             <h3 className="text-2xl font-extrabold">{user.name || 'Patient'}</h3>

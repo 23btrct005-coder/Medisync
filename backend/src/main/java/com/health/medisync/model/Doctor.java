@@ -1,6 +1,8 @@
 package com.health.medisync.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "doctors")
@@ -42,6 +44,10 @@ public class Doctor {
     private String workingDays;
     private String consultationTimings;
     private Boolean onlineConsultation;
+
+    @JdbcTypeCode(SqlTypes.BINARY)
+    @Column(name = "profile_picture")
+    private byte[] profilePicture;
 
     // Getters & Setters
     public Long getId() { return id; }
@@ -103,4 +109,7 @@ public class Doctor {
 
     public Boolean getOnlineConsultation() { return onlineConsultation; }
     public void setOnlineConsultation(Boolean onlineConsultation) { this.onlineConsultation = onlineConsultation; }
+
+    public byte[] getProfilePicture() { return profilePicture; }
+    public void setProfilePicture(byte[] profilePicture) { this.profilePicture = profilePicture; }
 }

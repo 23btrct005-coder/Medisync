@@ -1,10 +1,13 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, FileText, ClipboardList, User, LogOut, Activity } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/axiosConfig';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  const photoUrl = user?.id ? `${api.defaults.baseURL}/auth/patient/photo/${user.id}` : null;
 
   const handleLogout = () => {
     logout();
@@ -15,7 +18,26 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { name: 'Dashboard', path: '/', icon: <LayoutDashboard size={20} /> },
     { name: 'Medical Records', path: '/records', icon: <ClipboardList size={20} /> },
     { name: 'Reports', path: '/reports', icon: <FileText size={20} /> },
-    { name: 'My Profile', path: '/profile', icon: <User size={20} /> },
+    { 
+      name: 'My Profile', 
+      path: '/profile', 
+      icon: (
+        <div className="h-5 w-5 rounded-full overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center -ml-1 mr-1">
+          {photoUrl ? (
+            <img 
+              src={photoUrl} 
+              alt={user?.name} 
+              className="h-full w-full object-cover"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'block';
+              }}
+            />
+          ) : null}
+          <User size={14} className={`${photoUrl ? 'hidden' : 'block'} text-slate-400`} />
+        </div>
+      )
+    },
   ];
 
   return (
