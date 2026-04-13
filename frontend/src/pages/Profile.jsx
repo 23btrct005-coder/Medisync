@@ -2,6 +2,8 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import QRCode from 'react-qr-code';
 import {
+  UserCircle, Mail, Phone, MapPin, Droplet, Calendar,
+  Activity, AlertCircle, Heart, ShieldCheck, Users,
   AlertTriangle, Pill, Stethoscope, Scissors, Download, QrCode,
   Edit3, Briefcase, Zap, Info
 } from 'lucide-react';
