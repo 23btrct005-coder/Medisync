@@ -45,6 +45,7 @@ public class MonaiService {
 
         } catch (Exception e) {
             System.err.println("MONAI analysis failed: " + e.getMessage());
+            return Map.of("error", "Vision engine unreachable. Please check monai.service.url.");
         }
         return null;
     }
