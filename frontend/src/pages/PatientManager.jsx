@@ -204,6 +204,10 @@ const PatientManager = () => {
   const [newPrescription, setNewPrescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [downloadingId, setDownloadingId] = useState(null);
+  const [reanalyzingId, setReanalyzingId] = useState(null);
+  const [savingNotesId, setSavingNotesId] = useState(null);
+  const [editingNotes, setEditingNotes] = useState({}); // { reportId: text }
+
   const [recordsLoading, setRecordsLoading] = useState(false);
   const [reportsLoading, setReportsLoading] = useState(false);
   const [recordError, setRecordError] = useState('');
@@ -248,7 +252,15 @@ const PatientManager = () => {
     setReportsLoading(true);
     try {
       const res = await api.get(`doctor/patients/${id}/reports`);
-      setReports(res.data.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate)));
+      const data = res.data.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
+      setReports(data);
+      
+      // Initialize editing notes with existing ones
+      const initialNotes = {};
+      data.forEach(r => {
+        initialNotes[r.id] = r.doctorNotes || '';
+      });
+      setEditingNotes(initialNotes);
     } catch (err) {
       console.error('Error fetching reports', err);
       setReportError('Unable to load patient reports at this time.');
@@ -284,6 +296,32 @@ const PatientManager = () => {
     } catch (err) {
       alert('Failed to download report.');
     } finally { setDownloadingId(null); }
+  };
+
+  const handleReanalyze = async (reportId) => {
+    setReanalyzingId(reportId);
+    try {
+      const res = await api.post(`reports/${reportId}/reanalyze`);
+      const updatedReport = res.data;
+      setReports(reports.map(r => r.id === reportId ? updatedReport : r));
+    } catch (err) {
+      alert('AI Re-analysis failed. Please verify your API keys.');
+    } finally {
+      setReanalyzingId(null);
+    }
+  };
+
+  const handleSaveNotes = async (reportId) => {
+    setSavingNotesId(reportId);
+    try {
+      await api.post(`reports/${reportId}/notes`, { notes: editingNotes[reportId] });
+      // Update local reports list with the new note
+      setReports(reports.map(r => r.id === reportId ? { ...r, doctorNotes: editingNotes[reportId] } : r));
+    } catch (err) {
+      alert('Failed to save clinical notes.');
+    } finally {
+      setSavingNotesId(null);
+    }
   };
 
   if (loading) return (
@@ -419,11 +457,18 @@ const PatientManager = () => {
                       Uploaded: {new Date(r.uploadDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>
                   </div>
-                  <button onClick={() => handleDownload(r.id, r.fileName)} disabled={downloadingId === r.id}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-indigo-200 text-indigo-600 rounded-xl text-xs font-bold hover:bg-indigo-50 transition disabled:opacity-50">
-                    {downloadingId === r.id ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
-                    {downloadingId === r.id ? 'Downloading...' : 'Download'}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => handleReanalyze(r.id)} disabled={reanalyzingId === r.id}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition disabled:opacity-50 shadow-sm active:scale-95">
+                      {reanalyzingId === r.id ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}
+                      {reanalyzingId === r.id ? 'Analyzing...' : 'Re-analyze AI'}
+                    </button>
+                    <button onClick={() => handleDownload(r.id, r.fileName)} disabled={downloadingId === r.id}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-indigo-200 text-indigo-600 rounded-xl text-xs font-bold hover:bg-indigo-50 transition disabled:opacity-50">
+                      {downloadingId === r.id ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+                      {downloadingId === r.id ? 'Download' : 'Download'}
+                    </button>
+                  </div>
                 </div>
                 <div className="p-6 divide-y divide-slate-100">
                   <div className="pb-5">
@@ -449,7 +494,7 @@ const PatientManager = () => {
                   )}
 
                   {r.monaiDiagnosis && (
-                    <div className="pt-5">
+                    <div className="py-5">
                       <h4 className="text-xs font-extrabold text-emerald-600 mb-3 uppercase tracking-widest flex items-center gap-1.5">
                         🧬 MONAI Vision Diagnostic
                       </h4>
@@ -468,6 +513,29 @@ const PatientManager = () => {
                       </div>
                     </div>
                   )}
+
+                  <div className="pt-5 border-t border-slate-100">
+                    <h4 className="text-xs font-extrabold text-slate-500 mb-3 uppercase tracking-widest flex items-center gap-1.5">
+                      ✍️ Physician's Clinical Notes
+                    </h4>
+                    <textarea
+                      placeholder="Enter professional observations and clinical feedback here..."
+                      className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm text-slate-700 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+                      rows="3"
+                      value={editingNotes[r.id] || ''}
+                      onChange={(e) => setEditingNotes({ ...editingNotes, [r.id]: e.target.value })}
+                    />
+                    <div className="flex justify-end mt-3">
+                      <button
+                        onClick={() => handleSaveNotes(r.id)}
+                        disabled={savingNotesId === r.id || (editingNotes[r.id] || '') === (r.doctorNotes || '')}
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold hover:bg-slate-900 transition disabled:opacity-30 disabled:cursor-allowed shadow-sm active:scale-95"
+                      >
+                        {savingNotesId === r.id ? <Loader2 size={14} className="animate-spin" /> : <FileText size={14} />}
+                        {savingNotesId === r.id ? 'Saving...' : 'Save Patient Feedback'}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}

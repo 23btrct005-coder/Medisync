@@ -47,4 +47,25 @@ public class ReportController {
                 .header(HttpHeaders.CONTENT_TYPE, report.getFileType())
                 .body(report.getFileData());
     }
+
+    @PostMapping("/{id}/reanalyze")
+    public ResponseEntity<?> reanalyzeReport(@PathVariable Long id, Authentication authentication) {
+        try {
+            String username = authentication.getName();
+            return ResponseEntity.ok(reportService.reanalyzeReport(id, username));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{id}/notes")
+    public ResponseEntity<?> updateDoctorNotes(@PathVariable Long id, @RequestBody java.util.Map<String, String> payload, Authentication authentication) {
+        try {
+            String username = authentication.getName();
+            String notes = payload.get("notes");
+            return ResponseEntity.ok(reportService.updateDoctorNotes(id, notes, username));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
+        }
+    }
 }

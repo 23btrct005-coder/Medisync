@@ -34,6 +34,9 @@ public class Report {
     @Column(columnDefinition = "TEXT")
     private String geminiSummary;
 
+    @Column(columnDefinition = "TEXT")
+    private String doctorNotes;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -63,4 +66,7 @@ public class Report {
 
     public String getGeminiSummary() { return geminiSummary; }
     public void setGeminiSummary(String geminiSummary) { this.geminiSummary = geminiSummary; }
+
+    public String getDoctorNotes() { return doctorNotes; }
+    public void setDoctorNotes(String doctorNotes) { this.doctorNotes = doctorNotes; }
 }

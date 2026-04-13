@@ -47,16 +47,33 @@ public class ReportService {
         report.setFileData(file.getBytes());
         report.setUploadDate(LocalDate.now());
 
+        performClinicalAnalysis(report, patient);
+
+        return reportRepository.save(report);
+    }
+
+    public void performClinicalAnalysis(Report report, Patient patient) {
+        byte[] fileData = report.getFileData();
+        String contentType = report.getFileType();
+        String fileName = report.getFileName();
+        String patientName = patient.getName();
+        int patientAge = patient.getAge() != null ? patient.getAge() : 0;
+
         // 1. Fast Summary (Groq)
-        String groqSummary = groqAiService.analyzeReport(file.getBytes(), file.getContentType(), patient.getName(), patient.getAge() != null ? patient.getAge() : 0);
-        if (groqSummary != null && groqSummary.contains("ERROR_PROFILE_MISMATCH")) {
-            throw new RuntimeException("Security Block: The Name on the uploaded document does not match your profile.");
-        }        
-        report.setAiSummary(groqSummary);
+        try {
+            String groqSummary = groqAiService.analyzeReport(fileData, contentType, patientName, patientAge);
+            if (groqSummary != null && groqSummary.contains("ERROR_PROFILE_MISMATCH")) {
+                report.setAiSummary("Security Block: Profile mismatch detected in document.");
+            } else {
+                report.setAiSummary(groqSummary);
+            }
+        } catch (Exception e) {
+            System.err.println("Groq analysis failed: " + e.getMessage());
+        }
 
         // 2. High-Accuracy Clinical Reasoning (Gemini 1.5 Pro)
         try {
-            String geminiSummary = geminiAiService.analyzeReport(file.getBytes(), file.getContentType(), patient.getName(), patient.getAge() != null ? patient.getAge() : 0);
+            String geminiSummary = geminiAiService.analyzeReport(fileData, contentType, patientName, patientAge);
             if (!"ERROR_PROFILE_MISMATCH".equals(geminiSummary)) {
                 report.setGeminiSummary(geminiSummary);
             }
@@ -65,16 +82,49 @@ public class ReportService {
         }
 
         // 3. Advanced Vision Analysis using MONAI (for images only)
-        if (file.getContentType() != null && file.getContentType().startsWith("image/")) {
-            Map<String, Object> monaiResults = monaiService.analyzeXray(file.getBytes(), file.getOriginalFilename());
-            if (monaiResults != null) {
-                report.setMonaiDiagnosis((String) monaiResults.get("diagnosis"));
-                if (monaiResults.containsKey("confidence")) {
-                    report.setMonaiConfidence(Double.valueOf(monaiResults.get("confidence").toString()));
+        if (contentType != null && contentType.startsWith("image/")) {
+            try {
+                Map<String, Object> monaiResults = monaiService.analyzeXray(fileData, fileName);
+                if (monaiResults != null) {
+                    report.setMonaiDiagnosis((String) monaiResults.get("diagnosis"));
+                    if (monaiResults.containsKey("confidence")) {
+                        report.setMonaiConfidence(Double.valueOf(monaiResults.get("confidence").toString()));
+                    }
                 }
+            } catch (Exception e) {
+                System.err.println("MONAI analysis failed: " + e.getMessage());
             }
         }
+    }
 
+    public Report reanalyzeReport(Long reportId, String username) {
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        Report report = reportRepository.findById(reportId)
+            .orElseThrow(() -> new RuntimeException("Report not found"));
+
+        // Only doctors or the patient themselves can trigger re-analysis
+        if (!"ROLE_DOCTOR".equals(user.getRole()) && !report.getPatient().getUser().getUsername().equals(username)) {
+            throw new RuntimeException("Unauthorized: You cannot re-analyze this report.");
+        }
+
+        performClinicalAnalysis(report, report.getPatient());
+        return reportRepository.save(report);
+    }
+
+    public Report updateDoctorNotes(Long reportId, String notes, String username) {
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        if (!"ROLE_DOCTOR".equals(user.getRole())) {
+            throw new RuntimeException("Unauthorized: Only doctors can add clinical notes.");
+        }
+
+        Report report = reportRepository.findById(reportId)
+            .orElseThrow(() -> new RuntimeException("Report not found"));
+            
+        report.setDoctorNotes(notes);
         return reportRepository.save(report);
     }
 
