@@ -139,24 +139,56 @@ const PatientManager = () => {
   const [newPrescription, setNewPrescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [downloadingId, setDownloadingId] = useState(null);
+  const [recordsLoading, setRecordsLoading] = useState(false);
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [recordError, setRecordError] = useState('');
+  const [reportError, setReportError] = useState('');
 
   useEffect(() => { fetchPatientDetails(); }, [id]);
 
   const fetchPatientDetails = async () => {
+    if (!id) return;
     setLoading(true);
+    setRecordError('');
+    setReportError('');
+
     try {
-      const [patientRes, recordsRes, reportsRes] = await Promise.all([
-        api.get(`doctor/patients/${id}`),
-        api.get(`doctor/patients/${id}/records`),
-        api.get(`doctor/patients/${id}/reports`),
-      ]);
+      const patientRes = await api.get(`doctor/patients/${id}`);
       setPatient(patientRes.data);
-      setRecords(recordsRes.data.sort((a, b) => new Date(b.date) - new Date(a.date)));
-      setReports(reportsRes.data.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate)));
+      setLoading(false); // Display patient card as soon as possible
+
+      // Now fetch records and reports independently
+      fetchRecords();
+      fetchReports();
     } catch (err) {
-      console.error('Error fetching patient data', err);
-    } finally {
+      console.error('Error fetching patient profile', err);
       setLoading(false);
+    }
+  };
+
+  const fetchRecords = async () => {
+    setRecordsLoading(true);
+    try {
+      const res = await api.get(`doctor/patients/${id}/records`);
+      setRecords(res.data.sort((a, b) => new Date(b.date) - new Date(a.date)));
+    } catch (err) {
+      console.error('Error fetching records', err);
+      setRecordError('Unable to load clinical records at this time.');
+    } finally {
+      setRecordsLoading(false);
+    }
+  };
+
+  const fetchReports = async () => {
+    setReportsLoading(true);
+    try {
+      const res = await api.get(`doctor/patients/${id}/reports`);
+      setReports(res.data.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate)));
+    } catch (err) {
+      console.error('Error fetching reports', err);
+      setReportError('Unable to load patient reports at this time.');
+    } finally {
+      setReportsLoading(false);
     }
   };
 
@@ -255,7 +287,13 @@ const PatientManager = () => {
         <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
           <FileText size={20} className="text-primary-500" /> Clinical Records
         </h3>
-        {records.length === 0 ? (
+        {recordsLoading ? (
+            <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary-500" /></div>
+        ) : recordError ? (
+            <div className="bg-red-50 p-6 rounded-2xl border border-red-100 text-center text-red-600 font-medium">
+                {recordError}
+            </div>
+        ) : records.length === 0 ? (
           <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-400">
             <FileText size={48} className="mx-auto text-slate-200 mb-3" />
             <p className="font-medium">No clinical records yet.</p>
@@ -294,7 +332,13 @@ const PatientManager = () => {
         <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
           <FileText size={20} className="text-indigo-500" /> Patient Reports & AI Analysis
         </h3>
-        {reports.length === 0 ? (
+        {reportsLoading ? (
+            <div className="flex justify-center p-8"><Loader2 className="animate-spin text-indigo-500" /></div>
+        ) : reportError ? (
+            <div className="bg-indigo-50 p-6 rounded-2xl border border-indigo-100 text-center text-indigo-600 font-medium">
+                {reportError}
+            </div>
+        ) : reports.length === 0 ? (
           <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-400">
             <FileText size={48} className="mx-auto text-slate-200 mb-3" />
             <p className="font-medium">No reports uploaded yet.</p>
