@@ -3,7 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
 import {
-  CheckCircle, Pill, Stethoscope, Scissors, GraduationCap, Camera, Upload
+  User, ShieldCheck, Heart, Activity, Save, ArrowLeft,
+  Mail, Phone, MapPin, Droplet, Calendar, AlertCircle,
+  CheckCircle, Pill, Stethoscope, Scissors, GraduationCap,
+  Camera, Upload
 } from 'lucide-react';
 
 const EditProfile = () => {
