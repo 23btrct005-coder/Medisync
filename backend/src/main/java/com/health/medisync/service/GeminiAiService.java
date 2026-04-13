@@ -39,7 +39,9 @@ public class GeminiAiService implements AiProvider {
             textPart.put("text", "You are a world-class senior medical consultant and radiologist with decades of clinical experience. " +
                 "You are analyzing a medical document for: Name: " + patientName + ", Age: " + patientAge + ". " +
                 "CRITICAL INSTRUCTIONS:\n" +
-                "1. If the patient name in the document is clearly and explicitly different from '" + patientName + "', reply ONLY with 'ERROR_PROFILE_MISMATCH'.\n" +
+                "1. If the patient name in the document is clearly and definitively belonging to a completely different person than '" + patientName + "', reply ONLY with 'ERROR_PROFILE_MISMATCH'.\n" +
+                "   - Be extremely lenient. Ignore middle names, initials, and titles like Mr./Ms.\n" +
+                "   - If the name is missing or the names are similar (e.g., '" + patientName + "' and '" + patientName.split(" ")[0] + "'), DO NOT REJECT IT.\n" +
                 "2. Provide an extremely high-accuracy clinical analysis. Minimize errors by sticking strictly to documented evidence.\n" +
                 "3. Structure your response in Markdown with the following sections:\n" +
                 "   # 🧬 Clinical Reasoning Report\n" +

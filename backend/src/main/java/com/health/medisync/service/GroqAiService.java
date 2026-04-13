@@ -50,10 +50,13 @@ public class GroqAiService implements AiProvider {
             // Construct payload dynamically based on PDF or Image
             Map<String, Object> textObj = new HashMap<>();
             textObj.put("type", "text");
-            textObj.put("text", "You are an expert radiologist and medical analyst. First, examine the document to identify the patient name if it is available. " +
-                "The intended target profile patient is: Name: " + patientName + ", Age: " + patientAge + ". " +
-                "If there is a patient name explicitly stated in the document and it clearly DOES NOT MATCH the intended target patient name, you MUST reply EXACTLY with the string 'ERROR_PROFILE_MISMATCH' and nothing else. " +
-                "Do not reject if the name is simply absent or abbreviated. Only reject if it clearly belongs to a different person. " +
+            textObj.put("text", "You are an expert radiologist and medical analyst. First, examine the document to identify the patient name if it is available.\n" +
+                "The intended target profile patient is: Name: " + patientName + ", Age: " + patientAge + ".\n" +
+                "FUZZY MATCHING SECURITY RULE:\n" +
+                "If there is a patient name explicitly stated in the document and it CLEARLY BELONGS TO A DIFFERENT PERSON than '" + patientName + "', you MUST reply EXACTLY with the string 'ERROR_PROFILE_MISMATCH' and nothing else.\n" +
+                "   - IGNORE middle initials, trailing names, or titles (Mr./Ms./Dr.).\n" +
+                "   - If '" + patientName + "' is present but abbreviated or missing a surname, DO NOT REJECT.\n" +
+                "   - Only reject if the name is completely different (e.g. 'Jane Doe' vs 'John Smith').\n" +
                 "Otherwise, return a structured Markdown summary of the available information. Include sections for: 1) Documented Patient Info, 2) Diagnosed disease / primary assumption, 3) Severity / Urgency, 4) Key abnormal metrics, 5) Suggested physician review points.\n\n" + (isPdf ? "DOCUMENT TEXT CONTENT:\n" + extractedText : ""));
 
             List<Map<String, Object>> contentList = new ArrayList<>();
