@@ -1,9 +1,9 @@
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import QRCode from 'react-qr-code';
 import {
-  UserCircle, Mail, Phone, MapPin, Droplet, Calendar,
-  Activity, AlertCircle, Heart, ShieldCheck, Users,
-  AlertTriangle, Pill, Stethoscope, Scissors, Download, QrCode
+  AlertTriangle, Pill, Stethoscope, Scissors, Download, QrCode,
+  Edit3, Briefcase, Zap, Info
 } from 'lucide-react';
 import api from '../api/axiosConfig';
 
@@ -29,6 +29,7 @@ const Section = ({ title, icon: Icon, children }) => (
 
 const Profile = () => {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
 
   if (loading) return (
     <div className="flex justify-center items-center p-20">
@@ -63,10 +64,18 @@ const Profile = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12">
-      {/* Header */}
-      <div className="mb-2">
-        <h2 className="text-2xl font-bold text-slate-800">My Profile</h2>
-        <p className="text-slate-500 text-sm mt-1">Your personal and medical information on MEDISYNC</p>
+      <div className="mb-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-800">My Profile</h2>
+          <p className="text-slate-500 text-sm mt-1">Your personal and medical information on MEDISYNC</p>
+        </div>
+        <button 
+          onClick={() => navigate('/profile/edit')}
+          className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 font-bold px-6 py-3 rounded-2xl hover:bg-slate-50 transition shadow-sm active:scale-95"
+        >
+          <Edit3 size={18} className="text-primary-600" />
+          Edit My Health Profile
+        </button>
       </div>
 
       {/* Identity Card */}
@@ -167,6 +176,27 @@ const Profile = () => {
               {user.pastSurgeries || <span className="text-slate-300">None reported</span>}
             </p>
           </div>
+        </Section>
+
+        {/* ── NEW: Insurance Details ── */}
+        <Section title="Insurance Information ⚠️" icon={ShieldCheck}>
+          <InfoRow icon={Briefcase} label="Provider" value={user.insuranceProvider} color="text-blue-600" />
+          <InfoRow icon={Info} label="Policy Number" value={user.policyNumber} color="text-blue-500" />
+          <InfoRow icon={Calendar} label="Validity" value={user.insuranceValidity} color="text-blue-400" />
+        </Section>
+
+        {/* ── NEW: Lifestyle & Habits ── */}
+        <Section title="Lifestyle & Habits ⚠️" icon={Zap}>
+          <InfoRow icon={Activity} label="Smoking" value={user.smokingStatus} color="text-orange-600" />
+          <InfoRow icon={Zap} label="Alcohol" value={user.alcoholStatus} color="text-emerald-600" />
+          <InfoRow icon={Activity} label="Exercise" value={user.exerciseFrequency} color="text-blue-600" />
+        </Section>
+
+        {/* ── NEW: Advanced Medical ── */}
+        <Section title="Detailed Medical History ⚠️" icon={Info}>
+          <InfoRow icon={Users} label="Family History" value={user.familyMedicalHistory} color="text-purple-600" />
+          <InfoRow icon={Heart} label="Organ Donor Status" value={user.organDonorStatus} color="text-red-500" />
+          <InfoRow icon={Stethoscope} label="Other Conditions" value={user.medicalInfo} color="text-slate-500" />
         </Section>
 
       </div>

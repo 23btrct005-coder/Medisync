@@ -26,6 +26,15 @@ CREATE TABLE IF NOT EXISTS reports (
 -- Profile Photo Support
 ALTER TABLE doctors ADD COLUMN IF NOT EXISTS profile_picture BYTEA;
 ALTER TABLE patients ADD COLUMN IF NOT EXISTS profile_picture BYTEA;
+-- Secondary Patient Details
+ALTER TABLE patients ADD COLUMN IF NOT EXISTS insurance_provider TEXT;
+ALTER TABLE patients ADD COLUMN IF NOT EXISTS policy_number TEXT;
+ALTER TABLE patients ADD COLUMN IF NOT EXISTS insurance_validity TEXT;
+ALTER TABLE patients ADD COLUMN IF NOT EXISTS smoking_status TEXT;
+ALTER TABLE patients ADD COLUMN IF NOT EXISTS alcohol_status TEXT;
+ALTER TABLE patients ADD COLUMN IF NOT EXISTS exercise_frequency TEXT;
+ALTER TABLE patients ADD COLUMN IF NOT EXISTS family_medical_history TEXT;
+ALTER TABLE patients ADD COLUMN IF NOT EXISTS organ_donor_status TEXT;
 
 -- 3. Create Patient-Doctor junction table if it doesn't exist
 CREATE TABLE IF NOT EXISTS patient_doctors (

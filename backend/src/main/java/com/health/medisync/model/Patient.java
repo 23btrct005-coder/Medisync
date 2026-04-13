@@ -40,6 +40,21 @@ public class Patient {
     private String emergencyContactRelationship;
     private String emergencyContactPhone;
 
+    // ── Insurance Details ──
+    private String insuranceProvider;
+    private String policyNumber;
+    private String insuranceValidity;
+
+    // ── Lifestyle Details ──
+    private String smokingStatus;       // e.g. Non-smoker, Occasional, Regular
+    private String alcoholStatus;       // e.g. Non-drinker, Rare, Social, Regular
+    private String exerciseFrequency;   // e.g. Daily, 3-4 times/week, Rare, None
+
+    // ── Advanced Health Details ──
+    @Column(columnDefinition = "TEXT")
+    private String familyMedicalHistory;
+    private String organDonorStatus;    // e.g. Yes, No, Undecided
+
     // General Medical Info
     @Column(columnDefinition = "TEXT")
     private String medicalInfo;
@@ -141,4 +156,26 @@ public class Patient {
 
     public byte[] getProfilePicture() { return profilePicture; }
     public void setProfilePicture(byte[] profilePicture) { this.profilePicture = profilePicture; }
+
+    // Insurance Getters & Setters
+    public String getInsuranceProvider() { return insuranceProvider; }
+    public void setInsuranceProvider(String v) { this.insuranceProvider = v; }
+    public String getPolicyNumber() { return policyNumber; }
+    public void setPolicyNumber(String v) { this.policyNumber = v; }
+    public String getInsuranceValidity() { return insuranceValidity; }
+    public void setInsuranceValidity(String v) { this.insuranceValidity = v; }
+
+    // Lifestyle Getters & Setters
+    public String getSmokingStatus() { return smokingStatus; }
+    public void setSmokingStatus(String v) { this.smokingStatus = v; }
+    public String getAlcoholStatus() { return alcoholStatus; }
+    public void setAlcoholStatus(String v) { this.alcoholStatus = v; }
+    public String getExerciseFrequency() { return exerciseFrequency; }
+    public void setExerciseFrequency(String v) { this.exerciseFrequency = v; }
+
+    // Advanced Health Getters & Setters
+    public String getFamilyMedicalHistory() { return familyMedicalHistory; }
+    public void setFamilyMedicalHistory(String v) { this.familyMedicalHistory = v; }
+    public String getOrganDonorStatus() { return organDonorStatus; }
+    public void setOrganDonorStatus(String v) { this.organDonorStatus = v; }
 }

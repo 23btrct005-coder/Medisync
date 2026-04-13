@@ -4,7 +4,8 @@ import api from '../api/axiosConfig';
 import {
   ArrowLeft, User, Activity, FileText, PlusCircle, Calendar,
   Download, Loader2, Phone, MapPin, Heart, Droplet, ShieldCheck,
-  Mail, Users, AlertCircle, ChevronDown, ChevronUp
+  Mail, Users, AlertCircle, ChevronDown, ChevronUp,
+  Briefcase, Zap, Info, Scissors, Pill, Stethoscope
 } from 'lucide-react';
 
 // ── Reusable row for info display ──────────────────────────────────────────
@@ -111,13 +112,65 @@ const PatientInfoCard = ({ patient }) => {
             <InfoRow icon={Users} label="Relation" value={patient.emergencyContactRelationship} color="text-pink-500" />
             <InfoRow icon={Phone} label="Phone" value={patient.emergencyContactPhone} color="text-red-400" />
 
-            {/* Patient ID badge */}
-            <div className="mt-4 pt-3 border-t border-slate-100">
-              <p className="text-xs text-slate-400 font-medium">Patient ID</p>
-              <p className="text-sm font-bold text-slate-700 font-mono">#{patient.id}</p>
+            {/* Insurance Info */}
+            <h4 className="flex items-center gap-1.5 text-xs font-extrabold text-slate-500 uppercase tracking-widest mb-3 mt-6 pt-4 border-t border-slate-50">
+              <ShieldCheck size={13} className="text-blue-500" /> Insurance ⚠️
+            </h4>
+            <InfoRow icon={Briefcase} label="Provider" value={patient.insuranceProvider} color="text-blue-600" />
+            <InfoRow icon={Info} label="Policy #" value={patient.policyNumber} color="text-blue-500" />
+            <InfoRow icon={Calendar} label="Validity" value={patient.insuranceValidity} color="text-blue-400" />
+          </div>
+
+        </div>
+      )}
+
+      {/* Advanced Clinical Details Row */}
+      {expanded && (
+        <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x border-t border-slate-100 bg-slate-50/30">
+          
+          <div className="p-5">
+            <h4 className="flex items-center gap-1.5 text-xs font-extrabold text-slate-500 uppercase tracking-widest mb-3">
+              <Zap size={13} className="text-orange-500" /> Lifestyle & Habits ⚠️
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+              <InfoRow icon={Activity} label="Smoking" value={patient.smokingStatus} color="text-orange-600" />
+              <InfoRow icon={Zap} label="Alcohol" value={patient.alcoholStatus} color="text-emerald-600" />
+              <InfoRow icon={Activity} label="Exercise" value={patient.exerciseFrequency} color="text-blue-600" />
+              <InfoRow icon={Heart} label="Organ Donor" value={patient.organDonorStatus} color="text-red-500" />
             </div>
           </div>
 
+          <div className="p-5">
+            <h4 className="flex items-center gap-1.5 text-xs font-extrabold text-slate-500 uppercase tracking-widest mb-3">
+              <Info size={13} className="text-purple-500" /> Advanced Health ⚠️
+            </h4>
+            <div className="space-y-3">
+              {patient.familyMedicalHistory && (
+                <div className="bg-white border border-slate-200 rounded-xl p-3">
+                   <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Family Medical History</p>
+                   <p className="text-xs text-slate-700 leading-relaxed font-medium">{patient.familyMedicalHistory}</p>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white border border-slate-200 rounded-xl p-3">
+                   <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Allergies</p>
+                   <p className="text-xs text-red-600 font-bold">{patient.allergies || 'None'}</p>
+                </div>
+                <div className="bg-white border border-slate-200 rounded-xl p-3">
+                   <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Surgeries</p>
+                   <p className="text-xs text-purple-600 font-bold">{patient.pastSurgeries || 'None'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      )}
+
+      {expanded && (
+        <div className="px-6 py-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            <span>Clinical Integrity: High</span>
+            <span>Patient ID: #{patient.id}</span>
         </div>
       )}
     </div>

@@ -57,46 +57,50 @@ public class PatientService {
         System.out.println("DEBUG: Initiating profile sync for user: " + username);
         Patient patient = getPatientProfile(username);
         
-        if (profileData.containsKey("name") && profileData.get("name") != null) {
-            String newName = (String) profileData.get("name");
-            System.out.println("DEBUG: Updating Name: " + patient.getName() + " -> " + newName);
-            patient.setName(newName);
-        }
+        if (profileData.containsKey("name")) patient.setName((String) profileData.get("name"));
+        if (profileData.containsKey("phone")) patient.setPhone((String) profileData.get("phone"));
+        if (profileData.containsKey("alternatePhone")) patient.setAlternatePhone((String) profileData.get("alternatePhone"));
+        if (profileData.containsKey("street")) patient.setStreet((String) profileData.get("street"));
+        if (profileData.containsKey("city")) patient.setCity((String) profileData.get("city"));
+        if (profileData.containsKey("state")) patient.setState((String) profileData.get("state"));
+        if (profileData.containsKey("pinCode")) patient.setPinCode((String) profileData.get("pinCode"));
+        if (profileData.containsKey("bloodGroup")) patient.setBloodGroup((String) profileData.get("bloodGroup"));
         
-        if (profileData.containsKey("age") && profileData.get("age") != null) {
+        // Emergency Contact
+        if (profileData.containsKey("emergencyContactName")) patient.setEmergencyContactName((String) profileData.get("emergencyContactName"));
+        if (profileData.containsKey("emergencyContactRelationship")) patient.setEmergencyContactRelationship((String) profileData.get("emergencyContactRelationship"));
+        if (profileData.containsKey("emergencyContactPhone")) patient.setEmergencyContactPhone((String) profileData.get("emergencyContactPhone"));
+
+        // Insurance
+        if (profileData.containsKey("insuranceProvider")) patient.setInsuranceProvider((String) profileData.get("insuranceProvider"));
+        if (profileData.containsKey("policyNumber")) patient.setPolicyNumber((String) profileData.get("policyNumber"));
+        if (profileData.containsKey("insuranceValidity")) patient.setInsuranceValidity((String) profileData.get("insuranceValidity"));
+
+        // Lifestyle
+        if (profileData.containsKey("smokingStatus")) patient.setSmokingStatus((String) profileData.get("smokingStatus"));
+        if (profileData.containsKey("alcoholStatus")) patient.setAlcoholStatus((String) profileData.get("alcoholStatus"));
+        if (profileData.containsKey("exerciseFrequency")) patient.setExerciseFrequency((String) profileData.get("exerciseFrequency"));
+
+        // Advanced Medical
+        if (profileData.containsKey("familyMedicalHistory")) patient.setFamilyMedicalHistory((String) profileData.get("familyMedicalHistory"));
+        if (profileData.containsKey("organDonorStatus")) patient.setOrganDonorStatus((String) profileData.get("organDonorStatus"));
+        if (profileData.containsKey("allergies")) patient.setAllergies((String) profileData.get("allergies"));
+        if (profileData.containsKey("existingDiseases")) patient.setExistingDiseases((String) profileData.get("existingDiseases"));
+        if (profileData.containsKey("currentMedications")) patient.setCurrentMedications((String) profileData.get("currentMedications"));
+        if (profileData.containsKey("pastSurgeries")) patient.setPastSurgeries((String) profileData.get("pastSurgeries"));
+        if (profileData.containsKey("medicalInfo")) patient.setMedicalInfo((String) profileData.get("medicalInfo"));
+
+        // Age logic (handling both string and number)
+        if (profileData.containsKey("age")) {
             Object ageObj = profileData.get("age");
-            Integer ageValue = null;
-            
-            if (ageObj instanceof Number) {
-                ageValue = ((Number) ageObj).intValue();
-            } else if (ageObj instanceof String) {
-                try {
-                    ageValue = Integer.parseInt((String) ageObj);
-                } catch (NumberFormatException e) {
-                    System.err.println("DEBUG: Failed to parse age string: " + ageObj);
-                }
+            if (ageObj instanceof Number) patient.setAge(((Number) ageObj).intValue());
+            else if (ageObj instanceof String && !((String)ageObj).isEmpty()) {
+                try { patient.setAge(Integer.parseInt((String) ageObj)); } catch (Exception ignored) {}
             }
-            
-            if (ageValue != null) {
-                System.out.println("DEBUG: Updating Age: " + patient.getAge() + " -> " + ageValue);
-                patient.setAge(ageValue);
-            }
-        }
-        
-        String bloodGroup = null;
-        if (profileData.containsKey("bloodGroup")) {
-            bloodGroup = (String) profileData.get("bloodGroup");
-        } else if (profileData.containsKey("blood_group")) {
-            bloodGroup = (String) profileData.get("blood_group");
-        }
-        
-        if (bloodGroup != null) {
-            System.out.println("DEBUG: Updating Blood Group: " + patient.getBloodGroup() + " -> " + bloodGroup);
-            patient.setBloodGroup(bloodGroup);
         }
         
         Patient saved = patientRepository.save(patient);
-        System.out.println("DEBUG: Profile sync completed successfully for: " + username);
+        System.out.println("DEBUG: Profile update completed successfully for: " + username);
         return saved;
     }
 
