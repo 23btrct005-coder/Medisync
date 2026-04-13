@@ -146,9 +146,9 @@ const PatientManager = () => {
     setLoading(true);
     try {
       const [patientRes, recordsRes, reportsRes] = await Promise.all([
-        api.get(`/doctor/patients/${id}`),
-        api.get(`/doctor/patients/${id}/records`),
-        api.get(`/doctor/patients/${id}/reports`),
+        api.get(`doctor/patients/${id}`),
+        api.get(`doctor/patients/${id}/records`),
+        api.get(`doctor/patients/${id}/reports`),
       ]);
       setPatient(patientRes.data);
       setRecords(recordsRes.data.sort((a, b) => new Date(b.date) - new Date(a.date)));
@@ -164,7 +164,7 @@ const PatientManager = () => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await api.post(`/doctor/patients/${id}/records`, {
+      await api.post(`doctor/patients/${id}/records`, {
         diagnosis: newDiagnosis,
         prescription: newPrescription,
         date: new Date().toISOString().split('T')[0],
@@ -179,7 +179,7 @@ const PatientManager = () => {
   const handleDownload = async (reportId, fileName) => {
     setDownloadingId(reportId);
     try {
-      const res = await api.get(`/reports/download/${reportId}`, { responseType: 'blob' });
+      const res = await api.get(`reports/download/${reportId}`, { responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url; link.setAttribute('download', fileName);

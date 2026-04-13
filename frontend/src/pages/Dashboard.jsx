@@ -15,7 +15,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboardInfo = async () => {
       try {
-        const res = await api.get('/records/my-records');
+        const res = await api.get('records/my-records');
         const records = res.data;
         if(records && records.length > 0) {
             const latest = records.sort((a,b) => new Date(b.date) - new Date(a.date))[0];
@@ -42,7 +42,7 @@ const Dashboard = () => {
 
   const fetchRequests = async () => {
     try {
-      const res = await api.get('/patient/requests');
+      const res = await api.get('patient/requests');
       setRequests(res.data || []);
     } catch (e) {
       console.error("Failed to fetch requests", e);
@@ -51,7 +51,7 @@ const Dashboard = () => {
 
   const handleAcceptRequest = async (id) => {
     try {
-      await api.post(`/patient/requests/${id}/accept`);
+      await api.post(`patient/requests/${id}/accept`);
       alert("Access granted successfully!");
       fetchRequests(); // Refresh
     } catch(err) {
@@ -61,7 +61,7 @@ const Dashboard = () => {
 
   const handleRejectRequest = async (id) => {
     try {
-      await api.post(`/patient/requests/${id}/reject`);
+      await api.post(`patient/requests/${id}/reject`);
       fetchRequests(); // Refresh
     } catch(err) {
       alert("Failed to reject request.");
@@ -72,7 +72,7 @@ const Dashboard = () => {
     if(!doctorEmail) return;
     setLinking(true);
     try {
-      const res = await api.post('/patient/link-doctor', { doctorEmail });
+      const res = await api.post('patient/link-doctor', { doctorEmail });
       alert(res.data.message || 'Access successfully granted to ' + doctorEmail);
       setDoctorEmail('');
     } catch (err) {

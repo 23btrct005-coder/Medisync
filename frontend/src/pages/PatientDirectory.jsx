@@ -16,7 +16,7 @@ const PatientDirectory = () => {
   const fetchPatients = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/doctor/patients');
+      const res = await api.get('doctor/patients');
       setPatients(res.data);
     } catch (err) {
       console.error("Error fetching patients", err);

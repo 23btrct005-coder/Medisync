@@ -78,7 +78,7 @@ const Register = () => {
       }
     }, 15000);
     try {
-      await api.post('/auth/request-otp', { email: formData.email });
+      await api.post('auth/request-otp', { email: formData.email });
       clearTimeout(timeoutId);
       setOtpSent(true);
       setSuccess('Verification code sent to your email.');
@@ -95,7 +95,7 @@ const Register = () => {
     setVerifying(true);
     setError('');
     try {
-      await api.post('/auth/verify-otp', { email: formData.email, otp: otpCode });
+      await api.post('auth/verify-otp', { email: formData.email, otp: otpCode });
       setEmailVerified(true);
       setOtpSent(false);
       setSuccess('Email verified successfully! Please complete the form below.');
@@ -114,7 +114,7 @@ const Register = () => {
     setLoading(true);
     setError('');
     try {
-      await api.post('/auth/register/patient', {
+      await api.post('auth/register/patient', {
         username: formData.email,
         email: formData.email,
         name: formData.name,

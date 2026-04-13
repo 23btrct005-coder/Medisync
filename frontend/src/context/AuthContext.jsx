@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
     try {
       // Always fetch full profile from the Spring Boot backend
       // which returns all registration fields (address, phone, emergency contact, etc.)
-      const endpoint = role === 'ROLE_DOCTOR' ? '/doctor/profile' : '/patient/profile';
+      const endpoint = role === 'ROLE_DOCTOR' ? 'doctor/profile' : 'patient/profile';
       const response = await api.get(endpoint);
       setUser({ ...response.data, role });
     } catch (error) {
@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }) => {
     
     try {
       // Prioritize Spring Boot Backend for Auth
-      const response = await api.post('/auth/login', { username, password });
+      const response = await api.post('auth/login', { username, password });
       const { token, role } = response.data;
       
       localStorage.setItem('token', token);

@@ -19,7 +19,7 @@ const MedicalHistory = () => {
     setLoading(true);
     try {
       // API integration with search
-      const res = await api.get(`/records/my-records${searchTerm ? `?search=${searchTerm}` : ''}`);
+      const res = await api.get(`records/my-records${searchTerm ? `?search=${searchTerm}` : ''}`);
       setRecords(res.data);
     } catch (err) {
       console.error("Error fetching records", err);

@@ -16,7 +16,7 @@ const ForgotPassword = () => {
     setError('');
     
     try {
-      const response = await api.post('/auth/forgot-password', { username });
+      const response = await api.post('auth/forgot-password', { username });
       setSuccess(true);
       // In a real app, we wouldn't show the token here, but for this simulation we do
       setSimulatedToken(response.data.token);

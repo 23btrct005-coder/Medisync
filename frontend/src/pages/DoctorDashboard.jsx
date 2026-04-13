@@ -21,7 +21,7 @@ const DoctorDashboard = () => {
  
   const fetchRequests = async () => {
     try {
-      const res = await api.get('/doctor/requests');
+      const res = await api.get('doctor/requests');
       setRequests(res.data || []);
     } catch (err) {
       console.error("Failed to fetch doctor requests", err);
@@ -72,7 +72,7 @@ const DoctorDashboard = () => {
     if(!patientEmail) return;
     setSending(true);
     try {
-      await api.post('/doctor/request-access', { patientEmail });
+      await api.post('doctor/request-access', { patientEmail });
       alert(`Request successfully sent to ${patientEmail}!`);
       setPatientEmail('');
     } catch (err) {

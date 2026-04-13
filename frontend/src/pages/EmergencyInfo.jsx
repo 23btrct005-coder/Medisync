@@ -61,7 +61,7 @@ const EmergencyInfo = () => {
       try {
         setLoading(true);
         setError(null);
-        const res = await api.get(`/auth/emergency/${patientId}`);
+        const res = await api.get(`auth/emergency/${patientId}`);
         setPatient(res.data);
       } catch (err) {
         console.error("Critical patient data fetch failed", err);
@@ -81,7 +81,7 @@ const EmergencyInfo = () => {
     setRequestError('');
     try {
       console.log(`Requesting access for patient ID: ${patientId}`);
-      await api.post('/doctor/request-access', { patientId: Number(patientId) });
+      await api.post('doctor/request-access', { patientId: Number(patientId) });
       setRequestSuccess(true);
     } catch (err) {
       setRequestError(err.response?.data?.message || 'Failed to send request. You might already have access or a pending request.');

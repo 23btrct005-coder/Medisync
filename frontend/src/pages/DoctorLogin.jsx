@@ -57,7 +57,7 @@ const DoctorRegisterForm = ({ onBack }) => {
     setVerifying(true); setError('');
     const tid = setTimeout(() => { setVerifying(false); setError('Server timeout. Please try again.'); }, 15000);
     try {
-      await api.post('/auth/request-otp', { email: formData.email });
+      await api.post('auth/request-otp', { email: formData.email });
       clearTimeout(tid); setOtpSent(true); setSuccess('Verification code sent to your email.');
     } catch (err) {
       clearTimeout(tid); setError(err.response?.data?.message || 'Failed to send code.');
@@ -68,7 +68,7 @@ const DoctorRegisterForm = ({ onBack }) => {
     if (otpCode.length < 6) return;
     setVerifying(true); setError('');
     try {
-      await api.post('/auth/verify-otp', { email: formData.email, otp: otpCode });
+      await api.post('auth/verify-otp', { email: formData.email, otp: otpCode });
       setEmailVerified(true); setOtpSent(false);
       setSuccess('Email verified! Please complete the rest of the form.');
     } catch (err) { setError(err.response?.data?.message || 'Invalid code.'); }
@@ -81,7 +81,7 @@ const DoctorRegisterForm = ({ onBack }) => {
     if (formData.password !== formData.confirmPassword) { setError('Passwords do not match.'); return; }
     setLoading(true); setError('');
     try {
-      await api.post('/auth/register/doctor', {
+      await api.post('auth/register/doctor', {
         username: formData.username || formData.email,
         password: formData.password,
         name: formData.name, email: formData.email,

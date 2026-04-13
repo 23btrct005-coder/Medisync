@@ -20,7 +20,7 @@ const Reports = () => {
 
   const fetchReports = async () => {
     try {
-      const res = await api.get('/reports');
+      const res = await api.get('reports');
       setReports(res.data);
     } catch (error) {
       console.error("Failed to load reports", error);
@@ -100,7 +100,7 @@ const Reports = () => {
         formData.append('file', file);
         setUploading(true);
         try {
-          await api.post('/reports/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+          await api.post('reports/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
           fetchReports();
         } catch (err) {
            console.error("Upload failed", err);
@@ -119,7 +119,7 @@ const Reports = () => {
   const handleDownload = async (id, fileName) => {
     setDownloadingId(id);
     try {
-      const res = await api.get(`/reports/download/${id}`, {
+      const res = await api.get(`reports/download/${id}`, {
         responseType: 'blob', // Important for downloading files
       });
       
