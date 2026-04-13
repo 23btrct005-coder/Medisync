@@ -59,13 +59,14 @@ public class AuthService {
 
     @Transactional
     public String initiatePasswordReset(String input) {
-        User user = userRepository.findByUsername(input).orElse(null);
+        String normalizedInput = input != null ? input.toLowerCase() : null;
+        User user = userRepository.findByUsername(normalizedInput).orElse(null);
 
-        if (user == null && input.contains("@")) {
+        if (user == null && normalizedInput != null && normalizedInput.contains("@")) {
             // Try searching by email in Patient and Doctor repositories
-            user = patientRepository.findByEmail(input)
+            user = patientRepository.findByEmail(normalizedInput)
                     .map(Patient::getUser)
-                    .orElseGet(() -> doctorRepository.findByEmail(input)
+                    .orElseGet(() -> doctorRepository.findByEmail(normalizedInput)
                             .map(Doctor::getUser)
                             .orElse(null));
         }
@@ -134,31 +135,33 @@ public class AuthService {
 
     @Transactional
     public void generateAndSendOtp(String email) {
+        String normalizedEmail = email != null ? email.toLowerCase() : null;
         // Delete any existing OTPs for this email
-        emailVerificationOtpRepository.deleteByEmail(email);
+        emailVerificationOtpRepository.deleteByEmail(normalizedEmail);
         emailVerificationOtpRepository.flush();
 
         // Generate 6-digit OTP
         String otp = String.format("%06d", new Random().nextInt(1000000));
         
-        EmailVerificationOtp verificationOtp = new EmailVerificationOtp(email, otp, 5); // 5 mins expiry
+        EmailVerificationOtp verificationOtp = new EmailVerificationOtp(normalizedEmail, otp, 5); // 5 mins expiry
         emailVerificationOtpRepository.save(verificationOtp);
 
-        System.out.println("DEBUG: Sending OTP " + otp + " to " + email);
-        emailService.sendOtpEmail(email, otp);
+        System.out.println("DEBUG: Sending OTP " + otp + " to " + normalizedEmail);
+        emailService.sendOtpEmail(normalizedEmail, otp);
     }
 
     @Transactional
     public void verifyOtp(String email, String otp) {
-        verifyOtpStandalone(email, otp);
+        String normalizedEmail = email != null ? email.toLowerCase() : null;
+        verifyOtpStandalone(normalizedEmail, otp);
         
         // After standalone verification, we find the user and enable them
-        User user = userRepository.findByUsername(email).orElse(null);
+        User user = userRepository.findByUsername(normalizedEmail).orElse(null);
         if (user == null) {
             // If username isn't email, try finding by role link
-            user = patientRepository.findByEmail(email)
+            user = patientRepository.findByEmail(normalizedEmail)
                     .map(Patient::getUser)
-                    .orElseGet(() -> doctorRepository.findByEmail(email)
+                    .orElseGet(() -> doctorRepository.findByEmail(normalizedEmail)
                             .map(Doctor::getUser)
                             .orElse(null));
         }
@@ -175,7 +178,8 @@ public class AuthService {
 
     @Transactional
     public void verifyOtpStandalone(String email, String otp) {
-        EmailVerificationOtp verificationOtp = emailVerificationOtpRepository.findByEmail(email)
+        String normalizedEmail = email != null ? email.toLowerCase() : null;
+        EmailVerificationOtp verificationOtp = emailVerificationOtpRepository.findByEmail(normalizedEmail)
                 .orElseThrow(() -> new RuntimeException("No verification code found for this email."));
 
         if (verificationOtp.isExpired()) {

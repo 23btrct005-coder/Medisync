@@ -60,8 +60,9 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody AuthRequest loginRequest) {
+        String normalizedUsername = loginRequest.getUsername() != null ? loginRequest.getUsername().toLowerCase() : null;
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+                new UsernamePasswordAuthenticationToken(normalizedUsername, loginRequest.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateToken(authentication.getName());
@@ -79,8 +80,13 @@ public class AuthController {
         ObjectMapper mapper = new ObjectMapper();
         Map<String, String> request = mapper.readValue(userDataJson, Map.class);
 
-        String username = request.get("username");
-        userRepository.findByUsername(username).ifPresent(existing -> {
+        String username = request.get("username") != null ? request.get("username").toLowerCase() : null;
+        String email = request.get("email") != null ? request.get("email").toLowerCase() : null;
+        
+        // Use email as username if none provided
+        final String finalUsername = (username == null || username.isEmpty()) ? email : username;
+
+        userRepository.findByUsername(finalUsername).ifPresent(existing -> {
             boolean hasProfile = doctorRepository.findByUserId(existing.getId()).isPresent();
             if (existing.isEnabled() && hasProfile) {
                 throw new RuntimeException("Error: This account is already registered and verified. Please log in.");
@@ -91,7 +97,7 @@ public class AuthController {
         });
 
         User user = new User();
-        user.setUsername(request.get("username"));
+        user.setUsername(finalUsername);
         user.setPassword(passwordEncoder.encode(request.get("password")));
         user.setRole("ROLE_DOCTOR");
         
@@ -115,7 +121,7 @@ public class AuthController {
         doctor.setUser(user);
         doctor.setApproved(false); // Must be approved by admin
         doctor.setName(request.get("name"));
-        doctor.setEmail(request.get("email"));
+        doctor.setEmail(email);
         doctor.setGender(request.get("gender"));
         doctor.setDateOfBirth(request.get("dateOfBirth"));
         doctor.setPhone(request.get("phone"));
@@ -159,9 +165,14 @@ public class AuthController {
         ObjectMapper mapper = new ObjectMapper();
         Map<String, String> request = mapper.readValue(userDataJson, Map.class);
 
-        String username = request.get("username");
+        String username = request.get("username") != null ? request.get("username").toLowerCase() : null;
+        String email = request.get("email") != null ? request.get("email").toLowerCase() : null;
+        
+        // Use email as username if none provided
+        final String finalUsername = (username == null || username.isEmpty()) ? email : username;
+        
         try {
-            userRepository.findByUsername(username).ifPresent(existing -> {
+            userRepository.findByUsername(finalUsername).ifPresent(existing -> {
                 if (existing.isEnabled()) {
                     throw new RuntimeException("Error: This account is already registered and verified. Please log in.");
                 }
@@ -174,7 +185,7 @@ public class AuthController {
         }
 
         User user = new User();
-        user.setUsername(request.get("username"));
+        user.setUsername(finalUsername);
         user.setPassword(passwordEncoder.encode(request.get("password")));
         user.setRole("ROLE_PATIENT");
         
@@ -196,7 +207,7 @@ public class AuthController {
         Patient patient = new Patient();
         patient.setUser(user);
         patient.setName(request.get("name"));
-        patient.setEmail(request.get("email"));
+        patient.setEmail(email);
         patient.setGender(request.get("gender"));
         patient.setDateOfBirth(request.get("dateOfBirth"));
         patient.setPhone(request.get("phone"));
@@ -235,7 +246,7 @@ public class AuthController {
     @PostMapping("/verify-otp")
     public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> request) {
         try {
-            String email = request.get("email");
+            String email = request.get("email") != null ? request.get("email").toLowerCase() : null;
             String otp = request.get("otp");
             authService.verifyOtp(email, otp);
             return ResponseEntity.ok(Map.of("message", "Email verified successfully!"));
@@ -247,7 +258,7 @@ public class AuthController {
     @PostMapping("/request-otp")
     public ResponseEntity<?> requestOtp(@RequestBody Map<String, String> request) {
         try {
-            String email = request.get("email");
+            String email = request.get("email") != null ? request.get("email").toLowerCase() : null;
 
             // Only block if user already exists AND is fully enabled (active account)
             userRepository.findByUsername(email).ifPresent(existingUser -> {
@@ -269,7 +280,7 @@ public class AuthController {
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
         try {
-            String username = request.get("username");
+            String username = request.get("username") != null ? request.get("username").toLowerCase() : null;
             if (username == null || username.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Username is required"));
             }
