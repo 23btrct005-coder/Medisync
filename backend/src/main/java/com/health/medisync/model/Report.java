@@ -2,6 +2,8 @@ package com.health.medisync.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "reports")
@@ -17,8 +19,8 @@ public class Report {
     private String fileName;
     private String fileType;
 
-    @Lob
-    @Column(columnDefinition = "LONGBLOB")
+    @JdbcTypeCode(SqlTypes.BINARY)
+    @Column(name = "file_data")
     private byte[] fileData;
     
     private LocalDate uploadDate;
