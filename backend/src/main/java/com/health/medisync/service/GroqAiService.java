@@ -10,7 +10,12 @@ import org.springframework.web.client.RestTemplate;
 import java.util.*;
 
 @Service
-public class GroqAiService {
+public class GroqAiService implements AiProvider {
+    
+    @Override
+    public String getProviderName() {
+        return "Groq AI (Fast Summary)";
+    }
 
     @Value("${groq.api.key:YOUR_API_KEY_HERE}")
     private String apiKey;

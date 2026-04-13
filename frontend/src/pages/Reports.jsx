@@ -205,6 +205,11 @@ const Reports = () => {
                       <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-black rounded uppercase tracking-wider">Vision AI: {report.monaiDiagnosis}</span>
                     </div>
                   )}
+                  {report.geminiSummary && (
+                    <div className="mt-1 flex items-center gap-2">
+                       <span className="px-2 py-0.5 bg-primary-100 text-primary-700 text-[10px] font-black rounded uppercase tracking-wider">Clinical Focus: Gemini 1.5 Pro</span>
+                    </div>
+                  )}
                 </div>
               </div>
               

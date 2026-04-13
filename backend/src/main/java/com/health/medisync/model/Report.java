@@ -31,6 +31,9 @@ public class Report {
     private String monaiDiagnosis;
     private Double monaiConfidence;
 
+    @Column(columnDefinition = "TEXT")
+    private String geminiSummary;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -57,4 +60,7 @@ public class Report {
 
     public Double getMonaiConfidence() { return monaiConfidence; }
     public void setMonaiConfidence(Double monaiConfidence) { this.monaiConfidence = monaiConfidence; }
+
+    public String getGeminiSummary() { return geminiSummary; }
+    public void setGeminiSummary(String geminiSummary) { this.geminiSummary = geminiSummary; }
 }

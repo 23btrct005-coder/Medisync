@@ -16,19 +16,20 @@ import java.time.LocalDate;
 
 @Service
 public class ReportService {
-    private final ReportRepository reportRepository;
-    private final PatientService patientService;
-    private final GroqAiService aiService;
+    private final GroqAiService groqAiService;
+    private final GeminiAiService geminiAiService;
     private final MonaiService monaiService;
     private final UserRepository userRepository;
     private final DoctorRepository doctorRepository;
 
     public ReportService(ReportRepository reportRepository, PatientService patientService, 
-                         GroqAiService aiService, MonaiService monaiService, 
+                         GroqAiService groqAiService, GeminiAiService geminiAiService,
+                         MonaiService monaiService, 
                          UserRepository userRepository, DoctorRepository doctorRepository) {
         this.reportRepository = reportRepository;
         this.patientService = patientService;
-        this.aiService = aiService;
+        this.groqAiService = groqAiService;
+        this.geminiAiService = geminiAiService;
         this.monaiService = monaiService;
         this.userRepository = userRepository;
         this.doctorRepository = doctorRepository;
@@ -44,14 +45,24 @@ public class ReportService {
         report.setFileData(file.getBytes());
         report.setUploadDate(LocalDate.now());
 
-        // Analyze using Groq AI Vision
-        String aiSummary = aiService.analyzeReport(file.getBytes(), file.getContentType(), patient.getName(), patient.getAge() != null ? patient.getAge() : 0);
-        if (aiSummary != null && aiSummary.contains("ERROR_PROFILE_MISMATCH")) {
-            throw new RuntimeException("Security Block: The Name on the uploaded document does not match your profile. Uploads for other patients are prohibited.");
+        // 1. Fast Summary (Groq)
+        String groqSummary = groqAiService.analyzeReport(file.getBytes(), file.getContentType(), patient.getName(), patient.getAge() != null ? patient.getAge() : 0);
+        if (groqSummary != null && groqSummary.contains("ERROR_PROFILE_MISMATCH")) {
+            throw new RuntimeException("Security Block: The Name on the uploaded document does not match your profile.");
         }        
-        report.setAiSummary(aiSummary);
+        report.setAiSummary(groqSummary);
 
-        // Advanced Vision Analysis using MONAI (for images only)
+        // 2. High-Accuracy Clinical Reasoning (Gemini 1.5 Pro)
+        try {
+            String geminiSummary = geminiAiService.analyzeReport(file.getBytes(), file.getContentType(), patient.getName(), patient.getAge() != null ? patient.getAge() : 0);
+            if (!"ERROR_PROFILE_MISMATCH".equals(geminiSummary)) {
+                report.setGeminiSummary(geminiSummary);
+            }
+        } catch (Exception e) {
+            System.err.println("Gemini analysis failed: " + e.getMessage());
+        }
+
+        // 3. Advanced Vision Analysis using MONAI (for images only)
         if (file.getContentType() != null && file.getContentType().startsWith("image/")) {
             Map<String, Object> monaiResults = monaiService.analyzeXray(file.getBytes(), file.getOriginalFilename());
             if (monaiResults != null) {

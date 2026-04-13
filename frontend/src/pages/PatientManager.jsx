@@ -428,13 +428,25 @@ const PatientManager = () => {
                 <div className="p-6 divide-y divide-slate-100">
                   <div className="pb-5">
                     <h4 className="text-xs font-extrabold text-indigo-600 mb-3 uppercase tracking-widest flex items-center gap-1.5">
-                      ✨ Groq AI Context Summary
+                      ✨ Groq AI Quick Summary
                     </h4>
                     {r.aiSummary
                       ? <pre className="font-sans whitespace-pre-wrap leading-relaxed text-slate-700 text-sm">{r.aiSummary}</pre>
-                      : <p className="italic text-slate-400 text-sm">No clinical summary generated for this document.</p>
+                      : <p className="italic text-slate-400 text-sm">No clinical summary generated.</p>
                     }
                   </div>
+
+                  {r.geminiSummary && (
+                    <div className="py-5">
+                      <h4 className="text-xs font-extrabold text-primary-600 mb-3 uppercase tracking-widest flex items-center gap-1.5">
+                        ⚕️ Gemini 1.5 Pro Deep Reasoning
+                      </h4>
+                      <div className="prose prose-sm max-w-none text-slate-700 bg-slate-50 border border-slate-100 p-5 rounded-2xl relative">
+                        <div className="absolute top-3 right-4 px-2 py-0.5 bg-primary-100 text-primary-700 text-[10px] font-black rounded uppercase tracking-wider">High Fidelity</div>
+                        <pre className="font-sans whitespace-pre-wrap leading-relaxed">{r.geminiSummary}</pre>
+                      </div>
+                    </div>
+                  )}
 
                   {r.monaiDiagnosis && (
                     <div className="pt-5">
