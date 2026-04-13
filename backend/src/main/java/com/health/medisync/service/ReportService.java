@@ -16,6 +16,8 @@ import java.time.LocalDate;
 
 @Service
 public class ReportService {
+    private final ReportRepository reportRepository;
+    private final PatientService patientService;
     private final GroqAiService groqAiService;
     private final GeminiAiService geminiAiService;
     private final MonaiService monaiService;
