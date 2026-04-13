@@ -26,8 +26,8 @@ public class GeminiAiService implements AiProvider {
 
         try {
             RestTemplate restTemplate = new RestTemplate();
-            // Using v1beta for Gemini 1.5 access (Flash is highly reliable for clinical analysis)
-            String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey;
+            // Using stable v1 for Gemini 1.5 access (Highly reliable production endpoint)
+            String url = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" + apiKey;
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
