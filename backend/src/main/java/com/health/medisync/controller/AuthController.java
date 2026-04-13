@@ -9,6 +9,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import com.health.medisync.model.Patient;
@@ -66,13 +67,15 @@ public class AuthController {
     }
 
     @PostMapping("/register/doctor")
+    @Transactional
     public ResponseEntity<?> registerDoctor(@RequestBody Map<String, String> request) {
         String username = request.get("username");
         userRepository.findByUsername(username).ifPresent(existing -> {
-            if (existing.isEnabled()) {
+            boolean hasProfile = doctorRepository.findByUserId(existing.getId()).isPresent();
+            if (existing.isEnabled() && hasProfile) {
                 throw new RuntimeException("Error: This account is already registered and verified. Please log in.");
             }
-            // Delete ghost/unverified user so registration can proceed
+            // Delete incomplete/unverified user so registration can proceed
             doctorRepository.findByUserId(existing.getId()).ifPresent(doctorRepository::delete);
             userRepository.delete(existing);
         });
@@ -130,6 +133,7 @@ public class AuthController {
     }
 
     @PostMapping("/register/patient")
+    @Transactional
     public ResponseEntity<?> registerPatient(@RequestBody Map<String, String> request) {
         String username = request.get("username");
         try {

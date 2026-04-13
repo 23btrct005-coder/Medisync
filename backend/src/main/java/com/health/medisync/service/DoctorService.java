@@ -40,7 +40,7 @@ public class DoctorService {
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
         return doctorRepository.findByUserId(user.getId())
-            .orElseThrow(() -> new RuntimeException("Doctor profile not found"));
+            .orElseThrow(() -> new RuntimeException("Doctor profile not found. Please complete your registration."));
     }
 
     public List<Patient> getLinkedPatients(String doctorUsername) {
