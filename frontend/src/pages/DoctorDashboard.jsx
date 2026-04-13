@@ -5,6 +5,7 @@ import api from '../api/axiosConfig';
 import { Html5Qrcode } from 'html5-qrcode';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ProfileCompletionBanner from '../components/ProfileCompletionBanner';
 
 const DoctorDashboard = () => {
   const { user } = useAuth();
@@ -84,6 +85,7 @@ const DoctorDashboard = () => {
 
   return (
     <div className="space-y-6 h-full flex flex-col">
+      <ProfileCompletionBanner />
       <div className="bg-gradient-to-r from-blue-700 to-primary-600 rounded-2xl p-8 text-white shadow-lg relative overflow-hidden shrink-0">
         <div className="relative z-10">
             <h1 className="text-3xl font-bold mb-2">Welcome, {user?.name || 'Doctor'}!</h1>

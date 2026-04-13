@@ -84,4 +84,10 @@ public class DoctorController {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
+
+    @PostMapping("/profile/sync")
+    public ResponseEntity<Doctor> syncProfile(@RequestBody Map<String, Object> updates, Authentication authentication) {
+        String username = authentication.getName();
+        return ResponseEntity.ok(doctorService.updateProfile(username, updates));
+    }
 }

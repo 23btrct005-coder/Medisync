@@ -19,6 +19,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import EmergencyInfo from './pages/EmergencyInfo';
 import EditProfile from './pages/EditProfile';
+import EditDoctorProfile from './pages/EditDoctorProfile';
 
 const ProtectedRoute = ({ children, allowedRole }) => {
   const { user, userRole, loading } = useAuth();
@@ -65,6 +66,7 @@ function App() {
             <Route path="patients" element={<PatientDirectory />} />
             <Route path="patients/:id" element={<PatientManager />} />
             <Route path="profile" element={<DoctorProfile />} />
+            <Route path="profile/edit" element={<EditDoctorProfile />} />
           </Route>
 
         </Routes>

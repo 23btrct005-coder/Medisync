@@ -1,8 +1,10 @@
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import api from '../api/axiosConfig';
 import {
   Stethoscope, Mail, Phone, GraduationCap, BadgeCheck,
   Building2, Clock, Activity, AlertCircle, User, Users,
-  Calendar, CheckCircle, XCircle, Video
+  Calendar, CheckCircle, XCircle, Video, Edit3
 } from 'lucide-react';
 
 const InfoRow = ({ icon: Icon, label, value, color = 'text-blue-600' }) => (
@@ -27,6 +29,7 @@ const Section = ({ title, icon: Icon, children }) => (
 
 const DoctorProfile = () => {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
 
   if (loading) return (
     <div className="flex justify-center items-center p-20">
@@ -46,10 +49,18 @@ const DoctorProfile = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12">
-      {/* Header */}
-      <div className="mb-2">
-        <h2 className="text-2xl font-bold text-slate-800">Physician Profile</h2>
-        <p className="text-slate-500 text-sm mt-1">Your professional profile on MEDISYNC</p>
+      <div className="mb-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-800">Physician Profile</h2>
+          <p className="text-slate-500 text-sm mt-1">Your professional profile on MEDISYNC</p>
+        </div>
+        <button 
+          onClick={() => navigate('/doctor-dashboard/profile/edit')}
+          className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 font-bold px-6 py-3 rounded-2xl hover:bg-slate-50 transition shadow-sm active:scale-95"
+        >
+          <Edit3 size={18} className="text-blue-600" />
+          Edit My Professional Profile
+        </button>
       </div>
 
       {/* Identity Card */}

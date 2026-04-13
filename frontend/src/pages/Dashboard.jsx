@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
 import QRCode from 'react-qr-code';
 import { Activity, ClipboardList, UserCheck, Calendar, QrCode, X, Download } from 'lucide-react';
+import ProfileCompletionBanner from '../components/ProfileCompletionBanner';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -105,6 +106,7 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
+      <ProfileCompletionBanner />
       <div className="bg-gradient-to-r from-primary-600 to-primary-800 rounded-2xl p-8 text-white shadow-lg relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
