@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Users, FileStack, Stethoscope, AlertCircle, QrCode, X, Camera } from 'lucide-react';
 import api from '../api/axiosConfig';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,6 +11,7 @@ const DoctorDashboard = () => {
   const [patientEmail, setPatientEmail] = useState('');
   const [sending, setSending] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
+  const [scanError, setScanError] = useState('');
   const [requests, setRequests] = useState([]);
   const navigate = useNavigate();
  
@@ -28,32 +29,43 @@ const DoctorDashboard = () => {
   };
 
   useEffect(() => {
-    let scanner = null;
+    let html5QrCode = null;
     if (showScanner) {
-      scanner = new Html5QrcodeScanner('qr-reader', {
-        fps: 10,
-        qrbox: { width: 250, height: 250 },
-      }, false);
-
-      scanner.render((decodedText) => {
-        // Extract ID from URL if necessary
-        const parts = decodedText.split('/');
-        const patientId = parts[parts.length - 1];
-        if (patientId && !isNaN(patientId)) {
-          scanner.clear();
-          setShowScanner(false);
-          // Navigate to the emergency page (public)
-          navigate(`/emergency/${patientId}`);
+      setScanError('');
+      // Delay to ensure the DOM element #qr-reader is mounted
+      const timer = setTimeout(() => {
+        try {
+          html5QrCode = new Html5Qrcode("qr-reader");
+          html5QrCode.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            (decodedText) => {
+              const parts = decodedText.split('/');
+              const patientId = parts[parts.length - 1];
+              if (patientId && !isNaN(patientId)) {
+                html5QrCode.stop().then(() => {
+                   setShowScanner(false);
+                   navigate(`/emergency/${patientId}`);
+                }).catch(err => console.error("Failed to stop scanner", err));
+              }
+            },
+            (errorMessage) => { /* ignore silent errors */ }
+          ).catch(err => {
+            console.error("Camera fail:", err);
+            setScanError("Unable to access camera. Please check permissions.");
+          });
+        } catch (e) {
+          console.error("Scanner setup error:", e);
         }
-      }, (error) => {
-        // console.warn(error);
-      });
+      }, 300);
+
+      return () => {
+        clearTimeout(timer);
+        if (html5QrCode && html5QrCode.isScanning) {
+          html5QrCode.stop().catch(e => console.warn(e));
+        }
+      };
     }
-    return () => {
-      if (scanner) {
-        scanner.clear().catch(e => console.error("Failed to clear scanner", e));
-      }
-    };
   }, [showScanner, navigate]);
 
   const handleSendRequest = async () => {
@@ -193,11 +205,25 @@ const DoctorDashboard = () => {
                 </button>
               </div>
 
-              <div id="qr-reader" className="overflow-hidden rounded-2xl border-4 border-emerald-50 bg-slate-50"></div>
-              
-              <div className="mt-6 text-center text-sm text-slate-500 font-medium pb-2">
-                Focus the patient's QR code within the frame to access critical data instantly.
-              </div>
+              {scanError ? (
+                <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
+                   <AlertCircle className="text-red-500 mx-auto mb-3" size={40} />
+                   <p className="text-red-700 font-bold">{scanError}</p>
+                   <button 
+                    onClick={() => setShowScanner(false)}
+                    className="mt-4 px-6 py-2 bg-red-600 text-white rounded-xl text-sm font-bold"
+                   >
+                    Close & Retry
+                   </button>
+                </div>
+              ) : (
+                <>
+                  <div id="qr-reader" className="overflow-hidden rounded-2xl border-4 border-emerald-50 bg-slate-900 aspect-square"></div>
+                  <div className="mt-6 text-center text-sm text-slate-500 font-medium pb-2">
+                    Scanning active. Point your camera at the emergency QR code.
+                  </div>
+                </>
+              )}
            </div>
         </div>
       )}
