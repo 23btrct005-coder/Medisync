@@ -26,7 +26,9 @@ const Login = () => {
 
     const result = await login(username, password);
     if (result.success) {
-      if (result.role === 'ROLE_DOCTOR') {
+      if (result.role === 'ROLE_ADMIN') {
+        navigate('/admin-dashboard');
+      } else if (result.role === 'ROLE_DOCTOR') {
         navigate('/doctor-dashboard');
       } else {
         navigate('/');

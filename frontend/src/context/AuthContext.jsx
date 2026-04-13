@@ -61,6 +61,11 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserProfile = async (role, email) => {
     try {
+      if (role === 'ROLE_ADMIN') {
+        setUser({ username: email, email, role, name: 'Administrator' });
+        setLoading(false);
+        return;
+      }
       const endpoint = role === 'ROLE_DOCTOR' ? 'doctor/profile' : 'patient/profile';
       const response = await api.get(endpoint);
       const profileData = { ...response.data, role };

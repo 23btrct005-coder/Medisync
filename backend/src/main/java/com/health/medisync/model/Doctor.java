@@ -44,6 +44,7 @@ public class Doctor {
     private String workingDays;
     private String consultationTimings;
     private Boolean onlineConsultation;
+    private boolean approved = false;
 
     @JdbcTypeCode(SqlTypes.BINARY)
     @Column(name = "profile_picture")
@@ -109,6 +110,9 @@ public class Doctor {
 
     public Boolean getOnlineConsultation() { return onlineConsultation; }
     public void setOnlineConsultation(Boolean onlineConsultation) { this.onlineConsultation = onlineConsultation; }
+
+    public boolean isApproved() { return approved; }
+    public void setApproved(boolean approved) { this.approved = approved; }
 
     public byte[] getProfilePicture() { return profilePicture; }
     public void setProfilePicture(byte[] profilePicture) { this.profilePicture = profilePicture; }

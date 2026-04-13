@@ -435,11 +435,17 @@ const DoctorLogin = () => {
     setIsLoading(true); setError('');
     try {
       const result = await login(formData.username, formData.password);
-      if (result.success && result.role === 'ROLE_DOCTOR') {
-        const from = location.state?.from || '/doctor-dashboard';
-        navigate(from);
+      if (result.success) {
+        if (result.role === 'ROLE_ADMIN') {
+          navigate('/admin-dashboard');
+        } else if (result.role === 'ROLE_DOCTOR') {
+          const from = location.state?.from || '/doctor-dashboard';
+          navigate(from);
+        } else {
+          setError('Unauthorized. Only registered physicians can access this portal.');
+        }
       } else {
-        setError(result.message || 'Unauthorized. Only registered physicians can access this portal.');
+        setError(result.message || 'Login failed. Please try again.');
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');

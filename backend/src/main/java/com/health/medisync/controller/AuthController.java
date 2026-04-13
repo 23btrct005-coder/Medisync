@@ -106,11 +106,14 @@ public class AuthController {
             }
         }
         
-        user.setEnabled(verified);
+        // Manual verification flow: Doctor counts as 'email verified' but not 'admin approved'
+        // We set enabled to false so they cannot login until the admin approves them
+        user.setEnabled(false); 
         userRepository.save(user);
 
         Doctor doctor = new Doctor();
         doctor.setUser(user);
+        doctor.setApproved(false); // Must be approved by admin
         doctor.setName(request.get("name"));
         doctor.setEmail(request.get("email"));
         doctor.setGender(request.get("gender"));

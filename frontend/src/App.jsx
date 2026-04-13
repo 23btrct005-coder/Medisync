@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './context/AuthContext';
 import DashboardLayout from './layouts/DashboardLayout';
 import DoctorLayout from './layouts/DoctorLayout';
+import AdminLayout from './layouts/AdminLayout';
 
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -20,12 +21,14 @@ import ResetPassword from './pages/ResetPassword';
 import EmergencyInfo from './pages/EmergencyInfo';
 import EditProfile from './pages/EditProfile';
 import EditDoctorProfile from './pages/EditDoctorProfile';
+import AdminDashboard from './pages/AdminDashboard';
 
 const ProtectedRoute = ({ children, allowedRole }) => {
   const { user, userRole, loading } = useAuth();
   if (loading) return <div className="h-screen flex items-center justify-center text-primary-600">Loading...</div>;
   if (!user) return <Navigate to="/login" />;
   if (allowedRole && userRole !== allowedRole) {
+    if (userRole === 'ROLE_ADMIN') return <Navigate to="/admin-dashboard" />;
     return <Navigate to={userRole === 'ROLE_DOCTOR' ? '/doctor-dashboard' : '/'} />;
   }
   return children;
@@ -67,6 +70,16 @@ function App() {
             <Route path="patients/:id" element={<PatientManager />} />
             <Route path="profile" element={<DoctorProfile />} />
             <Route path="profile/edit" element={<EditDoctorProfile />} />
+          </Route>
+
+          {/* Admin Routes */}
+          <Route path="/admin-dashboard" element={
+            <ProtectedRoute allowedRole="ROLE_ADMIN">
+              <AdminLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<AdminDashboard />} />
+            {/* Future admin routes like /settings can go here */}
           </Route>
 
         </Routes>
