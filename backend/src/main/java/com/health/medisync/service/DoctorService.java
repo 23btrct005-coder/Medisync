@@ -15,6 +15,7 @@ import com.health.medisync.repository.ReportRepository;
 import com.health.medisync.repository.AccessRequestRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class DoctorService {
