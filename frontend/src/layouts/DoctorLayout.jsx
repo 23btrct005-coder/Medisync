@@ -2,6 +2,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import DoctorSidebar from '../components/DoctorSidebar';
 import { useState } from 'react';
+import api from '../api/axiosConfig';
 import { Activity, LogOut, UserCircle, Menu } from 'lucide-react';
 
 const DoctorLayout = () => {
