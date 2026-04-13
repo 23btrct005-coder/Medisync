@@ -1,6 +1,6 @@
 // Doctor Portal — Login + Full Registration Form
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   Stethoscope, Lock, User, Mail, CheckCircle, Eye, EyeOff,
@@ -407,6 +407,7 @@ const DoctorLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -416,7 +417,8 @@ const DoctorLogin = () => {
     try {
       const result = await login(formData.username, formData.password);
       if (result.success && result.role === 'ROLE_DOCTOR') {
-        navigate('/doctor-dashboard');
+        const from = location.state?.from || '/doctor-dashboard';
+        navigate(from);
       } else {
         setError(result.message || 'Unauthorized. Only registered physicians can access this portal.');
       }

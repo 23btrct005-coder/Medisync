@@ -34,6 +34,10 @@ const Dashboard = () => {
     
     fetchDashboardInfo();
     fetchRequests();
+
+    // Poll for new requests every 30 seconds
+    const intervalId = setInterval(fetchRequests, 30000);
+    return () => clearInterval(intervalId);
   }, []);
 
   const fetchRequests = async () => {

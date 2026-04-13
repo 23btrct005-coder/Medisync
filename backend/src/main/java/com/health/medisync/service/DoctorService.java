@@ -66,14 +66,22 @@ public class DoctorService {
     }
 
     private void createAccessRequest(Doctor doctor, Patient patient) {
-        if (accessRequestRepository.findByDoctorAndPatient(doctor, patient).isPresent()) {
-            throw new RuntimeException("Request already exists");
+        accessRequestRepository.findByDoctorAndPatient(doctor, patient).ifPresent(existing -> {
+            if ("REJECTED".equals(existing.getStatus())) {
+                existing.setStatus("PENDING");
+                accessRequestRepository.save(existing);
+                return;
+            }
+            throw new RuntimeException("A link request already exists between you and this patient (Status: " + existing.getStatus() + ")");
+        });
+
+        if (accessRequestRepository.findByDoctorAndPatient(doctor, patient).isEmpty()) {
+            AccessRequest req = new AccessRequest();
+            req.setDoctor(doctor);
+            req.setPatient(patient);
+            req.setStatus("PENDING");
+            accessRequestRepository.save(req);
         }
-        AccessRequest req = new AccessRequest();
-        req.setDoctor(doctor);
-        req.setPatient(patient);
-        req.setStatus("PENDING");
-        accessRequestRepository.save(req);
     }
 
     public Patient getPatientById(Long id) {

@@ -1,6 +1,6 @@
 // Public Emergency Info Page — accessed by scanning patient's QR code
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
 import {
@@ -47,6 +47,7 @@ const CriticalSection = ({ icon: Icon, title, color, bgColor, borderColor, conte
 const EmergencyInfo = () => {
   const { patientId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { userRole, user: currentUser } = useAuth();
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -282,7 +283,7 @@ const EmergencyInfo = () => {
                 </button>
               ) : (
                 <button 
-                  onClick={() => navigate('/doctor-login')}
+                  onClick={() => navigate('/doctor-login', { state: { from: location.pathname } })}
                   className="w-full bg-red-600 border border-white/20 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-red-500 transition shadow-xl active:scale-95"
                 >
                   Physician Login <ArrowRight size={20} />
