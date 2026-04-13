@@ -38,7 +38,7 @@ public class DoctorService {
     }
 
     public Doctor getDoctorProfile(String username) {
-        User user = userRepository.findByUsername(username)
+        User user = userRepository.findByUsernameIgnoreCase(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
         return doctorRepository.findByUserId(user.getId())
             .orElseThrow(() -> new RuntimeException("Doctor profile not found. Please complete your registration."));

@@ -98,7 +98,7 @@ public class ReportService {
     }
 
     public Report reanalyzeReport(Long reportId, String username) {
-        User user = userRepository.findByUsername(username)
+        User user = userRepository.findByUsernameIgnoreCase(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
         
         Report report = reportRepository.findById(reportId)
@@ -114,7 +114,7 @@ public class ReportService {
     }
 
     public Report updateDoctorNotes(Long reportId, String notes, String username) {
-        User user = userRepository.findByUsername(username)
+        User user = userRepository.findByUsernameIgnoreCase(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
         
         if (!"ROLE_DOCTOR".equals(user.getRole())) {
@@ -134,7 +134,7 @@ public class ReportService {
     }
 
     public Report getReportForDownload(String username, Long id) {
-        User user = userRepository.findByUsername(username)
+        User user = userRepository.findByUsernameIgnoreCase(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
         
         Report report = reportRepository.findById(id)

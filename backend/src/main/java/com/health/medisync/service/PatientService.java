@@ -27,7 +27,7 @@ public class PatientService {
     }
 
     public Patient getPatientProfile(String username) {
-        User user = userRepository.findByUsername(username)
+        User user = userRepository.findByUsernameIgnoreCase(username)
             .orElseGet(() -> {
                 // Auto-create stub user for Supabase bridged profiles
                 User newUser = new User();
