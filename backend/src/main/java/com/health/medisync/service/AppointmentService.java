@@ -5,9 +5,11 @@ import com.health.medisync.model.Appointment.AppointmentStatus;
 import com.health.medisync.model.Appointment.ConsultationType;
 import com.health.medisync.model.Doctor;
 import com.health.medisync.model.Patient;
+import com.health.medisync.model.User;
 import com.health.medisync.repository.AppointmentRepository;
 import com.health.medisync.repository.DoctorRepository;
 import com.health.medisync.repository.PatientRepository;
+import com.health.medisync.repository.UserRepository;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 import com.razorpay.Utils;
@@ -29,6 +31,7 @@ public class AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
+    private final UserRepository userRepository;
 
     @Value("${razorpay.key.id:}")
     private String razorpayKeyId;
@@ -38,10 +41,12 @@ public class AppointmentService {
 
     public AppointmentService(AppointmentRepository appointmentRepository, 
                               DoctorRepository doctorRepository, 
-                              PatientRepository patientRepository) {
+                              PatientRepository patientRepository,
+                              UserRepository userRepository) {
         this.appointmentRepository = appointmentRepository;
         this.doctorRepository = doctorRepository;
         this.patientRepository = patientRepository;
+        this.userRepository = userRepository;
     }
 
     public List<String> getAvailableSlots(Long doctorId, LocalDate date) {
@@ -179,14 +184,18 @@ public class AppointmentService {
     }
 
     public List<Appointment> getPatientAppointments(String email) {
-        Patient patient = patientRepository.findByEmail(email)
-            .orElseThrow(() -> new RuntimeException("Patient not found"));
+        User user = userRepository.findByUsernameIgnoreCase(email)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        Patient patient = patientRepository.findByUserId(user.getId())
+            .orElseThrow(() -> new RuntimeException("Patient profile not found"));
         return appointmentRepository.findByPatientId(patient.getId());
     }
 
     public List<Appointment> getDoctorAppointments(String email) {
-        Doctor doctor = doctorRepository.findByEmail(email)
-            .orElseThrow(() -> new RuntimeException("Doctor not found"));
+        User user = userRepository.findByUsernameIgnoreCase(email)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        Doctor doctor = doctorRepository.findByUserId(user.getId())
+            .orElseThrow(() -> new RuntimeException("Doctor profile not found"));
         return appointmentRepository.findByDoctorId(doctor.getId());
     }
 }
