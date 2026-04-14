@@ -100,7 +100,22 @@ public class AppointmentService {
         }
 
         Double fee = (type == ConsultationType.ONLINE) ? doctor.getOnlineConsultationFee() : doctor.getOfflineConsultationFee();
-        if (fee == null) fee = Double.valueOf(doctor.getConsultationFee().replaceAll("[^0-9]", ""));
+        if (fee == null) {
+            String feeStr = doctor.getConsultationFee();
+            if (feeStr != null && !feeStr.isEmpty()) {
+                String numericFee = feeStr.replaceAll("[^0-9]", "");
+                if (!numericFee.isEmpty()) {
+                    fee = Double.valueOf(numericFee);
+                }
+            }
+        }
+        
+        // Final fallback if all else fails
+        if (fee == null || fee <= 0) fee = 500.0; 
+
+        if (razorpayKeyId == null || razorpayKeyId.isEmpty()) {
+            throw new RuntimeException("Payment system is not configured. Please contact admin.");
+        }
 
         // Create Razorpay Order
         RazorpayClient client = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
