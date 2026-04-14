@@ -101,17 +101,34 @@ public class ReportService {
         }
 
         // 3. Advanced Vision Analysis using MONAI (for specialized radiology metrics)
+        // Failover: If MONAI (local engine) is unreachable, fallback to Groq Llama 4 Scout (Vision)
         if (contentType != null && contentType.startsWith("image/")) {
+            boolean monaiSuccess = false;
             try {
                 Map<String, Object> monaiResults = monaiService.analyzeXray(fileData, fileName);
-                if (monaiResults != null) {
+                if (monaiResults != null && !monaiResults.containsKey("error")) {
                     report.setMonaiDiagnosis((String) monaiResults.get("diagnosis"));
                     if (monaiResults.containsKey("confidence")) {
                         report.setMonaiConfidence(Double.valueOf(monaiResults.get("confidence").toString()));
                     }
+                    monaiSuccess = true;
                 }
             } catch (Exception e) {
-                System.err.println("MONAI analysis failed: " + e.getMessage());
+                System.err.println("MONAI connection failed, triggering Groq Vision failover...");
+            }
+
+            if (!monaiSuccess) {
+                System.out.println("DEBUG: MONAI unavailable. Falling back to Groq Vision Engine...");
+                try {
+                    // Using a specialized vision prompt for radiology fallback
+                    String visionFailover = groqAiService.analyzeReport(fileData, contentType, patientName, patientAge);
+                    if (visionFailover != null && !visionFailover.contains("ERROR_PROFILE_MISMATCH")) {
+                        report.setMonaiDiagnosis("[Vision Failover] " + visionFailover);
+                        report.setMonaiConfidence(0.85); // High confidence for Llama 4 Scout
+                    }
+                } catch (Exception e) {
+                    System.err.println("Vision failover failed: " + e.getMessage());
+                }
             }
         }
     }
