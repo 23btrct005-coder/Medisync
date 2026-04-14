@@ -14,10 +14,12 @@ const DoctorDashboard = () => {
   const [showScanner, setShowScanner] = useState(false);
   const [scanError, setScanError] = useState('');
   const [requests, setRequests] = useState([]);
+  const [appointments, setAppointments] = useState([]);
   const navigate = useNavigate();
  
   useEffect(() => {
     fetchRequests();
+    fetchAppointments();
   }, []);
  
   const fetchRequests = async () => {
@@ -26,6 +28,16 @@ const DoctorDashboard = () => {
       setRequests(res.data || []);
     } catch (err) {
       console.error("Failed to fetch doctor requests", err);
+    }
+  };
+
+  const fetchAppointments = async () => {
+    try {
+      // We'll reuse the my-appointments endpoint or similar for doctor
+      const res = await api.get('appointments/my-appointments'); 
+      setAppointments(res.data || []);
+    } catch (err) {
+      console.error("Failed to fetch doctor appointments", err);
     }
   };
 
@@ -166,14 +178,40 @@ const DoctorDashboard = () => {
         </div>
 
         <div className="bg-white border border-slate-200 rounded-2xl flex flex-col p-6 shadow-sm relative overflow-hidden h-full">
-           <div className="absolute top-0 right-0 p-4 opacity-5"><AlertCircle size={120} /></div>
-           <h3 className="text-xl font-bold text-slate-800 mb-2">Sync Status</h3>
-           <p className="text-slate-500 text-sm leading-relaxed">
-              Reports dynamically uploaded from Patient portals are now integrated via the Supabase proxy. Navigate to the Directory to view individual patient reports and profiles.
-           </p>
-           <a href="/doctor-dashboard/patients" className="mt-auto pt-4 text-emerald-600 text-sm font-bold flex items-center gap-1 hover:gap-2 transition-all">
-              Go to Patient Directory &rarr;
-           </a>
+           <div className="flex items-center gap-2 mb-4">
+              <Calendar size={20} className="text-blue-500" />
+              <h3 className="text-lg font-bold text-slate-800">Appointment Schedule</h3>
+           </div>
+           
+           {appointments.length === 0 ? (
+             <div className="flex-1 flex flex-col items-center justify-center text-center py-4">
+                <Clock size={40} className="text-slate-200 mb-2" />
+                <p className="text-slate-400 text-sm italic">No upcoming appointments.</p>
+             </div>
+           ) : (
+             <div className="space-y-3 overflow-y-auto max-h-[180px] pr-1">
+                {appointments.sort((a,b) => new Date(b.appointmentDate) - new Date(a.appointmentDate)).map(appt => (
+                  <div key={appt.id} className="flex items-center justify-between p-3 bg-blue-50/30 border border-blue-100 rounded-xl">
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-slate-800 truncate">{appt.patient?.name}</p>
+                      <div className="flex items-center gap-3 mt-1">
+                         <span className="text-[10px] font-bold text-blue-600 flex items-center gap-1 uppercase tracking-wider">
+                            <Clock size={10} /> {appt.timeSlot}
+                         </span>
+                         <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1 uppercase tracking-wider">
+                            <Calendar size={10} /> {appt.appointmentDate}
+                         </span>
+                      </div>
+                    </div>
+                    <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                      appt.consultationType === 'ONLINE' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
+                    }`}>
+                      {appt.consultationType}
+                    </span>
+                  </div>
+                ))}
+             </div>
+           )}
         </div>
       </div>
 

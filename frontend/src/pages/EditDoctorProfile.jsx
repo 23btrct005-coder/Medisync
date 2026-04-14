@@ -30,7 +30,11 @@ const EditDoctorProfile = () => {
     consultationTimings: '',
     onlineConsultation: false,
     college: '',
-    additionalCertifications: ''
+    additionalCertifications: '',
+    onlineConsultationFee: '',
+    offlineConsultationFee: '',
+    clinicAddress: '',
+    razorpayAccountId: ''
   });
 
   useEffect(() => {
@@ -49,7 +53,11 @@ const EditDoctorProfile = () => {
         consultationTimings: user.consultationTimings || '',
         onlineConsultation: user.onlineConsultation || false,
         college: user.college || '',
-        additionalCertifications: user.additionalCertifications || ''
+        additionalCertifications: user.additionalCertifications || '',
+        onlineConsultationFee: user.onlineConsultationFee || '',
+        offlineConsultationFee: user.offlineConsultationFee || '',
+        clinicAddress: user.clinicAddress || '',
+        razorpayAccountId: user.razorpayAccountId || ''
       });
       setPhotoPreview(`${api.defaults.baseURL}/auth/doctor/photo/${user.id}?t=${Date.now()}`);
     }
@@ -201,6 +209,30 @@ const EditDoctorProfile = () => {
             <div className="md:col-span-2">
               <label className={labelClass}>Consultation Timings</label>
               <input type="text" name="consultationTimings" value={formData.consultationTimings} onChange={handleChange} className={inputClass} placeholder="e.g. 10:00 AM - 04:00 PM" />
+            </div>
+
+            {/* Payment & Specific Fees */}
+            <div className="md:col-span-2">
+              <p className="text-sm font-bold text-blue-600 mb-4 bg-blue-50 p-3 rounded-xl border border-blue-100 flex items-center gap-2">
+                <BadgeCheck size={18} /> Direct Payment Setup
+              </p>
+            </div>
+            <div>
+              <label className={labelClass}>Online Consultation Fee (INR)</label>
+              <input type="number" name="onlineConsultationFee" value={formData.onlineConsultationFee} onChange={handleChange} className={inputClass} placeholder="e.g. 500" />
+            </div>
+            <div>
+              <label className={labelClass}>Offline Consultation Fee (INR)</label>
+              <input type="number" name="offlineConsultationFee" value={formData.offlineConsultationFee} onChange={handleChange} className={inputClass} placeholder="e.g. 800" />
+            </div>
+            <div className="md:col-span-2">
+              <label className={labelClass}>Clinic Address (for Offline Appointments)</label>
+              <textarea name="clinicAddress" rows="2" value={formData.clinicAddress} onChange={handleChange} className={inputClass} placeholder="Full address of your clinic..." />
+            </div>
+            <div className="md:col-span-2">
+                <label className={labelClass}>Razorpay Linked Account ID (for Direct Payments)</label>
+                <input type="text" name="razorpayAccountId" value={formData.razorpayAccountId} onChange={handleChange} className={inputClass} placeholder="acc_XXXXX..." />
+                <p className="text-[10px] text-slate-400 mt-1 ml-1">Payments will be routed directly to this account via Razorpay Route.</p>
             </div>
             <div className="md:col-span-2">
                 <label className="flex items-center gap-3 cursor-pointer p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-slate-100 transition-colors">

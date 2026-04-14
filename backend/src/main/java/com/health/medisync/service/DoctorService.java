@@ -148,6 +148,23 @@ public class DoctorService {
         if (updates.containsKey("consultationTimings")) doctor.setConsultationTimings((String) updates.get("consultationTimings"));
         if (updates.containsKey("onlineConsultation")) doctor.setOnlineConsultation((Boolean) updates.get("onlineConsultation"));
 
+        // Direct Payment Details
+        if (updates.containsKey("clinicAddress")) doctor.setClinicAddress((String) updates.get("clinicAddress"));
+        if (updates.containsKey("razorpayAccountId")) doctor.setRazorpayAccountId((String) updates.get("razorpayAccountId"));
+        
+        if (updates.containsKey("onlineConsultationFee")) {
+            Object fee = updates.get("onlineConsultationFee");
+            if (fee != null && !fee.toString().isEmpty()) {
+                doctor.setOnlineConsultationFee(Double.parseDouble(fee.toString()));
+            }
+        }
+        if (updates.containsKey("offlineConsultationFee")) {
+            Object fee = updates.get("offlineConsultationFee");
+            if (fee != null && !fee.toString().isEmpty()) {
+                doctor.setOfflineConsultationFee(Double.parseDouble(fee.toString()));
+            }
+        }
+
         return doctorRepository.save(doctor);
     }
 

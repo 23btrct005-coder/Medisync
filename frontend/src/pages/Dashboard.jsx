@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
 import QRCode from 'react-qr-code';
-import { Activity, ClipboardList, UserCheck, Calendar, QrCode, X, Download, UserX, Loader2 } from 'lucide-react';
+import { Activity, ClipboardList, UserCheck, Calendar, QrCode, X, Download, UserX, Loader2, Video, MapPin, Clock } from 'lucide-react';
 import ProfileCompletionBanner from '../components/ProfileCompletionBanner';
+import BookingModal from './BookingModal';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -14,6 +15,8 @@ const Dashboard = () => {
   const [doctors, setDoctors] = useState([]);
   const [revokingId, setRevokingId] = useState(null);
   const [showQRModal, setShowQRModal] = useState(false);
+  const [appointments, setAppointments] = useState([]);
+  const [bookingDoctor, setBookingDoctor] = useState(null);
 
   useEffect(() => {
     const fetchDashboardInfo = async () => {
@@ -38,6 +41,7 @@ const Dashboard = () => {
     fetchDashboardInfo();
     fetchRequests();
     fetchLinkedDoctors();
+    fetchAppointments();
 
     // Poll for new requests every 30 seconds
     const intervalId = setInterval(fetchRequests, 30000);
@@ -59,6 +63,15 @@ const Dashboard = () => {
       setDoctors(res.data || []);
     } catch (e) {
       console.error("Failed to fetch linked doctors", e);
+    }
+  };
+
+  const fetchAppointments = async () => {
+    try {
+      const res = await api.get('appointments/my-appointments');
+      setAppointments(res.data || []);
+    } catch (e) {
+      console.error("Failed to fetch appointments", e);
     }
   };
 
@@ -252,26 +265,102 @@ const Dashboard = () => {
                   <p className="text-slate-600 text-sm mt-2 text-center flex-1 flex flex-col justify-center italic">No active authorizations.</p>
               ) : (
                   <div className="space-y-3 overflow-y-auto max-h-[140px] pr-2">
-                     {doctors.map(doc => (
+                      {doctors.map(doc => (
                         <div key={doc.id} className="bg-slate-50 border border-slate-200 p-3 rounded-xl flex justify-between items-center group">
-                            <div>
+                            <div className="flex-1">
                                <p className="text-sm font-semibold text-slate-800">Dr. {doc.name}</p>
                                <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">{doc.specialization || 'Clinical Specialist'}</p>
                             </div>
-                            <button 
-                              onClick={() => handleRevokeAccess(doc.id)}
-                              disabled={revokingId === doc.id}
-                              className="text-slate-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors active:scale-90 disabled:opacity-50"
-                              title="Revoke Access"
-                            >
-                              {revokingId === doc.id ? <Loader2 size={16} className="animate-spin" /> : <UserX size={16} />}
-                            </button>
+                            <div className="flex items-center gap-1">
+                                <button 
+                                  onClick={() => setBookingDoctor(doc)}
+                                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm active:scale-95 flex items-center gap-1"
+                                >
+                                    <Calendar size={12} /> Book
+                                </button>
+                                <button 
+                                  onClick={() => handleRevokeAccess(doc.id)}
+                                  disabled={revokingId === doc.id}
+                                  className="text-slate-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors active:scale-90 disabled:opacity-50"
+                                  title="Revoke Access"
+                                >
+                                  {revokingId === doc.id ? <Loader2 size={16} className="animate-spin" /> : <UserX size={16} />}
+                                </button>
+                            </div>
                         </div>
                      ))}
                   </div>
               )}
           </div>
       </div>
+
+      {/* Appointments List */}
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mt-8">
+          <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                  <div className="p-2 bg-blue-100 text-blue-600 rounded-xl"><Clock size={20} /></div>
+                  <h3 className="text-xl font-bold text-slate-800">My Appointments</h3>
+              </div>
+          </div>
+
+          {appointments.length === 0 ? (
+              <div className="text-center py-12 bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-100">
+                  <Calendar className="mx-auto text-slate-200 mb-2" size={48} />
+                  <p className="text-slate-400 font-medium italic">No appointments scheduled yet.</p>
+              </div>
+          ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {appointments.sort((a,b) => new Date(b.appointmentDate) - new Date(a.appointmentDate)).map(appt => (
+                      <div key={appt.id} className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                          {appt.status === 'BOOKED' && <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />}
+                          
+                          <div className="flex items-center justify-between mb-4 relative z-10">
+                              <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${appt.status === 'BOOKED' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                                  {appt.status}
+                              </span>
+                              <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                  {appt.consultationType === 'ONLINE' ? <Video size={12} className="text-blue-500" /> : <MapPin size={12} className="text-emerald-500" />}
+                                  {appt.consultationType}
+                              </span>
+                          </div>
+
+                          <div className="space-y-3 relative z-10">
+                              <div>
+                                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">With Physician</p>
+                                  <p className="text-md font-bold text-slate-800">Dr. {appt.doctor?.name}</p>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                  <div>
+                                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Date</p>
+                                      <p className="text-sm font-bold text-slate-700 flex items-center gap-1"><Calendar size={14} className="text-blue-500" /> {appt.appointmentDate}</p>
+                                  </div>
+                                  <div>
+                                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Time</p>
+                                      <p className="text-sm font-bold text-slate-700 flex items-center gap-1"><Clock size={14} className="text-blue-500" /> {appt.timeSlot}</p>
+                                  </div>
+                              </div>
+                              
+                              {appt.consultationType === 'OFFLINE' && appt.doctor?.clinicAddress && (
+                                  <div className="pt-2 border-t border-slate-50">
+                                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Location</p>
+                                      <p className="text-[11px] text-slate-600 italic line-clamp-1">{appt.doctor.clinicAddress}</p>
+                                  </div>
+                              )}
+                          </div>
+                      </div>
+                  ))}
+              </div>
+          )}
+      </div>
+
+      {/* Booking Modal */}
+      {bookingDoctor && (
+          <BookingModal 
+             doctor={bookingDoctor} 
+             onClose={() => setBookingDoctor(null)} 
+             onBookingSuccess={fetchAppointments} 
+          />
+      )}
 
       {/* QR Modal */}
       {showQRModal && (

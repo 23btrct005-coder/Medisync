@@ -39,12 +39,18 @@ public class Doctor {
     private String hospital;
     private Integer yearsOfExperience;
     private String consultationFee;
+    private Double onlineConsultationFee;
+    private Double offlineConsultationFee;
+    private String clinicAddress;
 
     // Availability
     private String workingDays;
     private String consultationTimings;
     private Boolean onlineConsultation;
     private boolean approved = false;
+
+    // Payment Integration
+    private String razorpayAccountId; // For Razorpay Route / Connected Accounts
 
     @JdbcTypeCode(SqlTypes.BINARY)
     @Column(name = "profile_picture")
@@ -116,4 +122,16 @@ public class Doctor {
 
     public byte[] getProfilePicture() { return profilePicture; }
     public void setProfilePicture(byte[] profilePicture) { this.profilePicture = profilePicture; }
+
+    public Double getOnlineConsultationFee() { return onlineConsultationFee; }
+    public void setOnlineConsultationFee(Double onlineConsultationFee) { this.onlineConsultationFee = onlineConsultationFee; }
+
+    public Double getOfflineConsultationFee() { return offlineConsultationFee; }
+    public void setOfflineConsultationFee(Double offlineConsultationFee) { this.offlineConsultationFee = offlineConsultationFee; }
+
+    public String getClinicAddress() { return clinicAddress; }
+    public void setClinicAddress(String clinicAddress) { this.clinicAddress = clinicAddress; }
+
+    public String getRazorpayAccountId() { return razorpayAccountId; }
+    public void setRazorpayAccountId(String razorpayAccountId) { this.razorpayAccountId = razorpayAccountId; }
 }
