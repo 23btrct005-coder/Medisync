@@ -39,8 +39,8 @@ public class AppointmentController {
             String slot = request.get("slot").toString();
             ConsultationType type = ConsultationType.valueOf(request.get("type").toString());
 
-            Appointment appt = appointmentService.initiateBooking(authentication.getName(), doctorId, date, slot, type);
-            return ResponseEntity.ok(appt);
+            Map<String, Object> response = appointmentService.initiateBooking(authentication.getName(), doctorId, date, slot, type);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
