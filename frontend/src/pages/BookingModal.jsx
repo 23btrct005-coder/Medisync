@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axiosConfig';
-import { Calendar, Clock, CreditCard, X, Video, MapPin, Activity, Loader2, CheckCircle } from 'lucide-react';
+import { Calendar, Clock, CreditCard, X, Video, MapPin, Activity, Loader2, CheckCircle, BadgeCheck } from 'lucide-react';
 
 const BookingModal = ({ doctor, onClose, onBookingSuccess }) => {
   const [date, setDate] = useState('');
