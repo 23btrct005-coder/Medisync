@@ -77,8 +77,8 @@ public class GroqAiService implements AiProvider {
                 message.put("content", contentList);
 
                 Map<String, Object> requestBody = new HashMap<>();
-                // Llama 3.3 70B for text (extremely high accuracy), Llama 3.2 90B Vision for images
-                requestBody.put("model", isPdf ? "llama-3.3-70b-versatile" : "llama-3.2-11b-vision-preview"); // Note: Using 11b-vision unless 90b is explicitly on your tier
+                // Llama 3.3 70B for text (extremely high accuracy), Llama 4 Scout for images
+                requestBody.put("model", isPdf ? "llama-3.3-70b-versatile" : "meta-llama/llama-4-scout-17b-16e-instruct"); // Using latest Llama 4 Scout for vision tasks
                 requestBody.put("messages", Arrays.asList(message));
                 requestBody.put("temperature", 0.1);
 
