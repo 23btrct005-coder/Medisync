@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Users, FileStack, Stethoscope, AlertCircle, QrCode, X, Camera } from 'lucide-react';
+import { Users, FileStack, Stethoscope, AlertCircle, QrCode, X, Camera, Calendar, Clock } from 'lucide-react';
 import api from '../api/axiosConfig';
 import { Html5Qrcode } from 'html5-qrcode';
 import { useEffect } from 'react';
