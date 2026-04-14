@@ -116,5 +116,4 @@ public class GroqAiService implements AiProvider {
         }
         return "Groq AI Analysis failed due to persistent service issues.";
     }
-    }
 }

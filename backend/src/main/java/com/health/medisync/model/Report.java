@@ -31,7 +31,7 @@ public class Report {
     private String monaiDiagnosis;
     private Double monaiConfidence;
 
-    @Column(columnDefinition = \"TEXT\")
+    @Column(columnDefinition = "TEXT")
     private String clinicalReasoning;
 
     @Column(columnDefinition = "TEXT")
