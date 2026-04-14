@@ -101,7 +101,7 @@ public class AppointmentService {
         Doctor doctor = doctorRepository.findById(doctorId)
             .orElseThrow(() -> new RuntimeException("Doctor not found"));
 
-        if (!doctor.isAppointmentsEnabled()) {
+        if (!doctor.getAppointmentsEnabled()) {
             throw new RuntimeException("This doctor is not accepting appointments at the moment.");
         }
 
