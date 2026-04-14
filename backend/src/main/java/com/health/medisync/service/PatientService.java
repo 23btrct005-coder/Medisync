@@ -158,4 +158,28 @@ public class PatientService {
         patient.setProfilePicture(photoBytes);
         patientRepository.save(patient);
     }
+    public List<Doctor> getLinkedDoctors(String username) {
+        Patient patient = getPatientProfile(username);
+        return List.copyOf(patient.getDoctors());
+    }
+
+    public void revokeDoctorAccess(String patientUsername, Long doctorId) {
+        Patient patient = getPatientProfile(patientUsername);
+        Doctor doctor = doctorRepository.findById(doctorId)
+            .orElseThrow(() -> new RuntimeException("Doctor not found"));
+
+        if (patient.getDoctors().contains(doctor)) {
+            patient.getDoctors().remove(doctor);
+            patientRepository.save(patient);
+
+            // Also update any existing access requests to REVOKED
+            List<AccessRequest> requests = accessRequestRepository.findByPatientAndStatus(patient, "ACCEPTED");
+            for (AccessRequest request : requests) {
+                if (request.getDoctor().getId().equals(doctorId)) {
+                    request.setStatus("REVOKED");
+                    accessRequestRepository.save(request);
+                }
+            }
+        }
+    }
 }

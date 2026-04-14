@@ -26,7 +26,7 @@ public class GroqAiService implements AiProvider {
         }
 
         int retries = 0;
-        int maxRetries = 2;
+        int maxRetries = 3;
         StringBuilder errorLog = new StringBuilder();
 
         while (retries <= maxRetries) {
@@ -101,7 +101,8 @@ public class GroqAiService implements AiProvider {
                 retries++;
                 if (retries <= maxRetries) {
                     try {
-                        long delay = (long) Math.pow(2, retries) * 1000;
+                        // Exponential backoff with randomized jitter
+                        long delay = (long) (Math.pow(2, retries) * 1000 + (Math.random() * 500));
                         Thread.sleep(delay);
                     } catch (InterruptedException ie) {
                         Thread.currentThread().interrupt();

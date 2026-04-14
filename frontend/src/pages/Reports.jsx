@@ -1,12 +1,13 @@
 import { useEffect, useState, useRef } from 'react';
 import api from '../api/axiosConfig';
-import { Download, File, Loader2, UploadCloud, Camera, X } from 'lucide-react';
+import { Download, File, Loader2, UploadCloud, Camera, X, Trash2 } from 'lucide-react';
 
 const Reports = () => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [downloadingId, setDownloadingId] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const fileInputRef = useRef(null);
   
   const [showCamera, setShowCamera] = useState(false);
@@ -137,6 +138,21 @@ const Reports = () => {
     }
   };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to permanently delete this report? This action cannot be undone.")) return;
+    
+    setDeletingId(id);
+    try {
+      await api.delete(`reports/${id}`);
+      setReports(reports.filter(r => r.id !== id));
+    } catch (error) {
+      console.error("Delete failed", error);
+      alert("Failed to delete report. Please try again.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
@@ -190,8 +206,16 @@ const Reports = () => {
           {reports.map((report) => (
             <div key={report.id} className="card flex flex-col justify-between group">
               <div className="flex items-start space-x-4">
-                <div className="p-3 bg-red-50 rounded-lg text-red-500">
+                <div className="p-3 bg-red-50 rounded-lg text-red-500 relative">
                   <File size={28} />
+                  <button 
+                    onClick={() => handleDelete(report.id)}
+                    disabled={deletingId === report.id}
+                    className="absolute -top-2 -right-2 p-1.5 bg-white border border-slate-200 rounded-full text-slate-400 hover:text-red-600 hover:border-red-200 transition-all shadow-sm active:scale-95 disabled:opacity-50"
+                    title="Delete Report"
+                  >
+                    {deletingId === report.id ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                  </button>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-base font-semibold text-slate-800 truncate" title={report.fileName}>

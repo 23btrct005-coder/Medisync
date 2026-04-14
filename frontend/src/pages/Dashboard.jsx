@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
 import QRCode from 'react-qr-code';
-import { Activity, ClipboardList, UserCheck, Calendar, QrCode, X, Download } from 'lucide-react';
+import { Activity, ClipboardList, UserCheck, Calendar, QrCode, X, Download, UserX, Loader2 } from 'lucide-react';
 import ProfileCompletionBanner from '../components/ProfileCompletionBanner';
 
 const Dashboard = () => {
@@ -11,6 +11,8 @@ const Dashboard = () => {
   const [doctorEmail, setDoctorEmail] = useState('');
   const [linking, setLinking] = useState(false);
   const [requests, setRequests] = useState([]);
+  const [doctors, setDoctors] = useState([]);
+  const [revokingId, setRevokingId] = useState(null);
   const [showQRModal, setShowQRModal] = useState(false);
 
   useEffect(() => {
@@ -35,6 +37,7 @@ const Dashboard = () => {
     
     fetchDashboardInfo();
     fetchRequests();
+    fetchLinkedDoctors();
 
     // Poll for new requests every 30 seconds
     const intervalId = setInterval(fetchRequests, 30000);
@@ -47,6 +50,15 @@ const Dashboard = () => {
       setRequests(res.data || []);
     } catch (e) {
       console.error("Failed to fetch requests", e);
+    }
+  };
+
+  const fetchLinkedDoctors = async () => {
+    try {
+      const res = await api.get('patient/doctors');
+      setDoctors(res.data || []);
+    } catch (e) {
+      console.error("Failed to fetch linked doctors", e);
     }
   };
 
@@ -80,6 +92,20 @@ const Dashboard = () => {
       alert(err.response?.data?.message || 'Failed to grant access. Ensure the email is correct.');
     } finally {
       setLinking(false);
+    }
+  };
+
+  const handleRevokeAccess = async (doctorId) => {
+    if (!window.confirm("Are you sure you want to revoke this doctor's access? They will no longer be able to view your records.")) return;
+    
+    setRevokingId(doctorId);
+    try {
+      await api.delete(`patient/doctors/${doctorId}`);
+      setDoctors(doctors.filter(d => d.id !== doctorId));
+    } catch (err) {
+      alert("Failed to revoke access. Please try again.");
+    } finally {
+      setRevokingId(null);
     }
   };
 
@@ -197,7 +223,7 @@ const Dashboard = () => {
               </div>
               
               {requests.length === 0 ? (
-                  <p className="text-slate-600 text-sm mt-2 text-center flex-1 flex flex-col justify-center">No pending requests from any doctors.</p>
+                  <p className="text-slate-600 text-sm mt-2 text-center flex-1 flex flex-col justify-center">No pending requests.</p>
               ) : (
                   <div className="space-y-3 overflow-y-auto max-h-[140px] pr-2">
                      {requests.map(req => (
@@ -210,6 +236,36 @@ const Dashboard = () => {
                                <button onClick={() => handleAcceptRequest(req.id)} className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 px-3 py-1 rounded text-xs font-bold transition">Accept</button>
                                <button onClick={() => handleRejectRequest(req.id)} className="bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1 rounded text-xs font-bold transition">Reject</button>
                             </div>
+                        </div>
+                     ))}
+                  </div>
+              )}
+          </div>
+
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
+              <div className="flex items-center space-x-2 mb-4">
+                  <UserCheck className="text-primary-500" size={20} />
+                  <h3 className="text-lg font-semibold text-slate-800">Authorized Doctors</h3>
+              </div>
+              
+              {doctors.length === 0 ? (
+                  <p className="text-slate-600 text-sm mt-2 text-center flex-1 flex flex-col justify-center italic">No active authorizations.</p>
+              ) : (
+                  <div className="space-y-3 overflow-y-auto max-h-[140px] pr-2">
+                     {doctors.map(doc => (
+                        <div key={doc.id} className="bg-slate-50 border border-slate-200 p-3 rounded-xl flex justify-between items-center group">
+                            <div>
+                               <p className="text-sm font-semibold text-slate-800">Dr. {doc.name}</p>
+                               <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">{doc.specialization || 'Clinical Specialist'}</p>
+                            </div>
+                            <button 
+                              onClick={() => handleRevokeAccess(doc.id)}
+                              disabled={revokingId === doc.id}
+                              className="text-slate-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors active:scale-90 disabled:opacity-50"
+                              title="Revoke Access"
+                            >
+                              {revokingId === doc.id ? <Loader2 size={16} className="animate-spin" /> : <UserX size={16} />}
+                            </button>
                         </div>
                      ))}
                   </div>

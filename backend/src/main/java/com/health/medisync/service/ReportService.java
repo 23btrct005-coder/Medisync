@@ -60,16 +60,32 @@ public class ReportService {
         int patientAge = patient.getAge() != null ? patient.getAge() : 0;
 
         // 1. High-Accuracy Master Reasoning (Powered by OpenAI GPT-4o)
+        String openAiAnalysis = null;
         try {
-            String openAiAnalysis = openAiService.analyzeReport(fileData, contentType, patientName, patientAge);
-            if (openAiAnalysis != null && openAiAnalysis.contains("ERROR_PROFILE_MISMATCH")) {
+            openAiAnalysis = openAiService.analyzeReport(fileData, contentType, patientName, patientAge);
+        } catch (Exception e) {
+            System.err.println("OpenAI hard failure: " + e.getMessage());
+        }
+
+        if (openAiAnalysis != null) {
+            if (openAiAnalysis.contains("ERROR_PROFILE_MISMATCH")) {
                 report.setClinicalReasoning("SECURITY BLOCK: This document belongs to a different patient.");
             } else {
                 report.setClinicalReasoning(openAiAnalysis);
             }
-        } catch (Exception e) {
-            System.err.println("OpenAI analysis failed: " + e.getMessage());
-            report.setClinicalReasoning("OpenAI reasoning is temporarily unavailable.");
+        } else {
+            // Failover to Groq Llama 3.3 for Deep Reasoning
+            System.out.println("DEBUG: OpenAI unavailable or rate-limited. Falling back to Groq for Master Reasoning...");
+            try {
+                String groqFailover = groqAiService.analyzeReport(fileData, contentType, patientName, patientAge);
+                if (groqFailover != null && groqFailover.contains("ERROR_PROFILE_MISMATCH")) {
+                    report.setClinicalReasoning("SECURITY BLOCK: This document belongs to a different patient.");
+                } else {
+                    report.setClinicalReasoning(groqFailover != null ? groqFailover : "Clinical reasoning is temporarily unavailable across all providers.");
+                }
+            } catch (Exception e) {
+                report.setClinicalReasoning("AI services are currently busy. Please try again later.");
+            }
         }
 
         // 2. High-Speed Clinical Summary (Powered by Groq Llama 3.3)
@@ -163,5 +179,16 @@ public class ReportService {
         }
         
         return report;
+    }
+
+    public void deleteReport(Long id, String username) {
+        Report report = reportRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Report not found"));
+
+        if (!report.getPatient().getUser().getUsername().equals(username)) {
+            throw new RuntimeException("Unauthorized: You do not own this report.");
+        }
+
+        reportRepository.delete(report);
     }
 }

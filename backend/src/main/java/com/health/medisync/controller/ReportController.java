@@ -68,4 +68,14 @@ public class ReportController {
             return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
         }
     }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteReport(@PathVariable Long id, Authentication authentication) {
+        try {
+            String username = authentication.getName();
+            reportService.deleteReport(id, username);
+            return ResponseEntity.ok(java.util.Map.of("message", "Report deleted successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
+        }
+    }
 }

@@ -87,4 +87,18 @@ public class PatientController {
             return ResponseEntity.badRequest().body(Map.of("message", "Failed to upload photo"));
         }
     }
+    @GetMapping("/doctors")
+    public ResponseEntity<List<com.health.medisync.model.Doctor>> getLinkedDoctors(Authentication authentication) {
+        return ResponseEntity.ok(patientService.getLinkedDoctors(authentication.getName()));
+    }
+
+    @DeleteMapping("/doctors/{id}")
+    public ResponseEntity<?> revokeDoctorAccess(@PathVariable Long id, Authentication authentication) {
+        try {
+            patientService.revokeDoctorAccess(authentication.getName(), id);
+            return ResponseEntity.ok(Map.of("message", "Doctor access revoked"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
 }

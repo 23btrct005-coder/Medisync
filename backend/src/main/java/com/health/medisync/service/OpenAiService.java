@@ -27,7 +27,7 @@ public class OpenAiService implements AiProvider {
         }
 
         int retries = 0;
-        int maxRetries = 2;
+        int maxRetries = 3;
 
         while (retries <= maxRetries) {
             try {
@@ -95,24 +95,26 @@ public class OpenAiService implements AiProvider {
                     }
                 }
 
-                return "Unable to parse OpenAI response.";
-
+                return null; // Return null if response is unexpected to trigger failover
             } catch (org.springframework.web.client.HttpClientErrorException.TooManyRequests e) {
                 retries++;
                 if (retries <= maxRetries) {
                     try {
-                        Thread.sleep((long) Math.pow(2, retries) * 1000);
+                        // Exponential backoff with jitter
+                        long delay = (long) (Math.pow(2, retries) * 1000 + (Math.random() * 500));
+                        Thread.sleep(delay);
                     } catch (InterruptedException ie) {
                         Thread.currentThread().interrupt();
                     }
                 } else {
-                    return "OpenAI is currently busy (Rate Limit). Please try again in 1 minute.";
+                    // Signal failure for failover
+                    return null;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                return "OpenAI Analysis failed: " + e.getMessage();
+                return null; // Return null on any error to allow failover
             }
         }
-        return "OpenAI Analysis failed due to persistent errors.";
+        return null;
     }
 }
