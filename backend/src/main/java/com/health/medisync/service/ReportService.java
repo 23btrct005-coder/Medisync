@@ -88,20 +88,27 @@ public class ReportService {
             }
         }
 
-        // 2. High-Speed Clinical Summary (Powered by Groq Llama 3.3)
+        // 2. High-Speed Clinical Summary (Powered by Groq for PDF, OpenAI for Images)
         try {
-            String groqSummary = groqAiService.analyzeReport(fileData, contentType, patientName, patientAge);
-            if (groqSummary != null && groqSummary.contains("ERROR_PROFILE_MISMATCH")) {
+            String summary;
+            if (contentType != null && contentType.startsWith("image/")) {
+                // Groq vision is decommissioned, fallback to OpenAI for image summaries
+                summary = openAiAnalysis != null ? openAiAnalysis : openAiService.analyzeReport(fileData, contentType, patientName, patientAge);
+            } else {
+                summary = groqAiService.analyzeReport(fileData, contentType, patientName, patientAge);
+            }
+
+            if (summary != null && summary.contains("ERROR_PROFILE_MISMATCH")) {
                 report.setAiSummary("Security Block: Profile mismatch detected.");
             } else {
-                report.setAiSummary(groqSummary);
+                report.setAiSummary(summary);
             }
         } catch (Exception e) {
-            System.err.println("Groq analysis failed: " + e.getMessage());
+            System.err.println("Summary generation failed: " + e.getMessage());
         }
 
         // 3. Advanced Vision Analysis using MONAI (for specialized radiology metrics)
-        // Failover: If MONAI (local engine) is unreachable, fallback to Groq Llama 4 Scout (Vision)
+        // Failover: If MONAI (local engine) is unreachable, fallback to OpenAI (Vision)
         if (contentType != null && contentType.startsWith("image/")) {
             boolean monaiSuccess = false;
             try {
@@ -114,17 +121,17 @@ public class ReportService {
                     monaiSuccess = true;
                 }
             } catch (Exception e) {
-                System.err.println("MONAI connection failed, triggering Groq Vision failover...");
+                System.err.println("MONAI connection failed, triggering Vision failover...");
             }
 
             if (!monaiSuccess) {
-                System.out.println("DEBUG: MONAI unavailable. Falling back to Groq Vision Engine...");
+                System.out.println("DEBUG: MONAI unavailable. Falling back to OpenAI Vision Engine...");
                 try {
-                    // Using a specialized vision prompt for radiology fallback
-                    String visionFailover = groqAiService.analyzeReport(fileData, contentType, patientName, patientAge);
+                    // Using OpenAI as the reliable vision fallback
+                    String visionFailover = openAiService.analyzeReport(fileData, contentType, patientName, patientAge);
                     if (visionFailover != null && !visionFailover.contains("ERROR_PROFILE_MISMATCH")) {
                         report.setMonaiDiagnosis("[Vision Failover] " + visionFailover);
-                        report.setMonaiConfidence(0.85); // High confidence for Llama 4 Scout
+                        report.setMonaiConfidence(0.95); // High confidence for GPT-4o
                     }
                 } catch (Exception e) {
                     System.err.println("Vision failover failed: " + e.getMessage());

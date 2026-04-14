@@ -47,38 +47,28 @@ public class GroqAiService implements AiProvider {
                         extractedText = pdfStripper.getText(document);
                         
                         if (extractedText == null || extractedText.trim().isEmpty()) {
-                            return "Groq AI could not extract digital text from this PDF. This engine currently requires text-based PDFs. Please use an image or a text-based PDF.";
+                            return "Groq AI could not extract digital text from this PDF. Please use an image or a text-based PDF.";
                         }
                     }
+                } else {
+                    return "Groq AI current engine only supports text-based PDFs. Images are routed to the Reasoning Engine.";
                 }
 
                 Map<String, Object> textObj = new HashMap<>();
                 textObj.put("type", "text");
-                textObj.put("text", "You are an expert senior medical consultant and radiologist. Examine the document for Name: " + patientName + ", Age: " + patientAge + ".\n" +
+                textObj.put("text", "You are an expert senior medical consultant. Examine the document for Name: " + patientName + ", Age: " + patientAge + ".\n" +
                     "SECURITY RULE: If the patient name in the document definitively belongs to a different person, reply ONLY with 'ERROR_PROFILE_MISMATCH'.\n" +
-                    "Otherwise, provide a professional Markdown clinical analysis with sections for: 1) Verified Patient Bio, 2) Primary Impression, 3) Evidence Points, 4) Critical Normal/Abnormal metrics, 5) Recommended Follow-ups.\n\n" + (isPdf ? "DOCUMENT TEXT:\n" + extractedText : ""));
+                    "Provide a professional Markdown summary.\n\nDOCUMENT TEXT:\n" + extractedText);
 
                 List<Map<String, Object>> contentList = new ArrayList<>();
                 contentList.add(textObj);
-
-                if (!isPdf) {
-                    String base64Data = Base64.getEncoder().encodeToString(fileData);
-                    String dataUrl = "data:" + mimeType + ";base64," + base64Data;
-                    Map<String, Object> imageUrlData = new HashMap<>();
-                    imageUrlData.put("url", dataUrl);
-                    Map<String, Object> imageObj = new HashMap<>();
-                    imageObj.put("type", "image_url");
-                    imageObj.put("image_url", imageUrlData);
-                    contentList.add(imageObj);
-                }
 
                 Map<String, Object> message = new HashMap<>();
                 message.put("role", "user");
                 message.put("content", contentList);
 
                 Map<String, Object> requestBody = new HashMap<>();
-                // Llama 3.3 70B for text (extremely high accuracy), Llama 4 Scout for images
-                requestBody.put("model", isPdf ? "llama-3.3-70b-versatile" : "meta-llama/llama-4-scout-17b-16e-instruct"); // Using latest Llama 4 Scout for vision tasks
+                requestBody.put("model", "llama-3.3-70b-versatile");
                 requestBody.put("messages", Arrays.asList(message));
                 requestBody.put("temperature", 0.1);
 
