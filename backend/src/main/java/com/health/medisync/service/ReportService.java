@@ -74,17 +74,21 @@ public class ReportService {
                 report.setClinicalReasoning(openAiAnalysis);
             }
         } else {
-            // Failover to Groq Llama 3.3 for Deep Reasoning
-            System.out.println("DEBUG: OpenAI unavailable or rate-limited. Falling back to Groq for Master Reasoning...");
-            try {
-                String groqFailover = groqAiService.analyzeReport(fileData, contentType, patientName, patientAge);
-                if (groqFailover != null && groqFailover.contains("ERROR_PROFILE_MISMATCH")) {
-                    report.setClinicalReasoning("SECURITY BLOCK: This document belongs to a different patient.");
-                } else {
-                    report.setClinicalReasoning(groqFailover != null ? groqFailover : "Clinical reasoning is temporarily unavailable across all providers.");
+            // Failover: Only use Groq for text-based PDFs. Images cannot failover to Groq anymore.
+            if (contentType != null && !contentType.startsWith("image/")) {
+                System.out.println("DEBUG: OpenAI unavailable or rate-limited. Falling back to Groq for Master Reasoning...");
+                try {
+                    String groqFailover = groqAiService.analyzeReport(fileData, contentType, patientName, patientAge);
+                    if (groqFailover != null && groqFailover.contains("ERROR_PROFILE_MISMATCH")) {
+                        report.setClinicalReasoning("SECURITY BLOCK: This document belongs to a different patient.");
+                    } else {
+                        report.setClinicalReasoning(groqFailover != null ? groqFailover : "Clinical reasoning is temporarily unavailable.");
+                    }
+                } catch (Exception e) {
+                    report.setClinicalReasoning("AI services are currently busy. Please try again later.");
                 }
-            } catch (Exception e) {
-                report.setClinicalReasoning("AI services are currently busy. Please try again later.");
+            } else {
+                report.setClinicalReasoning("Clinical reasoning for images is currently unavailable from all providers. Please try again in 1 minute.");
             }
         }
 
