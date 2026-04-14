@@ -62,6 +62,14 @@ public class AppointmentController {
 
     @GetMapping("/my-appointments")
     public ResponseEntity<List<Appointment>> myAppointments(Authentication authentication) {
-        return ResponseEntity.ok(appointmentService.getPatientAppointments(authentication.getName()));
+        String email = authentication.getName();
+        boolean isDoctor = authentication.getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_DOCTOR"));
+
+        if (isDoctor) {
+            return ResponseEntity.ok(appointmentService.getDoctorAppointments(email));
+        } else {
+            return ResponseEntity.ok(appointmentService.getPatientAppointments(email));
+        }
     }
 }

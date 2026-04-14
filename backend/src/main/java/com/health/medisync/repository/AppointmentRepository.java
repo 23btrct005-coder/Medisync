@@ -15,6 +15,7 @@ import java.util.Optional;
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
     List<Appointment> findByDoctorIdAndAppointmentDate(Long doctorId, LocalDate date);
     List<Appointment> findByPatientId(Long patientId);
+    List<Appointment> findByDoctorId(Long doctorId);
     Optional<Appointment> findByRazorpayOrderId(String orderId);
 
     @Query("SELECT a FROM Appointment a WHERE a.doctor = :doctor AND a.appointmentDate = :date AND a.timeSlot = :slot AND (a.status = 'BOOKED' OR (a.status = 'PENDING' AND a.createdAt > :expiry))")

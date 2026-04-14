@@ -124,6 +124,17 @@ public class AppointmentService {
         orderRequest.put("currency", "INR");
         orderRequest.put("receipt", "appt_" + System.currentTimeMillis());
 
+        // Razorpay Route - Transfer directly to doctor
+        if (doctor.getRazorpayAccountId() != null && !doctor.getRazorpayAccountId().isEmpty()) {
+            JSONArray transfers = new JSONArray();
+            JSONObject transfer = new JSONObject();
+            transfer.put("account", doctor.getRazorpayAccountId());
+            transfer.put("amount", (int)(fee * 100)); // Send 100% to doctor
+            transfer.put("currency", "INR");
+            transfers.put(transfer);
+            orderRequest.put("transfers", transfers);
+        }
+
         Order order = client.orders.create(orderRequest);
 
         Appointment appointment = new Appointment();
@@ -171,5 +182,11 @@ public class AppointmentService {
         Patient patient = patientRepository.findByEmail(email)
             .orElseThrow(() -> new RuntimeException("Patient not found"));
         return appointmentRepository.findByPatientId(patient.getId());
+    }
+
+    public List<Appointment> getDoctorAppointments(String email) {
+        Doctor doctor = doctorRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("Doctor not found"));
+        return appointmentRepository.findByDoctorId(doctor.getId());
     }
 }

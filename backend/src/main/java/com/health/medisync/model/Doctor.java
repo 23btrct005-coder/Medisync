@@ -50,7 +50,7 @@ public class Doctor {
     private boolean approved = false;
 
     // Payment Integration
-    private String upiId; // For Manual Payouts via UPI
+    private String razorpayAccountId; // For Razorpay Route / Connected Accounts
 
     @JdbcTypeCode(SqlTypes.BINARY)
     @Column(name = "profile_picture")
@@ -132,6 +132,6 @@ public class Doctor {
     public String getClinicAddress() { return clinicAddress; }
     public void setClinicAddress(String clinicAddress) { this.clinicAddress = clinicAddress; }
 
-    public String getUpiId() { return upiId; }
-    public void setUpiId(String upiId) { this.upiId = upiId; }
+    public String getRazorpayAccountId() { return razorpayAccountId; }
+    public void setRazorpayAccountId(String razorpayAccountId) { this.razorpayAccountId = razorpayAccountId; }
 }
