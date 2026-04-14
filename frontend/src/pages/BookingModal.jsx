@@ -141,27 +141,25 @@ const BookingModal = ({ doctor, onClose, onBookingSuccess }) => {
             </div>
 
             {/* Type Selection */}
-            <div className={`grid gap-3 ${doctor.onlineConsultation && (doctor.offlineConsultationFee || doctor.clinicAddress) ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                {doctor.onlineConsultation && (
-                    <button 
-                      onClick={() => setType('ONLINE')}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${type === 'ONLINE' ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}
-                    >
-                        <Video size={24} />
-                        <span className="text-sm font-bold">Online</span>
-                        <span className="text-xs">₹{doctor.onlineConsultationFee || '500'}</span>
-                    </button>
-                )}
-                {(doctor.offlineConsultationFee || doctor.clinicAddress || !doctor.onlineConsultation) && (
-                    <button 
-                      onClick={() => setType('OFFLINE')}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${type === 'OFFLINE' ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}
-                    >
-                        <MapPin size={24} />
-                        <span className="text-sm font-bold">In-Clinic</span>
-                        <span className="text-xs">₹{doctor.offlineConsultationFee || '800'}</span>
-                    </button>
-                )}
+            <div className="grid grid-cols-2 gap-3 mb-6">
+                <button 
+                  onClick={() => setType('ONLINE')}
+                  className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${type === 'ONLINE' ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}
+                >
+                    <Video size={24} />
+                    <span className="text-sm font-bold">Online</span>
+                    <span className="text-[10px] uppercase tracking-wider font-medium opacity-70">Video Call</span>
+                    <span className="text-xs font-bold">₹{doctor.onlineConsultationFee || '500'}</span>
+                </button>
+                <button 
+                  onClick={() => setType('OFFLINE')}
+                  className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${type === 'OFFLINE' ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}
+                >
+                    <MapPin size={24} />
+                    <span className="text-sm font-bold">Offline</span>
+                    <span className="text-[10px] uppercase tracking-wider font-medium opacity-70">At Clinic</span>
+                    <span className="text-xs font-bold">₹{doctor.offlineConsultationFee || '800'}</span>
+                </button>
             </div>
 
             {/* Date Selection */}
