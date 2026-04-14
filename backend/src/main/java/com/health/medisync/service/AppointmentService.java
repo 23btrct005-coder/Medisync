@@ -124,17 +124,6 @@ public class AppointmentService {
         orderRequest.put("currency", "INR");
         orderRequest.put("receipt", "appt_" + System.currentTimeMillis());
 
-        // Razorpay Route - Transfer directly to doctor
-        if (doctor.getRazorpayAccountId() != null && !doctor.getRazorpayAccountId().isEmpty()) {
-            JSONArray transfers = new JSONArray();
-            JSONObject transfer = new JSONObject();
-            transfer.put("account", doctor.getRazorpayAccountId());
-            transfer.put("amount", (int)(fee * 100)); // Send 100% to doctor
-            transfer.put("currency", "INR");
-            transfers.put(transfer);
-            orderRequest.put("transfers", transfers);
-        }
-
         Order order = client.orders.create(orderRequest);
 
         Appointment appointment = new Appointment();

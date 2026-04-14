@@ -34,7 +34,7 @@ const EditDoctorProfile = () => {
     onlineConsultationFee: '',
     offlineConsultationFee: '',
     clinicAddress: '',
-    razorpayAccountId: ''
+    upiId: ''
   });
 
   useEffect(() => {
@@ -57,7 +57,7 @@ const EditDoctorProfile = () => {
         onlineConsultationFee: user.onlineConsultationFee || '',
         offlineConsultationFee: user.offlineConsultationFee || '',
         clinicAddress: user.clinicAddress || '',
-        razorpayAccountId: user.razorpayAccountId || ''
+        upiId: user.upiId || ''
       });
       setPhotoPreview(`${api.defaults.baseURL}/auth/doctor/photo/${user.id}?t=${Date.now()}`);
     }
@@ -230,9 +230,9 @@ const EditDoctorProfile = () => {
               <textarea name="clinicAddress" rows="2" value={formData.clinicAddress} onChange={handleChange} className={inputClass} placeholder="Full address of your clinic..." />
             </div>
             <div className="md:col-span-2">
-                <label className={labelClass}>Razorpay Linked Account ID (for Direct Payments)</label>
-                <input type="text" name="razorpayAccountId" value={formData.razorpayAccountId} onChange={handleChange} className={inputClass} placeholder="acc_XXXXX..." />
-                <p className="text-[10px] text-slate-400 mt-1 ml-1">Payments will be routed directly to this account via Razorpay Route.</p>
+                <label className={labelClass}>Doctor UPI ID (for Payouts)</label>
+                <input type="text" name="upiId" value={formData.upiId} onChange={handleChange} className={inputClass} placeholder="e.g. name@okaxis" />
+                <p className="text-[10px] text-slate-400 mt-1 ml-1">Payments will be processed via your central account and settled to this UPI ID.</p>
             </div>
             <div className="md:col-span-2">
                 <label className="flex items-center gap-3 cursor-pointer p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-slate-100 transition-colors">
