@@ -141,7 +141,7 @@ const BookingModal = ({ doctor, onClose, onBookingSuccess }) => {
             </div>
 
             {/* Type Selection */}
-            <div className={`grid gap-3 ${doctor.onlineConsultation && doctor.clinicAddress ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            <div className={`grid gap-3 ${doctor.onlineConsultation && (doctor.offlineConsultationFee || doctor.clinicAddress) ? 'grid-cols-2' : 'grid-cols-1'}`}>
                 {doctor.onlineConsultation && (
                     <button 
                       onClick={() => setType('ONLINE')}
@@ -152,7 +152,7 @@ const BookingModal = ({ doctor, onClose, onBookingSuccess }) => {
                         <span className="text-xs">₹{doctor.onlineConsultationFee || '500'}</span>
                     </button>
                 )}
-                {doctor.clinicAddress && (
+                {(doctor.offlineConsultationFee || doctor.clinicAddress || !doctor.onlineConsultation) && (
                     <button 
                       onClick={() => setType('OFFLINE')}
                       className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${type === 'OFFLINE' ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}
