@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-// Deploy trigger: 2026-04-13T16:53 — Final Gemini & MONAI integration verification
+// Deploy trigger: 2026-04-14 — OpenAI & MONAI integration verification
 import { AuthProvider, useAuth } from './context/AuthContext';
 import DashboardLayout from './layouts/DashboardLayout';
 import DoctorLayout from './layouts/DoctorLayout';

@@ -481,14 +481,14 @@ const PatientManager = () => {
                     }
                   </div>
 
-                  {r.geminiSummary && (
+                  {r.clinicalReasoning && (
                     <div className="py-5">
                       <h4 className="text-xs font-extrabold text-primary-600 mb-3 uppercase tracking-widest flex items-center gap-1.5">
-                        ⚕️ Gemini 1.5 Pro Deep Reasoning
+                        ⚕️ OpenAI GPT-4o Clinical Reasoning
                       </h4>
                       <div className="prose prose-sm max-w-none text-slate-700 bg-slate-50 border border-slate-100 p-5 rounded-2xl relative">
                         <div className="absolute top-3 right-4 px-2 py-0.5 bg-primary-100 text-primary-700 text-[10px] font-black rounded uppercase tracking-wider">High Fidelity</div>
-                        <pre className="font-sans whitespace-pre-wrap leading-relaxed">{r.geminiSummary}</pre>
+                        <pre className="font-sans whitespace-pre-wrap leading-relaxed">{r.clinicalReasoning}</pre>
                       </div>
                     </div>
                   )}

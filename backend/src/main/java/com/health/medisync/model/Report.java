@@ -31,8 +31,8 @@ public class Report {
     private String monaiDiagnosis;
     private Double monaiConfidence;
 
-    @Column(columnDefinition = "TEXT")
-    private String geminiSummary;
+    @Column(columnDefinition = \"TEXT\")
+    private String clinicalReasoning;
 
     @Column(columnDefinition = "TEXT")
     private String doctorNotes;
@@ -64,8 +64,8 @@ public class Report {
     public Double getMonaiConfidence() { return monaiConfidence; }
     public void setMonaiConfidence(Double monaiConfidence) { this.monaiConfidence = monaiConfidence; }
 
-    public String getGeminiSummary() { return geminiSummary; }
-    public void setGeminiSummary(String geminiSummary) { this.geminiSummary = geminiSummary; }
+    public String getClinicalReasoning() { return clinicalReasoning; }
+    public void setClinicalReasoning(String clinicalReasoning) { this.clinicalReasoning = clinicalReasoning; }
 
     public String getDoctorNotes() { return doctorNotes; }
     public void setDoctorNotes(String doctorNotes) { this.doctorNotes = doctorNotes; }

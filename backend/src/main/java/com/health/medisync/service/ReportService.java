@@ -19,19 +19,19 @@ public class ReportService {
     private final ReportRepository reportRepository;
     private final PatientService patientService;
     private final GroqAiService groqAiService;
-    private final GeminiAiService geminiAiService;
+    private final OpenAiService openAiService;
     private final MonaiService monaiService;
     private final UserRepository userRepository;
     private final DoctorRepository doctorRepository;
 
     public ReportService(ReportRepository reportRepository, PatientService patientService, 
-                         GroqAiService groqAiService, GeminiAiService geminiAiService,
+                         GroqAiService groqAiService, OpenAiService openAiService, 
                          MonaiService monaiService, 
                          UserRepository userRepository, DoctorRepository doctorRepository) {
         this.reportRepository = reportRepository;
         this.patientService = patientService;
         this.groqAiService = groqAiService;
-        this.geminiAiService = geminiAiService;
+        this.openAiService = openAiService;
         this.monaiService = monaiService;
         this.userRepository = userRepository;
         this.doctorRepository = doctorRepository;
@@ -59,11 +59,24 @@ public class ReportService {
         String patientName = patient.getName();
         int patientAge = patient.getAge() != null ? patient.getAge() : 0;
 
-        // 1. Fast Summary (Groq)
+        // 1. High-Accuracy Master Reasoning (Powered by OpenAI GPT-4o)
+        try {
+            String openAiAnalysis = openAiService.analyzeReport(fileData, contentType, patientName, patientAge);
+            if (openAiAnalysis != null && openAiAnalysis.contains("ERROR_PROFILE_MISMATCH")) {
+                report.setClinicalReasoning("SECURITY BLOCK: This document belongs to a different patient.");
+            } else {
+                report.setClinicalReasoning(openAiAnalysis);
+            }
+        } catch (Exception e) {
+            System.err.println("OpenAI analysis failed: " + e.getMessage());
+            report.setClinicalReasoning("OpenAI reasoning is temporarily unavailable.");
+        }
+
+        // 2. High-Speed Clinical Summary (Powered by Groq Llama 3.3)
         try {
             String groqSummary = groqAiService.analyzeReport(fileData, contentType, patientName, patientAge);
             if (groqSummary != null && groqSummary.contains("ERROR_PROFILE_MISMATCH")) {
-                report.setAiSummary("Security Block: Profile mismatch detected in document.");
+                report.setAiSummary("Security Block: Profile mismatch detected.");
             } else {
                 report.setAiSummary(groqSummary);
             }
@@ -71,17 +84,7 @@ public class ReportService {
             System.err.println("Groq analysis failed: " + e.getMessage());
         }
 
-        // 2. High-Accuracy Clinical Reasoning (Gemini 1.5 Pro)
-        try {
-            String geminiSummary = geminiAiService.analyzeReport(fileData, contentType, patientName, patientAge);
-            if (!"ERROR_PROFILE_MISMATCH".equals(geminiSummary)) {
-                report.setGeminiSummary(geminiSummary);
-            }
-        } catch (Exception e) {
-            System.err.println("Gemini analysis failed: " + e.getMessage());
-        }
-
-        // 3. Advanced Vision Analysis using MONAI (for images only)
+        // 3. Advanced Vision Analysis using MONAI (for specialized radiology metrics)
         if (contentType != null && contentType.startsWith("image/")) {
             try {
                 Map<String, Object> monaiResults = monaiService.analyzeXray(fileData, fileName);
