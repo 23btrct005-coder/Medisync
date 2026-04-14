@@ -48,7 +48,7 @@ public class Doctor {
     private String consultationTimings;
     private Boolean onlineConsultation;
     private boolean approved = false;
-    private boolean appointmentsEnabled = true;
+    private Boolean appointmentsEnabled = true;
 
     // Payment Integration
     private String razorpayAccountId; // For Razorpay Route / Connected Accounts
@@ -136,6 +136,6 @@ public class Doctor {
     public String getRazorpayAccountId() { return razorpayAccountId; }
     public void setRazorpayAccountId(String razorpayAccountId) { this.razorpayAccountId = razorpayAccountId; }
 
-    public boolean isAppointmentsEnabled() { return appointmentsEnabled; }
-    public void setAppointmentsEnabled(boolean appointmentsEnabled) { this.appointmentsEnabled = appointmentsEnabled; }
+    public Boolean getAppointmentsEnabled() { return appointmentsEnabled != null ? appointmentsEnabled : true; }
+    public void setAppointmentsEnabled(Boolean appointmentsEnabled) { this.appointmentsEnabled = appointmentsEnabled; }
 }

@@ -53,7 +53,7 @@ public class AppointmentService {
         Doctor doctor = doctorRepository.findById(doctorId)
             .orElseThrow(() -> new RuntimeException("Doctor not found"));
 
-        if (!doctor.isAppointmentsEnabled()) {
+        if (!doctor.getAppointmentsEnabled()) {
             return Collections.emptyList();
         }
 
