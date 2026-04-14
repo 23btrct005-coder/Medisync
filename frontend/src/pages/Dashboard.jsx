@@ -274,9 +274,14 @@ const Dashboard = () => {
                             <div className="flex items-center gap-1">
                                 <button 
                                   onClick={() => setBookingDoctor(doc)}
-                                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm active:scale-95 flex items-center gap-1"
+                                  disabled={doc.appointmentsEnabled === false}
+                                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm active:scale-95 flex items-center gap-1 ${
+                                    doc.appointmentsEnabled === false 
+                                    ? 'bg-slate-200 text-slate-500 cursor-not-allowed opacity-70' 
+                                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                  }`}
                                 >
-                                    <Calendar size={12} /> Book
+                                    <Calendar size={12} /> {doc.appointmentsEnabled === false ? 'Paused' : 'Book'}
                                 </button>
                                 <button 
                                   onClick={() => handleRevokeAccess(doc.id)}

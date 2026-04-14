@@ -53,6 +53,10 @@ public class AppointmentService {
         Doctor doctor = doctorRepository.findById(doctorId)
             .orElseThrow(() -> new RuntimeException("Doctor not found"));
 
+        if (!doctor.isAppointmentsEnabled()) {
+            return Collections.emptyList();
+        }
+
         // 1. Generate all possible slots from consultationTimings (e.g., "10:00 AM - 05:00 PM")
         List<String> allSlots = parseSlots(doctor.getConsultationTimings());
 
@@ -96,6 +100,10 @@ public class AppointmentService {
             .orElseThrow(() -> new RuntimeException("Patient not found"));
         Doctor doctor = doctorRepository.findById(doctorId)
             .orElseThrow(() -> new RuntimeException("Doctor not found"));
+
+        if (!doctor.isAppointmentsEnabled()) {
+            throw new RuntimeException("This doctor is not accepting appointments at the moment.");
+        }
 
         // Concurrency check
         LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(10);

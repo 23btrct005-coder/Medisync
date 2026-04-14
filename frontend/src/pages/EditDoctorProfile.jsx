@@ -34,7 +34,8 @@ const EditDoctorProfile = () => {
     onlineConsultationFee: '',
     offlineConsultationFee: '',
     clinicAddress: '',
-    razorpayAccountId: ''
+    razorpayAccountId: '',
+    appointmentsEnabled: true
   });
 
   useEffect(() => {
@@ -57,7 +58,8 @@ const EditDoctorProfile = () => {
         onlineConsultationFee: user.onlineConsultationFee || '',
         offlineConsultationFee: user.offlineConsultationFee || '',
         clinicAddress: user.clinicAddress || '',
-        razorpayAccountId: user.razorpayAccountId || ''
+        razorpayAccountId: user.razorpayAccountId || '',
+        appointmentsEnabled: user.appointmentsEnabled !== false // default true
       });
       setPhotoPreview(`${api.defaults.baseURL}/auth/doctor/photo/${user.id}?t=${Date.now()}`);
     }
@@ -233,6 +235,24 @@ const EditDoctorProfile = () => {
                 <label className={labelClass}>Razorpay Linked Account ID (for Direct Payments)</label>
                 <input type="text" name="razorpayAccountId" value={formData.razorpayAccountId} onChange={handleChange} className={inputClass} placeholder="acc_XXXXX..." />
                 <p className="text-[10px] text-slate-400 mt-1 ml-1">Payments will be routed directly to this account via Razorpay Route.</p>
+            </div>
+            <div className="md:col-span-2">
+                <label className="flex items-center gap-3 cursor-pointer p-4 bg-blue-50/50 rounded-2xl border border-blue-100 hover:bg-blue-100/50 transition-colors shadow-sm">
+                    <input 
+                        type="checkbox" 
+                        name="appointmentsEnabled" 
+                        checked={formData.appointmentsEnabled} 
+                        onChange={handleChange}
+                        className="w-5 h-5 text-blue-600 rounded-lg focus:ring-blue-500" 
+                    />
+                    <div className="flex items-center gap-2">
+                        <Calendar size={18} className={formData.appointmentsEnabled ? "text-emerald-500" : "text-slate-400"} />
+                        <div>
+                            <span className="block text-sm font-bold text-slate-700">Accepting New Appointments</span>
+                            <span className="block text-[10px] text-slate-500">Uncheck to temporarily pause all bookings on your profile.</span>
+                        </div>
+                    </div>
+                </label>
             </div>
             <div className="md:col-span-2">
                 <label className="flex items-center gap-3 cursor-pointer p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-slate-100 transition-colors">
