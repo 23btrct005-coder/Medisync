@@ -1,18 +1,10 @@
 package com.health.medisync.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "notifications")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,8 +29,44 @@ public class Notification {
 
     private LocalDateTime createdAt;
 
+    public Notification() {}
+
+    public Notification(Long id, Long userId, String type, String title, String description, String actionLink, String actionText, boolean isRead, LocalDateTime createdAt) {
+        this.id = id;
+        this.userId = userId;
+        this.type = type;
+        this.title = title;
+        this.description = description;
+        this.actionLink = actionLink;
+        this.actionText = actionText;
+        this.isRead = isRead;
+        this.createdAt = createdAt;
+    }
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
+
+    // Getters
+    public Long getId() { return id; }
+    public Long getUserId() { return userId; }
+    public String getType() { return type; }
+    public String getTitle() { return title; }
+    public String getDescription() { return description; }
+    public String getActionLink() { return actionLink; }
+    public String getActionText() { return actionText; }
+    public boolean isRead() { return isRead; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+
+    // Setters
+    public void setId(Long id) { this.id = id; }
+    public void setUserId(Long userId) { this.userId = userId; }
+    public void setType(String type) { this.type = type; }
+    public void setTitle(String title) { this.title = title; }
+    public void setDescription(String description) { this.description = description; }
+    public void setActionLink(String actionLink) { this.actionLink = actionLink; }
+    public void setActionText(String actionText) { this.actionText = actionText; }
+    public void setRead(boolean read) { isRead = read; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }
