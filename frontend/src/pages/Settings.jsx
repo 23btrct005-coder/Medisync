@@ -279,4 +279,4 @@ const Settings = () => {
   );
 };
 
-export default Settings;s;
+export default Settings;
