@@ -14,6 +14,9 @@ import ActivityHub from '../components/ActivityHub';
 import HealthSyncScore from '../components/HealthSyncScore';
 import StatCard from '../components/StatCard';
 import SkeletonCard, { SkeletonRow } from '../components/SkeletonCard';
+import AiChatSidebar from '../components/AiChatSidebar';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -23,6 +26,10 @@ const Dashboard = () => {
   const [doctors, setDoctors] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [showQRModal, setShowQRModal] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const [showBooking, setShowBooking] = useState(false);
+  const [doctorEmail, setDoctorEmail] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const initDashboard = async () => {
@@ -79,6 +86,28 @@ const Dashboard = () => {
     } catch (e) { console.error(e); }
   };
 
+  const handleApproveRequest = async (id) => {
+    try {
+      await api.post(`patient/requests/${id}/accept`);
+      toast.success('Access Request securely approved.');
+      fetchRequests();
+    } catch (e) {
+      toast.error('Failed to parse request authorization.');
+    }
+  };
+
+  const handleGrantAccess = async () => {
+    if (!doctorEmail) return toast.error("Please enter a valid doctor email.");
+    try {
+      await api.post('patient/link-doctor', { doctorEmail });
+      toast.success('Direct Authorization granted to doctor.');
+      setDoctorEmail('');
+      fetchLinkedDoctors();
+    } catch (e) {
+      toast.error(e.response?.data?.message || 'Access authorization failed.');
+    }
+  };
+
   const emergencyUrl = `${window.location.origin}/emergency/${user?.id}`;
 
   return (
@@ -109,7 +138,10 @@ const Dashboard = () => {
                   <QrCode size={18} />
                   Emergency QR
                 </button>
-                <button className="btn-premium bg-white/10 text-white border-white/10 backdrop-blur-md hover:bg-white/20">
+                <button 
+                  onClick={() => setShowChat(true)}
+                  className="btn-premium bg-white/10 text-white border-white/10 backdrop-blur-md hover:bg-white/20"
+                >
                   <MessageSquare size={18} />
                   AI Clinical Chat
                 </button>
@@ -117,7 +149,9 @@ const Dashboard = () => {
             </div>
             
             <div className="hidden lg:block">
-              <HealthSyncScore user={user} />
+              <div onClick={() => navigate('/profile')} className="cursor-pointer">
+                 <HealthSyncScore user={user} />
+              </div>
             </div>
           </div>
           <Activity className="absolute -right-12 -bottom-12 text-white/5" size={300} />
@@ -193,7 +227,7 @@ const Dashboard = () => {
                           </div>
                        </div>
                        <div className="flex gap-2">
-                          <button className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary-600 transition">Approve</button>
+                          <button onClick={() => handleApproveRequest(req.id)} className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary-600 transition">Approve</button>
                        </div>
                     </div>
                   ))}
@@ -209,8 +243,14 @@ const Dashboard = () => {
               </div>
               <p className="text-xs text-slate-500 font-medium">Instantly authorize a doctor via their registered email address.</p>
               <div className="flex gap-2">
-                <input type="email" placeholder="Physician Email..." className="input-premium py-2 bg-white" />
-                <button className="btn-premium py-2 px-4 whitespace-nowrap bg-primary text-white shadow-lg shadow-primary/20">Grant Access</button>
+                <input 
+                  type="email" 
+                  value={doctorEmail}
+                  onChange={(e) => setDoctorEmail(e.target.value)}
+                  placeholder="Physician Email..." 
+                  className="input-premium py-2 bg-white" 
+                />
+                <button onClick={handleGrantAccess} className="btn-premium py-2 px-4 whitespace-nowrap bg-primary text-white shadow-lg shadow-primary/20">Grant Access</button>
               </div>
             </div>
 
@@ -221,8 +261,8 @@ const Dashboard = () => {
                 </div>
                 <p className="text-xs text-slate-500 font-medium">Add a self-reported record or upcoming appointment details.</p>
                 <div className="flex gap-2">
-                   <button className="flex-1 btn-premium bg-slate-900 text-white hover:bg-slate-800 text-xs">Report Detail</button>
-                   <button className="btn-premium bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-100 text-xs">Book Clinic</button>
+                   <button onClick={() => navigate('/reports')} className="flex-1 btn-premium bg-slate-900 text-white hover:bg-slate-800 text-xs">Report Detail</button>
+                   <button onClick={() => setShowBooking(true)} className="btn-premium bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-100 text-xs">Book Clinic</button>
                 </div>
             </div>
           </div>
@@ -283,6 +323,10 @@ const Dashboard = () => {
       {showQRModal && (
         <QRModal url={emergencyUrl} onClose={() => setShowQRModal(false)} />
       )}
+
+      {/* Global Modals */}
+      <AiChatSidebar isOpen={showChat} onClose={() => setShowChat(false)} />
+      {showBooking && <BookingModal onClose={() => setShowBooking(false)} onBookingSuccess={() => { setShowBooking(false); fetchAppointments(); }} />}
     </div>
   );
 };
@@ -316,7 +360,19 @@ const EmptyState = ({ icon, text }) => (
   </div>
 );
 
-const QRModal = ({ url, onClose }) => (
+const QRModal = ({ url, onClose }) => {
+  const handleDownload = () => {
+    const data = `MEDISYNC SECURE CLINICAL CONTEXT\n---\nEMERGENCY DECRYPTION URL:\n${url}\n\nINSTRUCTIONS:\nIf found, please scan the QR code or manually enter the URL to access critical medical telemetry.`;
+    const blob = new Blob([data], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'medisync-emergency-key.txt';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  return (
   <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
     <div className="bg-white rounded-[2.5rem] p-10 max-sm w-full shadow-2xl relative animate-in zoom-in-95 duration-300 ring-1 ring-black/5">
       <button onClick={onClose} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-900 transition hover:bg-slate-100 rounded-full">
@@ -341,13 +397,14 @@ const QRModal = ({ url, onClose }) => (
         </div>
 
         <div className="flex flex-col gap-3">
-          <button className="btn-premium bg-primary text-white w-full py-4 text-md shadow-lg shadow-primary/30 border-none">
+          <button onClick={handleDownload} className="btn-premium bg-primary text-white w-full py-4 text-md shadow-lg shadow-primary/30 border-none">
             <Download size={20} /> Download Metadata
           </button>
         </div>
       </div>
     </div>
   </div>
-);
+  );
+};
 
 export default Dashboard;
