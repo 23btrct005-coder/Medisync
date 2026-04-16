@@ -58,7 +58,7 @@ const HealthSyncScore = ({ user }) => {
   const offset = circumference - (scoreData.score / 100) * circumference;
 
   return (
-    <div className={`glass-card p-6 border-2 ${scoreData.borderColor} relative overflow-hidden group transition-all hover:scale-[1.02]`}>
+    <div className={`bg-white rounded-[2rem] shadow-xl p-6 border-2 ${scoreData.borderColor} relative overflow-hidden group transition-all hover:scale-[1.02]`}>
       <div className="flex items-center justify-between mb-8">
         <div>
           <h3 className="text-xl font-black text-slate-900 tracking-tight">Sync Integrity</h3>
