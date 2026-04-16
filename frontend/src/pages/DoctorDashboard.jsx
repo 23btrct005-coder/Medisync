@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, React } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { 
   Users, FileStack, Stethoscope, AlertCircle, QrCode, X, 
@@ -10,6 +10,7 @@ import { Html5Qrcode } from 'html5-qrcode';
 import { useNavigate } from 'react-router-dom';
 import ProfileCompletionBanner from '../components/ProfileCompletionBanner';
 import StatCard from '../components/StatCard';
+import SkeletonCard, { SkeletonRow } from '../components/SkeletonCard';
 
 const DoctorDashboard = () => {
   const { user } = useAuth();
@@ -107,7 +108,7 @@ const DoctorDashboard = () => {
       <section className="relative overflow-hidden bg-slate-900 rounded-[3rem] p-8 md:p-12 text-white shadow-2xl">
         <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/20 to-transparent pointer-events-none" />
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-          <div className="space-y-4">
+          <div className="space-y-4 text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full border border-white/10 backdrop-blur-md text-[10px] font-black uppercase tracking-widest text-emerald-400">
               <ShieldCheck size={14} className="animate-pulse" />
               Verified Clinical Professional
@@ -116,7 +117,7 @@ const DoctorDashboard = () => {
               Clinical Hub, <span className="text-primary-400">Dr. {user?.name?.split(' ').pop()}</span>
             </h1>
             <p className="text-slate-400 font-medium max-w-lg leading-relaxed">
-              Your physician gateway is active. You have oversight over {requests.filter(r => r.status === 'ACCEPTED').length} patient nodes.
+              Your physician gateway is active. Oversighting secure patient telemetry nodes.
             </p>
             <div className="flex flex-wrap gap-4 pt-4">
               <button 
@@ -128,7 +129,7 @@ const DoctorDashboard = () => {
               </button>
               <button onClick={() => navigate('/doctor-dashboard/patients')} className="btn-premium bg-white/10 text-white border-white/10 backdrop-blur-md hover:bg-white/20">
                 <Users size={18} />
-                Patient Directory
+                Directory
               </button>
             </div>
           </div>
@@ -144,34 +145,40 @@ const DoctorDashboard = () => {
 
       {/* Intelligence Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard 
-          title="Active Patients" 
-          value={requests.filter(r => r.status === 'ACCEPTED').length} 
-          icon={Users} 
-          color="primary"
-          trend="Live Oversight"
-        />
-        <StatCard 
-          title="Daily Consults" 
-          value={appointments.length} 
-          icon={Calendar} 
-          color="emerald"
-          trend="Scheduled"
-        />
-        <StatCard 
-          title="Intelligence Alerts" 
-          value="2" 
-          icon={Sparkles} 
-          color="purple"
-          trend="AI Detected"
-        />
-        <StatCard 
-          title="Node Status" 
-          value="HARDENED" 
-          icon={ShieldCheck} 
-          color="indigo"
-          trend="HIPAA Sync"
-        />
+        {loading ? (
+          [1,2,3,4].map(i => <div key={i} className="h-32 bg-slate-100 rounded-[2rem] animate-pulse border border-slate-100" />)
+        ) : (
+          <>
+            <StatCard 
+              title="Active Patients" 
+              value={requests.filter(r => r.status === 'ACCEPTED').length} 
+              icon={Users} 
+              color="primary"
+              trend="Live Oversight"
+            />
+            <StatCard 
+              title="Daily Consults" 
+              value={appointments.length} 
+              icon={Calendar} 
+              color="emerald"
+              trend="Scheduled"
+            />
+            <StatCard 
+              title="Intelligence Alerts" 
+              value="2" 
+              icon={Sparkles} 
+              color="purple"
+              trend="AI Detected"
+            />
+            <StatCard 
+              title="Node Status" 
+              value="SYNCED" 
+              icon={ShieldCheck} 
+              color="indigo"
+              trend="HIPAA Sync"
+            />
+          </>
+        )}
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
@@ -185,9 +192,9 @@ const DoctorDashboard = () => {
                 <div className="p-4 bg-primary/10 text-primary rounded-2xl group-hover:scale-110 transition-transform">
                    <UserPlus size={24} />
                 </div>
-                <div>
+                <div className="text-left">
                    <h3 className="text-xl font-black text-slate-900 tracking-tight">Expand Clinical Oversight</h3>
-                   <p className="text-xs text-slate-500 font-medium">Request secure record access via patient telemetry identifier (Email).</p>
+                   <p className="text-xs text-slate-500 font-medium">Request secure record access via patient telemetry identifier.</p>
                 </div>
              </div>
              <div className="flex flex-col md:flex-row gap-4">
@@ -204,7 +211,7 @@ const DoctorDashboard = () => {
                 <button 
                    onClick={handleSendRequest}
                    disabled={sending}
-                   className="btn-premium bg-slate-900 text-white px-8 py-4 shadow-xl hover:bg-black disabled:opacity-50"
+                   className="btn-premium bg-slate-900 text-white px-8 py-4 shadow-xl hover:bg-black disabled:opacity-50 border-none"
                 >
                    {sending ? 'Initiating Sync...' : 'Request Access Signal'}
                 </button>
@@ -218,13 +225,18 @@ const DoctorDashboard = () => {
                 <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl"><Calendar size={20} /></div>
                 <div>
                   <h3 className="text-xl font-black text-slate-900 tracking-tight">Engagement Schedule</h3>
-                  <p className="text-xs text-slate-500 font-medium uppercase tracking-widest mt-0.5">Physical & Virtual Syncs</p>
+                  <p className="text-xs text-slate-500 font-medium uppercase tracking-widest mt-0.5">Clinical Syncs</p>
                 </div>
               </div>
               <button className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">Full Outlook &rarr;</button>
             </div>
             
-            {appointments.length === 0 ? (
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <SkeletonCard />
+                 <SkeletonCard />
+              </div>
+            ) : appointments.length === 0 ? (
               <EmptyState icon={<Calendar />} text="The consultation queue is currently empty." />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -234,7 +246,7 @@ const DoctorDashboard = () => {
                       <div className="text-xs">{appt.appointmentDate?.split('-')[2]}</div>
                       <div className="text-[9px] uppercase opacity-70">{new Date(appt.appointmentDate).toLocaleString('en-US', { month: 'short' })}</div>
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 text-left">
                       <h4 className="text-sm font-extrabold text-slate-800 truncate">{appt.patient?.name}</h4>
                       <p className="text-[10px] text-slate-500 flex items-center gap-1 font-bold italic uppercase tracking-tighter">
                         <Clock size={10} /> {appt.timeSlot} • {appt.consultationType}
@@ -256,23 +268,25 @@ const DoctorDashboard = () => {
                     <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
                        <Target size={22} className="animate-pulse" />
                     </div>
-                    <div>
-                       <h3 className="text-xl font-black text-slate-900 tracking-tight">Access Signal Log</h3>
+                    <div className="text-left">
+                       <h3 className="text-xl font-black text-slate-900 tracking-tight">Access Signals</h3>
                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Authorization Stream</p>
                     </div>
                  </div>
               </div>
 
               <div className="space-y-4">
-                 {requests.length === 0 ? (
+                 {loading ? (
+                    [1,2,3,4].map(i => <SkeletonRow key={i} />)
+                 ) : requests.length === 0 ? (
                     <div className="flex-1 flex flex-col items-center justify-center text-center py-10">
                        <AlertCircle size={40} className="text-slate-200 mb-4" />
-                       <p className="text-xs text-slate-400 font-medium italic">No active access signals detected.</p>
+                       <p className="text-xs text-slate-400 font-medium italic">No active access signals.</p>
                     </div>
                  ) : (
                     requests.map(req => (
                        <div key={req.id} className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-2xl group hover:border-primary transition-colors">
-                          <div className="min-w-0">
+                          <div className="min-w-0 text-left">
                              <p className="text-sm font-black text-slate-800 truncate">Patient Identity</p>
                              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">{req.patient?.email || 'Authorized Link'}</p>
                           </div>
@@ -306,9 +320,9 @@ const DoctorDashboard = () => {
                   <div className="w-12 h-12 bg-emerald-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
                     <QrCode size={24} />
                   </div>
-                  <div>
+                  <div className="text-left">
                     <h3 className="text-xl font-black text-slate-900 tracking-tight">Signal Scanner</h3>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Ready for Telemetry</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Optical Telemetry Link</p>
                   </div>
                 </div>
                 <button 
@@ -334,7 +348,7 @@ const DoctorDashboard = () => {
                 <>
                   <div id="qr-reader" className="overflow-hidden rounded-[2rem] border-[6px] border-slate-50 bg-slate-900 aspect-square shadow-inner"></div>
                   <p className="mt-8 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    Stabilizing optical link... Please align QR.
+                    Stabilizing optical link... Align QR.
                   </p>
                 </>
               )}
@@ -348,7 +362,7 @@ const DoctorDashboard = () => {
 const EmptyState = ({ icon, text }) => (
   <div className="text-center py-16 bg-slate-50/50 rounded-[2.5rem] border-2 border-dashed border-slate-200">
     <div className="text-slate-200 mb-4 flex justify-center">
-      {React.cloneElement(icon, { size: 64 })}
+      {React?.cloneElement ? React.cloneElement(icon, { size: 64 }) : null}
     </div>
     <p className="text-slate-400 font-extrabold uppercase tracking-widest text-[10px] px-8 leading-relaxed max-w-xs mx-auto">{text}</p>
   </div>

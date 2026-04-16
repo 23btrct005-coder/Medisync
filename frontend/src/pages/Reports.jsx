@@ -2,9 +2,10 @@ import { useEffect, useState, useRef } from 'react';
 import api from '../api/axiosConfig';
 import { 
     Download, FileText, Loader2, UploadCloud, Camera, X, Trash2,
-    Sparkles, Eye, MessageSquare, Clock, Filter, CheckCircle2, AlertCircle
+    Sparkles, Eye, MessageSquare, Clock, Filter, CheckCircle2, AlertCircle, Search
 } from 'lucide-react';
 import AiChatSidebar from '../components/AiChatSidebar';
+import SkeletonCard from '../components/SkeletonCard';
 
 const Reports = () => {
   const [reports, setReports] = useState([]);
@@ -29,7 +30,6 @@ const Reports = () => {
 
   const fetchReports = async () => {
     try {
-      // Standardizing to the reports endpoint
       const res = await api.get('reports');
       setReports(res.data || []);
     } catch (error) {
@@ -157,14 +157,14 @@ const Reports = () => {
     <div className="page-entry space-y-8 pb-12">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-4">
+        <div className="space-y-4 text-left">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-50 rounded-full border border-purple-100 text-[10px] font-black uppercase tracking-widest text-purple-600">
             <Sparkles size={14} />
             Intelligence Lab
           </div>
           <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Clinical Reports</h1>
           <p className="text-slate-500 font-medium max-w-lg">
-            Upload or scan lab results to receive automated AI clinical summaries and discuss them with our assistant.
+            Upload lab results for automated AI summaries.
           </p>
         </div>
         
@@ -195,7 +195,7 @@ const Reports = () => {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={18} />
           <input 
             type="text" 
-            placeholder="Search report name or findings..." 
+            placeholder="Search report findings..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="input-premium pl-12"
@@ -210,15 +210,12 @@ const Reports = () => {
       {/* Content Layout */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
         {loading ? (
-          <div className="col-span-full flex flex-col items-center justify-center py-32 space-y-4">
-             <Loader2 className="text-primary animate-spin" size={48} />
-             <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Aggregating Clinical Lab Data...</p>
-          </div>
+          [1,2,3,4].map(i => <SkeletonCard key={i} />)
         ) : filteredReports.length === 0 ? (
           <div className="col-span-full text-center py-20 glass-panel border-dashed bg-slate-50/50">
             <FileText className="mx-auto text-slate-200 mb-4" size={64} />
             <h3 className="text-xl font-bold text-slate-800">No reports found</h3>
-            <p className="text-slate-500 mt-2">Try uploading your first imaging report or lab result.</p>
+            <p className="text-slate-500 mt-2">Try uploading your first imaging report.</p>
           </div>
         ) : (
           filteredReports.map(report => (
@@ -236,7 +233,7 @@ const Reports = () => {
                          {deletingId === report.id ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />}
                       </button>
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 text-left">
                       <h3 className="text-lg font-bold text-slate-800 truncate leading-tight">{report.fileName}</h3>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1">
@@ -264,8 +261,8 @@ const Reports = () => {
                        <span className="badge-clinical bg-primary text-white border-none py-0.5">Clinical AI Summary</span>
                        {report.monaiDiagnosis && <span className="badge-clinical bg-emerald-100 text-emerald-700 border-emerald-200 py-0.5">Vision Verified</span>}
                     </div>
-                    <p className="text-sm text-slate-700 font-medium leading-relaxed line-clamp-2">
-                      {report.aiSummary || report.clinicalReasoning || "Full intelligence summary is pending for this document."}
+                    <p className="text-sm text-slate-700 font-medium leading-relaxed line-clamp-2 text-left">
+                      {report.aiSummary || report.clinicalReasoning || "Full intelligence summary is pending."}
                     </p>
                   </div>
                 </div>

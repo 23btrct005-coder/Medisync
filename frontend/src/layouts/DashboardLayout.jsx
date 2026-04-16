@@ -1,19 +1,32 @@
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { useAuth } from '../context/AuthContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Bell, UserCircle, Menu, ShieldCheck, Search } from 'lucide-react';
-import api from '../api/axiosConfig';
+import api, { loadingState } from '../api/axiosConfig';
 import OnboardingTour from '../components/OnboardingTour';
+import TopBarLoader from '../components/TopBarLoader';
 
 const DashboardLayout = () => {
     const { user } = useAuth();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [globalLoading, setGlobalLoading] = useState(false);
     
+    useEffect(() => {
+        // Register the global loading listener
+        loadingState.onChange = (isLoading) => {
+            setGlobalLoading(isLoading);
+        };
+        return () => {
+            loadingState.onChange = null;
+        };
+    }, []);
+
     const photoUrl = user?.id ? `${api.defaults.baseURL}/auth/patient/photo/${user.id}` : null;
 
     return (
         <div className="flex h-screen bg-slate-50 overflow-hidden font-inter">
+            <TopBarLoader isLoading={globalLoading} />
             <OnboardingTour />
             <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
             

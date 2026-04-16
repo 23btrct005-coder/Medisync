@@ -6,13 +6,14 @@ import {
   Activity, ClipboardList, UserCheck, Calendar, QrCode, X, 
   Download, UserX, Loader2, Video, MapPin, Clock, 
   TrendingUp, ShieldCheck, Sparkles, ChevronRight, Plus,
-  Zap, MessageSquare, Heart, Target
+  Zap, MessageSquare, Heart, Target, Bell
 } from 'lucide-react';
 import ProfileCompletionBanner from '../components/ProfileCompletionBanner';
 import BookingModal from './BookingModal';
 import ActivityHub from '../components/ActivityHub';
 import HealthSyncScore from '../components/HealthSyncScore';
 import StatCard from '../components/StatCard';
+import SkeletonCard, { SkeletonRow } from '../components/SkeletonCard';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -26,6 +27,8 @@ const Dashboard = () => {
   useEffect(() => {
     const initDashboard = async () => {
       setLoading(true);
+      // We don't await the whole parallel block if we want skeletons to disappear as data arrives,
+      // but for this simple version we keep parallel and then shut off loading.
       await Promise.all([
         fetchDashboardInfo(),
         fetchRequests(),
@@ -87,7 +90,7 @@ const Dashboard = () => {
         <div className="absolute inset-0 bg-slate-900 rounded-[3rem] p-8 md:p-12 text-white shadow-2xl overflow-hidden">
           <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/20 to-transparent pointer-events-none" />
           <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-            <div className="space-y-4">
+            <div className="space-y-4 text-left">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full border border-white/10 backdrop-blur-md text-[10px] font-black uppercase tracking-widest text-primary-200">
                 <ShieldCheck size={14} className="text-emerald-300 animate-pulse" />
                 Secure Clinical Identity
@@ -96,7 +99,7 @@ const Dashboard = () => {
                 Hello, <span className="text-primary-400">{user?.name?.split(' ')[0]}</span>
               </h1>
               <p className="text-slate-400 font-medium max-w-lg leading-relaxed">
-                Your medical data is synchronizing across 4 secure nodes. AI has analyzed {stats.recordsCount} reports for your primary profile.
+                Your medical data is synchronizing across secure encrypted nodes.
               </p>
               <div className="flex flex-wrap gap-4 pt-4">
                 <button 
@@ -121,41 +124,42 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Mobile Sync Score */}
-      <div className="lg:hidden">
-        <HealthSyncScore user={user} />
-      </div>
-
       {/* Stats Ecosystem */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard 
-          title="Clinical Archives" 
-          value={stats.recordsCount} 
-          icon={ClipboardList} 
-          color="primary"
-          trend="+12% this month"
-        />
-        <StatCard 
-          title="Lead Diagnosis" 
-          value={stats.latestDiagnosis} 
-          icon={TrendingUp} 
-          color="emerald"
-          trend="Verified AI"
-        />
-        <StatCard 
-          title="Active Doctors" 
-          value={doctors.length} 
-          icon={UserCheck} 
-          color="purple"
-          trend="Certified"
-        />
-        <StatCard 
-          title="System Integrity" 
-          value="RLS 23.4" 
-          icon={ShieldCheck} 
-          color="indigo"
-          trend="Hardened"
-        />
+        {loading ? (
+          [1,2,3,4].map(i => <div key={i} className="h-32 bg-slate-100 rounded-[2rem] animate-pulse border border-slate-200" />)
+        ) : (
+          <>
+            <StatCard 
+              title="Clinical Archives" 
+              value={stats.recordsCount} 
+              icon={ClipboardList} 
+              color="primary"
+              trend="+Sync Active"
+            />
+            <StatCard 
+              title="Lead Diagnosis" 
+              value={stats.latestDiagnosis} 
+              icon={TrendingUp} 
+              color="emerald"
+              trend="Verified AI"
+            />
+            <StatCard 
+              title="Active Doctors" 
+              value={doctors.length} 
+              icon={UserCheck} 
+              color="purple"
+              trend="Certified"
+            />
+            <StatCard 
+              title="System Integrity" 
+              value="HARDENED" 
+              icon={ShieldCheck} 
+              color="indigo"
+              trend="RLS Layer"
+            />
+          </>
+        )}
       </div>
 
       {/* Content Hub */}
@@ -165,7 +169,12 @@ const Dashboard = () => {
         <div className="xl:col-span-8 space-y-8">
           
           {/* Requests & Quick Actions */}
-          {requests.length > 0 && (
+          {loading ? (
+             <div className="glass-panel p-8 space-y-4">
+                <SkeletonRow />
+                <SkeletonRow />
+             </div>
+          ) : requests.length > 0 && (
             <div className="glass-panel p-6 border-l-4 border-amber-500 animate-in slide-in-from-left duration-500">
                <div className="flex items-center gap-3 mb-4">
                   <div className="p-2 bg-amber-50 text-amber-600 rounded-xl"><Bell size={20} /></div>
@@ -185,7 +194,6 @@ const Dashboard = () => {
                        </div>
                        <div className="flex gap-2">
                           <button className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary-600 transition">Approve</button>
-                          <button className="px-3 py-1.5 bg-white text-slate-400 text-xs font-bold rounded-lg hover:bg-slate-50 transition border border-slate-200">Reject</button>
                        </div>
                     </div>
                   ))}
@@ -194,7 +202,7 @@ const Dashboard = () => {
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="glass-panel p-6 space-y-4 border-l-4 border-primary group hover:bg-primary/5 transition-colors cursor-pointer">
+            <div className="glass-panel p-6 space-y-4 border-l-4 border-primary group hover:bg-primary/5 transition-all">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary/10 text-primary rounded-xl group-hover:scale-110 transition-transform"><UserCheck size={20} /></div>
                 <h3 className="text-lg font-bold text-slate-800">Direct Authorization</h3>
@@ -206,7 +214,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="glass-panel p-6 space-y-4 border-l-4 border-emerald-500 group hover:bg-emerald-50 transition-colors cursor-pointer">
+            <div className="glass-panel p-6 space-y-4 border-l-4 border-emerald-500 group hover:bg-emerald-50 transition-all">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl group-hover:scale-110 transition-transform"><Plus size={20} /></div>
                   <h3 className="text-lg font-bold text-slate-800">New Health Log</h3>
@@ -229,11 +237,16 @@ const Dashboard = () => {
                   <p className="text-xs text-slate-500 font-medium uppercase tracking-widest mt-0.5">Upcoming Syncs</p>
                 </div>
               </div>
-              <button className="text-xs font-bold text-primary flex items-center gap-1 uppercase tracking-widest hover:translate-x-1 transition-transform">
+              <button className="text-xs font-black text-primary flex items-center gap-1 uppercase tracking-widest hover:translate-x-1 transition-transform">
                 Full Calendar <ChevronRight size={14} />
               </button>
             </div>
-            {appointments.length === 0 ? (
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <SkeletonCard />
+                 <SkeletonCard />
+              </div>
+            ) : appointments.length === 0 ? (
               <EmptyState icon={<Calendar />} text="No upcoming consultations synchronized." />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -282,13 +295,13 @@ const AppointmentItem = ({ appt }) => (
       <div className="text-xs">{appt.appointmentDate?.split('-')[2]}</div>
       <div className="text-[10px] uppercase opacity-60">{new Date(appt.appointmentDate).toLocaleString('en-US', { month: 'short' })}</div>
     </div>
-    <div className="flex-1 min-w-0">
+    <div className="flex-1 min-w-0 text-left">
       <h4 className="text-sm font-bold text-slate-800 truncate">Dr. {appt.doctor?.name}</h4>
       <p className="text-[10px] text-slate-500 flex items-center gap-1 font-medium">
         <Clock size={10} /> {appt.timeSlot} • {appt.consultationType}
       </p>
     </div>
-    <div className="p-2 bg-slate-50 text-slate-400 rounded-xl group-hover:text-primary transition-colors">
+    <div className="p-2 bg-slate-50 text-slate-400 rounded-xl group-hover:text-primary transition-colors border border-slate-100">
       <ChevronRight size={16} />
     </div>
   </div>
@@ -305,7 +318,7 @@ const EmptyState = ({ icon, text }) => (
 
 const QRModal = ({ url, onClose }) => (
   <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
-    <div className="bg-white rounded-[2.5rem] p-10 max-w-sm w-full shadow-2xl relative animate-in zoom-in-95 duration-300 ring-1 ring-black/5">
+    <div className="bg-white rounded-[2.5rem] p-10 max-sm w-full shadow-2xl relative animate-in zoom-in-95 duration-300 ring-1 ring-black/5">
       <button onClick={onClose} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-900 transition hover:bg-slate-100 rounded-full">
         <X size={24} />
       </button>
@@ -314,13 +327,13 @@ const QRModal = ({ url, onClose }) => (
         <div className="w-20 h-20 bg-primary/10 text-primary rounded-[2rem] flex items-center justify-center mx-auto mb-6 animate-pulse">
           <QrCode size={40} />
         </div>
-        <h3 className="text-2xl font-black text-slate-900 leading-tight">Secure QR Key</h3>
-        <p className="text-sm text-slate-500 mt-2 mb-8 font-medium">Physicians can scan this key to unlock critical data in emergency situations.</p>
+        <h3 className="text-2xl font-black text-slate-900 leading-tight tracking-tight">Secure QR Key</h3>
+        <p className="text-sm text-slate-500 mt-2 mb-8 font-medium">Unlock critical data in emergencies.</p>
 
         <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 inline-block mb-8 relative">
           <QRCode 
             value={url}
-            size={200}
+            size={180}
             bgColor="#f8fafc"
             fgColor="#1e293b"
             level="H"
@@ -328,10 +341,9 @@ const QRModal = ({ url, onClose }) => (
         </div>
 
         <div className="flex flex-col gap-3">
-          <button className="btn-premium bg-primary text-white w-full py-4 text-md shadow-lg shadow-primary/30">
+          <button className="btn-premium bg-primary text-white w-full py-4 text-md shadow-lg shadow-primary/30 border-none">
             <Download size={20} /> Download Metadata
           </button>
-          <button onClick={onClose} className="text-sm font-bold text-slate-400 hover:text-slate-600 transition tracking-wider uppercase">Dismiss</button>
         </div>
       </div>
     </div>

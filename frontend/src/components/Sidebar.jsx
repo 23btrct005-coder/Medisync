@@ -14,6 +14,22 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     navigate('/login');
   };
 
+  // Pre-fetch logic to make the app feel instant
+  const prefetchData = (path) => {
+    try {
+      if (path === '/reports') {
+        api.get('reports').catch(() => {});
+      } else if (path === '/records') {
+        api.get('records/my-records').catch(() => {});
+      } else if (path === '/') {
+        api.get('records/my-records').catch(() => {});
+        api.get('patient/requests').catch(() => {});
+      }
+    } catch (e) {
+      // Slient fail for prefetch
+    }
+  };
+
   const navItems = [
     { name: 'Dashboard', path: '/', icon: <LayoutDashboard size={20} /> },
     { name: 'Medical Records', path: '/records', icon: <ClipboardList size={20} /> },
@@ -60,6 +76,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             key={item.name}
             to={item.path}
             end={item.path === '/'}
+            onMouseEnter={() => prefetchData(item.path)}
             onClick={() => {
                 if (window.innerWidth < 768) setIsOpen(false);
             }}
