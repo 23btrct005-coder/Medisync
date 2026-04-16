@@ -1,0 +1,51 @@
+package com.health.medisync.controller;
+
+import com.health.medisync.model.Notification;
+import com.health.medisync.repository.NotificationRepository;
+import com.health.medisync.security.UserContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/notifications")
+@CrossOrigin(origins = "*")
+public class NotificationController {
+
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+    @GetMapping
+    public ResponseEntity<List<Notification>> getMyNotifications() {
+        Long userId = UserContext.getCurrentUserId();
+        if (userId == null) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(notificationRepository.findByUserIdOrderByCreatedAtDesc(userId));
+    }
+
+    @PostMapping("/{id}/read")
+    public ResponseEntity<?> markAsRead(@PathVariable Long id) {
+        Long userId = UserContext.getCurrentUserId();
+        notificationRepository.findById(id).ifPresent(n -> {
+            if (n.getUserId().equals(userId)) {
+                n.setRead(true);
+                notificationRepository.save(n);
+            }
+        });
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteNotification(@PathVariable Long id) {
+        Long userId = UserContext.getCurrentUserId();
+        notificationRepository.findById(id).ifPresent(n -> {
+            if (n.getUserId().equals(userId)) {
+                notificationRepository.delete(n);
+            }
+        });
+        return ResponseEntity.ok().build();
+    }
+}

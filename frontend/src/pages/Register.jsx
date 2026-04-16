@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import api from '../api/axiosConfig';
 import ProfilePhotoUpload from '../components/ProfilePhotoUpload';
+import LegalFooter from '../components/LegalFooter';
+import { Bot, Info } from 'lucide-react';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -52,6 +54,7 @@ const Register = () => {
   // UI States
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [aiDisclaimerAccepted, setAiDisclaimerAccepted] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -383,16 +386,34 @@ const Register = () => {
                 </div>
               </div>
 
+              {/* AI Disclaimer Acknowledgement */}
+              <div className="bg-indigo-50/50 border border-indigo-100 p-4 rounded-xl flex items-start gap-3">
+                <input 
+                  type="checkbox" 
+                  id="aiDisclaimer"
+                  checked={aiDisclaimerAccepted}
+                  onChange={(e) => setAiDisclaimerAccepted(e.target.checked)}
+                  className="mt-1 h-4 w-4 text-indigo-600 border-indigo-300 rounded focus:ring-indigo-500 cursor-pointer"
+                />
+                <label htmlFor="aiDisclaimer" className="text-xs text-slate-600 leading-relaxed cursor-pointer">
+                  <span className="flex items-center gap-1 font-bold text-indigo-700 uppercase tracking-tighter mb-0.5">
+                    <Bot size={14} /> AI Clinical Disclaimer
+                  </span>
+                  I acknowledge that Medisync uses AI for clinical analysis. I have read the <Link to="/ai-disclaimer" className="text-indigo-600 font-bold hover:underline">AI Disclaimer</Link> and understand that all AI results must be verified by a physician.
+                </label>
+              </div>
+
               {/* Submit */}
               <div className="pt-2">
-                <button type="submit" disabled={loading || !emailVerified}
-                  className={`w-full flex justify-center items-center gap-2 py-4 px-4 rounded-2xl shadow-xl text-md font-extrabold text-white bg-gradient-to-r from-primary-600 to-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all ${loading || !emailVerified ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01] active:scale-[0.99] hover:shadow-primary-200 hover:shadow-2xl'}`}>
+                <button type="submit" disabled={loading || !emailVerified || !aiDisclaimerAccepted}
+                  className={`w-full flex justify-center items-center gap-2 py-4 px-4 rounded-2xl shadow-xl text-md font-extrabold text-white bg-gradient-to-r from-primary-600 to-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all ${loading || !emailVerified || !aiDisclaimerAccepted ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01] active:scale-[0.99] hover:shadow-primary-200 hover:shadow-2xl'}`}>
                   <UserPlus size={20} />
-                  {!emailVerified ? 'Please Verify Email First' : loading ? 'Creating Account...' : 'Complete Patient Registration'}
+                  {!emailVerified ? 'Please Verify Email First' : !aiDisclaimerAccepted ? 'Accept AI Disclaimer' : loading ? 'Creating Account...' : 'Complete Patient Registration'}
                 </button>
                 <p className="mt-4 text-center text-xs text-slate-400 uppercase tracking-wider font-medium">
-                  Fields marked with <span className="text-red-500">*</span> are required &nbsp;·&nbsp; By registering, you agree to our terms of service
+                  Fields marked with <span className="text-red-500">*</span> are required &nbsp;·&nbsp; By registering, you agree to our <Link to="/terms-of-service" className="text-primary-600 hover:underline">terms of service</Link> and <Link to="/privacy-policy" className="text-primary-600 hover:underline">privacy policy</Link>
                 </p>
+                <LegalFooter />
               </div>
 
             </form>

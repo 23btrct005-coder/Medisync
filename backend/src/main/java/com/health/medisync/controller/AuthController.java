@@ -65,8 +65,12 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(normalizedUsername, loginRequest.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateToken(authentication.getName());
-        String role = authentication.getAuthorities().iterator().next().getAuthority();
+        
+        User user = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Error: User not found."));
+                
+        String jwt = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole());
+        String role = user.getRole();
         
         return ResponseEntity.ok(new AuthResponse(jwt, role));
     }

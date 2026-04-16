@@ -1,11 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Users, FileStack, Stethoscope, AlertCircle, QrCode, X, Camera, Calendar, Clock } from 'lucide-react';
+import { 
+  Users, FileStack, Stethoscope, AlertCircle, QrCode, X, 
+  Camera, Calendar, Clock, ShieldCheck, TrendingUp, Sparkles, 
+  Search, Bell, UserPlus, ChevronRight, Activity, Target
+} from 'lucide-react';
 import api from '../api/axiosConfig';
 import { Html5Qrcode } from 'html5-qrcode';
-import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ProfileCompletionBanner from '../components/ProfileCompletionBanner';
+import StatCard from '../components/StatCard';
 
 const DoctorDashboard = () => {
   const { user } = useAuth();
@@ -15,11 +19,16 @@ const DoctorDashboard = () => {
   const [scanError, setScanError] = useState('');
   const [requests, setRequests] = useState([]);
   const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
  
   useEffect(() => {
-    fetchRequests();
-    fetchAppointments();
+    const fetchData = async () => {
+      setLoading(true);
+      await Promise.all([fetchRequests(), fetchAppointments()]);
+      setLoading(false);
+    };
+    fetchData();
   }, []);
  
   const fetchRequests = async () => {
@@ -33,7 +42,6 @@ const DoctorDashboard = () => {
 
   const fetchAppointments = async () => {
     try {
-      // We'll reuse the my-appointments endpoint or similar for doctor
       const res = await api.get('appointments/my-appointments'); 
       setAppointments(res.data || []);
     } catch (err) {
@@ -44,8 +52,6 @@ const DoctorDashboard = () => {
   useEffect(() => {
     let html5QrCode = null;
     if (showScanner) {
-      setScanError('');
-      // Delay to ensure the DOM element #qr-reader is mounted
       const timer = setTimeout(() => {
         try {
           html5QrCode = new Html5Qrcode("qr-reader");
@@ -53,19 +59,17 @@ const DoctorDashboard = () => {
             { facingMode: "environment" },
             { fps: 10, qrbox: { width: 250, height: 250 } },
             (decodedText) => {
-              const parts = decodedText.split('/');
-              const patientId = parts[parts.length - 1];
+              const patientId = decodedText.split('/').pop();
               if (patientId && !isNaN(patientId)) {
                 html5QrCode.stop().then(() => {
                    setShowScanner(false);
                    navigate(`/emergency/${patientId}`);
-                }).catch(err => console.error("Failed to stop scanner", err));
+                });
               }
             },
-            (errorMessage) => { /* ignore silent errors */ }
+            () => {}
           ).catch(err => {
-            console.error("Camera fail:", err);
-            setScanError("Unable to access camera. Please check permissions.");
+            setScanError("Unable to access camera nodes.");
           });
         } catch (e) {
           console.error("Scanner setup error:", e);
@@ -74,7 +78,7 @@ const DoctorDashboard = () => {
 
       return () => {
         clearTimeout(timer);
-        if (html5QrCode && html5QrCode.isScanning) {
+        if (html5QrCode?.isScanning) {
           html5QrCode.stop().catch(e => console.warn(e));
         }
       };
@@ -86,8 +90,8 @@ const DoctorDashboard = () => {
     setSending(true);
     try {
       await api.post('doctor/request-access', { patientEmail });
-      alert(`Request successfully sent to ${patientEmail}!`);
       setPatientEmail('');
+      fetchRequests();
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to send request');
     } finally {
@@ -96,172 +100,242 @@ const DoctorDashboard = () => {
   };
 
   return (
-    <div className="space-y-6 h-full flex flex-col">
+    <div className="page-entry space-y-10 pb-12">
       <ProfileCompletionBanner />
-      <div className="bg-gradient-to-r from-blue-700 to-primary-600 rounded-2xl p-8 text-white shadow-lg relative overflow-hidden shrink-0">
-        <div className="relative z-10">
-            <h1 className="text-3xl font-bold mb-2">Welcome, {user?.name || 'Doctor'}!</h1>
-            <p className="text-blue-100 max-w-xl">This is your secure physician dashboard. Patient overview and schedules will be managed here.</p>
+
+      {/* Hero Section */}
+      <section className="relative overflow-hidden bg-slate-900 rounded-[3rem] p-8 md:p-12 text-white shadow-2xl">
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/20 to-transparent pointer-events-none" />
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+          <div className="space-y-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full border border-white/10 backdrop-blur-md text-[10px] font-black uppercase tracking-widest text-emerald-400">
+              <ShieldCheck size={14} className="animate-pulse" />
+              Verified Clinical Professional
+            </div>
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+              Clinical Hub, <span className="text-primary-400">Dr. {user?.name?.split(' ').pop()}</span>
+            </h1>
+            <p className="text-slate-400 font-medium max-w-lg leading-relaxed">
+              Your physician gateway is active. You have oversight over {requests.filter(r => r.status === 'ACCEPTED').length} patient nodes.
+            </p>
+            <div className="flex flex-wrap gap-4 pt-4">
+              <button 
+                onClick={() => setShowScanner(true)}
+                className="btn-premium bg-emerald-500 text-white border-none shadow-lg shadow-emerald-500/30"
+              >
+                <Camera size={18} />
+                Scan Patient QR
+              </button>
+              <button onClick={() => navigate('/doctor-dashboard/patients')} className="btn-premium bg-white/10 text-white border-white/10 backdrop-blur-md hover:bg-white/20">
+                <Users size={18} />
+                Patient Directory
+              </button>
+            </div>
+          </div>
+          
+          <div className="hidden lg:block relative">
+             <div className="w-48 h-48 rounded-[2rem] bg-gradient-to-br from-primary/20 to-indigo-500/20 border border-white/10 backdrop-blur-3xl flex items-center justify-center animate-pulse-soft">
+                <Stethoscope size={80} className="text-primary-300 opacity-40" />
+             </div>
+          </div>
         </div>
-        <Stethoscope className="absolute right-8 top-4 text-white opacity-10" size={120} />
+        <Activity className="absolute -left-12 -bottom-12 text-white/5" size={300} />
+      </section>
+
+      {/* Intelligence Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard 
+          title="Active Patients" 
+          value={requests.filter(r => r.status === 'ACCEPTED').length} 
+          icon={Users} 
+          color="primary"
+          trend="Live Oversight"
+        />
+        <StatCard 
+          title="Daily Consults" 
+          value={appointments.length} 
+          icon={Calendar} 
+          color="emerald"
+          trend="Scheduled"
+        />
+        <StatCard 
+          title="Intelligence Alerts" 
+          value="2" 
+          icon={Sparkles} 
+          color="purple"
+          trend="AI Detected"
+        />
+        <StatCard 
+          title="Node Status" 
+          value="HARDENED" 
+          icon={ShieldCheck} 
+          color="indigo"
+          trend="HIPAA Sync"
+        />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-        <div className="card flex items-start space-x-4 border-l-4 border-emerald-500">
-            <div className="p-4 bg-emerald-50 rounded-full text-emerald-600">
-              <Users size={32} />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-bold text-slate-800">My Patients</h3>
-              <p className="text-slate-500 text-sm mt-1">Manage cases or request patient linkage</p>
-              <div className="mt-4 flex gap-2">
-                 <input 
-                    type="email" 
-                    placeholder="Patient Email..." 
-                    value={patientEmail}
-                    onChange={(e) => setPatientEmail(e.target.value)}
-                    className="flex-1 text-sm border-slate-200 rounded-lg px-2 focus:ring-2 focus:ring-emerald-500 focus:outline-none" 
-                 />
-                 <button 
-                    onClick={handleSendRequest}
-                    disabled={sending}
-                    className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-lg text-sm font-semibold hover:bg-emerald-200 disabled:opacity-50"
-                 >
-                    {sending ? 'Sending...' : 'Send Request'}
-                 </button>
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+        
+        {/* Left Section (Access Management) */}
+        <div className="xl:col-span-8 space-y-8">
+          
+          {/* Quick Access Grant */}
+          <div className="glass-panel p-8 border-l-4 border-primary group">
+             <div className="flex items-center gap-4 mb-6">
+                <div className="p-4 bg-primary/10 text-primary rounded-2xl group-hover:scale-110 transition-transform">
+                   <UserPlus size={24} />
+                </div>
+                <div>
+                   <h3 className="text-xl font-black text-slate-900 tracking-tight">Expand Clinical Oversight</h3>
+                   <p className="text-xs text-slate-500 font-medium">Request secure record access via patient telemetry identifier (Email).</p>
+                </div>
+             </div>
+             <div className="flex flex-col md:flex-row gap-4">
+                <div className="relative flex-1">
+                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                   <input 
+                      type="email" 
+                      placeholder="Enter Patient Email Identifier..." 
+                      value={patientEmail}
+                      onChange={(e) => setPatientEmail(e.target.value)}
+                      className="input-premium pl-12 py-4 bg-slate-50/50"
+                   />
+                </div>
+                <button 
+                   onClick={handleSendRequest}
+                   disabled={sending}
+                   className="btn-premium bg-slate-900 text-white px-8 py-4 shadow-xl hover:bg-black disabled:opacity-50"
+                >
+                   {sending ? 'Initiating Sync...' : 'Request Access Signal'}
+                </button>
+             </div>
+          </div>
+
+          {/* Appointment Tracker */}
+          <div className="glass-panel p-8">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl"><Calendar size={20} /></div>
+                <div>
+                  <h3 className="text-xl font-black text-slate-900 tracking-tight">Engagement Schedule</h3>
+                  <p className="text-xs text-slate-500 font-medium uppercase tracking-widest mt-0.5">Physical & Virtual Syncs</p>
+                </div>
               </div>
+              <button className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">Full Outlook &rarr;</button>
             </div>
-        </div>
-
-        <div className="card flex items-start space-x-4 border-l-4 border-purple-500">
-            <div className="p-4 bg-purple-50 rounded-full text-purple-600">
-              <FileStack size={32} />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-slate-800">Global Uploads Review</h3>
-              <p className="text-slate-500 text-sm mt-1">Review newly uploaded reports from patients</p>
-              <a href="/doctor-dashboard/patients" className="mt-3 inline-block px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition">Access Patient Directory &rarr;</a>
-            </div>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-        <div className="bg-white border border-slate-200 rounded-2xl flex flex-col p-6 shadow-sm relative overflow-hidden h-full">
-           <div className="flex items-center gap-2 mb-4">
-              <QrCode size={20} className="text-emerald-500" />
-              <h3 className="text-lg font-bold text-slate-800">Sent Access Requests</h3>
-           </div>
-           
-           {requests.length === 0 ? (
-             <div className="flex-1 flex flex-col items-center justify-center text-center py-4">
-                <AlertCircle size={40} className="text-slate-200 mb-2" />
-                <p className="text-slate-400 text-sm">No pending requests sent yet.</p>
-             </div>
-           ) : (
-             <div className="space-y-3 overflow-y-auto max-h-[180px] pr-1">
-                {requests.map(req => (
-                  <div key={req.id} className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-slate-800 truncate">Patient: {req.patient?.name || 'Unknown'}</p>
-                      <p className="text-xs text-slate-500 mt-0.5">{req.patient?.email}</p>
+            
+            {appointments.length === 0 ? (
+              <EmptyState icon={<Calendar />} text="The consultation queue is currently empty." />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {appointments.map(appt => (
+                  <div key={appt.id} className="glass-card p-4 flex gap-4 items-center group cursor-pointer hover:border-primary transition-all">
+                    <div className="w-12 h-12 bg-primary text-white rounded-2xl flex flex-col items-center justify-center font-bold shadow-lg shadow-primary/20">
+                      <div className="text-xs">{appt.appointmentDate?.split('-')[2]}</div>
+                      <div className="text-[9px] uppercase opacity-70">{new Date(appt.appointmentDate).toLocaleString('en-US', { month: 'short' })}</div>
                     </div>
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                      req.status === 'PENDING' ? 'bg-amber-100 text-amber-700' : 
-                      req.status === 'ACCEPTED' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
-                    }`}>
-                      {req.status}
-                    </span>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-extrabold text-slate-800 truncate">{appt.patient?.name}</h4>
+                      <p className="text-[10px] text-slate-500 flex items-center gap-1 font-bold italic uppercase tracking-tighter">
+                        <Clock size={10} /> {appt.timeSlot} • {appt.consultationType}
+                      </p>
+                    </div>
+                    <ChevronRight size={16} className="text-slate-300 group-hover:text-primary transition-colors" />
                   </div>
                 ))}
-             </div>
-           )}
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl flex flex-col p-6 shadow-sm relative overflow-hidden h-full">
-           <div className="flex items-center gap-2 mb-4">
-              <Calendar size={20} className="text-blue-500" />
-              <h3 className="text-lg font-bold text-slate-800">Appointment Schedule</h3>
-           </div>
-           
-           {appointments.length === 0 ? (
-             <div className="flex-1 flex flex-col items-center justify-center text-center py-4">
-                <Clock size={40} className="text-slate-200 mb-2" />
-                <p className="text-slate-400 text-sm italic">No upcoming appointments.</p>
-             </div>
-           ) : (
-             <div className="space-y-3 overflow-y-auto max-h-[180px] pr-1">
-                {appointments.sort((a,b) => new Date(b.appointmentDate) - new Date(a.appointmentDate)).map(appt => (
-                  <div key={appt.id} className="flex items-center justify-between p-3 bg-blue-50/30 border border-blue-100 rounded-xl">
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-slate-800 truncate">{appt.patient?.name}</p>
-                      <div className="flex items-center gap-3 mt-1">
-                         <span className="text-[10px] font-bold text-blue-600 flex items-center gap-1 uppercase tracking-wider">
-                            <Clock size={10} /> {appt.timeSlot}
-                         </span>
-                         <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1 uppercase tracking-wider">
-                            <Calendar size={10} /> {appt.appointmentDate}
-                         </span>
-                      </div>
+        {/* Right Section (Access Logs) */}
+        <div className="xl:col-span-4 space-y-8">
+           <div className="glass-panel p-6 h-full flex flex-col min-h-[400px]">
+              <div className="flex items-center justify-between mb-8">
+                 <div className="flex items-center gap-3">
+                    <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
+                       <Target size={22} className="animate-pulse" />
                     </div>
-                    <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                      appt.consultationType === 'ONLINE' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
-                    }`}>
-                      {appt.consultationType}
-                    </span>
-                  </div>
-                ))}
-             </div>
-           )}
-        </div>
-      </div>
+                    <div>
+                       <h3 className="text-xl font-black text-slate-900 tracking-tight">Access Signal Log</h3>
+                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Authorization Stream</p>
+                    </div>
+                 </div>
+              </div>
 
-      {/* Floating QR Scan Button */}
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[90]">
-        <button 
-          onClick={() => setShowScanner(true)}
-          className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white font-black px-8 py-4 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border-2 border-white/20 transition-all hover:scale-105 active:scale-95 group"
-        >
-          <Camera size={24} className="group-hover:rotate-12 transition-transform" />
-          SCAN EMERGENCY QR
-        </button>
+              <div className="space-y-4">
+                 {requests.length === 0 ? (
+                    <div className="flex-1 flex flex-col items-center justify-center text-center py-10">
+                       <AlertCircle size={40} className="text-slate-200 mb-4" />
+                       <p className="text-xs text-slate-400 font-medium italic">No active access signals detected.</p>
+                    </div>
+                 ) : (
+                    requests.map(req => (
+                       <div key={req.id} className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-2xl group hover:border-primary transition-colors">
+                          <div className="min-w-0">
+                             <p className="text-sm font-black text-slate-800 truncate">Patient Identity</p>
+                             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">{req.patient?.email || 'Authorized Link'}</p>
+                          </div>
+                          <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                            req.status === 'PENDING' ? 'bg-amber-100 text-amber-700' : 
+                            req.status === 'ACCEPTED' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                          }`}>
+                            {req.status}
+                          </span>
+                       </div>
+                    ))
+                 )}
+              </div>
+              
+              <div className="mt-auto pt-6 border-t border-slate-100">
+                 <div className="flex items-center gap-2 p-3 bg-slate-900 rounded-2xl">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Security Gate Active</span>
+                 </div>
+              </div>
+           </div>
+        </div>
       </div>
 
       {/* Scanner Modal */}
       {showScanner && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-300">
-           <div className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl relative animate-in zoom-in-95 duration-300 border border-slate-100 overflow-hidden">
-              <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center">
+           <div className="bg-white rounded-[2.5rem] p-8 max-w-lg w-full shadow-2xl relative animate-in zoom-in-95 duration-300 border border-slate-100">
+              <div className="flex justify-between items-center mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-emerald-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
                     <QrCode size={24} />
                   </div>
-                  <h3 className="text-xl font-bold text-slate-800">Scanner Ready</h3>
+                  <div>
+                    <h3 className="text-xl font-black text-slate-900 tracking-tight">Signal Scanner</h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Ready for Telemetry</p>
+                  </div>
                 </div>
                 <button 
                   onClick={() => setShowScanner(false)}
-                  className="p-2 text-slate-400 hover:text-slate-600 transition hover:bg-slate-100 rounded-full"
+                  className="p-2 text-slate-400 hover:text-slate-900 transition hover:bg-slate-50 rounded-full"
                 >
                   <X size={24} />
                 </button>
               </div>
 
               {scanError ? (
-                <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
-                   <AlertCircle className="text-red-500 mx-auto mb-3" size={40} />
-                   <p className="text-red-700 font-bold">{scanError}</p>
+                <div className="bg-red-50 border border-red-100 rounded-[2rem] p-10 text-center">
+                   <AlertCircle className="text-red-500 mx-auto mb-4" size={48} />
+                   <p className="text-red-800 font-black uppercase tracking-widest text-xs">{scanError}</p>
                    <button 
                     onClick={() => setShowScanner(false)}
-                    className="mt-4 px-6 py-2 bg-red-600 text-white rounded-xl text-sm font-bold"
+                    className="mt-6 px-8 py-3 bg-red-600 text-white rounded-xl text-xs font-black uppercase tracking-widest"
                    >
-                    Close & Retry
+                    Emergency Abort
                    </button>
                 </div>
               ) : (
                 <>
-                  <div id="qr-reader" className="overflow-hidden rounded-2xl border-4 border-emerald-50 bg-slate-900 aspect-square"></div>
-                  <div className="mt-6 text-center text-sm text-slate-500 font-medium pb-2">
-                    Scanning active. Point your camera at the emergency QR code.
-                  </div>
+                  <div id="qr-reader" className="overflow-hidden rounded-[2rem] border-[6px] border-slate-50 bg-slate-900 aspect-square shadow-inner"></div>
+                  <p className="mt-8 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    Stabilizing optical link... Please align QR.
+                  </p>
                 </>
               )}
            </div>
@@ -270,5 +344,14 @@ const DoctorDashboard = () => {
     </div>
   );
 };
+
+const EmptyState = ({ icon, text }) => (
+  <div className="text-center py-16 bg-slate-50/50 rounded-[2.5rem] border-2 border-dashed border-slate-200">
+    <div className="text-slate-200 mb-4 flex justify-center">
+      {React.cloneElement(icon, { size: 64 })}
+    </div>
+    <p className="text-slate-400 font-extrabold uppercase tracking-widest text-[10px] px-8 leading-relaxed max-w-xs mx-auto">{text}</p>
+  </div>
+);
 
 export default DoctorDashboard;

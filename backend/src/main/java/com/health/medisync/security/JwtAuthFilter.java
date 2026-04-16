@@ -26,13 +26,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
-    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         try {
             String jwt = parseJwt(request);
             if (jwt != null) {
                 if (jwt.startsWith("supabase_dummy_jwt_")) {
+                    // Legacy dummy handling
                     String dummyEmail = request.getHeader("X-Supabase-User");
                     if(dummyEmail == null) dummyEmail = "supabase_user@domain.com";
 
@@ -49,6 +49,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
                 } else if (jwtUtils.validateToken(jwt)) {
                     String username = jwtUtils.getUsernameFromToken(jwt);
+                    Long userId = jwtUtils.getUserIdFromToken(jwt);
+                    String role = jwtUtils.getRoleFromToken(jwt);
+                    
+                    // Set context for RLS
+                    UserContext.setContext(userId, role);
+                    
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
@@ -56,11 +62,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }
+            filterChain.doFilter(request, response);
         } catch (Exception e) {
             // Cannot set user authentication
+            filterChain.doFilter(request, response);
+        } finally {
+            UserContext.clear();
         }
-
-        filterChain.doFilter(request, response);
     }
 
     private String parseJwt(HttpServletRequest request) {

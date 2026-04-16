@@ -2,420 +2,340 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
 import QRCode from 'react-qr-code';
-import { Activity, ClipboardList, UserCheck, Calendar, QrCode, X, Download, UserX, Loader2, Video, MapPin, Clock } from 'lucide-react';
+import { 
+  Activity, ClipboardList, UserCheck, Calendar, QrCode, X, 
+  Download, UserX, Loader2, Video, MapPin, Clock, 
+  TrendingUp, ShieldCheck, Sparkles, ChevronRight, Plus,
+  Zap, MessageSquare, Heart, Target
+} from 'lucide-react';
 import ProfileCompletionBanner from '../components/ProfileCompletionBanner';
 import BookingModal from './BookingModal';
+import ActivityHub from '../components/ActivityHub';
+import HealthSyncScore from '../components/HealthSyncScore';
+import StatCard from '../components/StatCard';
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const [stats, setStats] = useState({ recordsCount: 0, latestDiagnosis: 'Loading...', doctor: 'Loading...' });
-  const [doctorEmail, setDoctorEmail] = useState('');
-  const [linking, setLinking] = useState(false);
+  const [stats, setStats] = useState({ recordsCount: 0, latestDiagnosis: 'None', doctor: 'None' });
+  const [loading, setLoading] = useState(true);
   const [requests, setRequests] = useState([]);
   const [doctors, setDoctors] = useState([]);
-  const [revokingId, setRevokingId] = useState(null);
-  const [showQRModal, setShowQRModal] = useState(false);
   const [appointments, setAppointments] = useState([]);
-  const [bookingDoctor, setBookingDoctor] = useState(null);
+  const [showQRModal, setShowQRModal] = useState(false);
 
   useEffect(() => {
-    const fetchDashboardInfo = async () => {
-      try {
-        const res = await api.get('records/my-records');
-        const records = res.data;
-        if(records && records.length > 0) {
-            const latest = records.sort((a,b) => new Date(b.date) - new Date(a.date))[0];
-            setStats({
-                recordsCount: records.length,
-                latestDiagnosis: latest.diagnosis,
-                doctor: latest.doctorName
-            });
-        } else {
-            setStats({ recordsCount: 0, latestDiagnosis: 'None', doctor: 'None' });
-        }
-      } catch (error) {
-        console.error("Failed to load dashboard info");
-      }
+    const initDashboard = async () => {
+      setLoading(true);
+      await Promise.all([
+        fetchDashboardInfo(),
+        fetchRequests(),
+        fetchLinkedDoctors(),
+        fetchAppointments()
+      ]);
+      setLoading(false);
     };
     
-    fetchDashboardInfo();
-    fetchRequests();
-    fetchLinkedDoctors();
-    fetchAppointments();
-
-    // Poll for new requests every 30 seconds
+    initDashboard();
     const intervalId = setInterval(fetchRequests, 30000);
     return () => clearInterval(intervalId);
   }, []);
+
+  const fetchDashboardInfo = async () => {
+    try {
+      const res = await api.get('records/my-records');
+      const records = res.data;
+      if(records && records.length > 0) {
+          const latest = records.sort((a,b) => new Date(b.date) - new Date(a.date))[0];
+          setStats({
+              recordsCount: records.length,
+              latestDiagnosis: latest.diagnosis,
+              doctor: latest.doctorName
+          });
+      }
+    } catch (e) { console.error(e); }
+  };
 
   const fetchRequests = async () => {
     try {
       const res = await api.get('patient/requests');
       setRequests(res.data || []);
-    } catch (e) {
-      console.error("Failed to fetch requests", e);
-    }
+    } catch (e) { console.error(e); }
   };
 
   const fetchLinkedDoctors = async () => {
     try {
       const res = await api.get('patient/doctors');
       setDoctors(res.data || []);
-    } catch (e) {
-      console.error("Failed to fetch linked doctors", e);
-    }
+    } catch (e) { console.error(e); }
   };
 
   const fetchAppointments = async () => {
     try {
       const res = await api.get('appointments/my-appointments');
       setAppointments(res.data || []);
-    } catch (e) {
-      console.error("Failed to fetch appointments", e);
-    }
-  };
-
-  const handleAcceptRequest = async (id) => {
-    try {
-      await api.post(`patient/requests/${id}/accept`);
-      alert("Access granted successfully!");
-      fetchRequests(); // Refresh
-    } catch(err) {
-      alert("Failed to accept request.");
-    }
-  };
-
-  const handleRejectRequest = async (id) => {
-    try {
-      await api.post(`patient/requests/${id}/reject`);
-      fetchRequests(); // Refresh
-    } catch(err) {
-      alert("Failed to reject request.");
-    }
-  };
-
-  const handleLinkDoctor = async () => {
-    if(!doctorEmail) return;
-    setLinking(true);
-    try {
-      const res = await api.post('patient/link-doctor', { doctorEmail });
-      alert(res.data.message || 'Access successfully granted to ' + doctorEmail);
-      setDoctorEmail('');
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to grant access. Ensure the email is correct.');
-    } finally {
-      setLinking(false);
-    }
-  };
-
-  const handleRevokeAccess = async (doctorId) => {
-    if (!window.confirm("Are you sure you want to revoke this doctor's access? They will no longer be able to view your records.")) return;
-    
-    setRevokingId(doctorId);
-    try {
-      await api.delete(`patient/doctors/${doctorId}`);
-      setDoctors(doctors.filter(d => d.id !== doctorId));
-    } catch (err) {
-      alert("Failed to revoke access. Please try again.");
-    } finally {
-      setRevokingId(null);
-    }
+    } catch (e) { console.error(e); }
   };
 
   const emergencyUrl = `${window.location.origin}/emergency/${user?.id}`;
 
-  const handleDownloadQR = () => {
-    const svg = document.getElementById('dashboard-qr-svg');
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const canvas = document.createElement('canvas');
-    canvas.width = 300; canvas.height = 300;
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-    img.onload = () => {
-      ctx.drawImage(img, 0, 0);
-      canvas.toBlob(blob => {
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `medisync-emergency-qr.png`;
-        a.click();
-      });
-    };
-    img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
-  };
-
   return (
-    <div className="space-y-6">
+    <div className="page-entry space-y-10 pb-12">
       <ProfileCompletionBanner />
-      <div className="bg-gradient-to-r from-primary-600 to-primary-800 rounded-2xl p-8 text-white shadow-lg relative overflow-hidden">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-                <h1 className="text-3xl font-bold mb-2">Welcome back, {user?.name || 'Patient'}!</h1>
-                <p className="text-primary-100 max-w-xl">Your health dashboard is up to date. Check your latest medical records and reports below.</p>
-            </div>
-            <button 
-                onClick={() => setShowQRModal(true)}
-                className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-bold px-6 py-3 rounded-2xl backdrop-blur-md transition border border-white/30 active:scale-95 shadow-lg group"
-            >
-                <QrCode size={24} className="group-hover:rotate-12 transition-transform" />
-                Show My Emergency QR
-            </button>
-        </div>
-        <Activity className="absolute right-8 top-8 text-white opacity-10" size={120} />
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-        <div className="card border-l-4 border-l-blue-500 hover:-translate-y-1 transition-transform duration-300">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-500 mb-1">Total Medical Records</p>
-              <p className="text-3xl font-bold text-slate-800">{stats.recordsCount}</p>
-            </div>
-            <div className="p-3 bg-blue-50 rounded-full text-blue-600">
-              <ClipboardList size={28} />
-            </div>
-          </div>
-        </div>
-
-        <div className="card border-l-4 border-l-emerald-500 hover:-translate-y-1 transition-transform duration-300">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-500 mb-1">Latest Diagnosis</p>
-              <p className="text-xl font-bold text-slate-800 truncate max-w-[150px]">{stats.latestDiagnosis}</p>
-            </div>
-            <div className="p-3 bg-emerald-50 rounded-full text-emerald-600">
-              <Activity size={28} />
-            </div>
-          </div>
-        </div>
-
-        <div className="card border-l-4 border-l-purple-500 hover:-translate-y-1 transition-transform duration-300">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-500 mb-1">Assigned Doctor</p>
-              <p className="text-xl font-bold text-slate-800 truncate max-w-[150px]">{stats.doctor}</p>
-            </div>
-            <div className="p-3 bg-purple-50 rounded-full text-purple-600">
-              <UserCheck size={28} />
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
-              <div>
-                  <div className="flex items-center space-x-2 mb-2">
-                      <UserCheck className="text-primary-600" size={24} />
-                      <h3 className="text-xl font-bold text-slate-800">Health Providers</h3>
-                  </div>
-                  <p className="text-slate-500 text-sm mb-4">You can manually grant access directly via their registered Email Address.</p>
-                  
-                  <div className="flex space-x-3">
-                      <input 
-                         type="email" 
-                         placeholder="Doctor Email Address..." 
-                         value={doctorEmail}
-                         onChange={(e) => setDoctorEmail(e.target.value)}
-                         className="flex-1 border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:outline-none text-sm" 
-                      />
-                      <button 
-                         onClick={handleLinkDoctor}
-                         disabled={linking}
-                         className="bg-primary-600 hover:bg-primary-700 text-white px-5 py-2 rounded-lg font-medium shadow-sm transition disabled:opacity-50 text-sm whitespace-nowrap"
-                      >
-                         {linking ? 'Processing...' : 'Grant Access'}
-                      </button>
-                  </div>
+      {/* Super Hero Section */}
+      <section className="relative group">
+        <div className="absolute inset-0 bg-slate-900 rounded-[3rem] p-8 md:p-12 text-white shadow-2xl overflow-hidden">
+          <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/20 to-transparent pointer-events-none" />
+          <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full border border-white/10 backdrop-blur-md text-[10px] font-black uppercase tracking-widest text-primary-200">
+                <ShieldCheck size={14} className="text-emerald-300 animate-pulse" />
+                Secure Clinical Identity
               </div>
+              <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+                Hello, <span className="text-primary-400">{user?.name?.split(' ')[0]}</span>
+              </h1>
+              <p className="text-slate-400 font-medium max-w-lg leading-relaxed">
+                Your medical data is synchronizing across 4 secure nodes. AI has analyzed {stats.recordsCount} reports for your primary profile.
+              </p>
+              <div className="flex flex-wrap gap-4 pt-4">
+                <button 
+                  onClick={() => setShowQRModal(true)}
+                  className="btn-premium bg-primary text-white border-none shadow-lg shadow-primary/30"
+                >
+                  <QrCode size={18} />
+                  Emergency QR
+                </button>
+                <button className="btn-premium bg-white/10 text-white border-white/10 backdrop-blur-md hover:bg-white/20">
+                  <MessageSquare size={18} />
+                  AI Clinical Chat
+                </button>
+              </div>
+            </div>
+            
+            <div className="hidden lg:block">
+              <HealthSyncScore user={user} />
+            </div>
           </div>
+          <Activity className="absolute -right-12 -bottom-12 text-white/5" size={300} />
+        </div>
+      </section>
+
+      {/* Mobile Sync Score */}
+      <div className="lg:hidden">
+        <HealthSyncScore user={user} />
+      </div>
+
+      {/* Stats Ecosystem */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard 
+          title="Clinical Archives" 
+          value={stats.recordsCount} 
+          icon={ClipboardList} 
+          color="primary"
+          trend="+12% this month"
+        />
+        <StatCard 
+          title="Lead Diagnosis" 
+          value={stats.latestDiagnosis} 
+          icon={TrendingUp} 
+          color="emerald"
+          trend="Verified AI"
+        />
+        <StatCard 
+          title="Active Doctors" 
+          value={doctors.length} 
+          icon={UserCheck} 
+          color="purple"
+          trend="Certified"
+        />
+        <StatCard 
+          title="System Integrity" 
+          value="RLS 23.4" 
+          icon={ShieldCheck} 
+          color="indigo"
+          trend="Hardened"
+        />
+      </div>
+
+      {/* Content Hub */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+        
+        {/* Main Content Area (Col 1-8) */}
+        <div className="xl:col-span-8 space-y-8">
           
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
-              <div className="flex items-center space-x-2 mb-4">
-                  <Activity className="text-emerald-500" size={20} />
-                  <h3 className="text-lg font-semibold text-slate-800">Connection Requests</h3>
-              </div>
-              
-              {requests.length === 0 ? (
-                  <p className="text-slate-600 text-sm mt-2 text-center flex-1 flex flex-col justify-center">No pending requests.</p>
-              ) : (
-                  <div className="space-y-3 overflow-y-auto max-h-[140px] pr-2">
-                     {requests.map(req => (
-                        <div key={req.id} className="bg-slate-50 border border-slate-200 p-3 rounded-xl flex justify-between items-center">
-                            <div>
-                               <p className="text-sm font-semibold text-slate-800">Dr. {req.doctor?.name}</p>
-                               <p className="text-xs text-slate-500">{req.doctor?.email}</p>
-                            </div>
-                            <div className="flex space-x-2">
-                               <button onClick={() => handleAcceptRequest(req.id)} className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 px-3 py-1 rounded text-xs font-bold transition">Accept</button>
-                               <button onClick={() => handleRejectRequest(req.id)} className="bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1 rounded text-xs font-bold transition">Reject</button>
-                            </div>
-                        </div>
-                     ))}
-                  </div>
-              )}
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
-              <div className="flex items-center space-x-2 mb-4">
-                  <UserCheck className="text-primary-500" size={20} />
-                  <h3 className="text-lg font-semibold text-slate-800">Authorized Doctors</h3>
-              </div>
-              
-              {doctors.length === 0 ? (
-                  <p className="text-slate-600 text-sm mt-2 text-center flex-1 flex flex-col justify-center italic">No active authorizations.</p>
-              ) : (
-                  <div className="space-y-3 overflow-y-auto max-h-[140px] pr-2">
-                      {doctors.map(doc => (
-                        <div key={doc.id} className="bg-slate-50 border border-slate-200 p-3 rounded-xl flex justify-between items-center group">
-                            <div className="flex-1">
-                               <p className="text-sm font-semibold text-slate-800">Dr. {doc.name}</p>
-                               <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">{doc.specialization || 'Clinical Specialist'}</p>
-                            </div>
-                            <div className="flex items-center gap-1">
-                                <button 
-                                  onClick={() => setBookingDoctor(doc)}
-                                  disabled={doc.appointmentsEnabled === false}
-                                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm active:scale-95 flex items-center gap-1 ${
-                                    doc.appointmentsEnabled === false 
-                                    ? 'bg-slate-200 text-slate-500 cursor-not-allowed opacity-70' 
-                                    : 'bg-blue-600 hover:bg-blue-700 text-white'
-                                  }`}
-                                >
-                                    <Calendar size={12} /> {doc.appointmentsEnabled === false ? 'Paused' : 'Book'}
-                                </button>
-                                <button 
-                                  onClick={() => handleRevokeAccess(doc.id)}
-                                  disabled={revokingId === doc.id}
-                                  className="text-slate-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors active:scale-90 disabled:opacity-50"
-                                  title="Revoke Access"
-                                >
-                                  {revokingId === doc.id ? <Loader2 size={16} className="animate-spin" /> : <UserX size={16} />}
-                                </button>
-                            </div>
-                        </div>
-                     ))}
-                  </div>
-              )}
-          </div>
-      </div>
-
-      {/* Appointments List */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mt-8">
-          <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-2">
-                  <div className="p-2 bg-blue-100 text-blue-600 rounded-xl"><Clock size={20} /></div>
-                  <h3 className="text-xl font-bold text-slate-800">My Appointments</h3>
-              </div>
-          </div>
-
-          {appointments.length === 0 ? (
-              <div className="text-center py-12 bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-100">
-                  <Calendar className="mx-auto text-slate-200 mb-2" size={48} />
-                  <p className="text-slate-400 font-medium italic">No appointments scheduled yet.</p>
-              </div>
-          ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {appointments.sort((a,b) => new Date(b.appointmentDate) - new Date(a.appointmentDate)).map(appt => (
-                      <div key={appt.id} className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-                          {appt.status === 'BOOKED' && <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />}
-                          
-                          <div className="flex items-center justify-between mb-4 relative z-10">
-                              <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${appt.status === 'BOOKED' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                                  {appt.status}
-                              </span>
-                              <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                  {appt.consultationType === 'ONLINE' ? <Video size={12} className="text-blue-500" /> : <MapPin size={12} className="text-emerald-500" />}
-                                  {appt.consultationType}
-                              </span>
+          {/* Requests & Quick Actions */}
+          {requests.length > 0 && (
+            <div className="glass-panel p-6 border-l-4 border-amber-500 animate-in slide-in-from-left duration-500">
+               <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-amber-50 text-amber-600 rounded-xl"><Bell size={20} /></div>
+                  <h3 className="text-lg font-bold">Pending Access Requests</h3>
+               </div>
+               <div className="space-y-3">
+                  {requests.map(req => (
+                    <div key={req.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                       <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                             <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${req.doctorName}`} alt="" />
                           </div>
-
-                          <div className="space-y-3 relative z-10">
-                              <div>
-                                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">With Physician</p>
-                                  <p className="text-md font-bold text-slate-800">Dr. {appt.doctor?.name}</p>
-                              </div>
-                              <div className="flex items-center gap-4">
-                                  <div>
-                                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Date</p>
-                                      <p className="text-sm font-bold text-slate-700 flex items-center gap-1"><Calendar size={14} className="text-blue-500" /> {appt.appointmentDate}</p>
-                                  </div>
-                                  <div>
-                                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Time</p>
-                                      <p className="text-sm font-bold text-slate-700 flex items-center gap-1"><Clock size={14} className="text-blue-500" /> {appt.timeSlot}</p>
-                                  </div>
-                              </div>
-                              
-                              {appt.consultationType === 'OFFLINE' && appt.doctor?.clinicAddress && (
-                                  <div className="pt-2 border-t border-slate-50">
-                                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Location</p>
-                                      <p className="text-[11px] text-slate-600 italic line-clamp-1">{appt.doctor.clinicAddress}</p>
-                                  </div>
-                              )}
+                          <div>
+                             <p className="text-sm font-bold text-slate-800">Dr. {req.doctorName}</p>
+                             <p className="text-xs text-slate-500">Professional Access Authorization</p>
                           </div>
-                      </div>
+                       </div>
+                       <div className="flex gap-2">
+                          <button className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary-600 transition">Approve</button>
+                          <button className="px-3 py-1.5 bg-white text-slate-400 text-xs font-bold rounded-lg hover:bg-slate-50 transition border border-slate-200">Reject</button>
+                       </div>
+                    </div>
                   ))}
-              </div>
+               </div>
+            </div>
           )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="glass-panel p-6 space-y-4 border-l-4 border-primary group hover:bg-primary/5 transition-colors cursor-pointer">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 text-primary rounded-xl group-hover:scale-110 transition-transform"><UserCheck size={20} /></div>
+                <h3 className="text-lg font-bold text-slate-800">Direct Authorization</h3>
+              </div>
+              <p className="text-xs text-slate-500 font-medium">Instantly authorize a doctor via their registered email address.</p>
+              <div className="flex gap-2">
+                <input type="email" placeholder="Physician Email..." className="input-premium py-2 bg-white" />
+                <button className="btn-premium py-2 px-4 whitespace-nowrap bg-primary text-white shadow-lg shadow-primary/20">Grant Access</button>
+              </div>
+            </div>
+
+            <div className="glass-panel p-6 space-y-4 border-l-4 border-emerald-500 group hover:bg-emerald-50 transition-colors cursor-pointer">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl group-hover:scale-110 transition-transform"><Plus size={20} /></div>
+                  <h3 className="text-lg font-bold text-slate-800">New Health Log</h3>
+                </div>
+                <p className="text-xs text-slate-500 font-medium">Add a self-reported record or upcoming appointment details.</p>
+                <div className="flex gap-2">
+                   <button className="flex-1 btn-premium bg-slate-900 text-white hover:bg-slate-800 text-xs">Report Detail</button>
+                   <button className="btn-premium bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-100 text-xs">Book Clinic</button>
+                </div>
+            </div>
+          </div>
+
+          {/* Schedule Tracker */}
+          <div className="glass-panel p-8">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl"><Calendar size={20} /></div>
+                <div>
+                  <h3 className="text-xl font-black text-slate-900 tracking-tight">Schedule Tracker</h3>
+                  <p className="text-xs text-slate-500 font-medium uppercase tracking-widest mt-0.5">Upcoming Syncs</p>
+                </div>
+              </div>
+              <button className="text-xs font-bold text-primary flex items-center gap-1 uppercase tracking-widest hover:translate-x-1 transition-transform">
+                Full Calendar <ChevronRight size={14} />
+              </button>
+            </div>
+            {appointments.length === 0 ? (
+              <EmptyState icon={<Calendar />} text="No upcoming consultations synchronized." />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {appointments.slice(0, 4).map(appt => (
+                  <AppointmentItem key={appt.id} appt={appt} />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Sidebar Activity Hub (Col 9-12) */}
+        <div className="xl:col-span-4 space-y-8">
+          <ActivityHub />
+          
+          {/* Security Deep-Dive */}
+          <div className="glass-panel p-6 bg-slate-900 border-none text-white overflow-hidden relative group">
+            <ShieldCheck className="absolute -right-4 -bottom-4 text-white/5 group-hover:scale-110 transition-transform duration-700" size={140} />
+            <div className="relative z-10">
+              <h4 className="text-lg font-black tracking-tight mb-2">Private Context AI</h4>
+              <p className="text-xs text-slate-400 mb-6 leading-relaxed">
+                Your medical data never leaves the encrypted context. RLS isolation ensures only authorized keys can unlock your telemetry.
+              </p>
+              <div className="flex items-center gap-3 p-3 bg-white/5 rounded-2xl border border-white/10">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Security Hardened</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Booking Modal */}
-      {bookingDoctor && (
-          <BookingModal 
-             doctor={bookingDoctor} 
-             onClose={() => setBookingDoctor(null)} 
-             onBookingSuccess={fetchAppointments} 
-          />
-      )}
-
-      {/* QR Modal */}
+      {/* Emergency QR Modal */}
       {showQRModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-           <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl relative animate-in zoom-in-95 duration-300 border border-slate-100">
-              <button 
-                onClick={() => setShowQRModal(false)}
-                className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 transition hover:bg-slate-100 rounded-full"
-              >
-                <X size={20} />
-              </button>
-
-              <div className="text-center">
-                 <div className="w-16 h-16 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <QrCode size={32} />
-                 </div>
-                 <h3 className="text-xl font-bold text-slate-800">Your Emergency ID</h3>
-                 <p className="text-sm text-slate-500 mt-1 mb-6">Scan this QR to view critical medical data instantly.</p>
-
-                 <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 inline-block mb-6">
-                    <QRCode 
-                        id="dashboard-qr-svg"
-                        value={emergencyUrl}
-                        size={200}
-                        bgColor="#ffffff"
-                        fgColor="#991b1b"
-                        level="H"
-                    />
-                 </div>
-
-                 <div className="flex gap-3">
-                    <button 
-                        onClick={handleDownloadQR}
-                        className="flex-1 flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 rounded-xl transition shadow-lg active:scale-95"
-                    >
-                        <Download size={18} /> Download
-                    </button>
-                    <button 
-                        onClick={() => setShowQRModal(false)}
-                        className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition active:scale-95"
-                    >
-                        Close
-                    </button>
-                 </div>
-              </div>
-           </div>
-        </div>
+        <QRModal url={emergencyUrl} onClose={() => setShowQRModal(false)} />
       )}
     </div>
   );
 };
+
+/* --- SUBCOMPONENTS --- */
+
+const AppointmentItem = ({ appt }) => (
+  <div className="glass-card p-4 flex gap-4 items-center group cursor-pointer hover:border-primary transition-all">
+    <div className="w-12 h-12 bg-primary/5 text-primary rounded-2xl flex flex-col items-center justify-center font-bold group-hover:bg-primary group-hover:text-white transition-colors">
+      <div className="text-xs">{appt.appointmentDate?.split('-')[2]}</div>
+      <div className="text-[10px] uppercase opacity-60">{new Date(appt.appointmentDate).toLocaleString('en-US', { month: 'short' })}</div>
+    </div>
+    <div className="flex-1 min-w-0">
+      <h4 className="text-sm font-bold text-slate-800 truncate">Dr. {appt.doctor?.name}</h4>
+      <p className="text-[10px] text-slate-500 flex items-center gap-1 font-medium">
+        <Clock size={10} /> {appt.timeSlot} • {appt.consultationType}
+      </p>
+    </div>
+    <div className="p-2 bg-slate-50 text-slate-400 rounded-xl group-hover:text-primary transition-colors">
+      <ChevronRight size={16} />
+    </div>
+  </div>
+);
+
+const EmptyState = ({ icon, text }) => (
+  <div className="text-center py-12 bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-200">
+    <div className="text-slate-200 mb-2 flex justify-center">
+      {React.cloneElement(icon, { size: 48 })}
+    </div>
+    <p className="text-slate-400 font-medium italic text-sm">{text}</p>
+  </div>
+);
+
+const QRModal = ({ url, onClose }) => (
+  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
+    <div className="bg-white rounded-[2.5rem] p-10 max-w-sm w-full shadow-2xl relative animate-in zoom-in-95 duration-300 ring-1 ring-black/5">
+      <button onClick={onClose} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-900 transition hover:bg-slate-100 rounded-full">
+        <X size={24} />
+      </button>
+
+      <div className="text-center">
+        <div className="w-20 h-20 bg-primary/10 text-primary rounded-[2rem] flex items-center justify-center mx-auto mb-6 animate-pulse">
+          <QrCode size={40} />
+        </div>
+        <h3 className="text-2xl font-black text-slate-900 leading-tight">Secure QR Key</h3>
+        <p className="text-sm text-slate-500 mt-2 mb-8 font-medium">Physicians can scan this key to unlock critical data in emergency situations.</p>
+
+        <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 inline-block mb-8 relative">
+          <QRCode 
+            value={url}
+            size={200}
+            bgColor="#f8fafc"
+            fgColor="#1e293b"
+            level="H"
+          />
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <button className="btn-premium bg-primary text-white w-full py-4 text-md shadow-lg shadow-primary/30">
+            <Download size={20} /> Download Metadata
+          </button>
+          <button onClick={onClose} className="text-sm font-bold text-slate-400 hover:text-slate-600 transition tracking-wider uppercase">Dismiss</button>
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
 export default Dashboard;

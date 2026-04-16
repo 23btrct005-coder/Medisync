@@ -22,6 +22,11 @@ import EmergencyInfo from './pages/EmergencyInfo';
 import EditProfile from './pages/EditProfile';
 import EditDoctorProfile from './pages/EditDoctorProfile';
 import AdminDashboard from './pages/AdminDashboard';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import AIDisclaimer from './pages/AIDisclaimer';
+import Settings from './pages/Settings';
+import Support from './pages/Support';
 
 const ProtectedRoute = ({ children, allowedRole }) => {
   const { user, userRole, loading } = useAuth();
@@ -45,6 +50,9 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/emergency/:patientId" element={<EmergencyInfo />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/ai-disclaimer" element={<AIDisclaimer />} />
           
           {/* Patient Routes */}
           <Route path="/" element={
@@ -57,6 +65,8 @@ function App() {
             <Route path="reports" element={<Reports />} />
             <Route path="profile" element={<Profile />} />
             <Route path="profile/edit" element={<EditProfile />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="support" element={<Support />} />
           </Route>
 
           {/* Doctor Routes */}
@@ -70,6 +80,8 @@ function App() {
             <Route path="patients/:id" element={<PatientManager />} />
             <Route path="profile" element={<DoctorProfile />} />
             <Route path="profile/edit" element={<EditDoctorProfile />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="support" element={<Support />} />
           </Route>
 
           {/* Admin Routes */}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Activity, Lock, User, Eye, EyeOff } from 'lucide-react';
+import LegalFooter from '../components/LegalFooter';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -146,6 +147,7 @@ const Login = () => {
             </button>
           </div>
         </form>
+        <LegalFooter />
       </div>
     </div>
   );

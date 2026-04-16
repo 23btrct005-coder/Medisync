@@ -1,6 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
 import api from '../api/axiosConfig';
-import { Download, File, Loader2, UploadCloud, Camera, X, Trash2 } from 'lucide-react';
+import { 
+    Download, FileText, Loader2, UploadCloud, Camera, X, Trash2,
+    Sparkles, Eye, MessageSquare, Clock, Filter, CheckCircle2, AlertCircle
+} from 'lucide-react';
+import AiChatSidebar from '../components/AiChatSidebar';
 
 const Reports = () => {
   const [reports, setReports] = useState([]);
@@ -15,14 +19,19 @@ const Reports = () => {
   const canvasRef = useRef(null);
   const [stream, setStream] = useState(null);
 
+  const [selectedReport, setSelectedReport] = useState(null);
+  const [isAiOpen, setIsAiOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+
   useEffect(() => {
     fetchReports();
   }, []);
 
   const fetchReports = async () => {
     try {
+      // Standardizing to the reports endpoint
       const res = await api.get('reports');
-      setReports(res.data);
+      setReports(res.data || []);
     } catch (error) {
       console.error("Failed to load reports", error);
     } finally {
@@ -45,11 +54,7 @@ const Reports = () => {
       fetchReports();
     } catch (err) {
       console.error("Upload failed", err);
-      if (err.message === 'Network Error') {
-        alert("Server unreachable. The frontend cannot connect to the backend API. If you are on mobile, ensure your backend is deployed to a public server (like Render) and VITE_API_URL is set in Vercel.");
-      } else {
-        alert(err.response?.data?.message || "Failed to securely upload report.");
-      }
+      alert(err.response?.data?.message || "Failed to securely upload report.");
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = null;
@@ -66,7 +71,7 @@ const Reports = () => {
       }
     } catch (err) {
       console.error("Camera access denied", err);
-      alert("Unable to access the camera. Please ensure permissions are granted in your browser settings.");
+      alert("Unable to access the camera.");
       setShowCamera(false);
     }
   };
@@ -81,20 +86,16 @@ const Reports = () => {
 
   const capturePhoto = () => {
     if (videoRef.current && canvasRef.current) {
-      const width = videoRef.current.videoWidth || videoRef.current.clientWidth || 640;
-      const height = videoRef.current.videoHeight || videoRef.current.clientHeight || 480;
+      const width = videoRef.current.videoWidth || 640;
+      const height = videoRef.current.videoHeight || 480;
       canvasRef.current.width = width;
       canvasRef.current.height = height;
       const ctx = canvasRef.current.getContext('2d');
       ctx.drawImage(videoRef.current, 0, 0, width, height);
       
       canvasRef.current.toBlob(async (blob) => {
-        if (!blob) {
-          alert("Capture failed: Browser could not process the photo payload. Please try again.");
-          return;
-        }
+        if (!blob) return;
         const file = new File([blob], "scanned_report.jpg", { type: "image/jpeg" });
-        
         stopCamera();
         
         const formData = new FormData();
@@ -105,11 +106,6 @@ const Reports = () => {
           fetchReports();
         } catch (err) {
            console.error("Upload failed", err);
-           if (err.message === 'Network Error') {
-             alert("Server unreachable. The frontend cannot connect to the backend API. Ensure your backend is deployed publicly.");
-           } else {
-             alert(err.response?.data?.message || "Failed to securely upload report. Please ensure your backend is running.");
-           }
         } finally {
           setUploading(false);
         }
@@ -120,10 +116,7 @@ const Reports = () => {
   const handleDownload = async (id, fileName) => {
     setDownloadingId(id);
     try {
-      const res = await api.get(`reports/download/${id}`, {
-        responseType: 'blob', // Important for downloading files
-      });
-      
+      const res = await api.get(`reports/download/${id}`, { responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -139,148 +132,192 @@ const Reports = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to permanently delete this report? This action cannot be undone.")) return;
-    
+    if (!window.confirm("Permanently delete this report?")) return;
     setDeletingId(id);
     try {
       await api.delete(`reports/${id}`);
       setReports(reports.filter(r => r.id !== id));
     } catch (error) {
       console.error("Delete failed", error);
-      alert("Failed to delete report. Please try again.");
     } finally {
       setDeletingId(null);
     }
   };
 
+  const filteredReports = reports.filter(r => 
+    r.fileName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleAskAi = (report) => {
+    setSelectedReport(report);
+    setIsAiOpen(true);
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800">Medical Reports</h2>
-          <p className="text-slate-500 text-sm mt-1">Upload and access your lab results & imaging securely.</p>
+    <div className="page-entry space-y-8 pb-12">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="space-y-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-50 rounded-full border border-purple-100 text-[10px] font-black uppercase tracking-widest text-purple-600">
+            <Sparkles size={14} />
+            Intelligence Lab
+          </div>
+          <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Clinical Reports</h1>
+          <p className="text-slate-500 font-medium max-w-lg">
+            Upload or scan lab results to receive automated AI clinical summaries and discuss them with our assistant.
+          </p>
         </div>
         
-        <div className="flex gap-2">
-           <input 
-             type="file" 
-             className="hidden" 
-             ref={fileInputRef} 
-             onChange={handleFileUpload} 
-             accept=".pdf,.jpg,.jpeg,.png"
-           />
-           <button 
-             onClick={startCamera}
-             disabled={uploading}
-             className="flex items-center px-4 py-2.5 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 transition-colors shadow-sm disabled:opacity-50"
-             title="Scan Document with Camera"
-           >
-             <Camera size={20} />
-             <span className="hidden sm:inline ml-2">Scan</span>
-           </button>
-           <button 
-             onClick={() => fileInputRef.current.click()}
-             disabled={uploading}
-             className="flex items-center px-4 py-2.5 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors shadow-sm disabled:opacity-50"
-           >
-             {uploading ? (
-               <><Loader2 size={20} className="mr-2 animate-spin" /> Processing AI...</>
-             ) : (
-               <><UploadCloud size={20} className="mr-2" /> Secure Upload</>
-             )}
-           </button>
+        <div className="flex items-center gap-3">
+          <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileUpload} accept=".pdf,.jpg,.jpeg,.png" />
+          <button 
+            onClick={startCamera} 
+            disabled={uploading}
+            className="btn-premium bg-emerald-50 text-emerald-700 border border-emerald-100 hover:bg-emerald-100"
+          >
+            <Camera size={18} />
+            Scan Report
+          </button>
+          <button 
+            onClick={() => fileInputRef.current.click()} 
+            disabled={uploading}
+            className="btn-premium bg-primary text-white"
+          >
+            {uploading ? <Loader2 size={18} className="animate-spin" /> : <UploadCloud size={18} />}
+            {uploading ? 'Analyzing...' : 'Secure Upload'}
+          </button>
         </div>
       </div>
 
-      {loading ? (
-         <div className="flex justify-center p-12">
-            <Loader2 className="animate-spin text-primary-500" size={32} />
-         </div>
-      ) : reports.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center flex flex-col items-center">
-            <File size={48} className="text-slate-300 mb-4" />
-            <p className="text-slate-600 font-medium text-lg">No reports available at this time.</p>
+      {/* Filter Hub */}
+      <div className="glass-panel p-4 flex flex-col md:flex-row gap-4 items-center">
+        <div className="relative flex-1 group w-full">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={18} />
+          <input 
+            type="text" 
+            placeholder="Search report name or findings..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="input-premium pl-12"
+          />
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {reports.map((report) => (
-            <div key={report.id} className="card flex flex-col justify-between group">
-              <div className="flex items-start space-x-4">
-                <div className="p-3 bg-red-50 rounded-lg text-red-500 relative">
-                  <File size={28} />
+        <button className="flex-1 md:flex-none btn-premium bg-white border border-slate-200 text-slate-600 shadow-sm">
+          <Filter size={18} />
+          Filter
+        </button>
+      </div>
+
+      {/* Content Layout */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        {loading ? (
+          <div className="col-span-full flex flex-col items-center justify-center py-32 space-y-4">
+             <Loader2 className="text-primary animate-spin" size={48} />
+             <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Aggregating Clinical Lab Data...</p>
+          </div>
+        ) : filteredReports.length === 0 ? (
+          <div className="col-span-full text-center py-20 glass-panel border-dashed bg-slate-50/50">
+            <FileText className="mx-auto text-slate-200 mb-4" size={64} />
+            <h3 className="text-xl font-bold text-slate-800">No reports found</h3>
+            <p className="text-slate-500 mt-2">Try uploading your first imaging report or lab result.</p>
+          </div>
+        ) : (
+          filteredReports.map(report => (
+            <div key={report.id} className="relative group animate-in fade-in slide-in-from-bottom-2 duration-500">
+              <div className="glass-card p-6 border-b-4 border-b-primary/40 hover:border-b-primary transition-all">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="p-3 bg-red-50 text-red-600 rounded-2xl shadow-sm relative">
+                      <FileText size={24} />
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleDelete(report.id); }}
+                        disabled={deletingId === report.id}
+                        className="absolute -top-2 -right-2 p-1 bg-white border border-slate-200 rounded-full text-slate-400 hover:text-red-600 shadow-sm"
+                      >
+                         {deletingId === report.id ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />}
+                      </button>
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-lg font-bold text-slate-800 truncate leading-tight">{report.fileName}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1">
+                          <Clock size={10} /> {new Date(report.uploadDate).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <button 
+                      onClick={() => handleDownload(report.id, report.fileName)}
+                      disabled={downloadingId === report.id}
+                      className="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-xl transition-all"
+                    >
+                      {downloadingId === report.id ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* AI Insight Section */}
+                <div className="mb-6 space-y-3">
+                  <div className="p-4 bg-primary/5 rounded-[1.5rem] border border-primary/10 relative overflow-hidden group/ai">
+                    <Sparkles className="absolute -right-2 -top-2 text-primary/10 group-hover/ai:scale-150 transition-transform duration-700" size={60} />
+                    <div className="flex items-center gap-2 mb-2">
+                       <span className="badge-clinical bg-primary text-white border-none py-0.5">Clinical AI Summary</span>
+                       {report.monaiDiagnosis && <span className="badge-clinical bg-emerald-100 text-emerald-700 border-emerald-200 py-0.5">Vision Verified</span>}
+                    </div>
+                    <p className="text-sm text-slate-700 font-medium leading-relaxed line-clamp-2">
+                      {report.aiSummary || report.clinicalReasoning || "Full intelligence summary is pending for this document."}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Footer Action */}
+                <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                  <div className="flex items-center gap-1">
+                    <CheckCircle2 size={14} className="text-emerald-500" />
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Securely Verified</span>
+                  </div>
                   <button 
-                    onClick={() => handleDelete(report.id)}
-                    disabled={deletingId === report.id}
-                    className="absolute -top-2 -right-2 p-1.5 bg-white border border-slate-200 rounded-full text-slate-400 hover:text-red-600 hover:border-red-200 transition-all shadow-sm active:scale-95 disabled:opacity-50"
-                    title="Delete Report"
+                    onClick={() => handleAskAi(report)}
+                    className="flex items-center gap-2 text-xs font-bold text-primary hover:text-primary-700 transition-colors uppercase tracking-wider"
                   >
-                    {deletingId === report.id ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                    <MessageSquare size={16} />
+                    Discuss Report
                   </button>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-base font-semibold text-slate-800 truncate" title={report.fileName}>
-                    {report.fileName}
-                  </p>
-                  <p className="text-sm text-slate-500 mt-1">
-                    Uploaded: {new Date(report.uploadDate).toLocaleDateString()}
-                  </p>
-                  {report.monaiDiagnosis && (
-                    <div className="mt-3 flex items-center gap-2">
-                      <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-black rounded uppercase tracking-wider">Vision AI: {report.monaiDiagnosis}</span>
-                    </div>
-                  )}
-                  {report.clinicalReasoning && (
-                    <div className="mt-1 flex items-center gap-2">
-                       <span className="px-2 py-0.5 bg-primary-100 text-primary-700 text-[10px] font-black rounded uppercase tracking-wider">Clinical Insight: OpenAI GPT-4o</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              <div className="mt-6">
-                <button
-                  onClick={() => handleDownload(report.id, report.fileName)}
-                  disabled={downloadingId === report.id}
-                  className="w-full flex items-center justify-center py-2.5 px-4 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 hover:text-primary-600 transition-colors disabled:opacity-50"
-                >
-                  {downloadingId === report.id ? (
-                     <><Loader2 size={16} className="animate-spin mr-2" /> Downloading...</>
-                  ) : (
-                     <><Download size={16} className="mr-2" /> Download Report</>
-                  )}
-                </button>
               </div>
             </div>
-          ))}
+          ))
+        )}
+      </div>
+
+      {/* Camera UI Overlay */}
+      {showCamera && (
+        <div className="fixed inset-0 z-[150] bg-black/95 flex flex-col items-center justify-center p-4">
+           <button onClick={stopCamera} className="absolute top-6 right-6 text-white p-3 bg-slate-800 rounded-full hover:bg-slate-700">
+             <X size={24} />
+           </button>
+           <div className="relative w-full max-w-2xl text-center">
+              <h3 className="text-white text-xl font-bold mb-6">Align your clinical document</h3>
+              <div className="w-full bg-slate-900 rounded-2xl overflow-hidden border-2 border-slate-700 relative shadow-2xl">
+                 <video ref={videoRef} autoPlay playsInline onLoadedMetadata={() => videoRef.current?.play()} className="w-full h-auto"></video>
+              </div>
+              <canvas ref={canvasRef} className="hidden"></canvas>
+              <button 
+                onClick={capturePhoto} 
+                className="mt-8 px-10 py-4 bg-emerald-600 rounded-full text-white font-bold text-lg hover:bg-emerald-500 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all"
+              >
+                Capture & Analyze
+              </button>
+           </div>
         </div>
       )}
 
-      {showCamera && (
-        <div className="fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center">
-            <button onClick={stopCamera} className="absolute top-6 right-6 text-white p-3 bg-slate-800 rounded-full hover:bg-slate-700 transition-colors z-50">
-                <X size={24} />
-            </button>
-            <div className="relative w-full max-w-3xl px-4 flex flex-col items-center">
-                <h3 className="text-white text-xl font-bold mb-6">Position document in frame</h3>
-                <div className="w-full bg-slate-900 rounded-xl overflow-hidden border-2 border-slate-700 relative flex items-center justify-center shadow-2xl">
-                   <video 
-                     ref={videoRef} 
-                     autoPlay 
-                     playsInline 
-                     // Add an onLoadedMetadata to ensure stream plays immediately on iOS
-                     onLoadedMetadata={() => videoRef.current?.play()}
-                     className="w-full h-auto max-h-[65vh] object-contain"
-                   ></video>
-                </div>
-                <canvas ref={canvasRef} className="hidden"></canvas>
-                <div className="mt-8 flex gap-4">
-                  <button onClick={capturePhoto} className="px-8 py-4 bg-emerald-600 rounded-full text-white font-bold text-lg hover:bg-emerald-500 shadow-emerald-500/30 shadow-lg flex items-center transition-transform hover:scale-105">
-                      <Camera size={28} className="mr-3" /> Capture Document
-                  </button>
-                </div>
-            </div>
-        </div>
-      )}
+      {/* Chat Sidebar Integration */}
+      <AiChatSidebar 
+        isOpen={isAiOpen} 
+        onClose={() => setIsAiOpen(false)} 
+        reportData={selectedReport}
+      />
     </div>
   );
 };

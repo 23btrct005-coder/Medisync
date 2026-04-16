@@ -3,15 +3,111 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Premium Clinical Blue Palette */
+    --primary: 221 83% 53%;
+    --primary-foreground: 210 40% 98%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    
+    /* Modern Slate Greys */
+    --background: 210 40% 98%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --border: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+
+    /* Design Tokens */
+    --radius-xl: 1.5rem;
+    --radius-2xl: 2rem;
+  }
+
+  * {
+    @apply border-slate-200;
+  }
+
   body {
-    @apply bg-slate-50 text-slate-900;
+    @apply transition-colors duration-300;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Inter', sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight font-bold;
+    font-family: 'Outfit', sans-serif;
   }
 }
 
-.glass-panel {
-  @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-xl rounded-2xl;
+@layer components {
+  /* Premium Glassmorphism */
+  .glass-panel {
+    @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] rounded-[var(--radius-xl)];
+  }
+
+  .glass-card {
+    @apply relative overflow-hidden bg-white/40 backdrop-blur-md border border-white/30 shadow-sm rounded-2xl transition-all duration-300 hover:shadow-xl hover:bg-white/60 hover:-translate-y-1;
+  }
+
+  /* Interactive Elements */
+  .btn-premium {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all active:scale-95 shadow-lg shadow-primary/20 hover:shadow-primary/40 text-sm tracking-wide;
+  }
+
+  .input-premium {
+    @apply w-full px-5 py-3 bg-white/50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all placeholder:text-slate-400 text-sm;
+  }
+
+  /* Status Badges */
+  .badge-clinical {
+    @apply px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border;
+  }
 }
 
-.card {
-  @apply bg-white shadow-sm border border-slate-100 rounded-xl p-6 transition-all hover:shadow-md;
+/* Custom Scrollbar for interaction */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 rounded-full hover:bg-slate-300 transition-colors;
+}
+
+/* Animations */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 3s ease-in-out infinite;
+}
+
+/* Page Transitions */
+.page-entry {
+  @apply animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out;
+}
+
+/* Gradient Text */
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-br from-primary-600 via-primary-500 to-indigo-600;
 }

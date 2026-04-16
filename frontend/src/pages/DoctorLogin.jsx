@@ -5,10 +5,11 @@ import { useAuth } from '../context/AuthContext';
 import {
   Stethoscope, Lock, User, Mail, CheckCircle, Eye, EyeOff,
   Phone, GraduationCap, ShieldCheck, Building2, Clock, AlertCircle,
-  ArrowLeft, BadgeCheck, HeartPulse
+  ArrowLeft, BadgeCheck, HeartPulse, Bot
 } from 'lucide-react';
 import api from '../api/axiosConfig';
 import ProfilePhotoUpload from '../components/ProfilePhotoUpload';
+import LegalFooter from '../components/LegalFooter';
 
 // ─── Doctor Registration Form ───────────────────────────────────────────────
 const DoctorRegisterForm = ({ onBack }) => {
@@ -39,6 +40,7 @@ const DoctorRegisterForm = ({ onBack }) => {
   const [verifying, setVerifying] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [aiDisclaimerAccepted, setAiDisclaimerAccepted] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -400,14 +402,31 @@ const DoctorRegisterForm = ({ onBack }) => {
                 </div>
               </div>
 
+              {/* AI Disclaimer Acknowledgement */}
+              <div className="bg-blue-50/50 border border-blue-100 p-4 rounded-xl flex items-start gap-3">
+                <input 
+                  type="checkbox" 
+                  id="doctorAiDisclaimer"
+                  checked={aiDisclaimerAccepted}
+                  onChange={(e) => setAiDisclaimerAccepted(e.target.checked)}
+                  className="mt-1 h-4 w-4 text-blue-600 border-blue-300 rounded focus:ring-blue-500 cursor-pointer"
+                />
+                <label htmlFor="doctorAiDisclaimer" className="text-xs text-slate-600 leading-relaxed cursor-pointer">
+                  <span className="flex items-center gap-1 font-bold text-blue-700 uppercase tracking-tighter mb-0.5">
+                    <Bot size={14} /> AI Clinical Acknowledgment
+                  </span>
+                  I acknowledge that Medisync uses AI (OpenAI/Groq/MONAI) for clinical data processing. I have read the <Link to="/ai-disclaimer" className="text-blue-600 font-bold hover:underline">AI Disclaimer</Link> and agree to verify all AI-generated insights before making clinical decisions.
+                </label>
+              </div>
+
               {/* Submit */}
-              <button type="submit" disabled={loading || !emailVerified}
-                className={`w-full flex justify-center items-center gap-2 py-4 rounded-2xl shadow-xl font-extrabold text-white bg-gradient-to-r from-blue-800 to-blue-600 transition-all ${loading || !emailVerified ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01] active:scale-[0.99]'}`}>
+              <button type="submit" disabled={loading || !emailVerified || !aiDisclaimerAccepted}
+                className={`w-full flex justify-center items-center gap-2 py-4 rounded-2xl shadow-xl font-extrabold text-white bg-gradient-to-r from-blue-800 to-blue-600 transition-all ${loading || !emailVerified || !aiDisclaimerAccepted ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01] active:scale-[0.99]'}`}>
                 <Stethoscope size={20} />
-                {!emailVerified ? 'Please Verify Email First' : loading ? 'Submitting...' : 'Complete Physician Enrollment'}
+                {!emailVerified ? 'Please Verify Email First' : !aiDisclaimerAccepted ? 'Accept AI Disclaimer' : loading ? 'Submitting...' : 'Complete Physician Enrollment'}
               </button>
               <p className="text-center text-xs text-slate-400 uppercase tracking-wider">
-                Fields marked <span className="text-red-500">*</span> are required
+                Fields marked <span className="text-red-500">*</span> are required &nbsp;·&nbsp; By enrolling, you agree to our <Link to="/terms-of-service" className="text-blue-600 hover:underline">Terms</Link> and <Link to="/privacy-policy" className="text-blue-600 hover:underline">Privacy Policy</Link>
               </p>
             </form>
           </div>
@@ -524,6 +543,7 @@ const DoctorLogin = () => {
             </button>
           </div>
         </form>
+        <LegalFooter className="pb-8" />
       </div>
     </div>
   );
