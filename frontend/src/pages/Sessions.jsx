@@ -1,0 +1,235 @@
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import api from '../api/axiosConfig';
+import { Calendar, Clock, ChevronRight, Video, MapPin, X, Loader2 } from 'lucide-react';
+
+const Sessions = () => {
+    const [appointments, setAppointments] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedAppt, setSelectedAppt] = useState(null);
+    const location = useLocation();
+
+    useEffect(() => {
+        fetchAppointments();
+    }, []);
+
+    const fetchAppointments = async () => {
+        setLoading(true);
+        try {
+            const res = await api.get('appointments/my-appointments');
+            const data = res.data || [];
+            setAppointments(data);
+            
+            if (location.state?.autoOpenApptId) {
+                const apptToOpen = data.find(a => a.id === location.state.autoOpenApptId);
+                if (apptToOpen) setSelectedAppt(apptToOpen);
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const todayString = new Date().toISOString().split('T')[0];
+    const todaysAppointments = appointments.filter(a => a.appointmentDate === todayString);
+    const pastAppointments = appointments.filter(a => a.appointmentDate < todayString);
+    const upcomingAppointments = appointments.filter(a => a.appointmentDate > todayString);
+
+    return (
+        <div className="page-entry space-y-8 pb-12 animate-in fade-in duration-500">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div>
+                    <div className="flex items-center gap-2 text-primary-600 font-black text-xs uppercase tracking-[0.2em] mb-2">
+                        <Calendar size={14} /> Clinical Syncs
+                    </div>
+                    <h2 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                        My Sessions
+                    </h2>
+                    <p className="text-slate-500 font-medium mt-2 max-w-xl line-clamp-2">
+                        Comprehensive log of all upcoming, live, and past consultations with your authorized physicians.
+                    </p>
+                </div>
+            </div>
+
+            {loading ? (
+                <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[40px] border border-slate-200 shadow-sm">
+                    <Loader2 size={48} className="animate-spin text-primary-500 mb-4" />
+                    <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-xs">Synchronizing Calendar...</p>
+                </div>
+            ) : appointments.length === 0 ? (
+                <div className="text-center py-24 bg-slate-50/50 rounded-[2.5rem] border-2 border-dashed border-slate-200">
+                    <Calendar size={64} className="mx-auto text-slate-200 mb-4" />
+                    <h3 className="text-xl font-bold text-slate-800 tracking-tight">Schedule Empty</h3>
+                    <p className="text-slate-500 font-medium mt-2">You currently have no recorded sessions.</p>
+                </div>
+            ) : (
+                <div className="space-y-12">
+                    
+                    {/* Today's Sessions */}
+                    <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-8 opacity-5">
+                            <Clock size={120} className="text-primary-800" />
+                        </div>
+                        <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-6 relative z-10 flex items-center gap-2">
+                            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                            Live / Today
+                        </h4>
+                        
+                        {todaysAppointments.length === 0 ? (
+                            <p className="text-xs text-slate-400 font-bold italic">No sessions occurring today.</p>
+                        ) : (
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 relative z-10">
+                                {todaysAppointments.map(appt => (
+                                    <SessionCard key={appt.id} appt={appt} onClick={() => setSelectedAppt(appt)} active />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                        {/* Upcoming Events */}
+                        <div className="bg-slate-50/50 p-6 rounded-[2.5rem] border border-slate-200">
+                            <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+                                Upcoming Timeline
+                            </h4>
+                            {upcomingAppointments.length === 0 ? (
+                                <p className="text-xs text-slate-400 font-bold italic text-center py-10">No upcoming sessions.</p>
+                            ) : (
+                                <div className="space-y-3">
+                                    {upcomingAppointments.map(appt => (
+                                        <SessionCard key={appt.id} appt={appt} onClick={() => setSelectedAppt(appt)} />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Historical Logs */}
+                        <div className="bg-slate-50/50 p-6 rounded-[2.5rem] border border-slate-200">
+                            <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+                                Historical Logs
+                            </h4>
+                            {pastAppointments.length === 0 ? (
+                                <p className="text-xs text-slate-400 font-bold italic text-center py-10">No past sessions.</p>
+                            ) : (
+                                <div className="space-y-3 opacity-70 hover:opacity-100 transition-opacity">
+                                    {pastAppointments.map(appt => (
+                                        <SessionCard key={appt.id} appt={appt} onClick={() => setSelectedAppt(appt)} historical />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {selectedAppt && <SessionDetailModal appt={selectedAppt} onClose={() => setSelectedAppt(null)} />}
+        </div>
+    );
+};
+
+/* --- SUBCOMPONENTS --- */
+
+const SessionCard = ({ appt, onClick, active, historical }) => {
+    return (
+        <div 
+            onClick={onClick}
+            className={`p-4 rounded-3xl border flex items-center gap-4 cursor-pointer transition-all group ${
+                active 
+                ? 'bg-primary-50 border-primary-200 hover:shadow-lg shadow-primary-500/20' 
+                : 'bg-white border-slate-200 hover:border-primary-300 hover:shadow-md'
+            }`}
+        >
+            <div className={`w-14 h-14 rounded-2xl flex flex-col items-center justify-center font-bold shrink-0 ${
+                active ? 'bg-primary-600 text-white shadow-inner' : 
+                historical ? 'bg-slate-100 text-slate-500' : 'bg-slate-100 text-slate-700'
+            }`}>
+                <div className="text-sm">{appt.appointmentDate?.split('-')[2]}</div>
+                <div className="text-[9px] uppercase tracking-wider">{new Date(appt.appointmentDate).toLocaleString('en-US', { month: 'short' })}</div>
+            </div>
+            
+            <div className="flex-1 min-w-0">
+                <h4 className={`text-base font-extrabold truncate ${historical ? 'text-slate-600' : 'text-slate-800'}`}>
+                    Dr. {appt.doctor?.name}
+                </h4>
+                <div className="flex items-center gap-3 mt-1">
+                    <p className={`text-[10px] font-bold uppercase tracking-tighter flex items-center gap-1 ${active ? 'text-primary-700' : 'text-slate-400'}`}>
+                        <Clock size={10} /> {appt.timeSlot}
+                    </p>
+                    <p className={`text-[10px] font-bold uppercase tracking-tighter flex items-center gap-1 ${active ? 'text-emerald-600' : 'text-slate-400'}`}>
+                        {appt.consultationType === 'ONLINE' ? <Video size={10} /> : <MapPin size={10} />}
+                        {appt.consultationType}
+                    </p>
+                </div>
+            </div>
+
+            <div className={`p-2 rounded-xl border border-slate-200 transition-colors ${
+                active ? 'bg-white text-primary-600' : 'bg-slate-50 text-slate-400 group-hover:text-primary-600 group-hover:border-primary-200'
+            }`}>
+                <ChevronRight size={18} />
+            </div>
+        </div>
+    );
+};
+
+const SessionDetailModal = ({ appt, onClose }) => {
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300 px-4 sm:px-0">
+            <div className="bg-white rounded-[2.5rem] w-full max-w-md shadow-2xl relative animate-in zoom-in-95 duration-300">
+                <div className="p-6 sm:p-8">
+                    <button onClick={onClose} className="absolute top-6 right-6 p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors">
+                        <X size={20} />
+                    </button>
+                    
+                    <div className="w-16 h-16 bg-primary-50 text-primary-600 rounded-3xl flex items-center justify-center mb-6 border border-primary-100">
+                        <Calendar size={28} />
+                    </div>
+
+                    <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">Session Protocol</h3>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-8">Metadata & Authorization</p>
+
+                    <div className="space-y-4">
+                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex items-center gap-4">
+                            <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden shrink-0">
+                                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${appt.doctor?.name}`} alt="" />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-[10px] font-black uppercase text-primary-600 tracking-widest">Attending Physician</p>
+                                <p className="text-base font-extrabold text-slate-900 truncate">Dr. {appt.doctor?.name}</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1 flex items-center gap-1"><Clock size={10} /> Schedule</p>
+                                <p className="text-sm font-extrabold text-slate-800">{appt.appointmentDate}</p>
+                                <p className="text-xs font-medium text-slate-500">{appt.timeSlot}</p>
+                            </div>
+                            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1 flex items-center gap-1"><Video size={10} /> Modality</p>
+                                <p className="text-sm font-extrabold text-slate-800">{appt.consultationType}</p>
+                                <p className="text-xs font-black uppercase tracking-widest mt-1">
+                                    <span className={appt.status === 'PENDING' ? 'text-amber-500' : 'text-emerald-500'}>{appt.status}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-8 pt-6 border-t border-slate-100 flex gap-3">
+                        {appt.consultationType === 'ONLINE' && appt.status !== 'EXPIRED' && (
+                            <button className="flex-1 btn-premium bg-emerald-50 text-emerald-700 shadow-none border-emerald-100 hover:bg-emerald-100 text-sm py-3">
+                                <Video size={16} /> Enter Call
+                            </button>
+                        )}
+                        <button onClick={onClose} className="flex-1 btn-premium bg-slate-900 text-white shadow-xl hover:bg-slate-800 border-none text-sm py-3">
+                            Acknowledge
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Sessions;

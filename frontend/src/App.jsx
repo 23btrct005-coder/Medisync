@@ -13,6 +13,7 @@ import DoctorLogin from './pages/DoctorLogin';
 import Dashboard from './pages/Dashboard';
 import MedicalHistory from './pages/MedicalHistory';
 import Reports from './pages/Reports';
+import Sessions from './pages/Sessions';
 import Profile from './pages/Profile';
 import DoctorDashboard from './pages/DoctorDashboard';
 import PatientDirectory from './pages/PatientDirectory';
@@ -79,6 +80,7 @@ function App() {
                 <Route index element={<Dashboard />} />
                 <Route path="records" element={<MedicalHistory />} />
                 <Route path="reports" element={<Reports />} />
+                <Route path="sessions" element={<Sessions />} />
                 <Route path="profile" element={<Profile />} />
                 <Route path="profile/edit" element={<EditProfile />} />
                 <Route path="settings" element={<Settings />} />

@@ -277,7 +277,7 @@ const Dashboard = () => {
                   <p className="text-xs text-slate-500 font-medium uppercase tracking-widest mt-0.5">Upcoming Syncs</p>
                 </div>
               </div>
-              <button className="text-xs font-black text-primary flex items-center gap-1 uppercase tracking-widest hover:translate-x-1 transition-transform">
+              <button onClick={() => navigate('/sessions')} className="text-xs font-black text-primary flex items-center gap-1 uppercase tracking-widest hover:translate-x-1 transition-transform">
                 Full Calendar <ChevronRight size={14} />
               </button>
             </div>
@@ -291,7 +291,7 @@ const Dashboard = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {appointments.slice(0, 4).map(appt => (
-                  <AppointmentItem key={appt.id} appt={appt} />
+                  <AppointmentItem key={appt.id} appt={appt} onClick={() => navigate('/sessions', { state: { autoOpenApptId: appt.id } })} />
                 ))}
               </div>
             )}
@@ -333,8 +333,8 @@ const Dashboard = () => {
 
 /* --- SUBCOMPONENTS --- */
 
-const AppointmentItem = ({ appt }) => (
-  <div className="glass-card p-4 flex gap-4 items-center group cursor-pointer hover:border-primary transition-all">
+const AppointmentItem = ({ appt, onClick }) => (
+  <div onClick={onClick} className="glass-card p-4 flex gap-4 items-center group cursor-pointer hover:border-primary transition-all">
     <div className="w-12 h-12 bg-primary/5 text-primary rounded-2xl flex flex-col items-center justify-center font-bold group-hover:bg-primary group-hover:text-white transition-colors">
       <div className="text-xs">{appt.appointmentDate?.split('-')[2]}</div>
       <div className="text-[10px] uppercase opacity-60">{new Date(appt.appointmentDate).toLocaleString('en-US', { month: 'short' })}</div>

@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, FileText, ClipboardList, User, LogOut, Activity } from 'lucide-react';
+import { LayoutDashboard, FileText, ClipboardList, User, LogOut, Activity, Calendar } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
 
@@ -34,6 +34,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { name: 'Dashboard', path: '/', icon: <LayoutDashboard size={20} /> },
     { name: 'Medical Records', path: '/records', icon: <ClipboardList size={20} /> },
     { name: 'Reports', path: '/reports', icon: <FileText size={20} /> },
+    { name: 'My Sessions', path: '/sessions', icon: <Calendar size={20} /> },
     { 
       name: 'My Profile', 
       path: '/profile', 
