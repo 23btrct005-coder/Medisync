@@ -8,6 +8,8 @@ export default {
     extend: {
       colors: {
         primary: {
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
           50: '#f0f9ff',
           100: '#e0f2fe',
           500: '#0ea5e9',
