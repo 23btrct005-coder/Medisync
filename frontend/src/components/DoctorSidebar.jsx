@@ -41,13 +41,7 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
 
   return (
     <>
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-slate-900/50 z-20 md:hidden" 
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-      <div className={`fixed inset-y-0 left-0 bg-slate-900 border-r border-slate-800 flex flex-col shadow-xl z-30 w-64 transform ${isOpen ? "translate-x-0" : "-translate-x-full"} transition-transform duration-300 ease-in-out md:relative md:translate-x-0 h-full text-slate-300`}>
+      <div className={`hidden md:flex flex-col border-r bg-slate-900 border-slate-800 shadow-xl z-30 w-64 h-screen shrink-0 text-slate-300`}>
         <div className="h-16 flex items-center px-6 border-b border-slate-800 shrink-0">
         <Activity className="text-primary-500 mr-2" size={24} />
         <span className="text-2xl font-bold text-white tracking-tight">MEDISYNC</span>
@@ -59,9 +53,6 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
             key={item.name}
             to={item.path}
             end={item.path === '/doctor-dashboard'}
-            onClick={() => {
-                if (window.innerWidth < 768) setIsOpen(false);
-            }}
             className={({ isActive }) =>
               `flex items-center px-4 py-3 rounded-lg transition-all duration-200 ${
                 isActive

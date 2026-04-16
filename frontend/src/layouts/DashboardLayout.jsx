@@ -6,6 +6,9 @@ import { Bell, UserCircle, Menu, ShieldCheck, Search } from 'lucide-react';
 import api, { loadingState } from '../api/axiosConfig';
 import OnboardingTour from '../components/OnboardingTour';
 import TopBarLoader from '../components/TopBarLoader';
+import BottomNav from '../components/BottomNav';
+import ThemeToggle from '../components/ThemeToggle';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const DashboardLayout = () => {
     const { user } = useAuth();
@@ -34,12 +37,10 @@ const DashboardLayout = () => {
                 {/* Premium Header */}
                 <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200/60 flex items-center justify-between px-6 sm:px-10 z-[40] shrink-0">
                     <div className="flex items-center gap-4">
-                        <button 
-                            onClick={() => setSidebarOpen(true)} 
-                            className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
-                        >
-                            <Menu size={24} />
-                        </button>
+                        <div className="md:hidden flex items-center gap-2 px-2 text-primary-600">
+                             <Activity size={24} />
+                             <span className="text-xl font-bold tracking-tight text-slate-800">MEDISYNC</span>
+                        </div>
                         
                         <div className="hidden lg:flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 rounded-2xl group transition-all focus-within:ring-4 focus-within:ring-primary/5 focus-within:border-primary/40">
                             <Search size={18} className="text-slate-400 group-focus-within:text-primary transition-colors" />
@@ -56,6 +57,9 @@ const DashboardLayout = () => {
                             <ShieldCheck size={14} />
                             <span className="text-[10px] font-black uppercase tracking-widest">Secure session</span>
                         </div>
+
+                        <LanguageSwitcher />
+                        <ThemeToggle />
 
                         <button className="relative p-2.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-xl transition-all group">
                             <Bell size={22} />
@@ -87,12 +91,14 @@ const DashboardLayout = () => {
                 </header>
 
                 {/* Main Content Area */}
-                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50/50 p-6 md:p-10 custom-scrollbar">
+                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50/50 p-6 md:p-10 mb-16 md:mb-0 custom-scrollbar">
                     <div className="max-w-7xl mx-auto">
                         <Outlet />
                     </div>
                 </main>
             </div>
+            
+            <BottomNav />
         </div>
     );
 };

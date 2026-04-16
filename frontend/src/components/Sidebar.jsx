@@ -58,13 +58,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
   return (
     <>
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-slate-900/50 z-20 md:hidden" 
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-      <div className={`fixed inset-y-0 left-0 bg-white border-r border-slate-200 flex flex-col shadow-xl z-30 w-64 transform ${isOpen ? "translate-x-0" : "-translate-x-full"} transition-transform duration-300 ease-in-out md:relative md:translate-x-0`}>
+      <div className={`hidden md:flex flex-col border-r border-slate-200 bg-white shadow-xl z-30 w-64 h-screen shrink-0`}>
         <div className="h-16 flex items-center px-6 border-b border-slate-200 shrink-0">
         <Activity className="text-primary-600 mr-2" size={24} />
         <span className="text-2xl font-bold text-slate-800 tracking-tight">MEDISYNC</span>
@@ -77,9 +71,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             to={item.path}
             end={item.path === '/'}
             onMouseEnter={() => prefetchData(item.path)}
-            onClick={() => {
-                if (window.innerWidth < 768) setIsOpen(false);
-            }}
             className={({ isActive }) =>
               `flex items-center px-4 py-3 rounded-lg transition-all duration-200 ${
                 isActive
