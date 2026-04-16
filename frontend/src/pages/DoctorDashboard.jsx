@@ -241,22 +241,66 @@ const DoctorDashboard = () => {
             ) : appointments.length === 0 ? (
               <EmptyState icon={<Calendar />} text="The consultation queue is currently empty." />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {appointments.map(appt => (
-                  <div key={appt.id} className="glass-card p-4 flex gap-4 items-center group cursor-pointer hover:border-primary transition-all">
-                    <div className="w-12 h-12 bg-primary text-white rounded-2xl flex flex-col items-center justify-center font-bold shadow-lg shadow-primary/20">
-                      <div className="text-xs">{appt.appointmentDate?.split('-')[2]}</div>
-                      <div className="text-[9px] uppercase opacity-70">{new Date(appt.appointmentDate).toLocaleString('en-US', { month: 'short' })}</div>
-                    </div>
-                    <div className="flex-1 min-w-0 text-left">
-                      <h4 className="text-sm font-extrabold text-slate-800 truncate">{appt.patient?.name}</h4>
-                      <p className="text-[10px] text-slate-500 flex items-center gap-1 font-bold italic uppercase tracking-tighter">
-                        <Clock size={10} /> {appt.timeSlot} • {appt.consultationType}
-                      </p>
-                    </div>
-                    <ChevronRight size={16} className="text-slate-300 group-hover:text-primary transition-colors" />
-                  </div>
-                ))}
+              <div className="space-y-8">
+                {/* Today's Appointments */}
+                <div>
+                   <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-100 pb-2">Today's Sessions</h4>
+                   {appointments.filter(a => a.appointmentDate === new Date().toISOString().split('T')[0]).length === 0 ? (
+                      <p className="text-xs text-slate-400 font-bold italic py-4 bg-slate-50 rounded-[1.5rem] border border-slate-100 text-center">No sessions scheduled for today.</p>
+                   ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {appointments.filter(a => a.appointmentDate === new Date().toISOString().split('T')[0]).map(appt => (
+                          <div 
+                            key={appt.id} 
+                            onClick={() => navigate(`/doctor-dashboard/patients/${appt.patient?.id}`)} 
+                            className="glass-card p-4 flex gap-4 items-center group cursor-pointer hover:border-primary transition-all border-l-4 border-l-primary"
+                          >
+                            <div className="w-12 h-12 bg-primary text-white rounded-2xl flex flex-col items-center justify-center font-bold shadow-lg shadow-primary/20">
+                              <div className="text-xs">{appt.appointmentDate?.split('-')[2]}</div>
+                              <div className="text-[9px] uppercase opacity-70">{new Date(appt.appointmentDate).toLocaleString('en-US', { month: 'short' })}</div>
+                            </div>
+                            <div className="flex-1 min-w-0 text-left">
+                              <h4 className="text-sm font-extrabold text-slate-800 truncate">{appt.patient?.name}</h4>
+                              <p className="text-[10px] text-slate-500 flex items-center gap-1 font-bold italic uppercase tracking-tighter">
+                                <Clock size={10} /> {appt.timeSlot} • {appt.consultationType}
+                              </p>
+                            </div>
+                            <ChevronRight size={16} className="text-slate-300 group-hover:text-primary transition-colors" />
+                          </div>
+                        ))}
+                      </div>
+                   )}
+                </div>
+
+                {/* Session History */}
+                <div>
+                   <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-100 pb-2">Session History</h4>
+                   {appointments.filter(a => a.appointmentDate !== new Date().toISOString().split('T')[0]).length === 0 ? (
+                      <p className="text-xs text-slate-400 font-bold italic py-4 bg-slate-50 rounded-[1.5rem] border border-slate-100 text-center">No past or upcoming history.</p>
+                   ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {appointments.filter(a => a.appointmentDate !== new Date().toISOString().split('T')[0]).map(appt => (
+                          <div 
+                            key={appt.id} 
+                            onClick={() => navigate(`/doctor-dashboard/patients/${appt.patient?.id}`)} 
+                            className="glass-card p-4 flex gap-4 items-center group cursor-pointer hover:border-slate-400 transition-all opacity-80 hover:opacity-100"
+                          >
+                            <div className="w-12 h-12 bg-slate-100 text-slate-500 rounded-2xl flex flex-col items-center justify-center font-bold border border-slate-200">
+                              <div className="text-xs">{appt.appointmentDate?.split('-')[2]}</div>
+                              <div className="text-[9px] uppercase opacity-70">{new Date(appt.appointmentDate).toLocaleString('en-US', { month: 'short' })}</div>
+                            </div>
+                            <div className="flex-1 min-w-0 text-left">
+                              <h4 className="text-sm font-extrabold text-slate-600 truncate">{appt.patient?.name}</h4>
+                              <p className="text-[10px] text-slate-400 flex items-center gap-1 font-bold italic uppercase tracking-tighter">
+                                <Clock size={10} /> {appt.timeSlot} • {appt.consultationType}
+                              </p>
+                            </div>
+                            <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500 transition-colors" />
+                          </div>
+                        ))}
+                      </div>
+                   )}
+                </div>
               </div>
             )}
           </div>
