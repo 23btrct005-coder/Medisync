@@ -2,7 +2,7 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { useAuth } from '../context/AuthContext';
 import { useState, useEffect } from 'react';
-import { Bell, UserCircle, Menu, ShieldCheck, Search } from 'lucide-react';
+import { Bell, UserCircle, Menu, ShieldCheck, Search, Activity } from 'lucide-react';
 import api, { loadingState } from '../api/axiosConfig';
 import OnboardingTour from '../components/OnboardingTour';
 import TopBarLoader from '../components/TopBarLoader';
