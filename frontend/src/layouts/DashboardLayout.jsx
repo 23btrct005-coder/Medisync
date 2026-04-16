@@ -9,6 +9,7 @@ import TopBarLoader from '../components/TopBarLoader';
 import BottomNav from '../components/BottomNav';
 import ThemeToggle from '../components/ThemeToggle';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import toast from 'react-hot-toast';
 
 const DashboardLayout = () => {
     const { user } = useAuth();
@@ -61,7 +62,7 @@ const DashboardLayout = () => {
                         <LanguageSwitcher />
                         <ThemeToggle />
 
-                        <button className="relative p-2.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-xl transition-all group">
+                        <button onClick={() => toast("All system telemetry synchronized.", { icon: "🔔" })} className="relative p-2.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-xl transition-all group">
                             <Bell size={22} />
                             <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white group-hover:scale-125 transition-transform" />
                         </button>

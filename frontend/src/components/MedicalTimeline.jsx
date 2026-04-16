@@ -1,7 +1,9 @@
 import React from 'react';
 import { Calendar, ChevronRight, Clipboard, User, HeartPulse } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const MedicalTimeline = ({ records = [] }) => {
+  const navigate = useNavigate();
   if (records.length === 0) {
     return (
       <div className="text-center py-20 bg-slate-50/50 rounded-[2rem] border-2 border-dashed border-slate-100">
@@ -61,7 +63,7 @@ const MedicalTimeline = ({ records = [] }) => {
                     <p className="text-xs font-bold text-slate-700 truncate">Dr. {record.doctorName}</p>
                   </div>
                 </div>
-                <button className="p-2 bg-slate-100 text-slate-400 rounded-xl hover:bg-primary hover:text-white transition-colors">
+                <button onClick={() => navigate('/reports')} className="p-2 bg-slate-100 text-slate-400 rounded-xl hover:bg-primary hover:text-white transition-colors">
                   <ChevronRight size={18} />
                 </button>
               </div>

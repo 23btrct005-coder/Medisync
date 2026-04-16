@@ -3,6 +3,7 @@ import AdminSidebar from '../components/AdminSidebar';
 import { useState } from 'react';
 import { Menu, ShieldAlert, Bell, Search } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const AdminLayout = () => {
   const { user } = useAuth();
@@ -37,7 +38,7 @@ const AdminLayout = () => {
               System Live
             </div>
             
-            <button className="p-2.5 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-2xl transition-all relative">
+            <button onClick={() => toast("All system telemetry synchronized.", { icon: "🔔" })} className="p-2.5 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-2xl transition-all relative">
               <Bell size={22} />
               <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
             </button>

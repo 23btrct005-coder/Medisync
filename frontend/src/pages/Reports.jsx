@@ -216,10 +216,6 @@ const Reports = () => {
             className="input-premium pl-12"
           />
         </div>
-        <button className="flex-1 md:flex-none btn-premium bg-white border border-slate-200 text-slate-600 shadow-sm">
-          <Filter size={18} />
-          Filter
-        </button>
       </div>
 
       {/* Content Layout */}

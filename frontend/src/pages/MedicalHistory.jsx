@@ -4,6 +4,7 @@ import {
   ClipboardList, Search, Calendar, Filter, 
   LayoutList, History, Loader2, Plus, Download, ChevronRight
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import MedicalTimeline from '../components/MedicalTimeline';
 
 const MedicalHistory = () => {
@@ -11,6 +12,18 @@ const MedicalHistory = () => {
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState('timeline'); // 'timeline' or 'list'
     const [searchTerm, setSearchTerm] = useState('');
+    const navigate = useNavigate();
+
+    const handleExport = () => {
+        const dataStr = JSON.stringify(records, null, 2);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "medisync_clinical_archive.json";
+        a.click();
+        URL.revokeObjectURL(url);
+    };
 
     useEffect(() => {
         const fetchRecords = async () => {
@@ -61,7 +74,7 @@ const MedicalHistory = () => {
                             <LayoutList size={20} />
                         </button>
                     </div>
-                    <button className="btn-premium bg-primary text-white">
+                    <button onClick={() => navigate('/reports')} className="btn-premium bg-primary text-white">
                         <Plus size={18} />
                         Add Record
                     </button>
@@ -81,13 +94,9 @@ const MedicalHistory = () => {
                     />
                 </div>
                 <div className="flex gap-2 w-full md:w-auto">
-                    <button className="flex-1 md:flex-none btn-premium bg-white border border-slate-200 text-slate-600 shadow-sm hover:bg-slate-50">
-                        <Filter size={18} />
-                        Filter
-                    </button>
-                    <button className="flex-1 md:flex-none btn-premium bg-white border border-slate-200 text-slate-600 shadow-sm hover:bg-slate-50">
+                    <button onClick={handleExport} className="flex-1 md:flex-none btn-premium bg-white border border-slate-200 text-slate-600 shadow-sm hover:bg-slate-50">
                         <Download size={18} />
-                        Export
+                        Export Data
                     </button>
                 </div>
             </div>

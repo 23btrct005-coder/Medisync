@@ -102,9 +102,6 @@ const AdminDashboard = () => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
-            <button className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-500 hover:text-primary-600 transition-all shadow-sm">
-                <Filter size={20} />
-            </button>
         </div>
       </div>
 
