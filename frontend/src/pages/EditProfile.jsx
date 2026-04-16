@@ -188,7 +188,7 @@ const EditProfile = () => {
         
         {/* ── Section 1: Insurance Details ── */}
         <div className={sectionClass}>
-          <h3 className={sectionTitleClass}><ShieldCheck className="text-blue-600" size={20} /> Insurance Information ⚠️</h3>
+          <h3 className={sectionTitleClass}><ShieldCheck className="text-blue-600" size={20} /> Insurance Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className={labelClass}>Insurance Provider</label>
@@ -207,7 +207,7 @@ const EditProfile = () => {
 
         {/* ── Section 2: Lifestyle ── */}
         <div className={sectionClass}>
-          <h3 className={sectionTitleClass}><Activity className="text-emerald-600" size={20} /> Lifestyle & Habits ⚠️</h3>
+          <h3 className={sectionTitleClass}><Activity className="text-emerald-600" size={20} /> Lifestyle & Habits</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div>
               <label className={labelClass}>Smoking</label>
@@ -244,7 +244,7 @@ const EditProfile = () => {
 
         {/* ── Section 3: Advanced Health ── */}
         <div className={sectionClass}>
-          <h3 className={sectionTitleClass}><Stethoscope className="text-primary-600" size={20} /> Advanced Health Details ⚠️</h3>
+          <h3 className={sectionTitleClass}><Stethoscope className="text-primary-600" size={20} /> Advanced Health Details</h3>
           <div className="space-y-6">
             <div>
               <label className={labelClass}>Family Medical History</label>

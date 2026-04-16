@@ -90,6 +90,12 @@ public class PatientService {
         if (profileData.containsKey("pastSurgeries")) patient.setPastSurgeries((String) profileData.get("pastSurgeries"));
         if (profileData.containsKey("medicalInfo")) patient.setMedicalInfo((String) profileData.get("medicalInfo"));
 
+        // Settings & Preferences
+        if (profileData.containsKey("mfaEnabled")) patient.setMfaEnabled((Boolean) profileData.get("mfaEnabled"));
+        if (profileData.containsKey("emailNotifications")) patient.setEmailNotifications((Boolean) profileData.get("emailNotifications"));
+        if (profileData.containsKey("appNotifications")) patient.setAppNotifications((Boolean) profileData.get("appNotifications"));
+        if (profileData.containsKey("smsNotifications")) patient.setSmsNotifications((Boolean) profileData.get("smsNotifications"));
+
         // Age logic (handling both string and number)
         if (profileData.containsKey("age")) {
             Object ageObj = profileData.get("age");

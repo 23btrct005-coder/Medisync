@@ -72,6 +72,12 @@ public class Patient {
     @Column(columnDefinition = "TEXT")
     private String pastSurgeries;       // e.g. Appendectomy 2018, CABG 2021
 
+    // ── Settings & Preferences ──
+    private Boolean mfaEnabled = false;
+    private Boolean emailNotifications = true;
+    private Boolean appNotifications = true;
+    private Boolean smsNotifications = false;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "patient_doctors",
@@ -178,4 +184,14 @@ public class Patient {
     public void setFamilyMedicalHistory(String v) { this.familyMedicalHistory = v; }
     public String getOrganDonorStatus() { return organDonorStatus; }
     public void setOrganDonorStatus(String v) { this.organDonorStatus = v; }
+
+    // Settings Getters & Setters
+    public Boolean getMfaEnabled() { return mfaEnabled; }
+    public void setMfaEnabled(Boolean v) { this.mfaEnabled = v; }
+    public Boolean getEmailNotifications() { return emailNotifications; }
+    public void setEmailNotifications(Boolean v) { this.emailNotifications = v; }
+    public Boolean getAppNotifications() { return appNotifications; }
+    public void setAppNotifications(Boolean v) { this.appNotifications = v; }
+    public Boolean getSmsNotifications() { return smsNotifications; }
+    public void setSmsNotifications(Boolean v) { this.smsNotifications = v; }
 }

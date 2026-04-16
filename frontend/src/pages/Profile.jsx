@@ -181,21 +181,21 @@ const Profile = () => {
         </Section>
 
         {/* ── NEW: Insurance Details ── */}
-        <Section title="Insurance Information ⚠️" icon={ShieldCheck}>
+        <Section title="Insurance Information" icon={ShieldCheck}>
           <InfoRow icon={Briefcase} label="Provider" value={user.insuranceProvider} color="text-blue-600" />
           <InfoRow icon={Info} label="Policy Number" value={user.policyNumber} color="text-blue-500" />
           <InfoRow icon={Calendar} label="Validity" value={user.insuranceValidity} color="text-blue-400" />
         </Section>
 
         {/* ── NEW: Lifestyle & Habits ── */}
-        <Section title="Lifestyle & Habits ⚠️" icon={Zap}>
+        <Section title="Lifestyle & Habits" icon={Zap}>
           <InfoRow icon={Activity} label="Smoking" value={user.smokingStatus} color="text-orange-600" />
           <InfoRow icon={Zap} label="Alcohol" value={user.alcoholStatus} color="text-emerald-600" />
           <InfoRow icon={Activity} label="Exercise" value={user.exerciseFrequency} color="text-blue-600" />
         </Section>
 
         {/* ── NEW: Advanced Medical ── */}
-        <Section title="Detailed Medical History ⚠️" icon={Info}>
+        <Section title="Detailed Medical History" icon={Info}>
           <InfoRow icon={Users} label="Family History" value={user.familyMedicalHistory} color="text-purple-600" />
           <InfoRow icon={Heart} label="Organ Donor Status" value={user.organDonorStatus} color="text-red-500" />
           <InfoRow icon={Stethoscope} label="Other Conditions" value={user.medicalInfo} color="text-slate-500" />
