@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-// Deploy trigger: 2026-04-14 — OpenAI & MONAI integration verification
+import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import DashboardLayout from './layouts/DashboardLayout';
 import DoctorLayout from './layouts/DoctorLayout';
@@ -27,6 +27,8 @@ import TermsOfService from './pages/TermsOfService';
 import AIDisclaimer from './pages/AIDisclaimer';
 import Settings from './pages/Settings';
 import Support from './pages/Support';
+import NotFound from './pages/NotFound';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const ProtectedRoute = ({ children, allowedRole }) => {
   const { user, userRole, loading } = useAuth();
@@ -42,60 +44,64 @@ const ProtectedRoute = ({ children, allowedRole }) => {
 function App() {
   return (
     <Router>
-      <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/doctor-login" element={<DoctorLogin />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/emergency/:patientId" element={<EmergencyInfo />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/terms-of-service" element={<TermsOfService />} />
-          <Route path="/ai-disclaimer" element={<AIDisclaimer />} />
-          
-          {/* Patient Routes */}
-          <Route path="/" element={
-            <ProtectedRoute allowedRole="ROLE_PATIENT">
-              <DashboardLayout />
-            </ProtectedRoute>
-          }>
-            <Route index element={<Dashboard />} />
-            <Route path="records" element={<MedicalHistory />} />
-            <Route path="reports" element={<Reports />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="profile/edit" element={<EditProfile />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="support" element={<Support />} />
-          </Route>
+      <ErrorBoundary>
+        <AuthProvider>
+          <Toaster position="top-right" toastOptions={{ duration: 4000, style: { background: '#1e293b', color: '#fff' } }} />
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/doctor-login" element={<DoctorLogin />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/emergency/:patientId" element={<EmergencyInfo />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/ai-disclaimer" element={<AIDisclaimer />} />
+            
+            {/* Patient Routes */}
+            <Route path="/" element={
+              <ProtectedRoute allowedRole="ROLE_PATIENT">
+                <DashboardLayout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<Dashboard />} />
+              <Route path="records" element={<MedicalHistory />} />
+              <Route path="reports" element={<Reports />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="profile/edit" element={<EditProfile />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="support" element={<Support />} />
+            </Route>
 
-          {/* Doctor Routes */}
-          <Route path="/doctor-dashboard" element={
-            <ProtectedRoute allowedRole="ROLE_DOCTOR">
-              <DoctorLayout />
-            </ProtectedRoute>
-          }>
-            <Route index element={<DoctorDashboard />} />
-            <Route path="patients" element={<PatientDirectory />} />
-            <Route path="patients/:id" element={<PatientManager />} />
-            <Route path="profile" element={<DoctorProfile />} />
-            <Route path="profile/edit" element={<EditDoctorProfile />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="support" element={<Support />} />
-          </Route>
+            {/* Doctor Routes */}
+            <Route path="/doctor-dashboard" element={
+              <ProtectedRoute allowedRole="ROLE_DOCTOR">
+                <DoctorLayout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<DoctorDashboard />} />
+              <Route path="patients" element={<PatientDirectory />} />
+              <Route path="patients/:id" element={<PatientManager />} />
+              <Route path="profile" element={<DoctorProfile />} />
+              <Route path="profile/edit" element={<EditDoctorProfile />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="support" element={<Support />} />
+            </Route>
 
-          {/* Admin Routes */}
-          <Route path="/admin-dashboard" element={
-            <ProtectedRoute allowedRole="ROLE_ADMIN">
-              <AdminLayout />
-            </ProtectedRoute>
-          }>
-            <Route index element={<AdminDashboard />} />
-            {/* Future admin routes like /settings can go here */}
-          </Route>
+            {/* Admin Routes */}
+            <Route path="/admin-dashboard" element={
+              <ProtectedRoute allowedRole="ROLE_ADMIN">
+                <AdminLayout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<AdminDashboard />} />
+            </Route>
 
-        </Routes>
-      </AuthProvider>
+            {/* Catch-all Not Found Route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
+      </ErrorBoundary>
     </Router>
   );
 }

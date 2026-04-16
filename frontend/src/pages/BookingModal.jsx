@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axiosConfig';
 import { Calendar, Clock, CreditCard, X, Video, MapPin, Activity, Loader2, CheckCircle, BadgeCheck } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const BookingModal = ({ doctor, onClose, onBookingSuccess }) => {
   const [date, setDate] = useState('');
@@ -56,7 +57,7 @@ const BookingModal = ({ doctor, onClose, onBookingSuccess }) => {
       // 2. Load Razorpay
       const isLoaded = await loadRazorpayScript();
       if (!isLoaded) {
-        alert("Razorpay SDK failed to load. Are you online?");
+        toast.error("Razorpay SDK failed to load. Are you online?");
         return;
       }
 
@@ -81,7 +82,7 @@ const BookingModal = ({ doctor, onClose, onBookingSuccess }) => {
                 onClose();
              }, 2000);
            } catch (err) {
-             alert("Payment verification failed. Please contact support.");
+             toast.error("Payment verification failed. Please contact support.");
            }
         },
         prefill: {
@@ -96,7 +97,7 @@ const BookingModal = ({ doctor, onClose, onBookingSuccess }) => {
       rzp.open();
 
     } catch (err) {
-      alert(err.response?.data?.message || "Booking failed.");
+      toast.error(err.response?.data?.message || "Booking failed.");
     } finally {
       setBooking(false);
     }

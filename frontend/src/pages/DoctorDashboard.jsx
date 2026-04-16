@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import ProfileCompletionBanner from '../components/ProfileCompletionBanner';
 import StatCard from '../components/StatCard';
 import SkeletonCard, { SkeletonRow } from '../components/SkeletonCard';
+import toast from 'react-hot-toast';
 
 const DoctorDashboard = () => {
   const { user } = useAuth();
@@ -93,8 +94,9 @@ const DoctorDashboard = () => {
       await api.post('doctor/request-access', { patientEmail });
       setPatientEmail('');
       fetchRequests();
+      toast.success('Access signal requested successfully.');
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to send request');
+      toast.error(err.response?.data?.message || 'Failed to send request');
     } finally {
       setSending(false);
     }

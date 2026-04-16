@@ -4,6 +4,7 @@ import {
     Download, FileText, Loader2, UploadCloud, Camera, X, Trash2,
     Sparkles, Eye, MessageSquare, Clock, Filter, CheckCircle2, AlertCircle, Search
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import AiChatSidebar from '../components/AiChatSidebar';
 import SkeletonCard from '../components/SkeletonCard';
 
@@ -51,10 +52,11 @@ const Reports = () => {
       await api.post('/reports/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
+      toast.success("Report uploaded successfully!");
       fetchReports();
     } catch (err) {
       console.error("Upload failed", err);
-      alert(err.response?.data?.message || "Failed to securely upload report.");
+      toast.error(err.response?.data?.message || "Failed to securely upload report.");
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = null;
@@ -71,7 +73,7 @@ const Reports = () => {
       }
     } catch (err) {
       console.error("Camera access denied", err);
-      alert("Unable to access the camera.");
+      toast.error("Unable to access the camera.");
       setShowCamera(false);
     }
   };
@@ -131,17 +133,30 @@ const Reports = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Permanently delete this report?")) return;
+  const executeDelete = async (id) => {
     setDeletingId(id);
     try {
       await api.delete(`reports/${id}`);
       setReports(reports.filter(r => r.id !== id));
+      toast.success("Report deleted.");
     } catch (error) {
       console.error("Delete failed", error);
+      toast.error("Failed to delete report.");
     } finally {
       setDeletingId(null);
     }
+  };
+
+  const handleDelete = (id) => {
+    toast((t) => (
+      <div className="flex flex-col gap-3">
+        <p className="font-bold text-slate-800">Permanently delete this report?</p>
+        <div className="flex gap-2">
+          <button onClick={() => { toast.dismiss(t.id); executeDelete(id); }} className="bg-red-500 text-white px-4 py-2 rounded-lg text-xs font-bold w-full">Delete</button>
+          <button onClick={() => toast.dismiss(t.id)} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-lg text-xs font-bold w-full">Cancel</button>
+        </div>
+      </div>
+    ), { duration: Infinity });
   };
 
   const filteredReports = reports.filter(r => 

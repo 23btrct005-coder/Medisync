@@ -7,6 +7,7 @@ import {
   Mail, Users, AlertCircle, ChevronDown, ChevronUp,
   Briefcase, Zap, Info, Scissors, Pill, Stethoscope
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 // ── Reusable row for info display ──────────────────────────────────────────
 const InfoRow = ({ icon: Icon, label, value, color = 'text-primary-500' }) => (
@@ -279,9 +280,10 @@ const PatientManager = () => {
         date: new Date().toISOString().split('T')[0],
       });
       setNewDiagnosis(''); setNewPrescription(''); setShowAddForm(false);
+      toast.success('Clinical record created.');
       await fetchPatientDetails();
     } catch (error) {
-      alert('Failed to create record. Please try again.');
+      toast.error('Failed to create record. Please try again.');
     } finally { setSubmitting(false); }
   };
 
@@ -294,7 +296,7 @@ const PatientManager = () => {
       link.href = url; link.setAttribute('download', fileName);
       document.body.appendChild(link); link.click(); link.remove();
     } catch (err) {
-      alert('Failed to download report.');
+      toast.error('Failed to download report.');
     } finally { setDownloadingId(null); }
   };
 
@@ -304,8 +306,9 @@ const PatientManager = () => {
       const res = await api.post(`reports/${reportId}/reanalyze`);
       const updatedReport = res.data;
       setReports(reports.map(r => r.id === reportId ? updatedReport : r));
+      toast.success('AI Re-analysis applied.');
     } catch (err) {
-      alert('AI Re-analysis failed. Please verify your API keys.');
+      toast.error('AI Re-analysis failed. Please verify your API keys.');
     } finally {
       setReanalyzingId(null);
     }
@@ -317,8 +320,9 @@ const PatientManager = () => {
       await api.post(`reports/${reportId}/notes`, { notes: editingNotes[reportId] });
       // Update local reports list with the new note
       setReports(reports.map(r => r.id === reportId ? { ...r, doctorNotes: editingNotes[reportId] } : r));
+      toast.success('Clinical notes saved.');
     } catch (err) {
-      alert('Failed to save clinical notes.');
+      toast.error('Failed to save clinical notes.');
     } finally {
       setSavingNotesId(null);
     }

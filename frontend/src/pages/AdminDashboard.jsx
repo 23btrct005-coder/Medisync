@@ -5,6 +5,7 @@ import {
   Stethoscope, GraduationCap, Briefcase, Calendar,
   ShieldCheck, Loader2, Search, Filter, Info
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const AdminDashboard = () => {
   const [pendingDoctors, setPendingDoctors] = useState([]);
@@ -44,8 +45,7 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleReject = async (id) => {
-    if (!window.confirm("Are you sure you want to reject this application? This will permanentely delete the record.")) return;
+  const executeReject = async (id) => {
     setActionLoading(id);
     try {
       await api.post(`admin/doctors/${id}/reject`);
@@ -57,6 +57,18 @@ const AdminDashboard = () => {
       setActionLoading(null);
       setTimeout(() => setMessage({ type: '', text: '' }), 3000);
     }
+  };
+
+  const handleReject = (id) => {
+    toast((t) => (
+      <div className="flex flex-col gap-3">
+        <p className="font-bold text-slate-800">Reject and permanently delete this application?</p>
+        <div className="flex gap-2">
+          <button onClick={() => { toast.dismiss(t.id); executeReject(id); }} className="bg-red-500 text-white px-4 py-2 rounded-lg text-xs font-bold w-full">Reject</button>
+          <button onClick={() => toast.dismiss(t.id)} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-lg text-xs font-bold w-full">Cancel</button>
+        </div>
+      </div>
+    ), { duration: Infinity });
   };
 
   const filteredDoctors = pendingDoctors.filter(d => 

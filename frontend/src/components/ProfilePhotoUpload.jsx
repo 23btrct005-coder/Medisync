@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { Camera, Upload, X, User } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const ProfilePhotoUpload = ({ onFileSelect, initialPreview = null, gender = '' }) => {
   const [preview, setPreview] = useState(initialPreview);
@@ -9,7 +10,7 @@ const ProfilePhotoUpload = ({ onFileSelect, initialPreview = null, gender = '' }
     const file = e.target.files[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        alert('File size too large. Please upload an image under 2MB.');
+        toast.error('File size too large. Please upload an image under 2MB.');
         return;
       }
       const reader = new FileReader();
