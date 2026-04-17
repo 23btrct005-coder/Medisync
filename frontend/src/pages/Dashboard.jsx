@@ -24,7 +24,6 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [requests, setRequests] = useState([]);
   const [doctors, setDoctors] = useState([]);
-  const [appointments, setAppointments] = useState([]);
   const [showQRModal, setShowQRModal] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [showBooking, setShowBooking] = useState(false);
@@ -39,8 +38,7 @@ const Dashboard = () => {
       await Promise.all([
         fetchDashboardInfo(),
         fetchRequests(),
-        fetchLinkedDoctors(),
-        fetchAppointments()
+        fetchLinkedDoctors()
       ]);
       setLoading(false);
     };
@@ -76,13 +74,6 @@ const Dashboard = () => {
     try {
       const res = await api.get('patient/doctors');
       setDoctors(res.data || []);
-    } catch (e) { console.error(e); }
-  };
-
-  const fetchAppointments = async () => {
-    try {
-      const res = await api.get('appointments/my-appointments');
-      setAppointments(res.data || []);
     } catch (e) { console.error(e); }
   };
 
@@ -267,34 +258,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Schedule Tracker */}
-          <div className="glass-panel p-8">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl"><Calendar size={20} /></div>
-                <div>
-                  <h3 className="text-xl font-black text-slate-900 tracking-tight">Schedule Tracker</h3>
-                  <p className="text-xs text-slate-500 font-medium uppercase tracking-widest mt-0.5">Upcoming Syncs</p>
-                </div>
-              </div>
-              <button onClick={() => navigate('/sessions')} className="text-xs font-black text-primary flex items-center gap-1 uppercase tracking-widest hover:translate-x-1 transition-transform">
-                Full Calendar <ChevronRight size={14} />
-              </button>
-            </div>
-            {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 <SkeletonCard />
-                 <SkeletonCard />
-              </div>
-            ) : appointments.length === 0 ? (
-              <EmptyState icon={<Calendar />} text="No upcoming consultations synchronized." />
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {appointments.slice(0, 4).map(appt => (
-                  <AppointmentItem key={appt.id} appt={appt} onClick={() => navigate('/sessions', { state: { autoOpenApptId: appt.id } })} />
-                ))}
-              </div>
-            )}
           </div>
         </div>
 
@@ -326,30 +289,12 @@ const Dashboard = () => {
 
       {/* Global Modals */}
       <AiChatSidebar isOpen={showChat} onClose={() => setShowChat(false)} />
-      {showBooking && <BookingModal onClose={() => setShowBooking(false)} onBookingSuccess={() => { setShowBooking(false); fetchAppointments(); }} />}
+      {showBooking && <BookingModal onClose={() => setShowBooking(false)} onBookingSuccess={() => { setShowBooking(false); }} />}
     </div>
   );
 };
 
 /* --- SUBCOMPONENTS --- */
-
-const AppointmentItem = ({ appt, onClick }) => (
-  <div onClick={onClick} className="glass-card p-4 flex gap-4 items-center group cursor-pointer hover:border-primary transition-all">
-    <div className="w-12 h-12 bg-primary/5 text-primary rounded-2xl flex flex-col items-center justify-center font-bold group-hover:bg-primary group-hover:text-white transition-colors">
-      <div className="text-xs">{appt.appointmentDate?.split('-')[2]}</div>
-      <div className="text-[10px] uppercase opacity-60">{new Date(appt.appointmentDate).toLocaleString('en-US', { month: 'short' })}</div>
-    </div>
-    <div className="flex-1 min-w-0 text-left">
-      <h4 className="text-sm font-bold text-slate-800 truncate">Dr. {appt.doctor?.name}</h4>
-      <p className="text-[10px] text-slate-500 flex items-center gap-1 font-medium">
-        <Clock size={10} /> {appt.timeSlot} • {appt.consultationType}
-      </p>
-    </div>
-    <div className="p-2 bg-slate-50 text-slate-400 rounded-xl group-hover:text-primary transition-colors border border-slate-100">
-      <ChevronRight size={16} />
-    </div>
-  </div>
-);
 
 const EmptyState = ({ icon, text }) => (
   <div className="text-center py-12 bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-200">
