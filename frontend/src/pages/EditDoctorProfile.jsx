@@ -5,7 +5,7 @@ import api from '../api/axiosConfig';
 import {
   User, Stethoscope, BadgeCheck, GraduationCap, Building2,
   Clock, Activity, Save, ArrowLeft, Mail, Phone, Calendar,
-  CheckCircle, AlertCircle, Video, Briefcase, Camera, Upload
+  CheckCircle, AlertCircle, Video, Briefcase, Camera, Upload, Target, Navigation
 } from 'lucide-react';
 
 const EditDoctorProfile = () => {
@@ -67,7 +67,9 @@ const EditDoctorProfile = () => {
 
   // ── Google Maps Autocomplete ──
   const addressInputRef = useRef(null);
-  const autocompleteRef = useRef(null);
+  const hospitalInputRef = useRef(null);
+  const addressAutocompleteRef = useRef(null);
+  const hospitalAutocompleteRef = useRef(null);
 
   useEffect(() => {
     // Load Google Maps script dynamically
@@ -86,21 +88,80 @@ const EditDoctorProfile = () => {
     }
 
     function initAutocomplete() {
-      if (!addressInputRef.current) return;
-      
-      autocompleteRef.current = new window.google.maps.places.Autocomplete(addressInputRef.current, {
-        types: ['address'],
-        componentRestrictions: { country: 'IN' } // Optional: restrict to India as per user context
-      });
+      if (addressInputRef.current) {
+        addressAutocompleteRef.current = new window.google.maps.places.Autocomplete(addressInputRef.current, {
+          types: ['address'],
+          componentRestrictions: { country: 'IN' }
+        });
 
-      autocompleteRef.current.addListener('place_changed', () => {
-        const place = autocompleteRef.current.getPlace();
-        if (place.formatted_address) {
-          setFormData(prev => ({ ...prev, clinicAddress: place.formatted_address }));
-        }
-      });
+        addressAutocompleteRef.current.addListener('place_changed', () => {
+          const place = addressAutocompleteRef.current.getPlace();
+          if (place.formatted_address) {
+            setFormData(prev => ({ ...prev, clinicAddress: place.formatted_address }));
+          }
+        });
+      }
+
+      if (hospitalInputRef.current) {
+        hospitalAutocompleteRef.current = new window.google.maps.places.Autocomplete(hospitalInputRef.current, {
+          types: ['establishment'],
+          componentRestrictions: { country: 'IN' }
+        });
+
+        hospitalAutocompleteRef.current.addListener('place_changed', () => {
+          const place = hospitalAutocompleteRef.current.getPlace();
+          if (place.name) {
+            setFormData(prev => ({ 
+              ...prev, 
+              hospital: place.name,
+              clinicAddress: place.formatted_address || prev.clinicAddress 
+            }));
+          }
+        });
+      }
     }
   }, []);
+
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser");
+      return;
+    }
+
+    setLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        
+        if (!window.google) {
+          toast.error("Google Maps library not loaded. Please try again.");
+          setLoading(false);
+          return;
+        }
+
+        const geocoder = new window.google.maps.Geocoder();
+        const latlng = { lat: latitude, lng: longitude };
+
+        try {
+          const response = await geocoder.geocode({ location: latlng });
+          if (response.results[0]) {
+            setFormData(prev => ({ ...prev, clinicAddress: response.results[0].formatted_address }));
+            setMessage({ type: 'success', text: 'Clinic location synchronized via GPS!' });
+          } else {
+            toast.error("No results found for your location.");
+          }
+        } catch (e) {
+          toast.error("Geocoder failed due to: " + e);
+        } finally {
+          setLoading(false);
+        }
+      },
+      () => {
+        toast.error("Unable to retrieve your location. Check your permissions.");
+        setLoading(false);
+      }
+    );
+  };
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files[0];
@@ -234,8 +295,16 @@ const EditDoctorProfile = () => {
           <h3 className={sectionTitleClass}><Building2 className="text-indigo-600" size={20} /> Clinical Practice</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
-              <label className={labelClass}>Primary Hospital / Clinic Name</label>
-              <input type="text" name="hospital" value={formData.hospital} onChange={handleChange} className={inputClass} placeholder="e.g. Apollo Hospital, City Clinic" />
+              <label className={labelClass}>Primary Hospital / Clinic Name (Search for your facility)</label>
+              <input 
+                ref={hospitalInputRef}
+                type="text" 
+                name="hospital" 
+                value={formData.hospital} 
+                onChange={handleChange} 
+                className={inputClass} 
+                placeholder="e.g. Apollo Hospital, City Clinic" 
+              />
             </div>
             <div>
               <label className={labelClass}>Consultation Fee (INR)</label>
@@ -265,18 +334,28 @@ const EditDoctorProfile = () => {
               <input type="number" name="offlineConsultationFee" value={formData.offlineConsultationFee} onChange={handleChange} className={inputClass} placeholder="e.g. 800" />
             </div>
             <div className="md:col-span-2">
-              <label className={labelClass}>Clinic Address (Search for your address)</label>
-              <input 
-                ref={addressInputRef}
-                type="text" 
-                name="clinicAddress" 
-                value={formData.clinicAddress} 
-                onChange={handleChange} 
-                className={inputClass} 
-                placeholder="Start typing your clinic address..." 
-              />
-              <p className="text-[10px] text-slate-400 mt-2 ml-1 italic">
-                 Note: Selecting an address from the dropdown ensures the map pin highlights your exact location.
+              <label className={labelClass}>Clinic Address (Search or use current location)</label>
+              <div className="relative group/addr">
+                <input 
+                  ref={addressInputRef}
+                  type="text" 
+                  name="clinicAddress" 
+                  value={formData.clinicAddress} 
+                  onChange={handleChange} 
+                  className={`${inputClass} pr-14`} 
+                  placeholder="Start typing your clinic address..." 
+                />
+                <button 
+                  type="button"
+                  onClick={handleGetLocation}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl transition-all shadow-sm active:scale-90 flex items-center justify-center group/loc"
+                  title="Detect my current location"
+                >
+                  <Target size={18} className="group-hover/loc:animate-pulse" />
+                </button>
+              </div>
+              <p className="text-[10px] text-slate-400 mt-2 ml-1 italic flex items-center gap-1">
+                 <Navigation size={10} /> Use the target icon to automatically fetch your current clinic address via GPS.
               </p>
             </div>
             <div className="md:col-span-2">
