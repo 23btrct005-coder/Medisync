@@ -257,8 +257,6 @@ const Dashboard = () => {
                 </div>
             </div>
           </div>
-
-          </div>
         </div>
 
         {/* Sidebar Activity Hub (Col 9-12) */}
