@@ -330,6 +330,13 @@ const Reports = () => {
                     </button>
                     <div className="w-px h-5 bg-slate-200 mx-1" />
                     <button 
+                      onClick={() => toggleAiReveal(report.id)}
+                      className={`p-2 rounded-xl transition-all ${revealedAiReports[report.id] ? 'text-primary bg-primary/10' : 'text-slate-400 hover:text-primary hover:bg-primary/5'}`}
+                      title={revealedAiReports[report.id] ? "Minimize AI Insight" : "Maximize AI Insight"}
+                    >
+                      <Sparkles size={18} className={!revealedAiReports[report.id] ? 'animate-pulse' : ''} />
+                    </button>
+                    <button 
                       onClick={(e) => { e.stopPropagation(); handleDelete(report.id); }}
                       disabled={deletingId === report.id}
                       className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
@@ -342,39 +349,24 @@ const Reports = () => {
                   </div>
                 </div>
 
-                {/* AI Insight Section */}
-                <div className="mb-6">
-                  {!revealedAiReports[report.id] ? (
-                    <button 
-                      onClick={() => toggleAiReveal(report.id)}
-                      className="w-full p-6 bg-slate-50 border-2 border-dashed border-slate-100 rounded-[2rem] hover:bg-primary-50/30 hover:border-primary-200 transition-all group group/ai-card"
-                    >
-                       <div className="flex flex-col items-center justify-center text-center">
-                          <div className="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-primary-500 mb-3 group-hover/ai-card:scale-110 transition-transform">
-                             <Sparkles size={24} className="animate-pulse" />
-                          </div>
-                          <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest">Diagnostic Intelligence Prepared</h4>
-                          <p className="text-[9px] text-slate-400 font-bold mt-1 uppercase tracking-widest group-hover/ai-card:text-primary-600 transition-colors">Tap to Reveal Structured Brief</p>
-                       </div>
-                    </button>
-                  ) : (
-                    <div className="animate-in slide-in-from-top-4 duration-500">
-                      <div className="flex items-center justify-between mb-3 px-2">
-                        <div className="flex items-center gap-2">
-                           <span className="badge-clinical bg-primary text-white border-none py-0.5 px-3">Structured Clinical Briefing</span>
-                           {report.monaiDiagnosis && <span className="badge-clinical bg-emerald-100 text-emerald-700 border-emerald-200 py-0.5">Vision Verified</span>}
-                        </div>
-                        <button 
-                          onClick={() => toggleAiReveal(report.id)}
-                          className="text-[9px] font-black text-slate-400 hover:text-slate-600 uppercase tracking-widest"
-                        >
-                          Hide Insights
-                        </button>
+                {/* AI Insight Section (Maximized only) */}
+                {revealedAiReports[report.id] && (
+                  <div className="mb-6 pt-4 border-t border-slate-100 animate-in slide-in-from-top-4 duration-500">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                         <span className="badge-clinical bg-primary text-white border-none py-0.5 px-3">Structured Clinical Briefing</span>
+                         {report.monaiDiagnosis && <span className="badge-clinical bg-emerald-100 text-emerald-700 border-emerald-200 py-0.5">Vision Verified</span>}
                       </div>
-                      <StructuredAiReport jsonData={report.aiSummary} />
+                      <button 
+                        onClick={() => toggleAiReveal(report.id)}
+                        className="text-[9px] font-black text-slate-400 hover:text-slate-600 uppercase tracking-widest"
+                      >
+                        Minimize
+                      </button>
                     </div>
-                  )}
-                </div>
+                    <StructuredAiReport jsonData={report.aiSummary} />
+                  </div>
+                )}
 
                 {/* Footer */}
                 <div className="flex items-center pt-4 border-t border-slate-100">
