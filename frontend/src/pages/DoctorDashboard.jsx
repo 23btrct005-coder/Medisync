@@ -1,4 +1,4 @@
-import { useState, useEffect, React } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { 
   Users, FileStack, Stethoscope, AlertCircle, QrCode, X, 
@@ -20,14 +20,13 @@ const DoctorDashboard = () => {
   const [showScanner, setShowScanner] = useState(false);
   const [scanError, setScanError] = useState('');
   const [requests, setRequests] = useState([]);
-  const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
  
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      await Promise.all([fetchRequests(), fetchAppointments()]);
+      await fetchRequests();
       setLoading(false);
     };
     fetchData();
@@ -42,14 +41,6 @@ const DoctorDashboard = () => {
     }
   };
 
-  const fetchAppointments = async () => {
-    try {
-      const res = await api.get('appointments/my-appointments'); 
-      setAppointments(res.data || []);
-    } catch (err) {
-      console.error("Failed to fetch doctor appointments", err);
-    }
-  };
 
   useEffect(() => {
     let html5QrCode = null;
@@ -160,10 +151,11 @@ const DoctorDashboard = () => {
             />
             <StatCard 
               title="Daily Consults" 
-              value={appointments.length} 
+              value="LIVE" 
               icon={Calendar} 
               color="emerald"
-              trend="Scheduled"
+              trend="Check Pulse"
+              onClick={() => navigate('/doctor-dashboard/appointments')}
             />
             <StatCard 
               title="Intelligence Alerts" 
@@ -220,47 +212,39 @@ const DoctorDashboard = () => {
              </div>
           </div>
 
-          {/* Today's Pulse (Workflow Screen) */}
-          <div className="glass-panel p-8 border-t-8 border-primary">
-            <div className="flex items-center justify-between mb-10">
-              <div className="flex items-center gap-4">
-                <div className="p-4 bg-primary/10 text-primary rounded-[1.5rem] shadow-sm"><Activity size={24} className="animate-pulse" /></div>
-                <div>
-                  <h3 className="text-2xl font-black text-slate-900 tracking-tight">Today's Pulse</h3>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Prioritized Daily Workflow</p>
-                    <span className="text-slate-200">|</span>
-                    <button 
-                      onClick={() => navigate('/doctor-dashboard/appointments')}
-                      className="text-[10px] font-black text-primary hover:text-primary/70 uppercase tracking-widest transition-colors flex items-center gap-1"
-                    >
-                      View Full Schedule <ChevronRight size={12} />
-                    </button>
+          {/* Streamlined Activity Feed */}
+          <div className="glass-panel p-8 border-t-8 border-indigo-500 font-sans">
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-4 text-left">
+                  <div className="p-4 bg-indigo-50 text-indigo-600 rounded-[1.5rem] shadow-sm"><Activity size={24} className="animate-pulse" /></div>
+                  <div className="text-left">
+                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">System Pulse</h3>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Real-time Telemetry Active</p>
                   </div>
                 </div>
+                <div className="hidden sm:flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-full border border-slate-100">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full" />
+                  <span className="text-[10px] font-black uppercase text-slate-500">Node Synchronized</span>
+                </div>
               </div>
-              <div className="hidden sm:flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-full border border-slate-100">
-                 <div className="w-2 h-2 bg-emerald-500 rounded-full" />
-                 <span className="text-[10px] font-black uppercase text-slate-500">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</span>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <button onClick={() => navigate('/doctor-dashboard/appointments')} className="flex flex-col items-center justify-center p-8 bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200 hover:border-primary-500 hover:bg-white transition-all group scale-100 hover:scale-[1.02]">
+                    <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-primary-500 mb-4 group-hover:scale-110 transition-transform">
+                       <Calendar size={32} />
+                    </div>
+                    <span className="text-sm font-black text-slate-900 uppercase tracking-widest">Clinical Pulse</span>
+                    <span className="text-[10px] text-slate-400 font-bold mt-1">Real-time Scheduler</span>
+                 </button>
+                 <button onClick={() => navigate('/doctor-dashboard/patients')} className="flex flex-col items-center justify-center p-8 bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200 hover:border-emerald-500 hover:bg-white transition-all group scale-100 hover:scale-[1.02]">
+                    <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-emerald-500 mb-4 group-hover:scale-110 transition-transform">
+                       <Users size={32} />
+                    </div>
+                    <span className="text-sm font-black text-slate-900 uppercase tracking-widest">Patient Directory</span>
+                    <span className="text-[10px] text-slate-400 font-bold mt-1">Manage active subjects</span>
+                 </button>
               </div>
             </div>
-            
-            <div className="flex flex-col items-center justify-center py-20 bg-slate-50/50 border-2 border-dashed border-slate-100 rounded-[3rem] px-10 text-center">
-               <div className="p-8 bg-white rounded-[2.5rem] shadow-sm mb-6 text-slate-200">
-                  <Calendar size={64} />
-               </div>
-               <p className="text-sm font-black text-slate-400 uppercase tracking-[0.25em]">Schedule Relocated</p>
-               <p className="text-[10px] text-slate-400 font-medium mt-2 mb-8 max-w-xs leading-relaxed">
-                  Your prioritized clinical schedule has been moved to the dedicated, real-time Clinical Pulse hub.
-               </p>
-               <button 
-                  onClick={() => navigate('/doctor-dashboard/appointments')}
-                  className="btn-premium bg-slate-900 text-white px-10 py-4 text-[11px] font-black uppercase tracking-[0.25em] shadow-xl hover:bg-primary transition-all active:scale-95"
-               >
-                  Access Clinical Pulse
-               </button>
-            </div>
-          </div>
         </div>
 
         {/* Right Section (Access Logs) */}
