@@ -127,29 +127,29 @@ const Booking = () => {
             exit={{ opacity: 0, y: -20 }}
             className="space-y-8"
           >
-            {/* Search & Filter Hub */}
-            <div className="glass-panel p-6 space-y-4 bg-white/70 backdrop-blur-md border-slate-200/60 sticky top-4 z-40 shadow-sm">
-              <div className="flex flex-col lg:flex-row gap-4 items-center">
-                <div className="relative flex-1 w-full group">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={20} />
+            {/* Search & Filter Hub (SMART ROW MODEL) */}
+            <div className="glass-panel p-4 md:p-6 space-y-4 bg-white/70 backdrop-blur-md border-slate-200/60 sticky top-4 z-40 shadow-sm">
+              <div className="flex gap-2 items-center">
+                <div className="relative flex-1 group">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={18} />
                   <input 
                     type="text" 
-                    placeholder="Search by name, specialty, or hospital..." 
+                    placeholder="Search name or specialty..." 
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-primary/30 focus:bg-white outline-none transition-all font-medium text-slate-700 placeholder:text-slate-400"
+                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-primary/30 focus:bg-white outline-none transition-all font-medium text-slate-700 placeholder:text-slate-400 text-sm"
                   />
                 </div>
                 <button 
                   onClick={() => setShowFilters(!showFilters)}
-                  className={`flex items-center gap-2 px-6 py-4 rounded-xl border-2 font-black uppercase tracking-widest text-[10px] sm:text-xs transition-all whitespace-nowrap ${
+                  className={`flex items-center justify-center h-[52px] px-4 md:px-6 rounded-2xl border-2 font-black uppercase tracking-widest text-[10px] sm:text-xs transition-all ${
                     showFilters || filterSpecialty !== 'All' 
                     ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' 
                     : 'bg-white border-slate-100 text-slate-500 hover:border-primary/20 hover:text-primary'
                   }`}
                 >
                    <Filter size={18} />
-                   {filterSpecialty !== 'All' ? filterSpecialty : 'Filter By Specialty'}
+                   <span className="hidden sm:inline ml-2">{filterSpecialty !== 'All' ? filterSpecialty : 'Filter'}</span>
                 </button>
               </div>
 
@@ -370,44 +370,44 @@ const Booking = () => {
 const DoctorCard = ({ doctor, onSelect }) => (
   <div 
     onClick={onSelect}
-    className="glass-panel p-6 bg-white hover:border-primary/40 transition-all cursor-pointer group relative overflow-hidden flex flex-col h-full"
+    className="glass-panel p-4 md:p-6 bg-white hover:border-primary/40 transition-all cursor-pointer group relative overflow-hidden flex flex-col h-full shadow-sm"
   >
-    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-20 transition-opacity">
-       <User size={100} className="text-slate-900" />
+    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+       <User size={80} className="text-slate-900" />
     </div>
     
-    <div className="flex items-center gap-5 mb-6 relative z-10">
-       <div className="w-16 h-16 bg-slate-100 rounded-2xl overflow-hidden border-2 border-white shadow-inner flex items-center justify-center text-slate-400">
+    <div className="flex items-center gap-4 mb-4 relative z-10">
+       <div className="w-14 h-14 md:w-16 md:h-16 bg-slate-100 rounded-2xl overflow-hidden border-2 border-white shadow-inner flex items-center justify-center text-slate-400">
           <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${doctor.name}`} className="w-full h-full object-cover" alt={doctor.name} />
        </div>
        <div className="min-w-0">
-          <h3 className="text-xl font-bold text-slate-900 tracking-tight group-hover:text-primary transition-colors truncate">Dr. {doctor.name}</h3>
-          <p className="text-xs text-slate-500 font-medium truncate uppercase tracking-widest">{doctor.specialization || "Physician"}</p>
+          <h3 className="text-lg md:text-xl font-bold text-slate-900 tracking-tight group-hover:text-primary transition-colors truncate">Dr. {doctor.name}</h3>
+          <p className="text-[10px] text-slate-500 font-bold truncate uppercase tracking-widest">{doctor.specialization || "Physician"}</p>
        </div>
     </div>
 
-    <div className="space-y-4 mb-8">
-       <div className="flex items-center gap-3 text-slate-500 text-xs font-medium">
-          <MapPin size={14} className="text-slate-400" />
-          <span className="truncate">{doctor.hospital || "MediSync Care Center"}</span>
+    <div className="space-y-3 mb-6">
+       <div className="flex items-center gap-2 text-slate-500 text-[11px] font-medium">
+          <MapPin size={12} className="text-slate-400" />
+          <span className="truncate">{doctor.hospital || "Care Center"}</span>
        </div>
-       <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+       <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
              <Star size={10} fill="currentColor" /> {doctor.rating || '4.9'}
           </div>
-          <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-primary-600 bg-primary-50 px-2.5 py-1 rounded-full border border-primary-100">
+          <div className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full border border-primary-100">
              <Clock size={10} /> Active
           </div>
        </div>
     </div>
 
-    <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
+    <div className="mt-auto pt-3 border-t border-slate-100 flex items-center justify-between">
        <div className="flex items-baseline gap-1">
-          <span className="text-lg font-black text-slate-900">₹{doctor.onlineConsultationFee || 500}</span>
+          <span className="text-base font-black text-slate-900">₹{doctor.onlineConsultationFee || 500}</span>
           <span className="text-[8px] font-black uppercase text-slate-400">/ Session</span>
        </div>
-       <div className="p-2 bg-slate-50 rounded-xl group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-          <ChevronRight size={18} />
+       <div className="p-1.5 bg-slate-50 rounded-lg group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+          <ChevronRight size={16} />
        </div>
     </div>
   </div>
