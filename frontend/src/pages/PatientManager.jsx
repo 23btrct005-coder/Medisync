@@ -249,6 +249,8 @@ const PatientManager = () => {
     id: null
   });
 
+  const [isPrescriptionMinimized, setIsPrescriptionMinimized] = useState(false);
+
   const [summaryModal, setSummaryModal] = useState({
     isOpen: false,
     jsonData: null,
@@ -492,11 +494,33 @@ const PatientManager = () => {
       <PatientInfoCard patient={patient} />
 
       {/* E-Prescription System */}
-      <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm p-8">
-        <PrescriptionForm patient={patient} onComplete={() => {
-           fetchRecords();
-           // Optional: switch to records view
-        }} />
+      <div className={`bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden transition-all duration-300 ${isPrescriptionMinimized ? 'p-4' : 'p-8'}`}>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-3">
+             <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+                <Pill size={20} />
+             </div>
+             <div>
+                <h2 className="text-xl font-black text-slate-900 leading-none">E-Prescription Terminal</h2>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">Authorized Subject ID: {id}</p>
+             </div>
+          </div>
+          <button 
+            onClick={() => setIsPrescriptionMinimized(!isPrescriptionMinimized)}
+            className="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-400 hover:text-slate-600"
+          >
+            {isPrescriptionMinimized ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
+          </button>
+        </div>
+
+        {!isPrescriptionMinimized && (
+          <div className="mt-6 animate-in fade-in slide-in-from-top-4 duration-500">
+            <PrescriptionForm patient={patient} onComplete={() => {
+               fetchRecords();
+               // Optional: switch to records view
+            }} />
+          </div>
+        )}
       </div>
 
       {/* Add General Clinical Note */}
