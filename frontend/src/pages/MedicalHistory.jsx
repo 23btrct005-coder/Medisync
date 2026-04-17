@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import MedicalTimeline from '../components/MedicalTimeline';
 
 const MedicalHistory = () => {
+    const [records, setRecords] = useState([]);
     const [prescriptions, setPrescriptions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState('timeline'); // 'timeline' or 'list'
@@ -30,7 +31,18 @@ const MedicalHistory = () => {
         }
     };
 
-    const [records, setRecords] = useState([]);
+    const handleExport = () => {
+        const clinicalData = JSON.stringify({ records, prescriptions }, null, 2);
+        const blob = new Blob([clinicalData], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `medisync-clinical-export-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success("Clinical archive exported successfully.");
+    };
 
     useEffect(() => {
         fetchAllData();
