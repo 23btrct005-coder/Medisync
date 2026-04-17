@@ -1,6 +1,6 @@
-/* DEPLOY_SYNC_STAMP: 2026-04-17-17:30 */
+/* DEPLOY_SYNC_STAMP: 2026-04-17-17:35 */
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
