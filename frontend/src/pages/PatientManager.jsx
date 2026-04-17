@@ -308,10 +308,7 @@ const PatientManager = () => {
     ...(records || []).map(r => ({ ...r, type: 'CONSULTATION', timestamp: r.date ? new Date(r.date) : new Date(0) })),
     ...(prescriptions || []).map(p => ({ ...p, type: 'PRESCRIPTION', timestamp: p.createdAt ? new Date(p.createdAt) : new Date(0) })),
     ...(reports || []).map(r => ({ ...r, type: 'REPORT', timestamp: r.documentDate ? new Date(r.documentDate) : (r.uploadDate ? new Date(r.uploadDate) : (r.createdAt ? new Date(r.createdAt) : new Date(0))) }))
-  ].filter(item => {
-    if (activeCategory === 'All') return true;
-    return item.type === activeCategory.toUpperCase();
-  }).sort((a, b) => new Date(b.documentDate || b.uploadDate || 0) - new Date(a.documentDate || a.uploadDate || 0));
+  ].sort((a, b) => new Date(b.documentDate || b.uploadDate || 0) - new Date(a.documentDate || a.uploadDate || 0));
 
   const fetchReports = async () => {
     setReportsLoading(true);
