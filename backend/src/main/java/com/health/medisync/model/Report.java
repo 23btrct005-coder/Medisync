@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "reports")
@@ -14,11 +16,13 @@ public class Report {
 
     @ManyToOne
     @JoinColumn(name = "patient_id", nullable = false)
+    @JsonIgnoreProperties({"doctors", "user", "medicalRecords", "reports", "appointments"})
     private Patient patient;
 
     private String fileName;
     private String fileType;
 
+    @JsonIgnore
     @JdbcTypeCode(SqlTypes.BINARY)
     @Column(name = "file_data")
     private byte[] fileData;
