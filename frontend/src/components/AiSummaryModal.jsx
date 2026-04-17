@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Sparkles } from 'lucide-react';
 import StructuredAiReport from './StructuredAiReport';
 import api from '../api/axiosConfig';
@@ -6,24 +6,42 @@ import api from '../api/axiosConfig';
 const AiSummaryModal = ({ isOpen, onClose, jsonData, legacyReasoning, reportId }) => {
   const [liveJson, setLiveJson] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analyzeError, setAnalyzeError] = useState(null);
 
-  if (!isOpen) return null;
+  // Reset state whenever this modal opens for a (potentially different) report
+  useEffect(() => {
+    if (isOpen) {
+      setLiveJson(null);
+      setIsAnalyzing(false);
+      setAnalyzeError(null);
+    }
+  }, [isOpen, reportId]);
 
-  // Always prefer liveJson (from re-analysis) over the original stored data
-  const activeJson = liveJson || jsonData;
-
+  // handleAnalyzeNow MUST be defined before any conditional returns
   const handleAnalyzeNow = async () => {
-    if (!reportId || isAnalyzing) return;
+    if (isAnalyzing) return;
+    if (!reportId) {
+      setAnalyzeError('Report ID not found. Please close and reopen the summary.');
+      return;
+    }
     setIsAnalyzing(true);
+    setAnalyzeError(null);
     try {
       const res = await api.post(`reports/${reportId}/reanalyze`);
-      setLiveJson(res.data.aiSummary);
+      const freshSummary = res.data?.aiSummary ?? res.data;
+      setLiveJson(typeof freshSummary === 'string' ? freshSummary : JSON.stringify(freshSummary));
     } catch (e) {
       console.error('Re-analyze from modal failed:', e);
+      setAnalyzeError('Analysis failed. The AI service may be busy — please try again in a moment.');
     } finally {
       setIsAnalyzing(false);
     }
   };
+
+  if (!isOpen) return null;
+
+  // Prefer fresh re-analysis data over the stored data
+  const activeJson = liveJson || jsonData;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -54,6 +72,11 @@ const AiSummaryModal = ({ isOpen, onClose, jsonData, legacyReasoning, reportId }
         </div>
 
         <div className="p-8 max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+           {analyzeError && (
+             <div className="mb-4 px-4 py-3 bg-amber-50 border border-amber-200 rounded-2xl text-xs font-bold text-amber-700">
+               ⚠️ {analyzeError}
+             </div>
+           )}
            <StructuredAiReport 
              jsonData={activeJson} 
              legacyReasoning={legacyReasoning}
