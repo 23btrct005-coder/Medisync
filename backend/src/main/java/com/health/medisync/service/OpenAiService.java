@@ -63,7 +63,7 @@ public class OpenAiService implements AiProvider {
                 textPart.put("type", "text");
                 textPart.put("text", "You are a world-class senior clinical diagnostic expert. Analyze this medical document for Name: " + patientName + ", Age: " + patientAge + ".\n" +
                     "CRITICAL SECURITY RULE: If the patient name in the document definitively belongs to a different person than '" + patientName + "', reply ONLY with 'ERROR_PROFILE_MISMATCH'.\n" +
-                    "Otherwise, providing a highly detailed clinical reasoning report in Markdown covering: 1) Verified Patient Identity, 2) Primary Finding, 3) Evidence Rationale, 4) Abnormal Values, 5) Urgent Physician Follow-ups.\n\n" + 
+                    "Otherwise, provide a HIGH-DENSITY CLINICAL BRIEF (max 3 professional sentences) for a doctor. Focus exactly on: 1) The primary medical problem. 2) What happened/Conclusion.\n\n" + 
                     (isPdf ? "PDF TEXT CONTENT:\n" + extractedText : ""));
                 contentList.add(textPart);
 

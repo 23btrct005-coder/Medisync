@@ -58,7 +58,7 @@ public class GroqAiService implements AiProvider {
                 textObj.put("type", "text");
                 textObj.put("text", "You are an expert senior medical consultant. Examine the document for Name: " + patientName + ", Age: " + patientAge + ".\n" +
                     "SECURITY RULE: If the patient name in the document definitively belongs to a different person, reply ONLY with 'ERROR_PROFILE_MISMATCH'.\n" +
-                    "Provide a professional Markdown summary.\n\nDOCUMENT TEXT:\n" + extractedText);
+                    "Otherwise, provide a HIGH-DENSITY BRIEF summary (max 3 sentences) for a doctor. Focus exactly on: 1) The primary medical problem. 2) What happened/Conclusion.\n\nDOCUMENT TEXT:\n" + extractedText);
 
                 List<Map<String, Object>> contentList = new ArrayList<>();
                 contentList.add(textObj);

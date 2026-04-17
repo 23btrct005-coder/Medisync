@@ -204,9 +204,10 @@ const PatientManager = () => {
   const [records, setRecords] = useState([]);
   const [prescriptions, setPrescriptions] = useState([]);
   const [reports, setReports] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState(new Date());
   const [syncLabel, setSyncLabel] = useState('Just Now');
+  const [revealedAiReports, setRevealedAiReports] = useState({});
 
   // Relative time formatter
   const getRelativeTime = (date) => {
@@ -336,6 +337,13 @@ const PatientManager = () => {
     } catch (error) {
       toast.error('Failed to create record. Please try again.');
     } finally { setSubmitting(false); }
+  };
+
+  const toggleAiReveal = (reportId) => {
+    setRevealedAiReports(prev => ({
+      ...prev,
+      [reportId]: !prev[reportId]
+    }));
   };
 
   const handleDownload = async (reportId, fileName) => {
@@ -577,46 +585,78 @@ const PatientManager = () => {
                     </button>
                   </div>
                 </div>
-                <div className="p-6 divide-y divide-slate-100">
-                  <div className="pb-5">
-                    <h4 className="text-xs font-extrabold text-indigo-600 mb-3 uppercase tracking-widest flex items-center gap-1.5">
-                      ✨ Groq AI Quick Summary
-                    </h4>
-                    {r.aiSummary
-                      ? <pre className="font-sans whitespace-pre-wrap leading-relaxed text-slate-700 text-sm">{r.aiSummary}</pre>
-                      : <p className="italic text-slate-400 text-sm">No clinical summary generated.</p>
-                    }
-                  </div>
-
-                  {r.clinicalReasoning && (
-                    <div className="py-5">
-                      <h4 className="text-xs font-extrabold text-primary-600 mb-3 uppercase tracking-widest flex items-center gap-1.5">
-                        ⚕️ OpenAI GPT-4o Clinical Reasoning
-                      </h4>
-                      <div className="prose prose-sm max-w-none text-slate-700 bg-slate-50 border border-slate-100 p-5 rounded-2xl relative">
-                        <div className="absolute top-3 right-4 px-2 py-0.5 bg-primary-100 text-primary-700 text-[10px] font-black rounded uppercase tracking-wider">High Fidelity</div>
-                        <pre className="font-sans whitespace-pre-wrap leading-relaxed">{r.clinicalReasoning}</pre>
-                      </div>
+                <div className="p-6">
+                  {!revealedAiReports[r.id] ? (
+                    <div className="flex flex-col items-center justify-center py-10 bg-slate-50 border-2 border-dashed border-slate-100 rounded-[2.5rem]">
+                       <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-primary-500 mb-4 animate-pulse">
+                          <Zap size={32} />
+                       </div>
+                       <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">Clinical AI Insights Available</h4>
+                       <p className="text-[10px] text-slate-400 font-bold mt-1 mb-6">High-Density Diagnostic Briefing Prepared</p>
+                       <button 
+                        onClick={() => toggleAiReveal(r.id)}
+                        className="btn-premium bg-slate-900 text-white px-8 py-3 text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-primary active:scale-95"
+                       >
+                         Access AI Consultation Hub
+                       </button>
                     </div>
-                  )}
-
-                  {r.monaiDiagnosis && (
-                    <div className="py-5">
-                      <h4 className="text-xs font-extrabold text-emerald-600 mb-3 uppercase tracking-widest flex items-center gap-1.5">
-                        🧬 MONAI Vision Diagnostic
-                      </h4>
-                      <div className="flex flex-wrap gap-4 items-center">
-                        <div className="bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-xl">
-                          <p className="text-[10px] font-bold text-emerald-600 uppercase">Detection Result</p>
-                          <p className="text-lg font-black text-emerald-900">{r.monaiDiagnosis}</p>
+                  ) : (
+                    <div className="space-y-6 animate-in slide-in-from-top-4 duration-500">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                          <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Live AI Analysis Node</span>
                         </div>
-                        {r.monaiConfidence && (
-                          <div className="bg-blue-50 border border-blue-100 px-4 py-2 rounded-xl">
-                            <p className="text-[10px] font-bold text-blue-600 uppercase">AI Confidence</p>
-                            <p className="text-lg font-black text-blue-900">{(r.monaiConfidence * 100).toFixed(1)}%</p>
+                        <button 
+                          onClick={() => toggleAiReveal(r.id)}
+                          className="text-[10px] font-black text-slate-400 hover:text-slate-600 uppercase tracking-widest"
+                        >
+                          Hide Insights
+                        </button>
+                      </div>
+
+                      <div className="divide-y divide-slate-100">
+                        <div className="pb-5">
+                          <h4 className="text-xs font-extrabold text-indigo-600 mb-3 uppercase tracking-widest flex items-center gap-1.5">
+                            ✨ High-Density Brief
+                          </h4>
+                          {r.aiSummary
+                            ? <p className="font-sans leading-relaxed text-slate-800 font-bold text-sm bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100">{r.aiSummary}</p>
+                            : <p className="italic text-slate-400 text-sm">No clinical summary generated.</p>
+                          }
+                        </div>
+
+                        {r.clinicalReasoning && (
+                          <div className="py-5">
+                            <h4 className="text-xs font-extrabold text-primary-600 mb-3 uppercase tracking-widest flex items-center gap-1.5">
+                              ⚕️ OpenAI Diagnostic Reasoning
+                            </h4>
+                            <div className="prose prose-sm max-w-none text-slate-700 bg-slate-50 border border-slate-100 p-5 rounded-2xl relative">
+                              <div className="absolute top-3 right-4 px-2 py-0.5 bg-primary-100 text-primary-700 text-[10px] font-black rounded uppercase tracking-wider">Master Reasoning</div>
+                              <pre className="font-sans whitespace-pre-wrap leading-relaxed">{r.clinicalReasoning}</pre>
+                            </div>
                           </div>
                         )}
-                        <span className="text-[10px] font-bold text-slate-400 italic">Engine: DenseNet-121 (Radiology)</span>
+
+                        {r.monaiDiagnosis && (
+                          <div className="py-5">
+                            <h4 className="text-xs font-extrabold text-emerald-600 mb-3 uppercase tracking-widest flex items-center gap-1.5">
+                              🧬 MONAI Vision Diagnostic
+                            </h4>
+                            <div className="flex flex-wrap gap-4 items-center">
+                              <div className="bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-xl text-left">
+                                <p className="text-[10px] font-bold text-emerald-600 uppercase">Detection Result</p>
+                                <p className="text-lg font-black text-emerald-900">{r.monaiDiagnosis}</p>
+                              </div>
+                              {r.monaiConfidence && (
+                                <div className="bg-blue-50 border border-blue-100 px-4 py-2 rounded-xl text-left">
+                                  <p className="text-[10px] font-bold text-blue-600 uppercase">AI Confidence</p>
+                                  <p className="text-lg font-black text-blue-900">{(r.monaiConfidence * 100).toFixed(1)}%</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}

@@ -20,6 +20,7 @@ const Reports = () => {
   
   const [lastSyncTime, setLastSyncTime] = useState(new Date());
   const [syncLabel, setSyncLabel] = useState('Just Now');
+  const [revealedAiReports, setRevealedAiReports] = useState({});
 
   // Relative time formatter
   const getRelativeTime = (date) => {
@@ -198,6 +199,13 @@ const Reports = () => {
     r.fileName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const toggleAiReveal = (reportId) => {
+    setRevealedAiReports(prev => ({
+      ...prev,
+      [reportId]: !prev[reportId]
+    }));
+  };
+
   const handleAskAi = (report) => {
     setSelectedReport(report);
     setIsAiOpen(true);
@@ -320,17 +328,40 @@ const Reports = () => {
                 </div>
 
                 {/* AI Insight Section */}
-                <div className="mb-6 space-y-3">
-                  <div className="p-4 bg-primary/5 rounded-[1.5rem] border border-primary/10 relative overflow-hidden group/ai">
-                    <Sparkles className="absolute -right-2 -top-2 text-primary/10 group-hover/ai:scale-150 transition-transform duration-700" size={60} />
-                    <div className="flex items-center gap-2 mb-2">
-                       <span className="badge-clinical bg-primary text-white border-none py-0.5">Clinical AI Summary</span>
-                       {report.monaiDiagnosis && <span className="badge-clinical bg-emerald-100 text-emerald-700 border-emerald-200 py-0.5">Vision Verified</span>}
+                <div className="mb-6">
+                  {!revealedAiReports[report.id] ? (
+                    <button 
+                      onClick={() => toggleAiReveal(report.id)}
+                      className="w-full p-6 bg-slate-50 border-2 border-dashed border-slate-100 rounded-[2rem] hover:bg-primary-50/30 hover:border-primary-200 transition-all group group/ai-card"
+                    >
+                       <div className="flex flex-col items-center justify-center text-center">
+                          <div className="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-primary-500 mb-3 group-hover/ai-card:scale-110 transition-transform">
+                             <Sparkles size={24} className="animate-pulse" />
+                          </div>
+                          <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest">Clinical AI Summary Available</h4>
+                          <p className="text-[9px] text-slate-400 font-bold mt-1 uppercase tracking-widest group-hover/ai-card:text-primary-600 transition-colors">Tap to Reveal Insights</p>
+                       </div>
+                    </button>
+                  ) : (
+                    <div className="p-5 bg-primary/5 rounded-[2rem] border border-primary/10 relative overflow-hidden group/ai animate-in slide-in-from-top-4 duration-500">
+                      <Sparkles className="absolute -right-2 -top-2 text-primary/10 group-hover/ai:scale-150 transition-transform duration-700" size={60} />
+                      <div className="flex items-center justify-between mb-3 relative z-10">
+                        <div className="flex items-center gap-2">
+                           <span className="badge-clinical bg-primary text-white border-none py-0.5">High-Density AI Brief</span>
+                           {report.monaiDiagnosis && <span className="badge-clinical bg-emerald-100 text-emerald-700 border-emerald-200 py-0.5">Vision Verified</span>}
+                        </div>
+                        <button 
+                          onClick={() => toggleAiReveal(report.id)}
+                          className="text-[9px] font-black text-slate-400 hover:text-slate-600 uppercase tracking-widest"
+                        >
+                          Hide Insights
+                        </button>
+                      </div>
+                      <p className="text-sm text-slate-900 font-bold leading-relaxed text-left relative z-10 border-l-4 border-primary/20 pl-4 py-1">
+                        {report.aiSummary || report.clinicalReasoning || "Full intelligence summary is pending."}
+                      </p>
                     </div>
-                    <p className="text-sm text-slate-700 font-medium leading-relaxed line-clamp-2 text-left">
-                      {report.aiSummary || report.clinicalReasoning || "Full intelligence summary is pending."}
-                    </p>
-                  </div>
+                  )}
                 </div>
 
                 {/* Footer Action */}
