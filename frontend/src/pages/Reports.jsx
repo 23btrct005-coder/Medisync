@@ -376,19 +376,12 @@ const Reports = () => {
                   )}
                 </div>
 
-                {/* Footer Action */}
-                <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                {/* Footer */}
+                <div className="flex items-center pt-4 border-t border-slate-100">
                   <div className="flex items-center gap-1">
                     <CheckCircle2 size={14} className="text-emerald-500" />
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Securely Verified</span>
                   </div>
-                  <button 
-                    onClick={() => handleAskAi(report)}
-                    className="flex items-center gap-2 text-xs font-bold text-primary hover:text-primary-700 transition-colors uppercase tracking-wider"
-                  >
-                    <MessageSquare size={16} />
-                    Discuss Report
-                  </button>
                 </div>
               </div>
             </div>
