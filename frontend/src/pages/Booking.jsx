@@ -8,6 +8,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
+import ClinicMap from '../components/ClinicMap';
 
 const Booking = () => {
   const navigate = useNavigate();
@@ -263,6 +264,17 @@ const Booking = () => {
                             <span className="text-xs font-black uppercase tracking-widest underline decoration-primary decoration-2">{selectedDoctor.yearsOfExperience || '8+'} Years</span>
                          </div>
                       </div>
+
+                      {/* New Map Integration */}
+                      {selectedDoctor.clinicAddress && (
+                        <div className="mt-6 glass-panel p-6 bg-white border-slate-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
+                           <div className="flex items-center gap-2 mb-4">
+                             <MapPin size={16} className="text-red-500" />
+                             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none text-slate-900">Clinic Geographic Terminal</h4>
+                           </div>
+                           <ClinicMap address={selectedDoctor.clinicAddress} height="250px" />
+                        </div>
+                      )}
                    </div>
                 </div>
              </div>

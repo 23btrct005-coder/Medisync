@@ -4,8 +4,9 @@ import api from '../api/axiosConfig';
 import {
   Stethoscope, Mail, Phone, GraduationCap, BadgeCheck,
   Building2, Clock, Activity, AlertCircle, User, Users,
-  Calendar, CheckCircle, XCircle, Video, Edit3
+  Calendar, CheckCircle, XCircle, Video, Edit3, MapPin
 } from 'lucide-react';
+import ClinicMap from '../components/ClinicMap';
 
 const InfoRow = ({ icon: Icon, label, value, color = 'text-blue-600' }) => (
   <div className="flex items-start gap-3 py-3 border-b border-slate-100 last:border-0">
@@ -162,6 +163,32 @@ const DoctorProfile = () => {
             </div>
           </div>
         </Section>
+
+        {/* Clinic Mapping */}
+        <div className="lg:col-span-2">
+           <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
+               <div className="flex items-center gap-2">
+                 <MapPin size={18} className="text-red-600" />
+                 <h4 className="font-bold text-slate-700 text-sm uppercase tracking-wide">Clinic Location Hub</h4>
+               </div>
+               {user.clinicAddress && (
+                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-white border border-slate-200 px-2.5 py-1 rounded-lg">
+                   Verified Terminal
+                 </span>
+               )}
+             </div>
+             <div className="p-6">
+                <ClinicMap address={user.clinicAddress} height="350px" />
+                {user.clinicAddress && (
+                  <p className="mt-4 text-xs font-bold text-slate-400 flex items-center gap-2">
+                     <AlertCircle size={14} className="text-amber-500" />
+                     If this location is incorrect, please update it in the Professional Profile Editor.
+                  </p>
+                )}
+             </div>
+           </div>
+        </div>
 
       </div>
     </div>
