@@ -1,4 +1,4 @@
-import { useState, useEffect, React } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import api from '../api/axiosConfig';
 import { 
@@ -69,10 +69,10 @@ const DoctorAppointments = () => {
     const filterAppointments = (list) => {
         if (!searchTerm) return list;
         const q = searchTerm.toLowerCase();
-        return list.filter(a => 
-            a.patient?.name?.toLowerCase().includes(q) || 
-            a.patient?.email?.toLowerCase().includes(q) ||
-            a.timeSlot?.toLowerCase().includes(q)
+        return (list || []).filter(a => 
+            (a.patient?.name || '').toLowerCase().includes(q) || 
+            (a.patient?.email || '').toLowerCase().includes(q) ||
+            (a.timeSlot || '').toLowerCase().includes(q)
         );
     };
 
@@ -99,7 +99,7 @@ const DoctorAppointments = () => {
                         </div>
                         <h1 className="text-4xl font-extrabold tracking-tight">Clinical Pulse</h1>
                         <p className="text-slate-400 font-medium max-w-lg leading-relaxed">
-                            Oversight for Dr. {user?.name?.split(' ').pop()}. Managing {appointments.length} secure clinical sessions across the production timeline.
+                            Oversight for Dr. {(user?.name || 'Authorized Physician').split(' ').pop()}. Managing {appointments.length} secure clinical sessions across the production timeline.
                         </p>
                     </div>
                 </div>
@@ -221,8 +221,8 @@ const DoctorAppointmentCard = ({ appt, onClick, active, historical }) => {
                         <div className={`w-16 h-16 rounded-[1.5rem] flex flex-col items-center justify-center font-black ${
                             active ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-slate-50 text-slate-400 border border-slate-100'
                         }`}>
-                            <div className="text-xl leading-none">{appt.timeSlot?.split(' ')[0]}</div>
-                            <div className="text-[9px] uppercase tracking-widest opacity-60 mt-1">{appt.timeSlot?.split(' ')[1]}</div>
+                            <div className="text-xl leading-none">{(appt.timeSlot || '--').split(' ')[0]}</div>
+                            <div className="text-[9px] uppercase tracking-widest opacity-60 mt-1">{(appt.timeSlot || '--').split(' ')[1] || 'Slot'}</div>
                         </div>
                         <div className="min-w-0">
                             <h4 className="text-lg font-black text-slate-900 truncate">Patient Identity</h4>
