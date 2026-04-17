@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
 import QRCode from 'react-qr-code';
 import { 
-  Activity, ClipboardList, UserCheck, Calendar, QrCode, X, 
+  Activity, ClipboardList, UserCheck, Calendar, CalendarPlus, QrCode, X, 
   Download, UserX, Loader2, Video, MapPin, Clock, 
   TrendingUp, ShieldCheck, Sparkles, ChevronRight, Plus,
   Zap, MessageSquare, Heart, Target, Bell
