@@ -118,19 +118,19 @@ const Dashboard = () => {
       <section className="relative group">
         <div className="relative bg-slate-900 rounded-[3rem] p-8 md:p-12 text-white shadow-2xl overflow-hidden">
           <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/20 to-transparent pointer-events-none" />
-          <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-            <div className="space-y-4 text-left">
+          <div className="relative z-10 flex flex-col md:flex-row justify-between items-center md:items-center gap-8 text-center md:text-left">
+            <div className="space-y-4 flex flex-col items-center md:items-start w-full">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full border border-white/10 backdrop-blur-md text-[10px] font-black uppercase tracking-widest text-primary-200">
                 <ShieldCheck size={14} className="text-emerald-300 animate-pulse" />
                 Secure Clinical Identity
               </div>
-              <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+              <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight">
                 Hello, <span className="text-primary-400">{(user?.name || 'Patient').split(' ')[0]}</span>
               </h1>
-              <p className="text-slate-400 font-medium max-w-lg leading-relaxed">
+              <p className="text-slate-400 font-medium max-w-lg leading-relaxed text-sm md:text-base">
                 Your medical data is synchronizing across secure encrypted nodes.
               </p>
-              <div className="flex flex-wrap gap-4 pt-4">
+              <div className="flex flex-wrap justify-center md:justify-start gap-4 pt-4">
                 <button 
                   onClick={() => setShowQRModal(true)}
                   className="btn-premium bg-primary text-white border-none shadow-lg shadow-primary/30"
@@ -143,12 +143,12 @@ const Dashboard = () => {
                   className="btn-premium bg-white/10 text-white border-white/10 backdrop-blur-md hover:bg-white/20"
                 >
                   <MessageSquare size={18} />
-                  AI Clinical Chat
+                  AI Chat
                 </button>
               </div>
             </div>
             
-            <div className="hidden lg:block">
+            <div className="hidden lg:block text-right">
               <div onClick={() => navigate('/dashboard/profile')} className="cursor-pointer">
                  <HealthSyncScore user={user} />
               </div>
@@ -163,7 +163,7 @@ const Dashboard = () => {
          <ClinicalAlertBanner patient={patient} />
       )}
 
-      {/* Mobile Quick Launch Hub (Hidden on Desktop) */}
+      {/* Mobile Quick Launch Hub (Primary Action Placing) */}
       <section className="md:hidden grid grid-cols-2 gap-4">
         <div 
           onClick={() => navigate('/dashboard/reports')}
@@ -185,27 +185,31 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Stats Ecosystem */}
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      {/* Stats Ecosystem (Propel Content Higher with Horizontal Placing) */}
+      <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 overflow-x-auto md:overflow-visible pb-4 md:pb-0 scrollbar-none snap-x snap-mandatory">
         {loading ? (
-          [1,2,3,4].map(i => <div key={i} className="h-32 bg-slate-100 rounded-[2rem] animate-pulse border border-slate-200" />)
+          [1,2,3,4].map(i => <div key={i} className="min-w-[85%] md:min-w-0 h-32 bg-slate-100 rounded-[2rem] animate-pulse border border-slate-200" />)
         ) : (
           <>
-            <StatCard 
-              title="Archives" 
-              value={stats.recordsCount} 
-              icon={ClipboardList} 
-              color="primary"
-              trend="+Sync Active"
-            />
-            <StatCard 
-              title="Diagnosis" 
-              value={stats.latestDiagnosis} 
-              icon={TrendingUp} 
-              color="emerald"
-              trend="Verified AI"
-            />
-            <div className="col-span-1 md:col-span-1">
+            <div className="min-w-[85%] md:min-w-0 snap-center">
+              <StatCard 
+                title="Archives" 
+                value={stats.recordsCount} 
+                icon={ClipboardList} 
+                color="primary"
+                trend="+Sync Active"
+              />
+            </div>
+            <div className="min-w-[85%] md:min-w-0 snap-center">
+              <StatCard 
+                title="Diagnosis" 
+                value={stats.latestDiagnosis} 
+                icon={TrendingUp} 
+                color="emerald"
+                trend="Verified AI"
+              />
+            </div>
+            <div className="min-w-[85%] md:min-w-0 snap-center">
               <StatCard 
                 title="Doctors" 
                 value={doctors.length} 
@@ -215,7 +219,7 @@ const Dashboard = () => {
                 onClick={() => navigate('/dashboard/doctors')}
               />
             </div>
-            <div className="col-span-1 md:col-span-1">
+            <div className="min-w-[85%] md:min-w-0 snap-center">
               <StatCard 
                 title="Integrity" 
                 value="SECURE" 

@@ -57,40 +57,39 @@ const BottomNav = () => {
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4 flex-1 overflow-y-auto pr-2 scrollbar-none">
+                    <div className="grid grid-cols-2 gap-4 flex-1 overflow-y-auto pr-2 pb-10 scrollbar-none">
                         {secondaryNav.map((item) => (
                             <button
                                 key={item.name}
                                 onClick={() => { navigate(item.path); setShowHub(false); }}
-                                className="flex items-center gap-5 p-5 bg-slate-50 rounded-[2rem] border border-slate-100 active:scale-95 transition-all text-left group"
+                                className="flex flex-col gap-4 p-5 bg-slate-50 rounded-[2rem] border border-slate-100 active:scale-95 transition-all text-left group"
                             >
-                                <div className="p-4 bg-white text-primary-600 rounded-2xl shadow-sm border border-slate-100 group-hover:bg-primary-50">
+                                <div className="p-3 w-12 h-12 bg-white text-primary-600 rounded-xl shadow-sm border border-slate-100 group-hover:bg-primary-50 flex items-center justify-center">
                                     {item.icon}
                                 </div>
-                                <div>
-                                    <h4 className="text-sm font-black text-slate-800 uppercase tracking-wide">{item.name}</h4>
-                                    <p className="text-[11px] font-bold text-slate-500">{item.description}</p>
+                                <div className="space-y-1">
+                                    <h4 className="text-[11px] font-black text-slate-800 uppercase tracking-widest leading-tight">{item.name}</h4>
+                                    <p className="text-[9px] font-bold text-slate-400 line-clamp-2">{item.description}</p>
                                 </div>
-                                <ExternalLink size={14} className="ml-auto text-slate-300" />
                             </button>
                         ))}
                     </div>
 
-                    <div className="mt-8 pt-6 border-t border-slate-100">
+                    <div className="mt-auto pt-6 border-t border-slate-100 bg-white">
                          <button
                             onClick={() => { logout(); navigate('/login'); }}
-                            className="w-full flex items-center justify-center gap-3 p-5 bg-red-50 text-red-600 rounded-[2rem] font-black uppercase tracking-widest text-xs border border-red-100 active:scale-95 transition-all"
+                            className="w-full flex items-center justify-center gap-3 p-5 bg-red-50 text-red-600 rounded-[2rem] font-black uppercase tracking-widest text-[10px] border border-red-100 active:scale-90 transition-all shadow-sm"
                         >
-                            <LogOut size={20} />
+                            <LogOut size={18} />
                             Exit Secure Context
                         </button>
                     </div>
                 </div>
             </div>
 
-            {/* Main Primary Navigation Bar */}
-            <div className="md:hidden fixed bottom-6 left-4 right-4 bg-slate-900/95 backdrop-blur-2xl rounded-[2.5rem] px-4 py-3 z-50 shadow-[0_20px_50px_rgba(0,0,0,0.3)] ring-1 ring-white/10">
-                <nav className="flex justify-around items-center h-full">
+            {/* Main Primary Navigation Bar (DOCK MODEL) */}
+            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-2xl border-t border-white/5 px-6 pt-3 pb-safe z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.3)]">
+                <nav className="flex justify-between items-center h-14">
                     {primaryNav.map((item) => {
                         const isProfile = item.icon === null;
                         return (
@@ -100,8 +99,8 @@ const BottomNav = () => {
                                 end={item.path === '/dashboard' || item.path === '/doctor-dashboard'}
                                 onClick={() => setShowHub(false)}
                                 className={({ isActive }) =>
-                                    `flex flex-col items-center gap-1.5 p-2 transition-all duration-300 ${
-                                        isActive ? 'text-primary-400 -translate-y-1 scale-110' : 'text-slate-500 hover:text-slate-300'
+                                    `flex flex-col items-center gap-1.5 p-2 transition-all duration-300 relative ${
+                                        isActive ? 'text-primary-400 scale-105' : 'text-slate-500'
                                     }`
                                 }
                             >
@@ -114,9 +113,10 @@ const BottomNav = () => {
                                                 ) : <User size={14} className="m-1" />}
                                             </div>
                                         ) : item.icon}
-                                        <span className={`text-[9px] font-black uppercase tracking-tighter ${isActive ? 'text-white' : 'text-slate-600'}`}>
+                                        <span className={`text-[8px] font-black uppercase tracking-wider ${isActive ? 'text-white' : 'text-slate-600'}`}>
                                             {item.name}
                                         </span>
+                                        {isActive && <div className="absolute -top-3 w-1 h-1 bg-primary-400 rounded-full shadow-[0_0_10px_rgba(34,211,238,0.8)]" />}
                                     </>
                                 )}
                             </NavLink>
@@ -126,10 +126,10 @@ const BottomNav = () => {
                     {/* The Application Hub Trigger */}
                     <button
                         onClick={() => setShowHub(true)}
-                        className={`flex flex-col items-center gap-1.5 p-2 transition-all duration-300 ${showHub ? 'text-primary-400 -translate-y-1 scale-110' : 'text-slate-500'}`}
+                        className={`flex flex-col items-center gap-1.5 p-2 transition-all duration-300 ${showHub ? 'text-primary-400 scale-105' : 'text-slate-500'}`}
                     >
                         <Grid size={20} className={showHub ? 'animate-pulse' : ''} />
-                        <span className={`text-[9px] font-black uppercase tracking-tighter ${showHub ? 'text-white' : 'text-slate-600'}`}>
+                        <span className={`text-[8px] font-black uppercase tracking-wider ${showHub ? 'text-white' : 'text-slate-600'}`}>
                             Apps
                         </span>
                     </button>
