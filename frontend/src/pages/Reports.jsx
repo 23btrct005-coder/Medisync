@@ -235,11 +235,21 @@ const Reports = () => {
              <RefreshCw size={20} className={`group-hover:rotate-180 transition-transform duration-500 ${loading ? 'animate-spin text-primary' : ''}`} />
            </button>
            <div className="hidden md:block h-8 w-px bg-slate-200 mx-1" />
-           <button onClick={() => fileInputRef.current.click()} className="flex items-center gap-2 px-6 py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl transition-all font-black text-sm shadow-xl active:scale-95">
+           
+           {/* Hidden File Input */}
+           <input 
+             type="file" 
+             ref={fileInputRef}
+             onChange={handleFileUpload}
+             className="hidden"
+             accept=".pdf,.jpg,.jpeg,.png"
+           />
+
+           <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-6 py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl transition-all font-black text-sm shadow-xl active:scale-95">
              <UploadCloud size={18} />
              Upload Archive
            </button>
-           <button onClick={() => setShowCamera(true)} className="flex items-center gap-2 px-6 py-3.5 bg-white border-2 border-slate-900 text-slate-900 hover:bg-slate-50 rounded-2xl transition-all font-black text-sm shadow-sm active:scale-95">
+           <button onClick={startCamera} className="flex items-center gap-2 px-6 py-3.5 bg-white border-2 border-slate-900 text-slate-900 hover:bg-slate-50 rounded-2xl transition-all font-black text-sm shadow-sm active:scale-95">
              <Camera size={18} />
              Scan Physical
            </button>
