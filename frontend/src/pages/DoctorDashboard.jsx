@@ -249,7 +249,7 @@ const DoctorDashboard = () => {
               </div>
             ) : (
               <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex flex-col gap-6">
                   {appointments
                     .filter(a => a.appointmentDate === new Date().toISOString().split('T')[0])
                     .sort((a, b) => a.timeSlot.localeCompare(b.timeSlot))
@@ -259,29 +259,29 @@ const DoctorDashboard = () => {
                       onClick={() => navigate(`/doctor-dashboard/patients/${appt.patient?.id}`)} 
                       className={`relative group cursor-pointer transition-all duration-300 hover:-translate-y-1`}
                     >
-                      <div className={`absolute -inset-1 bg-gradient-to-r ${idx === 0 ? 'from-primary to-indigo-500' : 'from-slate-200 to-slate-200'} rounded-[2rem] blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200`}></div>
-                      <div className="relative p-6 bg-white border border-slate-100 rounded-[2.5rem] flex flex-col sm:flex-row gap-6 items-center shadow-sm group-hover:shadow-xl group-hover:border-primary/20 transition-all duration-300">
+                      <div className={`absolute -inset-1 bg-gradient-to-r ${idx === 0 ? 'from-primary to-indigo-500' : 'from-slate-100 to-slate-200'} rounded-[2.5rem] blur opacity-10 group-hover:opacity-30 transition duration-1000 group-hover:duration-200`}></div>
+                      <div className="relative p-6 sm:p-8 bg-white border border-slate-100 rounded-[3rem] flex items-center gap-8 shadow-sm group-hover:shadow-xl group-hover:border-primary/20 transition-all duration-300">
                         {/* Time Box */}
-                        <div className={`flex-shrink-0 w-24 h-24 rounded-[2rem] flex flex-col items-center justify-center font-black ${idx === 0 ? 'bg-primary text-white shadow-xl shadow-primary/30' : 'bg-slate-50 text-slate-400 border border-slate-100'}`}>
+                        <div className={`shrink-0 w-24 h-24 rounded-[2rem] flex flex-col items-center justify-center font-black shadow-inner whitespace-nowrap ${idx === 0 ? 'bg-primary text-white shadow-primary/20' : 'bg-slate-50 text-slate-400 border border-slate-100'}`}>
                           <div className="text-2xl leading-none">{appt.timeSlot?.split(' ')[0] || appt.timeSlot}</div>
                           <div className="text-[10px] uppercase tracking-widest opacity-70 mt-1">{appt.timeSlot?.includes(' ') ? appt.timeSlot.split(' ')[1] : '--'}</div>
                         </div>
                         
                         {/* Patient Details */}
-                        <div className="flex-1 text-center sm:text-left min-w-0 py-2">
-                          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mb-2">
+                        <div className="flex-1 min-w-0 pr-4">
+                          <div className="flex flex-wrap items-center gap-3 mb-2">
                             <h4 className="text-xl font-black text-slate-900 truncate tracking-tight">{appt.patient?.name}</h4>
                             <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] ${appt.consultationType === 'ONLINE' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}`}>
                               {appt.consultationType}
                             </span>
                           </div>
                           
-                          <div className="flex items-center justify-center sm:justify-start gap-2 text-slate-500 mb-5">
+                          <div className="flex items-center gap-2 text-slate-500 mb-5">
                             <div className="p-1 bg-slate-100 rounded-lg"><Clock size={12} className="text-slate-400" /></div>
                             <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Clinical Session Authorized</p>
                           </div>
                           
-                          <div className="flex items-center justify-center sm:justify-start gap-4">
+                          <div className="flex items-center gap-6">
                              <div className="flex -space-x-2.5">
                                 {[1,2,3].map(i => (
                                   <div key={i} className="w-8 h-8 rounded-xl border-2 border-white bg-slate-100 text-[10px] flex items-center justify-center font-black text-slate-400 shadow-sm">
@@ -297,8 +297,8 @@ const DoctorDashboard = () => {
                         </div>
                         
                         {/* Action Terminal */}
-                        <div className="flex-shrink-0 pt-6 sm:pt-0 sm:pl-8 sm:border-l border-slate-100 flex flex-col items-center gap-3 w-full sm:w-auto">
-                           <button className="w-full sm:w-auto px-8 py-4 bg-slate-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.25em] hover:bg-primary hover:scale-105 transition-all shadow-xl active:scale-95 whitespace-nowrap">
+                        <div className="shrink-0 pl-10 border-l border-slate-100 flex flex-col items-center gap-4">
+                           <button className="w-full sm:w-auto px-10 py-4 bg-slate-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.25em] hover:bg-primary transition-all shadow-xl active:scale-95 whitespace-nowrap">
                               Open File
                            </button>
                            {idx === 0 && (
