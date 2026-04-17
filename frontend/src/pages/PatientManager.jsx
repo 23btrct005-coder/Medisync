@@ -567,6 +567,15 @@ const PatientManager = () => {
         jsonData={summaryModal.jsonData}
         legacyReasoning={summaryModal.legacyReasoning}
       />
+
+      <ReportPreviewModal 
+        isOpen={previewData.isOpen}
+        onClose={closePreview}
+        reportUrl={previewData.url}
+        reportName={previewData.name}
+        fileType={previewData.type}
+        onDownload={() => handleDownload(previewData.id, previewData.name)}
+      />
     </div>
   );
 };

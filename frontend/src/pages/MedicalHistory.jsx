@@ -5,8 +5,10 @@ import {
   RefreshCw, Search
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import MedicalTimeline from '../components/MedicalTimeline';
 import AiSummaryModal from '../components/AiSummaryModal';
+import ReportPreviewModal from '../components/ReportPreviewModal';
 
 const MedicalHistory = () => {
     const [records, setRecords] = useState([]);
@@ -22,6 +24,13 @@ const MedicalHistory = () => {
       jsonData: null,
       legacyReasoning: null,
       reportId: null
+    });
+    const [downloadingId, setDownloadingId] = useState(null);
+    const [previewData, setPreviewData] = useState({
+        isOpen: false,
+        url: null,
+        name: '',
+        type: ''
     });
     const navigate = useNavigate();
 
@@ -39,6 +48,49 @@ const MedicalHistory = () => {
         }, 30000);
         return () => clearInterval(timer);
     }, [lastSyncTime]);
+
+    const handlePreviewReport = async (report) => {
+        setDownloadingId(report.id);
+        try {
+            const res = await api.get(`reports/download/${report.id}`, { responseType: 'blob' });
+            const url = window.URL.createObjectURL(new Blob([res.data], { type: report.fileType }));
+            setPreviewData({
+                isOpen: true,
+                url,
+                name: report.fileName,
+                type: report.fileType
+            });
+        } catch (error) {
+            console.error("Preview failed", error);
+            toast.error("Failed to load clinical preview.");
+        } finally {
+            setDownloadingId(null);
+        }
+    };
+
+    const closePreview = () => {
+        if (previewData.url) window.URL.revokeObjectURL(previewData.url);
+        setPreviewData({ ...previewData, isOpen: false, url: null });
+    };
+
+    const handleDownload = async (id, fileName) => {
+        setDownloadingId(id);
+        try {
+            const res = await api.get(`reports/download/${id}`, { responseType: 'blob' });
+            const url = window.URL.createObjectURL(new Blob([res.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', fileName);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            console.error("Download failed", error);
+            toast.error("Failed to download clinical record.");
+        } finally {
+            setDownloadingId(null);
+        }
+    };
 
     const fetchAllData = async () => {
         setLoading(true);
@@ -168,7 +220,7 @@ const MedicalHistory = () => {
                 ) : viewMode === 'timeline' ? (
                     <MedicalTimeline 
                       events={allEvents} 
-                      onPreviewReport={(rep) => navigate(`/dashboard/reports`)} 
+                      onPreviewReport={handlePreviewReport} 
                       onViewAiSummary={(ev) => setSummaryModal({
                         isOpen: true,
                         jsonData: ev.aiSummary || ev.diagnosis,
@@ -191,6 +243,15 @@ const MedicalHistory = () => {
               jsonData={summaryModal.jsonData}
               legacyReasoning={summaryModal.legacyReasoning}
               reportId={summaryModal.reportId}
+            />
+
+            <ReportPreviewModal 
+              isOpen={previewData.isOpen}
+              onClose={closePreview}
+              reportUrl={previewData.url}
+              reportName={previewData.name}
+              fileType={previewData.type}
+              onDownload={() => handleDownload(reports.find(r => r.fileName === previewData.name)?.id || downloadingId, previewData.name)}
             />
         </div>
     );
