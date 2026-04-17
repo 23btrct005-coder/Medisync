@@ -27,7 +27,7 @@ public class PrescriptionService {
     }
 
     public Prescription createPrescription(String doctorUsername, Long patientId, Prescription prescriptionData) {
-        Doctor doctor = doctorRepository.findByUserEmail(doctorUsername)
+        Doctor doctor = doctorRepository.findByEmail(doctorUsername)
                 .orElseThrow(() -> new RuntimeException("Doctor not found"));
         
         Patient patient = patientRepository.findById(patientId)
@@ -68,7 +68,7 @@ public class PrescriptionService {
     }
 
     public List<Prescription> getMyPrescriptions(String patientEmail) {
-        Patient patient = patientRepository.findByEmail(patientEmail);
+        Patient patient = patientRepository.findByEmail(patientEmail).orElse(null);
         if (patient == null) return List.of();
         return prescriptionRepository.findByPatientIdOrderByCreatedAtDesc(patient.getId());
     }

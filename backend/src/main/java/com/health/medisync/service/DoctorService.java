@@ -120,7 +120,7 @@ public class DoctorService {
 
     public MedicalRecord addMedicalRecord(String doctorUsername, Long patientId, MedicalRecordRequest request) {
         Doctor doctor = getDoctorProfile(doctorUsername);
-        Patient patient = getPatientById(patientId);
+        Patient patient = getPatientById(doctorUsername, patientId);
 
         MedicalRecord record = new MedicalRecord();
         record.setPatient(patient);
