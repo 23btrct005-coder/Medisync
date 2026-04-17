@@ -197,14 +197,14 @@ const Booking = () => {
                          <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
                             <MapPin className="text-emerald-400 mx-auto mb-1" size={20} />
                             <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black">Location</p>
-                            <p className="text-sm font-bold truncate px-2">{selectedDoctor.hospitalName || 'Remote'}</p>
+                            <p className="text-sm font-bold truncate px-2">{selectedDoctor.hospital || 'Remote'}</p>
                          </div>
                       </div>
 
                       <div className="w-full space-y-3">
                          <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
                             <span className="text-xs font-medium text-slate-400 italic">Experience</span>
-                            <span className="text-xs font-black uppercase tracking-widest underline decoration-primary decoration-2">{selectedDoctor.experience || '8+ Years'}</span>
+                            <span className="text-xs font-black uppercase tracking-widest underline decoration-primary decoration-2">{selectedDoctor.yearsOfExperience || '8+'} Years</span>
                          </div>
                       </div>
                    </div>
@@ -333,7 +333,7 @@ const DoctorCard = ({ doctor, onSelect }) => (
     <div className="space-y-4 mb-8">
        <div className="flex items-center gap-3 text-slate-500 text-xs font-medium">
           <MapPin size={14} className="text-slate-400" />
-          <span className="truncate">{doctor.hospitalName || "MediSync Care Center"}</span>
+          <span className="truncate">{doctor.hospital || "MediSync Care Center"}</span>
        </div>
        <div className="flex items-center gap-4">
           <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
