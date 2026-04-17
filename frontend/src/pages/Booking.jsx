@@ -23,6 +23,7 @@ const Booking = () => {
   const [consultationType, setConsultationType] = useState('ONLINE');
   const [isBooking, setIsBooking] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const [bookingStep, setBookingStep] = useState('list'); // 'list' | 'slots' | 'confirm'
 
   useEffect(() => {
@@ -127,33 +128,57 @@ const Booking = () => {
             className="space-y-8"
           >
             {/* Search & Filter Hub */}
-            <div className="glass-panel p-6 flex flex-col lg:flex-row gap-4 items-center bg-white/70 backdrop-blur-md border-slate-200/60 sticky top-4 z-40">
-              <div className="relative flex-1 w-full group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={20} />
-                <input 
-                  type="text" 
-                  placeholder="Search by name, specialty, or hospital..." 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-primary/30 focus:bg-white outline-none transition-all font-medium text-slate-700 placeholder:text-slate-400"
-                />
+            <div className="glass-panel p-6 space-y-4 bg-white/70 backdrop-blur-md border-slate-200/60 sticky top-4 z-40 shadow-sm">
+              <div className="flex flex-col lg:flex-row gap-4 items-center">
+                <div className="relative flex-1 w-full group">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={20} />
+                  <input 
+                    type="text" 
+                    placeholder="Search by name, specialty, or hospital..." 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-primary/30 focus:bg-white outline-none transition-all font-medium text-slate-700 placeholder:text-slate-400"
+                  />
+                </div>
+                <button 
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`flex items-center gap-2 px-6 py-4 rounded-xl border-2 font-black uppercase tracking-widest text-[10px] sm:text-xs transition-all whitespace-nowrap ${
+                    showFilters || filterSpecialty !== 'All' 
+                    ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' 
+                    : 'bg-white border-slate-100 text-slate-500 hover:border-primary/20 hover:text-primary'
+                  }`}
+                >
+                   <Filter size={18} />
+                   {filterSpecialty !== 'All' ? filterSpecialty : 'Filter By Specialty'}
+                </button>
               </div>
-              <div className="flex items-center gap-2 w-full lg:w-auto overflow-x-auto pb-2 lg:pb-0 scrollbar-hide">
-                 <Filter size={18} className="text-slate-400 mr-2 shrink-0" />
-                 {specialties.map(s => (
-                   <button 
-                    key={s}
-                    onClick={() => setFilterSpecialty(s)}
-                    className={`px-6 py-3 rounded-xl border-2 text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all ${
-                      filterSpecialty === s 
-                      ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20 scale-105' 
-                      : 'bg-white border-slate-100 text-slate-500 hover:border-primary/20 hover:text-primary'
-                    }`}
-                   >
-                     {s}
-                   </button>
-                 ))}
-              </div>
+
+              <AnimatePresence>
+                {showFilters && (
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide pt-2">
+                      {specialties.map(s => (
+                        <button 
+                          key={s}
+                          onClick={() => { setFilterSpecialty(s); setShowFilters(false); }}
+                          className={`px-6 py-3 rounded-xl border-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${
+                            filterSpecialty === s 
+                            ? 'bg-primary/10 border-primary text-primary' 
+                            : 'bg-white border-slate-50 text-slate-400 hover:border-slate-200 hover:text-slate-600'
+                          }`}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Doctor Grid */}
