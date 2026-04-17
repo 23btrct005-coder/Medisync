@@ -15,10 +15,10 @@ const BottomNav = () => {
         : `${api.defaults.baseURL}/auth/patient/photo/${user.id}`;
 
     const patientNav = [
-        { name: 'Home', path: '/', icon: <LayoutDashboard size={20} /> },
-        { name: 'Records', path: '/records', icon: <ClipboardList size={20} /> },
-        { name: 'Reports', path: '/reports', icon: <FileText size={20} /> },
-        { name: 'Profile', path: '/profile', icon: null }
+        { name: 'Home', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
+        { name: 'Records', path: '/dashboard/records', icon: <ClipboardList size={20} /> },
+        { name: 'Reports', path: '/dashboard/reports', icon: <FileText size={20} /> },
+        { name: 'Profile', path: '/dashboard/profile', icon: null }
     ];
 
     const doctorNav = [
