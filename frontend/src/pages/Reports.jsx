@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import api from '../api/axiosConfig';
+import { 
+    Download, FileText, Loader2, UploadCloud, Camera, X, Trash2,
     Sparkles, Eye, MessageSquare, Clock, Filter, CheckCircle2, AlertCircle, Search,
     RefreshCw
 } from 'lucide-react';

@@ -531,7 +531,6 @@ const PatientManager = () => {
              <MedicalTimeline events={clinicalTimeline} />
           </div>
         )}
-      </div>
 
       {/* ── Patient Reports & AI Summaries ── */}
       <div>
