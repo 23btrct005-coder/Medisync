@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api from '../api/axiosConfig';
 import { 
   LayoutList, History, Loader2, Plus, Download, ChevronRight,
-  RefreshCw
+  RefreshCw, Search
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import MedicalTimeline from '../components/MedicalTimeline';
