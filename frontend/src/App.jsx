@@ -9,6 +9,7 @@ import AdminLayout from './layouts/AdminLayout';
 
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Landing from './pages/Landing';
 import DoctorLogin from './pages/DoctorLogin';
 import Dashboard from './pages/Dashboard';
 import MedicalHistory from './pages/MedicalHistory';
@@ -71,8 +72,10 @@ function App() {
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/ai-disclaimer" element={<AIDisclaimer />} />
               
+              <Route path="/" element={<Landing />} />
+              
               {/* Patient Routes */}
-              <Route path="/" element={
+              <Route path="/dashboard" element={
                 <ProtectedRoute allowedRole="ROLE_PATIENT">
                   <DashboardLayout />
                 </ProtectedRoute>

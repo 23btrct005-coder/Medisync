@@ -32,7 +32,7 @@ const Login = () => {
       } else if (result.role === 'ROLE_DOCTOR') {
         navigate('/doctor-dashboard');
       } else {
-        navigate('/');
+        navigate('/dashboard');
       }
     } else {
       setError(result.message);

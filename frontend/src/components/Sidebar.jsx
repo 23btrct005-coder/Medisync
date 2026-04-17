@@ -21,7 +21,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         api.get('reports').catch(() => {});
       } else if (path === '/records') {
         api.get('records/my-records').catch(() => {});
-      } else if (path === '/') {
+      } else if (path === '/dashboard') {
         api.get('records/my-records').catch(() => {});
         api.get('patient/requests').catch(() => {});
       }
@@ -31,7 +31,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   };
 
   const navItems = [
-    { name: 'Dashboard', path: '/', icon: <LayoutDashboard size={20} /> },
+    { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
     { name: 'Medical Records', path: '/records', icon: <ClipboardList size={20} /> },
     { name: 'Reports', path: '/reports', icon: <FileText size={20} /> },
     { name: 'My Sessions', path: '/sessions', icon: <Calendar size={20} /> },
@@ -70,7 +70,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           <NavLink
             key={item.name}
             to={item.path}
-            end={item.path === '/'}
+            end={item.path === '/dashboard'}
             onMouseEnter={() => prefetchData(item.path)}
             className={({ isActive }) =>
               `flex items-center px-4 py-3 rounded-lg transition-all duration-200 ${
