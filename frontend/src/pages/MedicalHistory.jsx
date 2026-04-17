@@ -20,7 +20,8 @@ const MedicalHistory = () => {
     const [summaryModal, setSummaryModal] = useState({
       isOpen: false,
       jsonData: null,
-      legacyReasoning: null
+      legacyReasoning: null,
+      reportId: null
     });
     const navigate = useNavigate();
 
@@ -171,7 +172,8 @@ const MedicalHistory = () => {
                       onViewAiSummary={(ev) => setSummaryModal({
                         isOpen: true,
                         jsonData: ev.aiSummary || ev.diagnosis,
-                        legacyReasoning: ev.clinicalReasoning
+                        legacyReasoning: ev.clinicalReasoning,
+                        reportId: ev.id
                       })}
                     />
                 ) : (
@@ -188,6 +190,7 @@ const MedicalHistory = () => {
               onClose={() => setSummaryModal({ ...summaryModal, isOpen: false })}
               jsonData={summaryModal.jsonData}
               legacyReasoning={summaryModal.legacyReasoning}
+              reportId={summaryModal.reportId}
             />
         </div>
     );

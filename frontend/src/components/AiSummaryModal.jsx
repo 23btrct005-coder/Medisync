@@ -1,9 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { X, Sparkles } from 'lucide-react';
 import StructuredAiReport from './StructuredAiReport';
+import api from '../api/axiosConfig';
 
-const AiSummaryModal = ({ isOpen, onClose, jsonData, legacyReasoning }) => {
+const AiSummaryModal = ({ isOpen, onClose, jsonData, legacyReasoning, reportId }) => {
+  const [liveJson, setLiveJson] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
   if (!isOpen) return null;
+
+  // Always prefer liveJson (from re-analysis) over the original stored data
+  const activeJson = liveJson || jsonData;
+
+  const handleAnalyzeNow = async () => {
+    if (!reportId || isAnalyzing) return;
+    setIsAnalyzing(true);
+    try {
+      const res = await api.post(`reports/${reportId}/reanalyze`);
+      setLiveJson(res.data.aiSummary);
+    } catch (e) {
+      console.error('Re-analyze from modal failed:', e);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -34,7 +54,13 @@ const AiSummaryModal = ({ isOpen, onClose, jsonData, legacyReasoning }) => {
         </div>
 
         <div className="p-8 max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
-           <StructuredAiReport jsonData={jsonData} legacyReasoning={legacyReasoning} />
+           <StructuredAiReport 
+             jsonData={activeJson} 
+             legacyReasoning={legacyReasoning}
+             reportId={reportId}
+             onAnalyzeNow={handleAnalyzeNow}
+             isAnalyzing={isAnalyzing}
+           />
         </div>
 
         <div className="p-6 bg-slate-50 border-t border-slate-100 text-center">

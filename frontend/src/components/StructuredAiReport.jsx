@@ -1,9 +1,10 @@
 import { 
   User, Clipboard, AlertTriangle, Pill, Calendar, 
-  CheckCircle2, Info, Activity, ShieldAlert, Zap
+  CheckCircle2, Info, Activity, ShieldAlert, Zap,
+  RefreshCw, Loader2, BrainCircuit
 } from 'lucide-react';
 
-const StructuredAiReport = ({ jsonData, legacyReasoning }) => {
+const StructuredAiReport = ({ jsonData, legacyReasoning, reportId, onAnalyzeNow, isAnalyzing }) => {
   let report = null;
   let isJson = false;
 
@@ -26,27 +27,53 @@ const StructuredAiReport = ({ jsonData, legacyReasoning }) => {
   };
 
   if (!isJson || !report) {
-    const combinedLegacy = [
-        ...textToBullets(jsonData),
-        ...(legacyReasoning && !legacyReasoning.includes('AI Model:') ? textToBullets(legacyReasoning) : [])
-    ];
-
+    // Legacy / non-JSON data — show a premium CTA to generate structured analysis
     return (
-      <div className="p-8 bg-slate-50 border-2 border-dashed border-slate-100 rounded-[2.5rem]">
-        <div className="flex items-center gap-2 mb-4">
-           <Zap size={14} className="text-primary" />
-           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Consolidated Clinical Brief</span>
+      <div className="py-6 flex flex-col items-center text-center gap-6">
+        {/* Icon */}
+        <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-900 to-slate-700 flex items-center justify-center shadow-2xl shadow-slate-300">
+          <BrainCircuit size={38} className="text-white" />
         </div>
-        <ul className="space-y-3">
-          {combinedLegacy.length > 0 ? combinedLegacy.map((item, idx) => (
-            <li key={idx} className="flex items-start gap-3 text-left">
-              <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-              <span className="text-sm font-bold text-slate-700 leading-relaxed">{item}.</span>
-            </li>
-          )) : (
-            <p className="text-xs font-bold text-slate-400 italic">Analysis pending review...</p>
-          )}
-        </ul>
+
+        <div className="space-y-2 max-w-sm">
+          <h3 className="text-xl font-black text-slate-900 tracking-tight">
+            Structured Analysis Not Available
+          </h3>
+          <p className="text-sm text-slate-500 font-medium leading-relaxed">
+            This report was analyzed before the structured intelligence engine was available. 
+            Run a fresh analysis to unlock the full diagnostic briefing.
+          </p>
+        </div>
+
+        {/* Feature preview chips */}
+        <div className="flex flex-wrap gap-2 justify-center">
+          {['Patient Info', 'Key Findings', 'Treatment Plan', 'Follow-up', 'Confidence Score'].map(f => (
+            <span key={f} className="px-3 py-1.5 bg-slate-50 border border-slate-100 text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-full">
+              {f}
+            </span>
+          ))}
+        </div>
+
+        {/* CTA Button */}
+        {onAnalyzeNow && (
+          <button
+            onClick={onAnalyzeNow}
+            disabled={isAnalyzing}
+            className="flex items-center gap-3 px-8 py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-slate-200 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isAnalyzing ? (
+              <><Loader2 size={18} className="animate-spin" /> Generating Analysis...</>
+            ) : (
+              <><RefreshCw size={18} /> Generate Structured Analysis</>
+            )}
+          </button>
+        )}
+
+        {isAnalyzing && (
+          <p className="text-xs text-slate-400 font-bold animate-pulse">
+            AI is reading the document... this may take 10–20 seconds.
+          </p>
+        )}
       </div>
     );
   }
