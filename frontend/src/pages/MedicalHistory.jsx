@@ -10,6 +10,7 @@ import MedicalTimeline from '../components/MedicalTimeline';
 const MedicalHistory = () => {
     const [records, setRecords] = useState([]);
     const [prescriptions, setPrescriptions] = useState([]);
+    const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState('timeline'); // 'timeline' or 'list'
     const [searchTerm, setSearchTerm] = useState('');
@@ -35,12 +36,14 @@ const MedicalHistory = () => {
     const fetchAllData = async () => {
         setLoading(true);
         try {
-            const [recordsRes, prescriptionsRes] = await Promise.all([
+            const [recordsRes, prescriptionsRes, reportsRes] = await Promise.all([
                 api.get('records/my-records'),
-                api.get('prescriptions/my')
+                api.get('prescriptions/my'),
+                api.get('reports/my-reports')
             ]);
             setRecords(recordsRes.data || []);
             setPrescriptions(prescriptionsRes.data || []);
+            setReports(reportsRes.data || []);
         } catch (err) {
             console.error("Failed to fetch clinical data", err);
         } finally {
@@ -69,8 +72,9 @@ const MedicalHistory = () => {
 
     // Merge and sort for timeline
     const allEvents = [
-        ...(records || []).map(r => ({ ...r, type: 'RECORD', timestamp: r.date ? new Date(r.date) : new Date(0) })),
-        ...(prescriptions || []).map(p => ({ ...p, type: 'PRESCRIPTION', timestamp: p.createdAt ? new Date(p.createdAt) : new Date(0) }))
+        ...(records || []).map(r => ({ ...r, type: 'CONSULTATION', timestamp: r.date ? new Date(r.date) : new Date(0) })),
+        ...(prescriptions || []).map(p => ({ ...p, type: 'PRESCRIPTION', timestamp: p.createdAt ? new Date(p.createdAt) : new Date(0) })),
+        ...(reports || []).map(r => ({ ...r, type: 'REPORT', timestamp: r.uploadDate ? new Date(r.uploadDate) : (r.createdAt ? new Date(r.createdAt) : new Date(0)) }))
     ].sort((a, b) => b.timestamp - a.timestamp);
 
     const filteredEvents = allEvents.filter(e => {
@@ -126,22 +130,17 @@ const MedicalHistory = () => {
             </div>
         </div>
 
-            {/* Filter & Search Bar */}
-            <div className="glass-panel p-4 flex flex-col md:flex-row gap-4 items-center">
-                <div className="relative flex-1 group w-full">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={18} />
-                    <input 
-                        type="text" 
-                        placeholder="Search by diagnosis, physician, or symptoms..." 
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="input-premium pl-12"
-                    />
+            {/* Actions Bar */}
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                   <div className="py-1 px-3 bg-indigo-50 text-indigo-700 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                      Live Clinical Stream
+                   </div>
                 </div>
-                <div className="flex gap-2 w-full md:w-auto">
-                    <button onClick={handleExport} className="flex-1 md:flex-none btn-premium bg-white border border-slate-200 text-slate-600 shadow-sm hover:bg-slate-50">
-                        <Download size={18} />
-                        Export Data
+                <div className="flex gap-2">
+                    <button onClick={handleExport} className="btn-premium py-2 px-4 bg-white border border-slate-200 text-slate-600 shadow-sm hover:bg-slate-50 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
+                        <Download size={14} />
+                        Export Archive
                     </button>
                 </div>
             </div>
@@ -153,17 +152,20 @@ const MedicalHistory = () => {
                         <Loader2 className="text-primary animate-spin" size={48} />
                         <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Decrypting Clinical Data...</p>
                     </div>
-                ) : filteredEvents.length === 0 ? (
+                ) : allEvents.length === 0 ? (
                     <div className="text-center py-32 glass-panel border-dashed bg-slate-50/50">
-                        <ClipboardList className="mx-auto text-slate-200 mb-4" size={64} />
+                        <History className="mx-auto text-slate-200 mb-4" size={64} />
                         <h3 className="text-xl font-bold text-slate-800">No records found</h3>
                         <p className="text-slate-500 mt-2">Adjust your filters or add a new record to get started.</p>
                     </div>
                 ) : viewMode === 'timeline' ? (
-                    <MedicalTimeline events={filteredEvents} />
+                    <MedicalTimeline 
+                      events={allEvents} 
+                      onPreviewReport={(rep) => navigate(`/dashboard/reports`)} 
+                    />
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {filteredEvents.map(event => (
+                        {allEvents.map(event => (
                             <ListCard key={event.id + event.type} record={event} />
                         ))}
                     </div>

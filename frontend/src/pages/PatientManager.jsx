@@ -296,10 +296,11 @@ const PatientManager = () => {
     }
   };
 
-  // Merge records and prescriptions for the chronological pulse
+  // Merge records, prescriptions and reports for the chronological pulse
   const clinicalTimeline = [
-    ...(records || []).map(r => ({ ...r, type: 'RECORD', timestamp: r.date ? new Date(r.date) : new Date(0) })),
-    ...(prescriptions || []).map(p => ({ ...p, type: 'PRESCRIPTION', timestamp: p.createdAt ? new Date(p.createdAt) : new Date(0) }))
+    ...(records || []).map(r => ({ ...r, type: 'CONSULTATION', timestamp: r.date ? new Date(r.date) : new Date(0) })),
+    ...(prescriptions || []).map(p => ({ ...p, type: 'PRESCRIPTION', timestamp: p.createdAt ? new Date(p.createdAt) : new Date(0) })),
+    ...(reports || []).map(r => ({ ...r, type: 'REPORT', timestamp: r.uploadDate ? new Date(r.uploadDate) : (r.createdAt ? new Date(r.createdAt) : new Date(0)) }))
   ].sort((a, b) => b.timestamp - a.timestamp);
 
   const fetchReports = async () => {
@@ -536,9 +537,11 @@ const PatientManager = () => {
           <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-400 font-medium italic">
             No clinical history pulse recorded for this subject.
           </div>
-        ) : (
           <div className="bg-slate-50/50 rounded-[3rem] p-8 border border-slate-100 shadow-inner">
-             <MedicalTimeline events={clinicalTimeline} />
+             <MedicalTimeline 
+              events={clinicalTimeline} 
+              onPreviewReport={(rep) => handlePreview(rep)}
+             />
           </div>
         )}
 
