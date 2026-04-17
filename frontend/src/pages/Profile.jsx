@@ -72,7 +72,7 @@ const Profile = () => {
           <p className="text-slate-500 text-sm mt-1">Your personal and medical information on MEDISYNC</p>
         </div>
         <button 
-          onClick={() => navigate('/profile/edit')}
+          onClick={() => navigate('/dashboard/profile/edit')}
           className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 font-bold px-6 py-3 rounded-2xl hover:bg-slate-50 transition shadow-sm active:scale-95"
         >
           <Edit3 size={18} className="text-primary-600" />

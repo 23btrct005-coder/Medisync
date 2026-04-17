@@ -127,7 +127,7 @@ const Dashboard = () => {
             </div>
             
             <div className="hidden lg:block">
-              <div onClick={() => navigate('/profile')} className="cursor-pointer">
+              <div onClick={() => navigate('/dashboard/profile')} className="cursor-pointer">
                  <HealthSyncScore user={user} />
               </div>
             </div>
@@ -162,7 +162,7 @@ const Dashboard = () => {
               icon={UserCheck} 
               color="purple"
               trend="Certified"
-              onClick={() => navigate('/doctors')}
+              onClick={() => navigate('/dashboard/doctors')}
             />
             <StatCard 
               title="System Integrity" 
@@ -222,7 +222,7 @@ const Dashboard = () => {
                 </div>
                 <p className="text-xs text-slate-500 font-medium">Add a self-reported record or upcoming appointment details.</p>
                 <div className="flex gap-2">
-                   <button onClick={() => navigate('/reports')} className="flex-1 btn-premium bg-slate-900 text-white hover:bg-slate-800 text-xs">Report Detail</button>
+                   <button onClick={() => navigate('/dashboard/reports')} className="flex-1 btn-premium bg-slate-900 text-white hover:bg-slate-800 text-xs">Report Detail</button>
                    <button onClick={() => setShowBooking(true)} className="btn-premium bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-100 text-xs">Book Clinic</button>
                 </div>
             </div>

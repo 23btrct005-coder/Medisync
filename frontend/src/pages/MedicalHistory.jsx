@@ -74,7 +74,7 @@ const MedicalHistory = () => {
                             <LayoutList size={20} />
                         </button>
                     </div>
-                    <button onClick={() => navigate('/reports')} className="btn-premium bg-primary text-white">
+                    <button onClick={() => navigate('/dashboard/reports')} className="btn-premium bg-primary text-white">
                         <Plus size={18} />
                         Add Record
                     </button>

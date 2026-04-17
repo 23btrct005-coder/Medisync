@@ -17,9 +17,9 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   // Pre-fetch logic to make the app feel instant
   const prefetchData = (path) => {
     try {
-      if (path === '/reports') {
+      if (path === '/dashboard/reports') {
         api.get('reports').catch(() => {});
-      } else if (path === '/records') {
+      } else if (path === '/dashboard/records') {
         api.get('records/my-records').catch(() => {});
       } else if (path === '/dashboard') {
         api.get('records/my-records').catch(() => {});
@@ -32,13 +32,13 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
-    { name: 'Medical Records', path: '/records', icon: <ClipboardList size={20} /> },
-    { name: 'Reports', path: '/reports', icon: <FileText size={20} /> },
-    { name: 'My Sessions', path: '/sessions', icon: <Calendar size={20} /> },
-    { name: 'My Doctors', path: '/doctors', icon: <UserCheck size={20} /> },
+    { name: 'Medical Records', path: '/dashboard/records', icon: <ClipboardList size={20} /> },
+    { name: 'Reports', path: '/dashboard/reports', icon: <FileText size={20} /> },
+    { name: 'My Sessions', path: '/dashboard/sessions', icon: <Calendar size={20} /> },
+    { name: 'My Doctors', path: '/dashboard/doctors', icon: <UserCheck size={20} /> },
     { 
       name: 'My Profile', 
-      path: '/profile', 
+      path: '/dashboard/profile', 
       icon: (
         <div className="h-5 w-5 rounded-full overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center -ml-1 mr-1">
           {photoUrl ? (

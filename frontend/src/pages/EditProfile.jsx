@@ -126,7 +126,7 @@ const EditProfile = () => {
       await refreshUser();
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
       window.scrollTo(0, 0);
-      setTimeout(() => navigate('/profile'), 1500);
+      setTimeout(() => navigate('/dashboard/profile'), 1500);
     } catch (err) {
       setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to update profile.' });
     } finally {
@@ -143,7 +143,7 @@ const EditProfile = () => {
     <div className="max-w-4xl mx-auto space-y-8 pb-20">
       <div className="flex items-center justify-between">
         <div>
-          <button onClick={() => navigate('/profile')} className="flex items-center text-slate-500 hover:text-primary-600 transition-colors text-sm font-medium mb-2">
+          <button onClick={() => navigate('/dashboard/profile')} className="flex items-center text-slate-500 hover:text-primary-600 transition-colors text-sm font-medium mb-2">
             <ArrowLeft size={16} className="mr-1" /> Back to Profile
           </button>
           <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">Complete Your Profile</h2>
