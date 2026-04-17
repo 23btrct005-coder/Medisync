@@ -1,4 +1,4 @@
-/* DEPLOY_SYNC_STAMP: 2026-04-17-15:09 */
+/* DEPLOY_SYNC_STAMP: 2026-04-17-15:11 */
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
@@ -23,6 +23,7 @@ import DoctorDashboard from './pages/DoctorDashboard';
 import PatientDirectory from './pages/PatientDirectory';
 import PatientManager from './pages/PatientManager';
 import DoctorProfile from './pages/DoctorProfile';
+import DoctorAppointments from './pages/DoctorAppointments';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import EmergencyInfo from './pages/EmergencyInfo';
