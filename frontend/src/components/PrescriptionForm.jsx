@@ -132,17 +132,6 @@ const PrescriptionForm = ({ patient, onComplete }) => {
 
   return (
     <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-primary/10 text-primary rounded-2xl">
-            <FileText size={20} />
-          </div>
-          <div className="text-left">
-            <h3 className="text-xl font-black text-slate-900 tracking-tight">E-Prescription Terminal</h3>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Patient ID: {patient.id}</p>
-          </div>
-        </div>
-      </div>
 
       <div className="glass-panel p-6 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
