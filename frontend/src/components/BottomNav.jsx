@@ -1,10 +1,10 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, FileText, ClipboardList, User, Users } from 'lucide-react';
+import { LayoutDashboard, FileText, ClipboardList, User, Users, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
 
 const BottomNav = () => {
-    const { user, userRole } = useAuth();
+    const { user, userRole, logout } = useAuth();
     
     // Hide bottom nav if not logged in
     if (!user) return null;
@@ -31,7 +31,7 @@ const BottomNav = () => {
 
     return (
         <div className="md:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-xl border-t border-slate-200 px-6 py-2 pb-safe z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
-            <nav className="flex justify-between items-center max-w-md mx-auto">
+            <nav className="flex justify-between items-center max-w-lg mx-auto">
                 {navItems.map((item) => {
                     const isProfile = item.icon === null;
 
@@ -76,6 +76,15 @@ const BottomNav = () => {
                         </NavLink>
                     );
                 })}
+                
+                {/* Logout Button */}
+                <button
+                    onClick={logout}
+                    className="flex flex-col items-center gap-1 p-2 rounded-xl transition-all text-red-400 hover:text-red-500 hover:bg-red-50"
+                >
+                    <LogOut size={20} />
+                    <span className="text-[10px] font-bold tracking-wide">Logout</span>
+                </button>
             </nav>
         </div>
     );
