@@ -10,6 +10,7 @@ import {
 import toast from 'react-hot-toast';
 import ClinicalAlertBanner from '../components/ClinicalAlertBanner';
 import PrescriptionForm from '../components/PrescriptionForm';
+import ReportPreviewModal from '../components/ReportPreviewModal';
 
 // ── Reusable row for info display ──────────────────────────────────────────
 const InfoRow = ({ icon: Icon, label, value, color = 'text-primary-500' }) => (
@@ -216,6 +217,13 @@ const PatientManager = () => {
   const [recordError, setRecordError] = useState('');
   const [reportError, setReportError] = useState('');
 
+  const [previewData, setPreviewData] = useState({
+    isOpen: false,
+    url: null,
+    name: '',
+    type: ''
+  });
+
   useEffect(() => { fetchPatientDetails(); }, [id]);
 
   const fetchPatientDetails = async () => {
@@ -330,6 +338,30 @@ const PatientManager = () => {
     } finally {
       setSavingNotesId(null);
     }
+  };
+
+  const handlePreview = async (report) => {
+    setDownloadingId(report.id);
+    try {
+      const res = await api.get(`reports/download/${report.id}`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: report.fileType }));
+      setPreviewData({
+        isOpen: true,
+        url,
+        name: report.fileName,
+        type: report.fileType
+      });
+    } catch (error) {
+      console.error("Preview failed", error);
+      toast.error("Failed to load clinical preview.");
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  const closePreview = () => {
+    if (previewData.url) window.URL.revokeObjectURL(previewData.url);
+    setPreviewData({ ...previewData, isOpen: false, url: null });
   };
 
   if (loading) return (
@@ -482,10 +514,15 @@ const PatientManager = () => {
                       {reanalyzingId === r.id ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}
                       {reanalyzingId === r.id ? 'Analyzing...' : 'Re-analyze AI'}
                     </button>
+                    <button onClick={() => handlePreview(r)} disabled={downloadingId === r.id}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-indigo-200 text-indigo-600 rounded-xl text-xs font-bold hover:bg-indigo-50 transition disabled:opacity-50">
+                      {downloadingId === r.id ? <Loader2 size={14} className="animate-spin" /> : <Eye size={14} />}
+                      Preview
+                    </button>
                     <button onClick={() => handleDownload(r.id, r.fileName)} disabled={downloadingId === r.id}
                       className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-indigo-200 text-indigo-600 rounded-xl text-xs font-bold hover:bg-indigo-50 transition disabled:opacity-50">
                       {downloadingId === r.id ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
-                      {downloadingId === r.id ? 'Download' : 'Download'}
+                      Download
                     </button>
                   </div>
                 </div>
@@ -561,6 +598,14 @@ const PatientManager = () => {
           </div>
         )}
       </div>
+      <ReportPreviewModal 
+        isOpen={previewData.isOpen}
+        onClose={closePreview}
+        reportUrl={previewData.url}
+        reportName={previewData.name}
+        fileType={previewData.type}
+        onDownload={() => handleDownload(previewData.id, previewData.name)}
+      />
     </div>
   );
 };

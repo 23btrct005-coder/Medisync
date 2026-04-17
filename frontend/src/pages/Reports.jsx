@@ -7,6 +7,7 @@ import {
 import toast from 'react-hot-toast';
 import AiChatSidebar from '../components/AiChatSidebar';
 import SkeletonCard from '../components/SkeletonCard';
+import ReportPreviewModal from '../components/ReportPreviewModal';
 
 const Reports = () => {
   const [reports, setReports] = useState([]);
@@ -24,6 +25,13 @@ const Reports = () => {
   const [selectedReport, setSelectedReport] = useState(null);
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+
+  const [previewData, setPreviewData] = useState({
+    isOpen: false,
+    url: null,
+    name: '',
+    type: ''
+  });
 
   useEffect(() => {
     fetchReports();
@@ -115,22 +123,28 @@ const Reports = () => {
     }
   };
 
-  const handleDownload = async (id, fileName) => {
-    setDownloadingId(id);
+  const handlePreview = async (report) => {
+    setDownloadingId(report.id);
     try {
-      const res = await api.get(`reports/download/${id}`, { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', fileName);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      const res = await api.get(`reports/download/${report.id}`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: report.fileType }));
+      setPreviewData({
+        isOpen: true,
+        url,
+        name: report.fileName,
+        type: report.fileType
+      });
     } catch (error) {
-      console.error("Download failed", error);
+      console.error("Preview failed", error);
+      toast.error("Failed to load clinical preview.");
     } finally {
       setDownloadingId(null);
     }
+  };
+
+  const closePreview = () => {
+    if (previewData.url) window.URL.revokeObjectURL(previewData.url);
+    setPreviewData({ ...previewData, isOpen: false, url: null });
   };
 
   const executeDelete = async (id) => {
@@ -255,11 +269,20 @@ const Reports = () => {
                   </div>
                   <div className="flex gap-1">
                     <button 
+                      onClick={() => handlePreview(report)}
+                      disabled={downloadingId === report.id}
+                      className="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-xl transition-all"
+                      title="Preview Document"
+                    >
+                      {downloadingId === report.id ? <Loader2 size={18} className="animate-spin" /> : <Eye size={18} />}
+                    </button>
+                    <button 
                       onClick={() => handleDownload(report.id, report.fileName)}
                       disabled={downloadingId === report.id}
                       className="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-xl transition-all"
+                      title="Download"
                     >
-                      {downloadingId === report.id ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+                      <Download size={18} />
                     </button>
                   </div>
                 </div>
@@ -325,6 +348,15 @@ const Reports = () => {
         isOpen={isAiOpen} 
         onClose={() => setIsAiOpen(false)} 
         reportData={selectedReport}
+      />
+
+      <ReportPreviewModal 
+        isOpen={previewData.isOpen}
+        onClose={closePreview}
+        reportUrl={previewData.url}
+        reportName={previewData.name}
+        fileType={previewData.type}
+        onDownload={() => handleDownload(reports.find(r => r.fileName === previewData.name)?.id, previewData.name)}
       />
     </div>
   );
