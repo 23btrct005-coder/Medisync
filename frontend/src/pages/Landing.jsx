@@ -135,7 +135,18 @@ const Landing = () => {
     </motion.div>
   );
 
-  if (loading) return null;
+  if (loading) return (
+    <div className="h-screen w-screen flex flex-col items-center justify-center bg-[#FAFAFE]">
+      <motion.div 
+        animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+        transition={{ repeat: Infinity, duration: 2 }}
+        className="p-6 bg-orange-100 text-orange-600 rounded-[2.5rem]"
+      >
+        <Activity size={64} />
+      </motion.div>
+      <p className="mt-8 text-xs font-black text-slate-400 uppercase tracking-[0.3em] animate-pulse">Synchronizing clinical nodes...</p>
+    </div>
+  );
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-[#FAFAFE] relative selection:bg-orange-200">
