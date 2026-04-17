@@ -45,7 +45,7 @@ const MedicalHistory = () => {
             const [recordsRes, prescriptionsRes, reportsRes] = await Promise.all([
                 api.get('records/my-records'),
                 api.get('prescriptions/my'),
-                api.get('reports/my-reports')
+                api.get('reports')
             ]);
             setRecords(recordsRes.data || []);
             setPrescriptions(prescriptionsRes.data || []);

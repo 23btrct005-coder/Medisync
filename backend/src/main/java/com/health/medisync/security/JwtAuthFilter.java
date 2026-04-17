@@ -48,24 +48,36 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
 
                 } else if (jwtUtils.validateToken(jwt)) {
-                    String username = jwtUtils.getUsernameFromToken(jwt);
-                    Long userId = jwtUtils.getUserIdFromToken(jwt);
-                    String role = jwtUtils.getRoleFromToken(jwt);
-                    
-                    // Set context for RLS
-                    UserContext.setContext(userId, role);
-                    
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    try {
+                        String username = jwtUtils.getUsernameFromToken(jwt);
+                        Long userId = jwtUtils.getUserIdFromToken(jwt);
+                        String role = jwtUtils.getRoleFromToken(jwt);
+                        
+                        // Set context for RLS early
+                        UserContext.setContext(userId, role);
+                        
+                        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    } catch (Exception e) {
+                        // If token is valid but user context is missing from DB (e.g. after a reset)
+                        // we must halt the chain and ask for re-authentication to prevent 500s later
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        response.setContentType("application/json");
+                        response.getWriter().write("{\"message\": \"Clinical session integrity lost. Please log in again.\"}");
+                        return;
+                    }
                 }
             }
             filterChain.doFilter(request, response);
         } catch (Exception e) {
-            // Cannot set user authentication
-            filterChain.doFilter(request, response);
+            // Unhandled filter exception
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"message\": \"A critical authentication fault occurred.\"}");
+            return;
         } finally {
             UserContext.clear();
         }

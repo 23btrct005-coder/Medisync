@@ -53,7 +53,7 @@ const Dashboard = () => {
 
   const fetchPatientData = async () => {
     try {
-        const res = await api.get('auth/patient/profile');
+        const res = await api.get('patient/profile');
         setPatient(res.data);
     } catch (e) { console.error(e); }
   };
