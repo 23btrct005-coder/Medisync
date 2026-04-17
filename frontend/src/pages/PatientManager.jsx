@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axiosConfig';
 import {
@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import ClinicalAlertBanner from '../components/ClinicalAlertBanner';
 import PrescriptionForm from '../components/PrescriptionForm';
 import ReportPreviewModal from '../components/ReportPreviewModal';
+import MedicalTimeline from '../components/MedicalTimeline';
 
 // ── Reusable row for info display ──────────────────────────────────────────
 const InfoRow = ({ icon: Icon, label, value, color = 'text-primary-500' }) => (

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import api from '../api/axiosConfig';
 import { 
     Download, FileText, Loader2, UploadCloud, Camera, X, Trash2,
