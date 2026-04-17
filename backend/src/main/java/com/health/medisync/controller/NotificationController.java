@@ -17,6 +17,27 @@ public class NotificationController {
     @Autowired
     private NotificationRepository notificationRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @PostMapping("/test")
+    public ResponseEntity<?> sendTestNotification(Authentication authentication) {
+        userRepository.findByUsernameIgnoreCase(authentication.getName()).ifPresent(user -> {
+            notificationService.sendNotification(
+                user.getId(),
+                "SYSTEM",
+                "Clinical Pulse Test",
+                "MediSync real-time telemetry link is active. Signal verified.",
+                "/dashboard",
+                "Verification Link"
+            );
+        });
+        return ResponseEntity.ok("Test Signal Transmitting...");
+    }
+
     @GetMapping
     public ResponseEntity<List<Notification>> getMyNotifications() {
         Long userId = UserContext.getCurrentUserId();
