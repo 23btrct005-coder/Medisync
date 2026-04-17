@@ -11,7 +11,24 @@ import LegalFooter from '../components/LegalFooter';
 
 const Landing = () => {
   const navigate = useNavigate();
-  const { user, userRole } = useAuth();
+  const { user, userRole, loading } = useAuth();
+  
+  React.useEffect(() => {
+    // If auth is already resolved and user is logged in, skip splash
+    if (!loading && user) {
+        const path = userRole === 'ROLE_DOCTOR' ? '/doctor-dashboard' : '/dashboard';
+        navigate(path);
+        return;
+    }
+
+    // Auto-redirect to login after 3.5 seconds of storytelling
+    const timer = setTimeout(() => {
+        if (!user) navigate('/login');
+    }, 3500);
+
+    return () => clearTimeout(timer);
+  }, [user, userRole, loading, navigate]);
+
   const { scrollYProgress } = useScroll();
   const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
   const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.95]);
@@ -127,13 +144,33 @@ const Landing = () => {
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
+            transition={{ delay: 0.5 }}
             className="mt-20 flex flex-wrap justify-center items-center gap-8 md:gap-16 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-700"
           >
-            <div className="flex items-center gap-2 font-black text-lg tracking-tighter uppercase"><ShieldCheck className="text-emerald-500" /> HIPAA Secure</div>
-            <div className="flex items-center gap-2 font-black text-lg tracking-tighter uppercase"><Smartphone className="text-blue-500" /> PWA Ready</div>
-            <div className="flex items-center gap-2 font-black text-lg tracking-tighter uppercase"><Layers className="text-orange-500" /> RLS Isolation</div>
+            <div className="flex items-center gap-2 font-black text-xs md:text-lg tracking-tighter uppercase"><ShieldCheck className="text-emerald-500" /> HIPAA Secure</div>
+            <div className="flex items-center gap-2 font-black text-xs md:text-lg tracking-tighter uppercase"><Smartphone className="text-blue-500" /> PWA Ready</div>
+            <div className="flex items-center gap-2 font-black text-xs md:text-lg tracking-tighter uppercase"><Layers className="text-orange-500" /> RLS Isolation</div>
           </motion.div>
+
+          {/* Redirection Notice */}
+          {!user && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 2 }}
+              className="mt-12 flex flex-col items-center gap-2"
+            >
+              <div className="w-48 h-1 bg-slate-100 rounded-full overflow-hidden">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: "100%" }}
+                  transition={{ duration: 1.5, ease: "linear" }}
+                  className="h-full bg-orange-500"
+                />
+              </div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Synchronizing your portal...</p>
+            </motion.div>
+          )}
         </div>
       </motion.section>
 
