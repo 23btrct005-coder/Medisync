@@ -299,15 +299,8 @@ const Reports = () => {
                 </div>
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="p-3 bg-red-50 text-red-600 rounded-2xl shadow-sm relative">
+                    <div className="p-3 bg-red-50 text-red-600 rounded-2xl shadow-sm">
                       <FileText size={24} />
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleDelete(report.id); }}
-                        disabled={deletingId === report.id}
-                        className="absolute -top-2 -right-2 p-1 bg-white border border-slate-200 rounded-full text-slate-400 hover:text-red-600 shadow-sm"
-                      >
-                         {deletingId === report.id ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />}
-                      </button>
                     </div>
                     <div className="min-w-0 text-left">
                       <h3 className="text-lg font-bold text-slate-800 truncate leading-tight">{report.fileName}</h3>
@@ -318,7 +311,7 @@ const Reports = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-1">
+                  <div className="flex gap-1 items-center">
                     <button 
                       onClick={() => handlePreview(report)}
                       disabled={downloadingId === report.id}
@@ -334,6 +327,17 @@ const Reports = () => {
                       title="Download"
                     >
                       <Download size={18} />
+                    </button>
+                    <div className="w-px h-5 bg-slate-200 mx-1" />
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleDelete(report.id); }}
+                      disabled={deletingId === report.id}
+                      className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                      title="Delete Report"
+                    >
+                      {deletingId === report.id 
+                        ? <Loader2 size={18} className="animate-spin text-red-400" /> 
+                        : <Trash2 size={18} />}
                     </button>
                   </div>
                 </div>
