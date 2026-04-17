@@ -5,7 +5,7 @@ import {
   ArrowLeft, User, Activity, FileText, PlusCircle, Calendar,
   Download, Loader2, Phone, MapPin, Heart, Droplet, ShieldCheck,
   Mail, Users, AlertCircle, ChevronDown, ChevronUp,
-  Briefcase, Zap, Info, Scissors, Pill, Stethoscope
+  Briefcase, Zap, Info, Scissors, Pill, Stethoscope, History
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ClinicalAlertBanner from '../components/ClinicalAlertBanner';
@@ -200,6 +200,7 @@ const PatientManager = () => {
 
   const [patient, setPatient] = useState(null);
   const [records, setRecords] = useState([]);
+  const [prescriptions, setPrescriptions] = useState([]);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -237,8 +238,9 @@ const PatientManager = () => {
       setPatient(patientRes.data);
       setLoading(false); // Display patient card as soon as possible
 
-      // Now fetch records and reports independently
+      // Now fetch records, prescriptions and reports independently
       fetchRecords();
+      fetchPrescriptions();
       fetchReports();
     } catch (err) {
       console.error('Error fetching patient profile', err);
@@ -259,6 +261,21 @@ const PatientManager = () => {
       setRecordsLoading(false);
     }
   };
+
+  const fetchPrescriptions = async () => {
+    try {
+      const res = await api.get(`prescriptions/doctor/patients/${id}`);
+      setPrescriptions(res.data || []);
+    } catch (err) {
+      console.error('Error fetching prescriptions', err);
+    }
+  };
+
+  // Merge records and prescriptions for the chronological pulse
+  const clinicalTimeline = [
+    ...(records || []).map(r => ({ ...r, type: 'RECORD', timestamp: r.date ? new Date(r.date) : new Date(0) })),
+    ...(prescriptions || []).map(p => ({ ...p, type: 'PRESCRIPTION', timestamp: p.createdAt ? new Date(p.createdAt) : new Date(0) }))
+  ].sort((a, b) => b.timestamp - a.timestamp);
 
   const fetchReports = async () => {
     setReportsLoading(true);
@@ -436,10 +453,13 @@ const PatientManager = () => {
         </div>
       )}
 
-      {/* ── Medical Records Timeline ── */}
-      <div>
-        <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-          <FileText size={20} className="text-primary-500" /> Clinical Records
+        <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <History size={20} className="text-primary-500" /> Clinical History Pulse
+          </div>
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+            {clinicalTimeline.length} Verified Events
+          </span>
         </h3>
         {recordsLoading ? (
             <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary-500" /></div>
@@ -447,36 +467,13 @@ const PatientManager = () => {
             <div className="bg-red-50 p-6 rounded-2xl border border-red-100 text-center text-red-600 font-medium">
                 {recordError}
             </div>
-        ) : records.length === 0 ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-400">
-            <FileText size={48} className="mx-auto text-slate-200 mb-3" />
-            <p className="font-medium">No clinical records yet.</p>
-            <p className="text-sm mt-1">Click "Add Record" to create the first entry.</p>
+        ) : clinicalTimeline.length === 0 ? (
+          <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-400 font-medium italic">
+            No clinical history pulse recorded for this subject.
           </div>
         ) : (
-          <div className="space-y-4">
-            {records.map(record => (
-              <div key={record.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-1 h-full bg-primary-500 rounded-l-full" />
-                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-bold rounded-full">{record.diagnosis}</span>
-                      <span className="text-sm text-slate-500 flex items-center gap-1">
-                        <Calendar size={14} /> {record.date ? new Date(record.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Pending Sync'}
-                      </span>
-                    </div>
-                    <p className="text-slate-700 mt-2 whitespace-pre-line leading-relaxed">{record.prescription}</p>
-                  </div>
-                  <div className="text-sm text-slate-400 md:text-right shrink-0">
-                    <p className="text-xs uppercase tracking-wide">Attending</p>
-                    <p className="font-semibold text-slate-700 flex items-center md:justify-end gap-1 mt-1">
-                      <User size={13} /> {record.doctorName}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="bg-slate-50/50 rounded-[3rem] p-8 border border-slate-100 shadow-inner">
+             <MedicalTimeline events={clinicalTimeline} />
           </div>
         )}
       </div>
