@@ -116,7 +116,7 @@ const DoctorDashboard = () => {
               Verified Clinical Professional
             </div>
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
-              Clinical Hub, <span className="text-primary-400">Dr. {user?.name?.split(' ').pop()}</span>
+              Clinical Hub, <span className="text-primary-400">Dr. {(user?.name || 'Physician').split(' ').pop()}</span>
             </h1>
             <p className="text-slate-400 font-medium max-w-lg leading-relaxed">
               Your physician gateway is active. Oversighting secure patient telemetry nodes.
@@ -263,8 +263,8 @@ const DoctorDashboard = () => {
                       <div className="relative p-6 bg-white border border-slate-100 rounded-[2.5rem] flex flex-col sm:flex-row gap-6 items-center shadow-sm group-hover:shadow-xl group-hover:border-primary/20 transition-all duration-300">
                         {/* Time Box */}
                         <div className={`flex-shrink-0 w-24 h-24 rounded-[2rem] flex flex-col items-center justify-center font-black ${idx === 0 ? 'bg-primary text-white shadow-xl shadow-primary/30' : 'bg-slate-50 text-slate-400 border border-slate-100'}`}>
-                          <div className="text-2xl leading-none">{appt.timeSlot.split(' ')[0]}</div>
-                          <div className="text-[10px] uppercase tracking-widest opacity-70 mt-1">{appt.timeSlot.split(' ')[1]}</div>
+                          <div className="text-2xl leading-none">{appt.timeSlot?.split(' ')[0] || appt.timeSlot}</div>
+                          <div className="text-[10px] uppercase tracking-widest opacity-70 mt-1">{appt.timeSlot?.includes(' ') ? appt.timeSlot.split(' ')[1] : '--'}</div>
                         </div>
                         
                         {/* Patient Details */}

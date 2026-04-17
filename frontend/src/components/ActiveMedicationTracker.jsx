@@ -57,9 +57,9 @@ const ActiveMedicationTracker = ({ prescriptions = [] }) => {
               
               <div className="pt-3 border-t border-slate-50 flex items-center justify-between">
                  <div className="flex flex-col">
-                    <span className="text-[8px] font-black text-slate-300 uppercase">Prescribed By</span>
-                    <span className="text-[9px] font-bold text-slate-600 truncate max-w-[80px]">Dr. {med.doctor || 'Assigned'}</span>
-                 </div>
+                     <span className="text-[8px] font-black text-slate-300 uppercase">Prescribed By</span>
+                     <span className="text-[9px] font-bold text-slate-600 truncate max-w-[80px]">{(med.doctor || 'Physician').startsWith('Dr.') ? med.doctor : `Dr. ${med.doctor || 'Physician'}`}</span>
+                  </div>
                  <div className="w-6 h-6 bg-slate-50 rounded-lg flex items-center justify-center">
                     <ChevronRight size={12} className="text-slate-300" />
                  </div>

@@ -24,11 +24,13 @@ const MedicalHistory = () => {
             setRecords(recordsRes.data || []);
             setPrescriptions(prescriptionsRes.data || []);
         } catch (err) {
-            console.error("Failed to fetch clinical data");
+            console.error("Failed to fetch clinical data", err);
         } finally {
             setLoading(false);
         }
     };
+
+    const [records, setRecords] = useState([]);
 
     useEffect(() => {
         fetchAllData();
@@ -36,8 +38,8 @@ const MedicalHistory = () => {
 
     // Merge and sort for timeline
     const allEvents = [
-        ...records.map(r => ({ ...r, type: 'RECORD', timestamp: new Date(r.date) })),
-        ...prescriptions.map(p => ({ ...p, type: 'PRESCRIPTION', timestamp: new Date(p.createdAt) }))
+        ...(records || []).map(r => ({ ...r, type: 'RECORD', timestamp: r.date ? new Date(r.date) : new Date(0) })),
+        ...(prescriptions || []).map(p => ({ ...p, type: 'PRESCRIPTION', timestamp: p.createdAt ? new Date(p.createdAt) : new Date(0) }))
     ].sort((a, b) => b.timestamp - a.timestamp);
 
     const filteredEvents = allEvents.filter(e => {
@@ -124,7 +126,7 @@ const MedicalHistory = () => {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {filteredEvents.map(event => (
-                            <ListCard key={event.id + event.type} event={event} />
+                            <ListCard key={event.id + event.type} record={event} />
                         ))}
                     </div>
                 )}
@@ -143,7 +145,7 @@ const ListCard = ({ record }) => (
             </div>
             <div className="text-right">
                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Date of Visit</p>
-                <p className="text-sm font-bold text-slate-700">{new Date(record.date).toLocaleDateString()}</p>
+                <p className="text-sm font-bold text-slate-700">{record.date ? new Date(record.date).toLocaleDateString() : 'Historical'}</p>
             </div>
         </div>
         
@@ -158,7 +160,7 @@ const ListCard = ({ record }) => (
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <Calendar size={14} className="text-primary/60" />
-                    <span className="text-xs font-bold text-slate-500">{new Date(record.date).getFullYear()} Archive</span>
+                    <span className="text-xs font-bold text-slate-500">{record.date ? new Date(record.date).getFullYear() : 'Sync'} Archive</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-slate-400">Dr. {record.doctorName}</span>

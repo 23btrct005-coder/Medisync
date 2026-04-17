@@ -70,7 +70,11 @@ const Dashboard = () => {
       const res = await api.get('records/my-records');
       const records = res.data;
       if(records && records.length > 0) {
-          const latest = records.sort((a,b) => new Date(b.date) - new Date(a.date))[0];
+          const latest = [...records].sort((a,b) => {
+              const dateA = a.date ? new Date(a.date) : 0;
+              const dateB = b.date ? new Date(b.date) : 0;
+              return dateB - dateA;
+          })[0];
           setStats({
               recordsCount: records.length,
               latestDiagnosis: latest.diagnosis,
@@ -121,7 +125,7 @@ const Dashboard = () => {
                 Secure Clinical Identity
               </div>
               <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
-                Hello, <span className="text-primary-400">{user?.name?.split(' ')[0]}</span>
+                Hello, <span className="text-primary-400">{(user?.name || 'Patient').split(' ')[0]}</span>
               </h1>
               <p className="text-slate-400 font-medium max-w-lg leading-relaxed">
                 Your medical data is synchronizing across secure encrypted nodes.
