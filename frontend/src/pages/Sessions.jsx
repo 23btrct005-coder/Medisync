@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import api from '../api/axiosConfig';
 import { Calendar, Clock, ChevronRight, Video, MapPin, X, Loader2 } from 'lucide-react';
