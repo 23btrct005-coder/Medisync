@@ -21,6 +21,13 @@ const DoctorAppointments = () => {
 
     useEffect(() => {
         fetchAppointments();
+        
+        // Automated Telemetry Heartbeat (Real-time sync every 30s)
+        const pulseInterval = setInterval(() => {
+            fetchAppointments();
+        }, 30000); 
+
+        return () => clearInterval(pulseInterval);
     }, []);
 
     const fetchAppointments = async () => {
@@ -76,9 +83,19 @@ const DoctorAppointments = () => {
                 <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/10 to-transparent pointer-events-none" />
                 <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
                     <div className="space-y-4">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full border border-white/10 backdrop-blur-md text-[10px] font-black uppercase tracking-widest text-emerald-400">
-                            <Activity size={14} className="animate-pulse" />
-                            Live Clinical Schedule
+                        <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-white/10 rounded-full border border-white/10 backdrop-blur-md">
+                            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-400">
+                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+                                Live Telemetry Active
+                            </div>
+                            <span className="text-white/20">|</span>
+                            <button 
+                                onClick={fetchAppointments}
+                                className="text-[10px] font-black uppercase tracking-widest text-slate-300 hover:text-white transition-colors flex items-center gap-1.5"
+                            >
+                                <Activity size={12} />
+                                Refresh Pulse
+                            </button>
                         </div>
                         <h1 className="text-4xl font-extrabold tracking-tight">Clinical Pulse</h1>
                         <p className="text-slate-400 font-medium max-w-lg leading-relaxed">

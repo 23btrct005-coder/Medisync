@@ -245,84 +245,21 @@ const DoctorDashboard = () => {
               </div>
             </div>
             
-            {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                 <SkeletonCard />
-                 <SkeletonCard />
-              </div>
-            ) : appointments.filter(a => a.appointmentDate === new Date().toISOString().split('T')[0]).length === 0 ? (
-              <div className="py-20 text-center bg-slate-50/50 rounded-[2.5rem] border-2 border-dashed border-slate-200">
-                <Calendar size={48} className="text-slate-200 mx-auto mb-4" />
-                <p className="text-sm font-bold text-slate-400">Your clinical queue is clear for today.</p>
-                <p className="text-[10px] text-slate-400 uppercase tracking-widest mt-1">Review your patient directory or access signals.</p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <div className="flex flex-col gap-6">
-                  {appointments
-                    .filter(a => a.appointmentDate === new Date().toISOString().split('T')[0])
-                    .sort((a, b) => a.timeSlot.localeCompare(b.timeSlot))
-                    .map((appt, idx) => (
-                    <div 
-                      key={appt.id} 
-                      onClick={() => navigate(`/doctor-dashboard/patients/${appt.patient?.id}`)} 
-                      className={`relative group cursor-pointer transition-all duration-300 hover:-translate-y-1`}
-                    >
-                      <div className={`absolute -inset-1 bg-gradient-to-r ${idx === 0 ? 'from-primary to-indigo-500' : 'from-slate-100 to-slate-200'} rounded-[2.5rem] blur opacity-10 group-hover:opacity-30 transition duration-1000 group-hover:duration-200`}></div>
-                      <div className="relative p-6 sm:p-8 bg-white border border-slate-100 rounded-[3rem] flex items-center gap-8 shadow-sm group-hover:shadow-xl group-hover:border-primary/20 transition-all duration-300">
-                        {/* Time Box */}
-                        <div className={`shrink-0 w-24 h-24 rounded-[2rem] flex flex-col items-center justify-center font-black shadow-inner whitespace-nowrap ${idx === 0 ? 'bg-primary text-white shadow-primary/20' : 'bg-slate-50 text-slate-400 border border-slate-100'}`}>
-                          <div className="text-2xl leading-none">{appt.timeSlot?.split(' ')[0] || appt.timeSlot}</div>
-                          <div className="text-[10px] uppercase tracking-widest opacity-70 mt-1">{appt.timeSlot?.includes(' ') ? appt.timeSlot.split(' ')[1] : '--'}</div>
-                        </div>
-                        
-                        {/* Patient Details */}
-                        <div className="flex-1 min-w-0 pr-4">
-                          <div className="flex flex-wrap items-center gap-3 mb-2">
-                            <h4 className="text-xl font-black text-slate-900 truncate tracking-tight">{appt.patient?.name}</h4>
-                            <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] ${appt.consultationType === 'ONLINE' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}`}>
-                              {appt.consultationType}
-                            </span>
-                          </div>
-                          
-                          <div className="flex items-center gap-2 text-slate-500 mb-5">
-                            <div className="p-1 bg-slate-100 rounded-lg"><Clock size={12} className="text-slate-400" /></div>
-                            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Clinical Session Authorized</p>
-                          </div>
-                          
-                          <div className="flex items-center gap-6">
-                             <div className="flex -space-x-2.5">
-                                {[1,2,3].map(i => (
-                                  <div key={i} className="w-8 h-8 rounded-xl border-2 border-white bg-slate-100 text-[10px] flex items-center justify-center font-black text-slate-400 shadow-sm">
-                                    R
-                                  </div>
-                                ))}
-                             </div>
-                             <div className="flex flex-col">
-                               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Reports Pending</p>
-                               <p className="text-xs font-black text-primary">3 SECURE DATA FILES</p>
-                             </div>
-                          </div>
-                        </div>
-                        
-                        {/* Action Terminal */}
-                        <div className="shrink-0 pl-10 border-l border-slate-100 flex flex-col items-center gap-4">
-                           <button className="w-full sm:w-auto px-10 py-4 bg-slate-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.25em] hover:bg-primary transition-all shadow-xl active:scale-95 whitespace-nowrap">
-                              Open File
-                           </button>
-                           {idx === 0 && (
-                             <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/5 rounded-full border border-primary/10">
-                                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-                                <span className="text-[9px] font-black text-primary uppercase tracking-widest">Active Next</span>
-                             </div>
-                           )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <div className="flex flex-col items-center justify-center py-20 bg-slate-50/50 border-2 border-dashed border-slate-100 rounded-[3rem] px-10 text-center">
+               <div className="p-8 bg-white rounded-[2.5rem] shadow-sm mb-6 text-slate-200">
+                  <Calendar size={64} />
+               </div>
+               <p className="text-sm font-black text-slate-400 uppercase tracking-[0.25em]">Schedule Relocated</p>
+               <p className="text-[10px] text-slate-400 font-medium mt-2 mb-8 max-w-xs leading-relaxed">
+                  Your prioritized clinical schedule has been moved to the dedicated, real-time Clinical Pulse hub.
+               </p>
+               <button 
+                  onClick={() => navigate('/doctor-dashboard/appointments')}
+                  className="btn-premium bg-slate-900 text-white px-10 py-4 text-[11px] font-black uppercase tracking-[0.25em] shadow-xl hover:bg-primary transition-all active:scale-95"
+               >
+                  Access Clinical Pulse
+               </button>
+            </div>
           </div>
         </div>
 
