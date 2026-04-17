@@ -306,7 +306,7 @@ const Reports = () => {
                       <h3 className="text-lg font-bold text-slate-800 truncate leading-tight">{report.fileName}</h3>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1">
-                          <Clock size={10} /> {new Date(report.uploadDate).toLocaleDateString()}
+                          <Clock size={10} /> {new Date(report.documentDate || report.uploadDate).toLocaleDateString()}
                         </span>
                       </div>
                     </div>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediSync Project Details</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            line-height: 1.6;
+            color: #1a202c;
+            max-width: 850px;
+            margin: 40px auto;
+            padding: 0 20px;
+            background: #f0f4f8;
+        }
+
+        .paper {
+            background: white;
+            padding: 70px;
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .paper::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: linear-gradient(90deg, #3182ce, #63b3ed);
+        }
+
+        @media print {
+            body { margin: 0; background: white; }
+            .paper { box-shadow: none; padding: 40px; border-radius: 0; }
+            .no-print { display: none; }
+            .paper::before { display: block; }
+        }
+
+        h1 { color: #2d3748; font-size: 3.5rem; font-weight: 800; margin-bottom: 10px; letter-spacing: -0.06em; }
+        .subtitle { color: #3182ce; font-size: 1.1rem; font-weight: 700; text-transform: uppercase; tracking: 0.2em; margin-bottom: 40px; display: block; }
+        
+        h2 { color: #2d3748; font-size: 2rem; font-weight: 800; margin-top: 50px; margin-bottom: 20px; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; }
+        h3 { color: #2b6cb0; font-size: 1.4rem; font-weight: 700; margin-top: 30px; }
+        
+        p { margin: 18px 0; color: #4a5568; font-size: 1.05rem; }
+        ul { margin: 18px 0; padding-left: 25px; }
+        li { margin: 10px 0; color: #4a5568; }
+        
+        .badge { display: inline-block; background: #ebf8ff; color: #2b6cb0; padding: 4px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; margin-right: 8px; margin-bottom: 8px; border: 1px solid #bee3f8; }
+        
+        .tech-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; }
+        .card { background: #f8fafc; padding: 25px; border-radius: 20px; border: 1px solid #e2e8f0; }
+        
+        .feature-item { padding: 15px; border-radius: 12px; background: #fffaf0; border-left: 5px solid #ed8936; margin-bottom: 15px; }
+        .feature-title { font-weight: 800; color: #2d3748; display: block; margin-bottom: 5px; }
+
+        footer { margin-top: 80px; text-align: center; color: #a0aec0; font-size: 0.85rem; border-top: 1px solid #edf2f7; padding-top: 20px; }
+        
+        .btn-print {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #2d3748;
+            color: white;
+            padding: 16px 32px;
+            border-radius: 100px;
+            text-decoration: none;
+            font-weight: 800;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            z-index: 1000;
+            display: flex;
+            items-center;
+            gap: 10px;
+        }
+        .btn-print:hover { transform: translateY(-3px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); background: #1a202c; }
+    </style>
+</head>
+<body>
+    <a href="javascript:window.print()" class="btn-print no-print">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        Export Project Brief (PDF)
+    </a>
+
+    <div class="paper">
+        <header>
+            <span class="subtitle">Clinical Technology Brief</span>
+            <h1>MediSync</h1>
+            <p><strong>Universal Clinical Intelligence & Patient Sovereignty Platform</strong></p>
+        </header>
+
+        <section>
+            <h2>Strategic Overview</h2>
+            <p>MediSync is a high-availability healthcare ecosystem designed to bridge the gap between patients and physicians through real-time data synchronization and AI-driven diagnostic intelligence. It prioritizes data privacy through advanced database-level security and provides structural clinical insights through state-of-the-art LLM integrations.</p>
+        </section>
+
+        <section>
+            <h2>Technical Foundations</h2>
+            <div class="tech-grid">
+                <div class="card">
+                    <h3>Frontend Architecture</h3>
+                    <div style="margin-bottom: 20px;">
+                        <span class="badge">React 18</span>
+                        <span class="badge">Vite</span>
+                        <span class="badge">TailwindCSS</span>
+                        <span class="badge">Framer Motion</span>
+                    </div>
+                    <ul>
+                        <li><strong>Modern React Hooks</strong>: Full functional architecture.</li>
+                        <li><strong>Responsive UI</strong>: Optimized for clinical mobile use.</li>
+                        <li><strong>Micro-Animations</strong>: Premium interaction feedback.</li>
+                        <li><strong>Real-time Sync</strong>: WebSocket integration for live alerts.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Backend Infrastructure</h3>
+                    <div style="margin-bottom: 20px;">
+                        <span class="badge">Java 17 (LTS)</span>
+                        <span class="badge">Spring Boot 3.2</span>
+                        <span class="badge">PostgreSQL</span>
+                        <span class="badge">JWT</span>
+                    </div>
+                    <ul>
+                        <li><strong>Spring Security</strong>: Hardened clinical auth.</li>
+                        <li><strong>JPA/Hibernate</strong>: Transactional data integrity.</li>
+                        <li><strong>RLS Integration</strong>: DB-level multi-tenancy.</li>
+                        <li><strong>RESTful API</strong>: Decoupled service architecture.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>Core Pillars</h2>
+            
+            <div class="feature-item">
+                <span class="feature-title">🛡️ Sovereign Security</span>
+                PostgreSQL Row Level Security (RLS) ensures that medical telemetry is only accessible by authorized users via session-bound context injection.
+            </div>
+
+            <div class="feature-item">
+                <span class="feature-title">🤖 Clinical AI Intelligence</span>
+                Seamless integration with Groq and GPT-4o for automated document summarization, radiology briefing, and diagnostic assistance.
+            </div>
+
+            <div class="feature-item">
+                <span class="feature-title">⚡ Emergency QR Protocol</span>
+                Secure, time-bound medical keys that provide emergency responders with critical life-saving telemetry via a secure diagnostic scan.
+            </div>
+        </section>
+
+        <section>
+            <h2>Key Capabilities</h2>
+            <ul>
+                <li><strong>Unified Dashboard</strong>: Real-time health scores and clinical telemetry.</li>
+                <li><strong>Medical Timeline</strong>: Structural history of consultations and scripts.</li>
+                <li><strong>Physician Hub</strong>: Secure directory, booking, and session sync.</li>
+                <li><strong>Payment Logic</strong>: Automated, verified Razorpay transactions.</li>
+            </ul>
+        </section>
+
+        <footer>
+            <p>&copy; 2026 MediSync Clinical Operating Systems. Confidential Brief.</p>
+            <p style="font-size: 0.7rem; margin-top: 10px;">Generated via MediSync Build Engine</p>
+        </footer>
+    </div>
+</body>
+</html>

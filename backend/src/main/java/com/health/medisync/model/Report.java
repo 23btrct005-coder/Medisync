@@ -28,6 +28,7 @@ public class Report {
     private byte[] fileData;
     
     private LocalDate uploadDate;
+    private LocalDate documentDate;
 
     @Column(columnDefinition = "TEXT")
     private String aiSummary;
@@ -58,6 +59,9 @@ public class Report {
 
     public LocalDate getUploadDate() { return uploadDate; }
     public void setUploadDate(LocalDate uploadDate) { this.uploadDate = uploadDate; }
+
+    public LocalDate getDocumentDate() { return documentDate; }
+    public void setDocumentDate(LocalDate documentDate) { this.documentDate = documentDate; }
 
     public String getAiSummary() { return aiSummary; }
     public void setAiSummary(String aiSummary) { this.aiSummary = aiSummary; }

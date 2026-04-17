@@ -13,6 +13,10 @@ import java.util.Map;
 
 import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 @Service
 public class ReportService {
@@ -115,10 +119,12 @@ public class ReportService {
                 report.setClinicalReasoning("Security Block.");
             } else {
                 report.setAiSummary(cleanJson);
+                report.setDocumentDate(extractDocumentDate(cleanJson, report.getUploadDate()));
                 report.setClinicalReasoning("AI Model: " + selectedProvider); // Store the source for clinical auditing
             }
         } else {
             report.setAiSummary("{\"error\": \"Clinical intelligence is momentarily unavailable.\"}");
+            report.setDocumentDate(report.getUploadDate());
         }
 
         // 3. Advanced Vision Analysis using MONAI (remains for specialized radiology if image)
@@ -223,5 +229,42 @@ public class ReportService {
         }
 
         reportRepository.delete(report);
+    }
+
+    private LocalDate extractDocumentDate(String json, LocalDate fallback) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(json);
+            JsonNode dateNode = root.path("patient_info").path("date");
+            
+            if (dateNode.isTextual() && !dateNode.asText().equalsIgnoreCase("null")) {
+                String dateStr = dateNode.asText().trim();
+                
+                // Try common formats
+                String[] formats = {
+                    "yyyy-MM-dd",
+                    "MMMM d, yyyy",
+                    "MMMM dd, yyyy",
+                    "MMMM d yyyy",
+                    "MMMM dd yyyy",
+                    "d MMMM yyyy",
+                    "dd MMMM yyyy",
+                    "dd/MM/yyyy",
+                    "MM/dd/yyyy"
+                };
+
+                for (String format : formats) {
+                    try {
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.ENGLISH);
+                        return LocalDate.parse(dateStr, formatter);
+                    } catch (Exception e) {
+                        // try next format
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to extract date from AI JSON: \" + e.getMessage());
+        }
+        return fallback;
     }
 }

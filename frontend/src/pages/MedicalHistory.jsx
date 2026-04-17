@@ -81,7 +81,7 @@ const MedicalHistory = () => {
     const allEvents = [
         ...(records || []).map(r => ({ ...r, type: 'CONSULTATION', timestamp: r.date ? new Date(r.date) : new Date(0) })),
         ...(prescriptions || []).map(p => ({ ...p, type: 'PRESCRIPTION', timestamp: p.createdAt ? new Date(p.createdAt) : new Date(0) })),
-        ...(reports || []).map(r => ({ ...r, type: 'REPORT', timestamp: r.uploadDate ? new Date(r.uploadDate) : (r.createdAt ? new Date(r.createdAt) : new Date(0)) }))
+        ...(reports || []).map(r => ({ ...r, type: 'REPORT', timestamp: r.documentDate ? new Date(r.documentDate) : (r.uploadDate ? new Date(r.uploadDate) : (r.createdAt ? new Date(r.createdAt) : new Date(0))) }))
     ].sort((a, b) => b.timestamp - a.timestamp);
 
     const filteredEvents = allEvents.filter(e => {
