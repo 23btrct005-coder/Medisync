@@ -138,39 +138,6 @@ public class ReportService {
         }
     }
 
-        // 3. Advanced Vision Analysis using MONAI (for specialized radiology metrics)
-        // Failover: If MONAI (local engine) is unreachable, fallback to OpenAI (Vision)
-        if (contentType != null && contentType.startsWith("image/")) {
-            boolean monaiSuccess = false;
-            try {
-                Map<String, Object> monaiResults = monaiService.analyzeXray(fileData, fileName);
-                if (monaiResults != null && !monaiResults.containsKey("error")) {
-                    report.setMonaiDiagnosis((String) monaiResults.get("diagnosis"));
-                    if (monaiResults.containsKey("confidence")) {
-                        report.setMonaiConfidence(Double.valueOf(monaiResults.get("confidence").toString()));
-                    }
-                    monaiSuccess = true;
-                }
-            } catch (Exception e) {
-                System.err.println("MONAI connection failed, triggering Vision failover...");
-            }
-
-            if (!monaiSuccess) {
-                System.out.println("DEBUG: MONAI unavailable. Falling back to OpenAI Vision Engine...");
-                try {
-                    // Using OpenAI as the reliable vision fallback
-                    String visionFailover = openAiService.analyzeReport(fileData, contentType, patientName, patientAge);
-                    if (visionFailover != null && !visionFailover.contains("ERROR_PROFILE_MISMATCH")) {
-                        report.setMonaiDiagnosis("[Vision Failover] " + visionFailover);
-                        report.setMonaiConfidence(0.95); // High confidence for GPT-4o
-                    }
-                } catch (Exception e) {
-                    System.err.println("Vision failover failed: " + e.getMessage());
-                }
-            }
-        }
-    }
-
     public Report reanalyzeReport(Long reportId, String username) {
         User user = userRepository.findByUsernameIgnoreCase(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
