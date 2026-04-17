@@ -246,7 +246,7 @@ const Dashboard = () => {
             </div>
           )}
 
-          <div className="grid grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="glass-panel p-6 space-y-4 border-l-4 border-emerald-500 group hover:bg-emerald-50 transition-all">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl group-hover:scale-110 transition-transform"><Plus size={20} /></div>
@@ -258,6 +258,8 @@ const Dashboard = () => {
                    <button onClick={() => navigate('/dashboard/booking')} className="btn-premium bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-100 text-xs">Book Doctor</button>
                 </div>
             </div>
+
+            <PhysicianInvitationCard />
           </div>
         </div>
 
@@ -304,6 +306,55 @@ const EmptyState = ({ icon, text }) => (
     <p className="text-slate-400 font-medium italic text-sm">{text}</p>
   </div>
 );
+
+const PhysicianInvitationCard = () => {
+    const [email, setEmail] = useState('');
+    const [inviting, setInviting] = useState(false);
+
+    const handleInvite = async (e) => {
+        e.preventDefault();
+        if (!email.trim()) return;
+        setInviting(true);
+        try {
+            await api.post('patient/invite-doctor', { doctorEmail: email });
+            toast.success(`Secure invitation sent to ${email}`);
+            setEmail('');
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to send clinical invitation');
+        } finally {
+            setInviting(false);
+        }
+    };
+
+    return (
+        <div className="glass-panel p-6 space-y-4 border-l-4 border-primary group hover:bg-primary-50 transition-all">
+            <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 text-primary rounded-xl group-hover:scale-110 transition-transform">
+                    <Zap size={20} />
+                </div>
+                <h3 className="text-lg font-bold text-slate-800">Invite Clinical Partner</h3>
+            </div>
+            <p className="text-xs text-slate-500 font-medium">Link a verified physician to your secure clinical context.</p>
+            <form onSubmit={handleInvite} className="space-y-3">
+                <input 
+                    type="email" 
+                    placeholder="doctor@medical.com" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                    required
+                />
+                <button 
+                    disabled={inviting}
+                    type="submit" 
+                    className="w-full btn-premium bg-slate-900 text-white text-xs py-3 shadow-lg shadow-slate-200 disabled:opacity-50"
+                >
+                    {inviting ? <Loader2 size={16} className="animate-spin mx-auto" /> : 'Authorize Physician Access'}
+                </button>
+            </form>
+        </div>
+    );
+};
 
 const QRModal = ({ url, onClose }) => {
   const handleDownload = () => {

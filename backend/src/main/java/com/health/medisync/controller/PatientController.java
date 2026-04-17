@@ -101,4 +101,18 @@ public class PatientController {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
+
+    @PostMapping("/invite-doctor")
+    public ResponseEntity<?> inviteDoctor(@RequestBody Map<String, String> request, Authentication authentication) {
+        try {
+            String doctorEmail = request.get("doctorEmail");
+            if (doctorEmail == null || doctorEmail.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Doctor email is required"));
+            }
+            patientService.inviteDoctor(authentication.getName(), doctorEmail);
+            return ResponseEntity.ok(Map.of("message", "Invitation sent successfully to " + doctorEmail));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
 }

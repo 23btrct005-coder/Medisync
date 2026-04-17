@@ -17,13 +17,16 @@ public class PatientService {
     private final UserRepository userRepository;
     private final DoctorRepository doctorRepository;
     private final AccessRequestRepository accessRequestRepository;
+    private final EmailService emailService;
 
     public PatientService(PatientRepository patientRepository, UserRepository userRepository, 
-                          DoctorRepository doctorRepository, AccessRequestRepository accessRequestRepository) {
+                          DoctorRepository doctorRepository, AccessRequestRepository accessRequestRepository,
+                          EmailService emailService) {
         this.patientRepository = patientRepository;
         this.userRepository = userRepository;
         this.doctorRepository = doctorRepository;
         this.accessRequestRepository = accessRequestRepository;
+        this.emailService = emailService;
     }
 
     public Patient getPatientProfile(String username) {
@@ -187,5 +190,38 @@ public class PatientService {
                 }
             }
         }
+    }
+
+    public void inviteDoctor(String patientUsername, String doctorEmail) {
+        Patient patient = getPatientProfile(patientUsername);
+        String doctorEmailLower = doctorEmail.trim().toLowerCase();
+
+        // 1. Check if already linked
+        boolean isAlreadyLinked = patient.getDoctors().stream()
+            .anyMatch(d -> d.getEmail().equalsIgnoreCase(doctorEmailLower));
+        
+        if (isAlreadyLinked) {
+            throw new RuntimeException("This physician already has active access to your portal.");
+        }
+
+        // 2. Check if doctor exists and create/update access request
+        Doctor doctor = doctorRepository.findByEmail(doctorEmailLower).orElse(null);
+        if (doctor != null) {
+            // Check for existing pending request to avoid duplicates
+            List<AccessRequest> existing = accessRequestRepository.findByPatientAndStatus(patient, "PENDING");
+            boolean hasPending = existing.stream().anyMatch(r -> r.getDoctor().getId().equals(doctor.getId()));
+            
+            if (!hasPending) {
+                AccessRequest request = new AccessRequest();
+                request.setPatient(patient);
+                request.setDoctor(doctor);
+                request.setStatus("PENDING");
+                request.setPatientMessage("Patient-initiated invitation");
+                accessRequestRepository.save(request);
+            }
+        }
+
+        // 3. Trigger Email Notification
+        emailService.sendDoctorInvitationEmail(doctorEmailLower, patient.getName());
     }
 }

@@ -116,4 +116,18 @@ public class EmailService {
         System.out.println("DEBUG: Sending recovery link to: " + to);
         sendEmail(to, subject, body);
     }
+
+    public void sendDoctorInvitationEmail(String to, String patientName) {
+        String portalUrl = "https://medisync-vert-five.vercel.app/doctor-portal";
+        String subject = "MediSync - Clinical Access Invitation from " + patientName;
+        String body = "Hello Doctor,\n\n" +
+                      "Patient " + patientName + " has invited you to access their secure clinical portal on MediSync.\n\n" +
+                      "This will allow you to view their medical history, AI-analyzed reports, and diagnostic journey in real-time.\n\n" +
+                      "Please log in or register at the following link to review the access request:\n\n" +
+                      portalUrl + "\n\n" +
+                      "Thank you for being part of the MediSync secure healthcare network.";
+        
+        System.out.println("DEBUG: Sending physician invitation to: " + to);
+        sendEmail(to, subject, body);
+    }
 }
