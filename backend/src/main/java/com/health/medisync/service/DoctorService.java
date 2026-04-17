@@ -85,16 +85,31 @@ public class DoctorService {
         }
     }
 
-    public Patient getPatientById(Long id) {
-        return patientRepository.findById(id)
+    private void verifyAccess(Doctor doctor, Long patientId) {
+        Patient patient = patientRepository.findById(patientId)
             .orElseThrow(() -> new RuntimeException("Patient not found"));
+        boolean isLinked = patient.getDoctors().stream()
+            .anyMatch(d -> d.getId().equals(doctor.getId()));
+        if (!isLinked) {
+            throw new RuntimeException("Unauthorized Access: You are not authorized to view this patient's clinical telemetry.");
+        }
     }
 
-    public List<MedicalRecord> getPatientRecords(Long patientId) {
+    public Patient getPatientById(String doctorUsername, Long id) {
+        Doctor doctor = getDoctorProfile(doctorUsername);
+        verifyAccess(doctor, id);
+        return patientRepository.findById(id).get();
+    }
+
+    public List<MedicalRecord> getPatientRecords(String doctorUsername, Long patientId) {
+        Doctor doctor = getDoctorProfile(doctorUsername);
+        verifyAccess(doctor, patientId);
         return recordRepository.findByPatientId(patientId);
     }
 
-    public List<Report> getPatientReports(Long patientId) {
+    public List<Report> getPatientReports(String doctorUsername, Long patientId) {
+        Doctor doctor = getDoctorProfile(doctorUsername);
+        verifyAccess(doctor, patientId);
         return reportRepository.findByPatientId(patientId);
     }
 

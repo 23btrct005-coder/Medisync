@@ -8,6 +8,8 @@ import {
   Briefcase, Zap, Info, Scissors, Pill, Stethoscope
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import ClinicalAlertBanner from '../components/ClinicalAlertBanner';
+import PrescriptionForm from '../components/PrescriptionForm';
 
 // ── Reusable row for info display ──────────────────────────────────────────
 const InfoRow = ({ icon: Icon, label, value, color = 'text-primary-500' }) => (
@@ -359,13 +361,24 @@ const PatientManager = () => {
         </button>
       </div>
 
+      {/* Critical Info Highlight */}
+      <ClinicalAlertBanner patient={patient} />
+
       {/* ── Full Patient Information Card ── */}
       <PatientInfoCard patient={patient} />
 
-      {/* Add Record Form */}
+      {/* E-Prescription System */}
+      <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm p-8">
+        <PrescriptionForm patient={patient} onComplete={() => {
+           fetchRecords();
+           // Optional: switch to records view
+        }} />
+      </div>
+
+      {/* Add General Clinical Note */}
       {showAddForm && (
         <div className="bg-white rounded-2xl border border-primary-200 shadow-md p-6 animate-in fade-in slide-in-from-top-2">
-          <h3 className="text-lg font-bold text-slate-800 mb-5 border-b border-slate-100 pb-3">New Medical Encounter</h3>
+          <h3 className="text-lg font-bold text-slate-800 mb-5 border-b border-slate-100 pb-3">New General Encounter</h3>
           <form onSubmit={handleAddRecord} className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1">Diagnosis</label>

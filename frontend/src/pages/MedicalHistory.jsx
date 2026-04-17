@@ -8,41 +8,46 @@ import { useNavigate } from 'react-router-dom';
 import MedicalTimeline from '../components/MedicalTimeline';
 
 const MedicalHistory = () => {
-    const [records, setRecords] = useState([]);
+    const [prescriptions, setPrescriptions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState('timeline'); // 'timeline' or 'list'
     const [searchTerm, setSearchTerm] = useState('');
     const navigate = useNavigate();
 
-    const handleExport = () => {
-        const dataStr = JSON.stringify(records, null, 2);
-        const blob = new Blob([dataStr], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "medisync_clinical_archive.json";
-        a.click();
-        URL.revokeObjectURL(url);
+    const fetchAllData = async () => {
+        setLoading(true);
+        try {
+            const [recordsRes, prescriptionsRes] = await Promise.all([
+                api.get('records/my-records'),
+                api.get('prescriptions/my')
+            ]);
+            setRecords(recordsRes.data || []);
+            setPrescriptions(prescriptionsRes.data || []);
+        } catch (err) {
+            console.error("Failed to fetch clinical data");
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
-        const fetchRecords = async () => {
-            try {
-                const res = await api.get('records/my-records');
-                setRecords(res.data || []);
-            } catch (err) {
-                console.error("Failed to fetch medical records");
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchRecords();
+        fetchAllData();
     }, []);
 
-    const filteredRecords = records.filter(r => 
-        r.diagnosis.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.doctorName.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Merge and sort for timeline
+    const allEvents = [
+        ...records.map(r => ({ ...r, type: 'RECORD', timestamp: new Date(r.date) })),
+        ...prescriptions.map(p => ({ ...p, type: 'PRESCRIPTION', timestamp: new Date(p.createdAt) }))
+    ].sort((a, b) => b.timestamp - a.timestamp);
+
+    const filteredEvents = allEvents.filter(e => {
+        const query = searchTerm.toLowerCase();
+        return (
+            (e.diagnosis?.toLowerCase().includes(query)) ||
+            (e.doctorName?.toLowerCase().includes(query)) ||
+            (e.doctor?.name?.toLowerCase().includes(query))
+        );
+    });
 
     return (
         <div className="page-entry space-y-8 pb-12">
@@ -108,18 +113,18 @@ const MedicalHistory = () => {
                         <Loader2 className="text-primary animate-spin" size={48} />
                         <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Decrypting Clinical Data...</p>
                     </div>
-                ) : filteredRecords.length === 0 ? (
+                ) : filteredEvents.length === 0 ? (
                     <div className="text-center py-32 glass-panel border-dashed bg-slate-50/50">
                         <ClipboardList className="mx-auto text-slate-200 mb-4" size={64} />
                         <h3 className="text-xl font-bold text-slate-800">No records found</h3>
                         <p className="text-slate-500 mt-2">Adjust your filters or add a new record to get started.</p>
                     </div>
                 ) : viewMode === 'timeline' ? (
-                    <MedicalTimeline records={filteredRecords} />
+                    <MedicalTimeline events={filteredEvents} />
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {filteredRecords.map(record => (
-                            <ListCard key={record.id} record={record} />
+                        {filteredEvents.map(event => (
+                            <ListCard key={event.id + event.type} event={event} />
                         ))}
                     </div>
                 )}

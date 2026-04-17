@@ -17,6 +17,8 @@ import SkeletonCard, { SkeletonRow } from '../components/SkeletonCard';
 import AiChatSidebar from '../components/AiChatSidebar';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import ClinicalAlertBanner from '../components/ClinicalAlertBanner';
+import ActiveMedicationTracker from '../components/ActiveMedicationTracker';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -24,6 +26,8 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [requests, setRequests] = useState([]);
   const [doctors, setDoctors] = useState([]);
+  const [patient, setPatient] = useState(null);
+  const [prescriptions, setPrescriptions] = useState([]);
   const [showQRModal, setShowQRModal] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [showBooking, setShowBooking] = useState(false);
@@ -32,12 +36,12 @@ const Dashboard = () => {
   useEffect(() => {
     const initDashboard = async () => {
       setLoading(true);
-      // We don't await the whole parallel block if we want skeletons to disappear as data arrives,
-      // but for this simple version we keep parallel and then shut off loading.
       await Promise.all([
         fetchDashboardInfo(),
         fetchRequests(),
-        fetchLinkedDoctors()
+        fetchLinkedDoctors(),
+        fetchPatientData(),
+        fetchPrescriptions()
       ]);
       setLoading(false);
     };
@@ -46,6 +50,20 @@ const Dashboard = () => {
     const intervalId = setInterval(fetchRequests, 30000);
     return () => clearInterval(intervalId);
   }, []);
+
+  const fetchPatientData = async () => {
+    try {
+        const res = await api.get('auth/patient/profile');
+        setPatient(res.data);
+    } catch (e) { console.error(e); }
+  };
+
+  const fetchPrescriptions = async () => {
+    try {
+        const res = await api.get('prescriptions/my');
+        setPrescriptions(res.data || []);
+    } catch (e) { console.error(e); }
+  };
 
   const fetchDashboardInfo = async () => {
     try {
@@ -135,6 +153,11 @@ const Dashboard = () => {
           <Activity className="absolute -right-12 -bottom-12 text-white/5" size={300} />
         </div>
       </section>
+      
+      {/* Clinical Highlights */}
+      {!loading && patient && (
+         <ClinicalAlertBanner patient={patient} />
+      )}
 
       {/* Stats Ecosystem */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -181,6 +204,11 @@ const Dashboard = () => {
         {/* Main Content Area (Col 1-8) */}
         <div className="xl:col-span-8 space-y-8">
           
+          {/* Medication Tracker */}
+          {!loading && prescriptions.length > 0 && (
+             <ActiveMedicationTracker prescriptions={prescriptions} />
+          )}
+
           {/* Requests & Quick Actions */}
           {loading ? (
              <div className="glass-panel p-8 space-y-4">
