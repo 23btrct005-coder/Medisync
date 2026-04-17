@@ -227,7 +227,16 @@ const DoctorDashboard = () => {
                 <div className="p-4 bg-primary/10 text-primary rounded-[1.5rem] shadow-sm"><Activity size={24} className="animate-pulse" /></div>
                 <div>
                   <h3 className="text-2xl font-black text-slate-900 tracking-tight">Today's Pulse</h3>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-0.5">Prioritized Daily Workflow</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Prioritized Daily Workflow</p>
+                    <span className="text-slate-200">|</span>
+                    <button 
+                      onClick={() => navigate('/doctor-dashboard/appointments')}
+                      className="text-[10px] font-black text-primary hover:text-primary/70 uppercase tracking-widest transition-colors flex items-center gap-1"
+                    >
+                      View Full Schedule <ChevronRight size={12} />
+                    </button>
+                  </div>
                 </div>
               </div>
               <div className="hidden sm:flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-full border border-slate-100">

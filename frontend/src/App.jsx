@@ -1,4 +1,4 @@
-/* DEPLOY_SYNC_STAMP: 2026-04-17-15:03 */
+/* DEPLOY_SYNC_STAMP: 2026-04-17-15:09 */
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
@@ -103,6 +103,7 @@ function App() {
                   </ProtectedRoute>
                 }>
                   <Route index element={<DoctorDashboard />} />
+                  <Route path="appointments" element={<DoctorAppointments />} />
                   <Route path="patients" element={<PatientDirectory />} />
                   <Route path="patients/:id" element={<PatientManager />} />
                   <Route path="profile" element={<DoctorProfile />} />

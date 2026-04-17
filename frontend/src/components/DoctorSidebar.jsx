@@ -16,6 +16,7 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
 
   const navItems = [
     { name: 'Dashboard', path: '/doctor-dashboard', icon: <LayoutDashboard size={20} /> },
+    { name: 'My Appointments', path: '/doctor-dashboard/appointments', icon: <Calendar size={20} /> },
     { name: 'Patient Directory', path: '/doctor-dashboard/patients', icon: <Users size={20} /> },
     { 
       name: 'My Profile', 
