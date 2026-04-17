@@ -20,6 +20,9 @@ public class AccessRequest {
     @Column(nullable = false)
     private String status; // PENDING, ACCEPTED, REJECTED
 
+    @Column(columnDefinition = "TEXT")
+    private String patientMessage;
+
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -32,4 +35,7 @@ public class AccessRequest {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getPatientMessage() { return patientMessage; }
+    public void setPatientMessage(String patientMessage) { this.patientMessage = patientMessage; }
 }

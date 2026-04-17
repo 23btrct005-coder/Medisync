@@ -1,6 +1,7 @@
 package com.health.medisync.controller;
 
 import com.health.medisync.model.Patient;
+import com.health.medisync.model.Doctor;
 import com.health.medisync.model.AccessRequest;
 import com.health.medisync.service.PatientService;
 import org.springframework.http.ResponseEntity;
