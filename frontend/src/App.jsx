@@ -1,3 +1,4 @@
+/* DEPLOY_SYNC_STAMP: 2026-04-17-09:51 */
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
