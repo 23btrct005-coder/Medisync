@@ -79,15 +79,67 @@ const StructuredAiReport = ({ jsonData, legacyReasoning, reportId, onAnalyzeNow,
   }
 
   if (report.error) {
+    // Distinguish real security blocks from temporary service failures
+    const isSecurityError = report.error.includes('SECURITY BLOCK') || report.error.includes('mismatch');
+
+    if (isSecurityError) {
+      return (
+        <div className="p-8 bg-red-50 border border-red-100 rounded-[2.5rem] flex items-center gap-4 text-left">
+          <div className="p-3 bg-red-500 text-white rounded-2xl shadow-lg">
+            <ShieldAlert size={24} />
+          </div>
+          <div>
+            <h4 className="text-sm font-black text-red-900 uppercase tracking-widest">Security or Service Alert</h4>
+            <p className="text-xs font-bold text-red-600 mt-0.5">{report.error}</p>
+          </div>
+        </div>
+      );
+    }
+
+    // Service failure / momentarily unavailable → show re-analyze CTA
     return (
-      <div className="p-8 bg-red-50 border border-red-100 rounded-[2.5rem] flex items-center gap-4 text-left">
-        <div className="p-3 bg-red-500 text-white rounded-2xl shadow-lg">
-          <ShieldAlert size={24} />
+      <div className="py-6 flex flex-col items-center text-center gap-6">
+        <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-900 to-slate-700 flex items-center justify-center shadow-2xl shadow-slate-300">
+          <BrainCircuit size={38} className="text-white" />
         </div>
-        <div>
-          <h4 className="text-sm font-black text-red-900 uppercase tracking-widest">Security or Service Alert</h4>
-          <p className="text-xs font-bold text-red-600 mt-0.5">{report.error}</p>
+
+        <div className="space-y-2 max-w-sm">
+          <h3 className="text-xl font-black text-slate-900 tracking-tight">
+            Previous Analysis Unavailable
+          </h3>
+          <p className="text-sm text-slate-500 font-medium leading-relaxed">
+            The AI engine was temporarily unavailable when this report was first uploaded. 
+            Run a fresh analysis now to generate your full diagnostic briefing.
+          </p>
         </div>
+
+        <div className="flex flex-wrap gap-2 justify-center">
+          {['Patient Info', 'Key Findings', 'Treatment Plan', 'Follow-up', 'Confidence Score'].map(f => (
+            <span key={f} className="px-3 py-1.5 bg-slate-50 border border-slate-100 text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-full">
+              {f}
+            </span>
+          ))}
+        </div>
+
+        {onAnalyzeNow && (
+          <button
+            onClick={onAnalyzeNow}
+            disabled={isAnalyzing}
+            className="flex items-center gap-3 px-8 py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-slate-200 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isAnalyzing ? (
+              <><Loader2 size={18} className="animate-spin" /> Generating Analysis...</>
+            ) : (
+              <><RefreshCw size={18} /> Generate Structured Analysis</>
+            )}
+          </button>
+        )}
+
+        {isAnalyzing && (
+          <p className="text-xs text-slate-400 font-bold animate-pulse">
+            AI is reading the document... this may take 10–20 seconds.
+          </p>
+        )}
       </div>
     );
   }
