@@ -144,26 +144,34 @@ const MedicalTimeline = ({ events = [], onPreviewReport, onExport, onViewAiSumma
 
               {/* Actions Footer */}
               <div className="mt-6 pt-5 border-t border-slate-50 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                   {isReport && (
-                     <button 
-                        onClick={() => onPreviewReport(event)}
-                        className="btn-premium py-2 px-4 text-[9px] font-black uppercase tracking-widest flex items-center gap-2"
-                     >
-                        <Eye size={12} /> View Full Report
-                     </button>
-                   )}
+                <div className="flex flex-col gap-3 w-full sm:w-auto">
                    {(isConsultation || isReport) && (
                      <button 
                         onClick={() => onViewAiSummary(event)}
-                        className="group relative p-2 bg-slate-900 text-white rounded-xl hover:bg-primary transition-all active:scale-90"
-                      >
-                        <Sparkles size={14} />
-                        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-[8px] font-black text-white uppercase tracking-widest rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                           View AI Summary
-                        </span>
+                        className="flex items-center justify-center gap-2 px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95"
+                     >
+                        <Sparkles size={14} className="text-primary-400" />
+                        View AI Summary
                      </button>
                    )}
+                   <div className="flex items-center gap-2">
+                      {isReport && (
+                        <button 
+                           onClick={() => onPreviewReport(event)}
+                           className="flex-1 sm:flex-none btn-white py-2 px-5 text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2 border-2 border-slate-200"
+                        >
+                           <Eye size={12} /> View Full Report
+                        </button>
+                      )}
+                      {(isConsultation || isReport) && (
+                        <button 
+                           className="p-2.5 bg-slate-100 text-slate-400 rounded-xl hover:bg-primary-50 hover:text-primary transition-all active:scale-90"
+                           title="Quick Clinical Sync"
+                         >
+                           <Sparkles size={14} />
+                        </button>
+                      )}
+                   </div>
                 </div>
                 {!isReport && (
                    <button className="flex items-center gap-1 text-[9px] font-black text-slate-400 hover:text-primary transition-all uppercase tracking-widest">
