@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+import api from '../api/axiosConfig';
 import { 
   Stethoscope, FileText, Plus, Search, 
   MoreHorizontal, ChevronRight, Eye, Sparkles, 
-  Download, Filter, Clipboard, Pill, Clock
+  Download, Filter, Clipboard, Pill, Clock, RefreshCw
 } from 'lucide-react';
 
-const MedicalTimeline = ({ events = [], onPreviewReport, onExport, onViewAiSummary }) => {
+const MedicalTimeline = ({ events = [], onPreviewReport, onExport, onViewAiSummary, onReanalyze }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
 
@@ -38,6 +39,32 @@ const MedicalTimeline = ({ events = [], onPreviewReport, onExport, onViewAiSumma
   }
 
   const EventCard = ({ event }) => {
+    const [reanalyzing, setReanalyzing] = useState(false);
+    const [reanalyzeSuccess, setReanalyzeSuccess] = useState(false);
+
+    const handleReanalyze = async () => {
+      if (!event.id || reanalyzing) return;
+      setReanalyzing(true);
+      setReanalyzeSuccess(false);
+      try {
+        const res = await api.post(`reports/${event.id}/reanalyze`);
+        const updatedReport = res.data;
+        setReanalyzeSuccess(true);
+        setTimeout(() => setReanalyzeSuccess(false), 3000);
+        // Refresh the AI summary modal with fresh data
+        if (onReanalyze) onReanalyze(updatedReport);
+        onViewAiSummary({
+          ...event,
+          aiSummary: updatedReport.aiSummary,
+          clinicalReasoning: updatedReport.clinicalReasoning,
+        });
+      } catch (e) {
+        console.error('Re-analyze failed:', e);
+      } finally {
+        setReanalyzing(false);
+      }
+    };
+
     const isConsultation = event.type === 'CONSULTATION';
     const isReport = event.type === 'REPORT';
     const isFollowUp = event.type === 'FOLLOW_UP';
@@ -163,12 +190,19 @@ const MedicalTimeline = ({ events = [], onPreviewReport, onExport, onViewAiSumma
                            <Eye size={12} /> View Full Report
                         </button>
                       )}
-                      {(isConsultation || isReport) && (
+                      {isReport && (
                         <button 
-                           className="p-2.5 bg-slate-100 text-slate-400 rounded-xl hover:bg-primary-50 hover:text-primary transition-all active:scale-90"
-                           title="Quick Clinical Sync"
+                           onClick={handleReanalyze}
+                           disabled={reanalyzing}
+                           className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl transition-all active:scale-90 text-[9px] font-black uppercase tracking-widest border disabled:opacity-50 disabled:cursor-not-allowed ${
+                             reanalyzeSuccess
+                               ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                               : 'bg-slate-100 text-slate-500 border-slate-100 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200'
+                           }`}
+                           title="Re-run AI clinical analysis on this report"
                          >
-                           <Sparkles size={14} />
+                           <RefreshCw size={12} className={reanalyzing ? 'animate-spin' : ''} />
+                           {reanalyzing ? 'Analyzing...' : reanalyzeSuccess ? 'Done ✓' : 'Re-analyze'}
                         </button>
                       )}
                    </div>
