@@ -2,9 +2,12 @@ package com.health.medisync.controller;
 
 import com.health.medisync.model.Notification;
 import com.health.medisync.repository.NotificationRepository;
+import com.health.medisync.repository.UserRepository;
 import com.health.medisync.security.UserContext;
+import com.health.medisync.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
