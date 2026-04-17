@@ -32,10 +32,10 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
-    { name: 'Medical Records', path: '/dashboard/records', icon: <ClipboardList size={20} /> },
+    { name: 'Medical History', path: '/dashboard/records', icon: <ClipboardList size={20} /> },
     { name: 'Reports', path: '/dashboard/reports', icon: <FileText size={20} /> },
-    { name: 'Book Appointment', path: '/dashboard/booking', icon: <CalendarPlus size={20} /> },
-    { name: 'My Sessions', path: '/dashboard/sessions', icon: <Calendar size={20} /> },
+    { name: 'Book Doctor', path: '/dashboard/booking', icon: <CalendarPlus size={20} /> },
+    { name: 'My Appointments', path: '/dashboard/sessions', icon: <Calendar size={20} /> },
     { name: 'My Doctors', path: '/dashboard/doctors', icon: <UserCheck size={20} /> },
     { 
       name: 'My Profile', 

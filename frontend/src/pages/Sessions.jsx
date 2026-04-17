@@ -7,6 +7,7 @@ const Sessions = () => {
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedAppt, setSelectedAppt] = useState(null);
+    const [activeTab, setActiveTab] = useState('today'); // 'today', 'upcoming', 'past'
     const location = useLocation();
 
     useEffect(() => {
@@ -24,6 +25,13 @@ const Sessions = () => {
                 const apptToOpen = data.find(a => a.id === location.state.autoOpenApptId);
                 if (apptToOpen) setSelectedAppt(apptToOpen);
             }
+
+            // Auto-switch tab if today has data
+            const todayStr = new Date().toISOString().split('T')[0];
+            const hasToday = (data || []).some(a => a.appointmentDate === todayStr);
+            if (!hasToday && (data || []).some(a => a.appointmentDate > todayStr)) {
+                setActiveTab('upcoming');
+            }
         } catch (e) {
             console.error(e);
         } finally {
@@ -32,9 +40,15 @@ const Sessions = () => {
     };
 
     const todayString = new Date().toISOString().split('T')[0];
-    const todaysAppointments = appointments.filter(a => a.appointmentDate === todayString);
-    const pastAppointments = appointments.filter(a => a.appointmentDate < todayString);
-    const upcomingAppointments = appointments.filter(a => a.appointmentDate > todayString);
+    const todaysAppointments = (appointments || []).filter(a => a.appointmentDate === todayString);
+    const pastAppointments = (appointments || []).filter(a => a.appointmentDate < todayString);
+    const upcomingAppointments = (appointments || []).filter(a => a.appointmentDate > todayString);
+
+    const tabs = [
+        { id: 'today', label: 'Today', count: todaysAppointments.length, color: 'emerald' },
+        { id: 'upcoming', label: 'Upcoming', count: upcomingAppointments.length, color: 'primary' },
+        { id: 'past', label: 'History', count: pastAppointments.length, color: 'slate' }
+    ];
 
     return (
         <div className="page-entry space-y-8 pb-12 animate-in fade-in duration-500">
@@ -42,85 +56,89 @@ const Sessions = () => {
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
                     <div className="flex items-center gap-2 text-primary-600 font-black text-xs uppercase tracking-[0.2em] mb-2">
-                        <Calendar size={14} /> Clinical Syncs
+                        <Calendar size={14} /> Clinical Schedule
                     </div>
                     <h2 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                        My Sessions
+                        My Appointments
                     </h2>
-                    <p className="text-slate-500 font-medium mt-2 max-w-xl line-clamp-2">
-                        Comprehensive log of all upcoming, live, and past consultations with your authorized physicians.
+                    <p className="text-slate-500 font-medium mt-2 max-w-xl">
+                        Monitor and access your secure physician consultations across the clinical timeline.
                     </p>
                 </div>
             </div>
 
+            {/* Tab Navigation */}
+            <div className="flex p-1.5 bg-slate-100 rounded-[2rem] border border-slate-200 shadow-inner w-fit max-w-full overflow-x-auto scrollbar-hide">
+                {tabs.map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`px-8 py-3 rounded-[1.5rem] text-xs font-black uppercase tracking-widest transition-all flex items-center gap-3 ${
+                            activeTab === tab.id 
+                            ? 'bg-white text-slate-900 shadow-xl scale-105' 
+                            : 'text-slate-400 hover:text-slate-600'
+                        }`}
+                    >
+                        {tab.label}
+                        <span className={`px-2 py-0.5 rounded-lg text-[9px] ${
+                            activeTab === tab.id 
+                            ? `bg-${tab.color}-100 text-${tab.color}-600` 
+                            : 'bg-slate-200 text-slate-500'
+                        }`}>
+                            {tab.count}
+                        </span>
+                    </button>
+                ))}
+            </div>
+
             {loading ? (
-                <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[40px] border border-slate-200 shadow-sm">
+                <div className="flex flex-col items-center justify-center py-32 bg-white rounded-[3rem] border border-slate-100 shadow-sm border-dashed">
                     <Loader2 size={48} className="animate-spin text-primary-500 mb-4" />
-                    <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-xs">Synchronizing Calendar...</p>
-                </div>
-            ) : appointments.length === 0 ? (
-                <div className="text-center py-24 bg-slate-50/50 rounded-[2.5rem] border-2 border-dashed border-slate-200">
-                    <Calendar size={64} className="mx-auto text-slate-200 mb-4" />
-                    <h3 className="text-xl font-bold text-slate-800 tracking-tight">Schedule Empty</h3>
-                    <p className="text-slate-500 font-medium mt-2">You currently have no recorded sessions.</p>
+                    <p className="text-slate-400 font-bold uppercase tracking-[0.25em] text-[10px]">Synchronizing Protocol...</p>
                 </div>
             ) : (
-                <div className="space-y-12">
-                    
-                    {/* Today's Sessions */}
-                    <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-8 opacity-5">
-                            <Clock size={120} className="text-primary-800" />
-                        </div>
-                        <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-6 relative z-10 flex items-center gap-2">
-                            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                            Live / Today
-                        </h4>
-                        
-                        {todaysAppointments.length === 0 ? (
-                            <p className="text-xs text-slate-400 font-bold italic">No sessions occurring today.</p>
-                        ) : (
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 relative z-10">
-                                {todaysAppointments.map(appt => (
-                                    <SessionCard key={appt.id} appt={appt} onClick={() => setSelectedAppt(appt)} active />
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                        {/* Upcoming Events */}
-                        <div className="bg-slate-50/50 p-6 rounded-[2.5rem] border border-slate-200">
-                            <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-                                Upcoming Timeline
-                            </h4>
-                            {upcomingAppointments.length === 0 ? (
-                                <p className="text-xs text-slate-400 font-bold italic text-center py-10">No upcoming sessions.</p>
+                <div className="animate-in slide-in-from-bottom-4 duration-500">
+                    {activeTab === 'today' && (
+                        <div className="space-y-6">
+                            {todaysAppointments.length === 0 ? (
+                                <EmptyState icon={<Clock />} text="No consultations scheduled for today." />
                             ) : (
-                                <div className="space-y-3">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    {todaysAppointments.map(appt => (
+                                        <SessionCard key={appt.id} appt={appt} onClick={() => setSelectedAppt(appt)} active />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'upcoming' && (
+                        <div className="space-y-6">
+                            {upcomingAppointments.length === 0 ? (
+                                <EmptyState icon={<Calendar />} text="No future clinical syncs detected." />
+                            ) : (
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                     {upcomingAppointments.map(appt => (
                                         <SessionCard key={appt.id} appt={appt} onClick={() => setSelectedAppt(appt)} />
                                     ))}
                                 </div>
                             )}
                         </div>
+                    )}
 
-                        {/* Historical Logs */}
-                        <div className="bg-slate-50/50 p-6 rounded-[2.5rem] border border-slate-200">
-                            <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-                                Historical Logs
-                            </h4>
+                    {activeTab === 'past' && (
+                        <div className="space-y-6">
                             {pastAppointments.length === 0 ? (
-                                <p className="text-xs text-slate-400 font-bold italic text-center py-10">No past sessions.</p>
+                                <EmptyState icon={<History />} text="Clinical archive is currently empty." />
                             ) : (
-                                <div className="space-y-3 opacity-70 hover:opacity-100 transition-opacity">
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 opacity-80 hover:opacity-100 transition-opacity">
                                     {pastAppointments.map(appt => (
                                         <SessionCard key={appt.id} appt={appt} onClick={() => setSelectedAppt(appt)} historical />
                                     ))}
                                 </div>
                             )}
                         </div>
-                    </div>
+                    )}
                 </div>
             )}
 
@@ -130,6 +148,18 @@ const Sessions = () => {
 };
 
 /* --- SUBCOMPONENTS --- */
+
+const EmptyState = ({ icon, text }) => (
+    <div className="text-center py-32 bg-slate-50/50 rounded-[3rem] border-2 border-dashed border-slate-100 flex flex-col items-center justify-center space-y-4">
+        <div className="p-6 bg-white rounded-full shadow-sm text-slate-200">
+            {icon && React.isValidElement(icon) ? React.cloneElement(icon, { size: 48 }) : icon}
+        </div>
+        <div>
+            <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em]">{text}</h3>
+            <p className="text-[10px] text-slate-400 font-medium mt-1">Telemetry synchronization completed.</p>
+        </div>
+    </div>
+);
 
 const SessionCard = ({ appt, onClick, active, historical }) => {
     return (
