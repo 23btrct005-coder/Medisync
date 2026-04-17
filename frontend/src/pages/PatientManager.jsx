@@ -537,6 +537,7 @@ const PatientManager = () => {
           <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-400 font-medium italic">
             No clinical history pulse recorded for this subject.
           </div>
+        ) : (
           <div className="bg-slate-50/50 rounded-[3rem] p-8 border border-slate-100 shadow-inner">
              <MedicalTimeline 
               events={clinicalTimeline} 
