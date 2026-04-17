@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import api from '../api/axiosConfig';
-import { 
-    Download, FileText, Loader2, UploadCloud, Camera, X, Trash2,
-    Sparkles, Eye, MessageSquare, Clock, Filter, CheckCircle2, AlertCircle, Search
+    Sparkles, Eye, MessageSquare, Clock, Filter, CheckCircle2, AlertCircle, Search,
+    RefreshCw
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AiChatSidebar from '../components/AiChatSidebar';
@@ -17,6 +16,24 @@ const Reports = () => {
   const [deletingId, setDeletingId] = useState(null);
   const fileInputRef = useRef(null);
   
+  const [lastSyncTime, setLastSyncTime] = useState(new Date());
+  const [syncLabel, setSyncLabel] = useState('Just Now');
+
+  // Relative time formatter
+  const getRelativeTime = (date) => {
+    const diff = Math.floor((new Date() - date) / 1000);
+    if (diff < 60) return 'Just Now';
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    return `${Math.floor(diff / 3600)}h ago`;
+  };
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSyncLabel(getRelativeTime(lastSyncTime));
+    }, 30000);
+    return () => clearInterval(timer);
+  }, [lastSyncTime]);
+
   const [showCamera, setShowCamera] = useState(false);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -45,6 +62,8 @@ const Reports = () => {
       console.error("Failed to load reports", error);
     } finally {
       setLoading(false);
+      setLastSyncTime(new Date());
+      setSyncLabel('Just Now');
     }
   };
 
@@ -185,36 +204,34 @@ const Reports = () => {
   return (
     <div className="page-entry space-y-8 pb-12">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-4 text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-50 rounded-full border border-purple-100 text-[10px] font-black uppercase tracking-widest text-purple-600">
-            <Sparkles size={14} />
-            Intelligence Lab
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+             <h1 className="text-4xl font-black text-slate-900 tracking-tight">Clinical Reports</h1>
+             <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100 shadow-sm">
+                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
+                <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none">{syncLabel === 'Just Now' ? 'Secure Sync Active' : `Synced ${syncLabel}`}</span>
+             </div>
           </div>
-          <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Clinical Reports</h1>
-          <p className="text-slate-500 font-medium max-w-lg">
-            Upload lab results for automated AI summaries.
-          </p>
+          <p className="text-slate-500 font-medium">Synchronized repository of your diagnostic history</p>
         </div>
         
         <div className="flex items-center gap-3">
-          <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileUpload} accept=".pdf,.jpg,.jpeg,.png" />
-          <button 
-            onClick={startCamera} 
-            disabled={uploading}
-            className="btn-premium bg-emerald-50 text-emerald-700 border border-emerald-100 hover:bg-emerald-100"
-          >
-            <Camera size={18} />
-            Scan Report
-          </button>
-          <button 
-            onClick={() => fileInputRef.current.click()} 
-            disabled={uploading}
-            className="btn-premium bg-primary text-white"
-          >
-            {uploading ? <Loader2 size={18} className="animate-spin" /> : <UploadCloud size={18} />}
-            {uploading ? 'Analyzing...' : 'Secure Upload'}
-          </button>
+           <button 
+             onClick={fetchReports}
+             className="p-3.5 bg-white text-slate-400 hover:text-primary hover:bg-slate-50 rounded-2xl border border-slate-200 transition-all shadow-sm group"
+           >
+             <RefreshCw size={20} className={`group-hover:rotate-180 transition-transform duration-500 ${loading ? 'animate-spin text-primary' : ''}`} />
+           </button>
+           <div className="hidden md:block h-8 w-px bg-slate-200 mx-1" />
+           <button onClick={() => fileInputRef.current.click()} className="flex items-center gap-2 px-6 py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl transition-all font-black text-sm shadow-xl active:scale-95">
+             <UploadCloud size={18} />
+             Upload Archive
+           </button>
+           <button onClick={() => setShowCamera(true)} className="flex items-center gap-2 px-6 py-3.5 bg-white border-2 border-slate-900 text-slate-900 hover:bg-slate-50 rounded-2xl transition-all font-black text-sm shadow-sm active:scale-95">
+             <Camera size={18} />
+             Scan Physical
+           </button>
         </div>
       </div>
 
@@ -246,6 +263,19 @@ const Reports = () => {
           filteredReports.map(report => (
             <div key={report.id} className="relative group animate-in fade-in slide-in-from-bottom-2 duration-500">
               <div className="glass-card p-6 border-b-4 border-b-primary/40 hover:border-b-primary transition-all">
+                {/* Floating Tags */}
+                <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+                  <div className="px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-xl text-[9px] font-black text-slate-900 shadow-xl border border-white/50 flex items-center gap-2 uppercase tracking-widest">
+                    <span className="w-1.5 h-1.5 bg-primary rounded-full" />
+                    {report.fileType?.includes('pdf') ? 'Clinical Document' : 'Diagnostic Image'}
+                  </div>
+                  {(new Date() - new Date(report.uploadDate || report.date)) < 86400000 && (
+                     <div className="px-3 py-1.5 bg-emerald-500 rounded-xl text-[9px] font-black text-white shadow-xl border border-emerald-400 flex items-center gap-2 uppercase tracking-widest animate-pulse">
+                        <Sparkles size={10} />
+                        New Report
+                     </div>
+                  )}
+                </div>
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="p-3 bg-red-50 text-red-600 rounded-2xl shadow-sm relative">

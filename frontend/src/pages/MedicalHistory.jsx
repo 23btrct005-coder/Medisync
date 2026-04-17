@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axiosConfig';
-import { 
-  ClipboardList, Search, Calendar, Filter, 
-  LayoutList, History, Loader2, Plus, Download, ChevronRight
+  LayoutList, History, Loader2, Plus, Download, ChevronRight,
+  RefreshCw
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import MedicalTimeline from '../components/MedicalTimeline';
@@ -13,7 +12,24 @@ const MedicalHistory = () => {
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState('timeline'); // 'timeline' or 'list'
     const [searchTerm, setSearchTerm] = useState('');
+    const [lastSyncTime, setLastSyncTime] = useState(new Date());
+    const [syncLabel, setSyncLabel] = useState('Just Now');
     const navigate = useNavigate();
+
+    // Relative time formatter
+    const getRelativeTime = (date) => {
+        const diff = Math.floor((new Date() - date) / 1000);
+        if (diff < 60) return 'Just Now';
+        if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+        return `${Math.floor(diff / 3600)}h ago`;
+    };
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setSyncLabel(getRelativeTime(lastSyncTime));
+        }, 30000);
+        return () => clearInterval(timer);
+    }, [lastSyncTime]);
 
     const fetchAllData = async () => {
         setLoading(true);
@@ -28,6 +44,8 @@ const MedicalHistory = () => {
             console.error("Failed to fetch clinical data", err);
         } finally {
             setLoading(false);
+            setLastSyncTime(new Date());
+            setSyncLabel('Just Now');
         }
     };
 
@@ -65,40 +83,47 @@ const MedicalHistory = () => {
 
     return (
         <div className="page-entry space-y-8 pb-12">
-            {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div className="space-y-4">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full border border-primary/20 text-[10px] font-black uppercase tracking-widest text-primary">
-                        <History size={14} />
-                        Clinical Archive
-                    </div>
-                    <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Medical History</h1>
-                    <p className="text-slate-500 font-medium max-w-lg">
-                        Explore your verified clinical journey, diagnoses, and physician prescriptions in a secure timeline view.
-                    </p>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <div className="flex p-1 bg-slate-100 rounded-2xl border border-slate-200 shadow-inner">
-                        <button 
-                            onClick={() => setViewMode('timeline')}
-                            className={`p-2 rounded-xl transition-all ${viewMode === 'timeline' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                        >
-                            <History size={20} />
-                        </button>
-                        <button 
-                            onClick={() => setViewMode('list')}
-                            className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                        >
-                            <LayoutList size={20} />
-                        </button>
-                    </div>
-                    <button onClick={() => navigate('/dashboard/reports')} className="btn-premium bg-primary text-white">
-                        <Plus size={18} />
-                        Add Record
-                    </button>
-                </div>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                 <h1 className="text-4xl font-black text-slate-900 tracking-tight">Medical Journey</h1>
+                 <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100 shadow-sm">
+                    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
+                    <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none">
+                       {syncLabel === 'Just Now' ? 'Secure Node Connected' : `Synced ${syncLabel}`}
+                    </span>
+                 </div>
+              </div>
+              <p className="text-slate-500 font-medium">Verified chronological stream of your clinical history</p>
             </div>
+            
+            <div className="flex items-center gap-3">
+               <button 
+                 onClick={fetchAllData}
+                 className="p-3.5 bg-white text-slate-400 hover:text-primary hover:bg-slate-50 rounded-2xl border border-slate-200 transition-all shadow-sm group"
+               >
+                 <RefreshCw size={20} className={`group-hover:rotate-180 transition-transform duration-500 ${loading ? 'animate-spin text-primary' : ''}`} />
+               </button>
+               <div className="flex p-1 bg-slate-100 rounded-2xl border border-slate-200 shadow-inner">
+                    <button 
+                        onClick={() => setViewMode('timeline')}
+                        className={`p-2 rounded-xl transition-all ${viewMode === 'timeline' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                        <History size={20} />
+                    </button>
+                    <button 
+                        onClick={() => setViewMode('list')}
+                        className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                        <LayoutList size={20} />
+                    </button>
+               </div>
+               <button onClick={handleExport} className="flex items-center gap-2 px-6 py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl transition-all font-black text-sm shadow-xl active:scale-95">
+                 <Download size={18} />
+                 Export Archive
+               </button>
+            </div>
+        </div>
 
             {/* Filter & Search Bar */}
             <div className="glass-panel p-4 flex flex-col md:flex-row gap-4 items-center">

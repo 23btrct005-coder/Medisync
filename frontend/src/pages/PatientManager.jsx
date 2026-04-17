@@ -5,7 +5,8 @@ import {
   ArrowLeft, User, Activity, FileText, PlusCircle, Calendar,
   Download, Loader2, Phone, MapPin, Heart, Droplet, ShieldCheck,
   Mail, Users, AlertCircle, ChevronDown, ChevronUp,
-  Briefcase, Zap, Info, Scissors, Pill, Stethoscope, History
+  Briefcase, Zap, Info, Scissors, Pill, Stethoscope, History,
+  RefreshCw, CheckCircle2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ClinicalAlertBanner from '../components/ClinicalAlertBanner';
@@ -204,6 +205,23 @@ const PatientManager = () => {
   const [prescriptions, setPrescriptions] = useState([]);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [lastSyncTime, setLastSyncTime] = useState(new Date());
+  const [syncLabel, setSyncLabel] = useState('Just Now');
+
+  // Relative time formatter
+  const getRelativeTime = (date) => {
+    const diff = Math.floor((new Date() - date) / 1000);
+    if (diff < 60) return 'Just Now';
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    return `${Math.floor(diff / 3600)}h ago`;
+  };
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSyncLabel(getRelativeTime(lastSyncTime));
+    }, 30000); // Update every 30 seconds
+    return () => clearInterval(timer);
+  }, [lastSyncTime]);
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [newDiagnosis, setNewDiagnosis] = useState('');
@@ -244,6 +262,8 @@ const PatientManager = () => {
       fetchRecords();
       fetchPrescriptions();
       fetchReports();
+      setLastSyncTime(new Date());
+      setSyncLabel('Just Now');
     } catch (err) {
       console.error('Error fetching patient profile', err);
       setLoading(false);
@@ -397,22 +417,54 @@ const PatientManager = () => {
   return (
     <div className="space-y-6 pb-12">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/doctor-dashboard/patients')}
-            className="p-2 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 transition">
-            <ArrowLeft size={20} />
+      {/* Premium Patient Central Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between items-start gap-4 mb-8">
+        <div>
+          <button 
+            onClick={() => navigate('/doctor-dashboard/patients')}
+            className="flex items-center gap-2 text-slate-500 hover:text-primary-600 transition-colors mb-4 group"
+          >
+            <div className="p-1.5 bg-slate-100 rounded-lg group-hover:bg-primary-50">
+              <ArrowLeft size={16} />
+            </div>
+            <span className="text-sm font-bold uppercase tracking-widest">Back to Directory</span>
           </button>
-          <div>
-            <h2 className="text-2xl font-bold text-slate-800">{patient.name}</h2>
-            <p className="text-slate-500 text-sm">Full patient overview & clinical records</p>
+          <div className="flex items-center gap-4">
+             <div>
+               <h1 className="text-4xl font-black text-slate-900 tracking-tight">{patient.name}</h1>
+               <p className="text-slate-500 text-sm font-medium mt-1 uppercase tracking-widest">Global Patient Identifier: {id}</p>
+             </div>
+             <div className="flex items-center gap-2.5 px-4 py-2 bg-emerald-50 rounded-2xl border border-emerald-100 shadow-sm animate-in fade-in slide-in-from-left duration-700">
+                <div className="relative">
+                   <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping absolute inset-0" />
+                   <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full relative shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                </div>
+                <div className="flex flex-col">
+                   <span className="text-[9px] font-black text-emerald-600 uppercase tracking-[0.2em] leading-none">Security Node Sync</span>
+                   <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mt-1">
+                      {syncLabel === 'Just Now' ? 'Connected' : `Synced ${syncLabel}`}
+                   </span>
+                </div>
+             </div>
           </div>
         </div>
-        <button onClick={() => setShowAddForm(!showAddForm)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition shadow-sm active:scale-95">
-          <PlusCircle size={18} />
-          {showAddForm ? 'Cancel' : 'Add Record'}
-        </button>
+        
+        <div className="flex items-center gap-3">
+           <button 
+            onClick={fetchPatientDetails}
+            className="flex items-center gap-2 px-5 py-3 bg-white hover:bg-slate-50 text-slate-700 rounded-2xl border border-slate-200 transition-all font-bold text-sm shadow-sm active:scale-95 group"
+           >
+             <RefreshCw size={18} className={`text-slate-400 group-hover:rotate-180 transition-transform duration-700 ${recordsLoading ? 'animate-spin text-primary' : ''}`} />
+             Sync Data
+           </button>
+           <button 
+             onClick={() => setShowAddForm(!showAddForm)}
+             className={`flex items-center gap-2 px-6 py-3.5 rounded-2xl transition-all font-black text-sm shadow-xl active:scale-95 ${showAddForm ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-slate-900 hover:bg-slate-800 text-white'}`}
+           >
+             <PlusCircle size={18} />
+             {showAddForm ? 'Cancel Session' : 'Record Session'}
+           </button>
+        </div>
       </div>
 
       {/* Critical Info Highlight */}
