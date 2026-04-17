@@ -163,41 +163,67 @@ const Dashboard = () => {
          <ClinicalAlertBanner patient={patient} />
       )}
 
+      {/* Mobile Quick Launch Hub (Hidden on Desktop) */}
+      <section className="md:hidden grid grid-cols-2 gap-4">
+        <div 
+          onClick={() => navigate('/dashboard/reports')}
+          className="p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm active:scale-95 transition-all flex flex-col items-center text-center gap-3"
+        >
+          <div className="p-3 bg-primary/10 text-primary rounded-xl">
+             <Plus size={24} />
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-widest text-slate-800">Sync Report</span>
+        </div>
+        <div 
+          onClick={() => navigate('/dashboard/booking')}
+          className="p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm active:scale-95 transition-all flex flex-col items-center text-center gap-3"
+        >
+          <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+             <CalendarPlus size={24} />
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-widest text-slate-800">Book Doctor</span>
+        </div>
+      </section>
+
       {/* Stats Ecosystem */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {loading ? (
           [1,2,3,4].map(i => <div key={i} className="h-32 bg-slate-100 rounded-[2rem] animate-pulse border border-slate-200" />)
         ) : (
           <>
             <StatCard 
-              title="Clinical Archives" 
+              title="Archives" 
               value={stats.recordsCount} 
               icon={ClipboardList} 
               color="primary"
               trend="+Sync Active"
             />
             <StatCard 
-              title="Lead Diagnosis" 
+              title="Diagnosis" 
               value={stats.latestDiagnosis} 
               icon={TrendingUp} 
               color="emerald"
               trend="Verified AI"
             />
-            <StatCard 
-              title="Active Doctors" 
-              value={doctors.length} 
-              icon={UserCheck} 
-              color="purple"
-              trend="Certified"
-              onClick={() => navigate('/dashboard/doctors')}
-            />
-            <StatCard 
-              title="System Integrity" 
-              value="HARDENED" 
-              icon={ShieldCheck} 
-              color="indigo"
-              trend="RLS Layer"
-            />
+            <div className="col-span-1 md:col-span-1">
+              <StatCard 
+                title="Doctors" 
+                value={doctors.length} 
+                icon={UserCheck} 
+                color="purple"
+                trend="Certified"
+                onClick={() => navigate('/dashboard/doctors')}
+              />
+            </div>
+            <div className="col-span-1 md:col-span-1">
+              <StatCard 
+                title="Integrity" 
+                value="SECURE" 
+                icon={ShieldCheck} 
+                color="indigo"
+                trend="RLS Isolation"
+              />
+            </div>
           </>
         )}
       </div>

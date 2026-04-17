@@ -37,11 +37,11 @@ const DashboardLayout = () => {
             
             <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
                 {/* Premium Header */}
-                <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200/60 flex items-center justify-between px-6 sm:px-10 z-[40] shrink-0">
+                <header className="h-16 md:h-20 bg-white/80 backdrop-blur-md border-b border-slate-200/60 flex items-center justify-between px-4 md:px-10 z-[40] shrink-0">
                     <div className="flex items-center gap-4">
-                        <div className="md:hidden flex items-center gap-2 px-2 text-primary-600">
-                             <Activity size={24} />
-                             <span className="text-xl font-bold tracking-tight text-slate-800">MEDISYNC</span>
+                        <div className="md:hidden flex items-center gap-2 px-1 text-primary-600">
+                             <Activity size={20} />
+                             <span className="text-lg font-bold tracking-tight text-slate-800">MEDISYNC</span>
                         </div>
                         
                         <div className="hidden lg:flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 rounded-2xl group transition-all focus-within:ring-4 focus-within:ring-primary/5 focus-within:border-primary/40">
@@ -54,24 +54,26 @@ const DashboardLayout = () => {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-3 md:gap-6">
                         <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100">
                             <ShieldCheck size={14} />
                             <span className="text-[10px] font-black uppercase tracking-widest">Secure session</span>
                         </div>
 
-                        <LanguageSwitcher />
+                        <div className="hidden sm:block">
+                             <LanguageSwitcher />
+                        </div>
                         <ThemeToggle />
 
                         <NotificationBell />
 
-                        <div className="flex items-center gap-3 pl-6 border-l border-slate-200">
+                        <div className="flex items-center gap-3 md:pl-6 md:border-l md:border-slate-200">
                             <div className="hidden sm:block text-right min-w-0">
                                 <p className="text-xs font-black text-slate-400 uppercase tracking-tighter leading-none">Global ID: {String(user?.id || '').slice(0, 8)}</p>
                                 <p className="text-sm font-extrabold text-slate-800 truncate">{user?.name || "Patient"}</p>
                             </div>
                             
-                            <div className="h-11 w-11 rounded-2xl overflow-hidden border-2 border-white bg-slate-100 shadow-sm transition-transform hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center">
+                            <div className="h-9 w-9 md:h-11 md:w-11 rounded-xl md:rounded-2xl overflow-hidden border-2 border-white bg-slate-100 shadow-sm transition-transform hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center">
                                 {photoUrl ? (
                                     <img 
                                         src={photoUrl} 
@@ -83,14 +85,15 @@ const DashboardLayout = () => {
                                         }}
                                     />
                                 ) : null}
-                                <UserCircle size={32} className={`${photoUrl ? 'hidden' : 'block'} text-slate-400`} />
+                                <UserCircle size={24} className={`${photoUrl ? 'hidden' : 'block'} text-slate-400 md:hidden`} />
+                                <UserCircle size={32} className={`${photoUrl ? 'hidden' : 'block'} text-slate-400 hidden md:block`} />
                             </div>
                         </div>
                     </div>
                 </header>
 
                 {/* Main Content Area */}
-                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50/50 p-6 md:p-10 mb-16 md:mb-0 custom-scrollbar">
+                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50/50 p-4 md:p-10 mb-20 md:mb-0 custom-scrollbar">
                     <div className="max-w-7xl mx-auto">
                         <Outlet />
                     </div>
