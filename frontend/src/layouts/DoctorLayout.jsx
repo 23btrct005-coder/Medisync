@@ -7,6 +7,7 @@ import { Activity, LogOut, UserCircle, Menu } from 'lucide-react';
 import BottomNav from '../components/BottomNav';
 import ThemeToggle from '../components/ThemeToggle';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import NotificationBell from '../components/NotificationBell';
 
 const DoctorLayout = () => {
   const { user, logout } = useAuth();
@@ -54,6 +55,7 @@ const DoctorLayout = () => {
           
           <LanguageSwitcher />
           <ThemeToggle />
+          <NotificationBell />
           
           <button onClick={handleLogout} className="p-2 text-slate-400 hover:text-red-500 transition-colors flex items-center">
             <LogOut size={20} className="sm:mr-1" /> <span className="hidden sm:inline text-sm font-medium">Logout</span>

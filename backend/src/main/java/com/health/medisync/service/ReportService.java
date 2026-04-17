@@ -23,11 +23,13 @@ public class ReportService {
     private final MonaiService monaiService;
     private final UserRepository userRepository;
     private final DoctorRepository doctorRepository;
+    private final NotificationService notificationService;
 
     public ReportService(ReportRepository reportRepository, PatientService patientService, 
                          GroqAiService groqAiService, OpenAiService openAiService, 
                          MonaiService monaiService, 
-                         UserRepository userRepository, DoctorRepository doctorRepository) {
+                         UserRepository userRepository, DoctorRepository doctorRepository,
+                         NotificationService notificationService) {
         this.reportRepository = reportRepository;
         this.patientService = patientService;
         this.groqAiService = groqAiService;
@@ -35,6 +37,7 @@ public class ReportService {
         this.monaiService = monaiService;
         this.userRepository = userRepository;
         this.doctorRepository = doctorRepository;
+        this.notificationService = notificationService;
     }
 
     public Report uploadReport(String username, MultipartFile file) throws Exception {
@@ -172,7 +175,19 @@ public class ReportService {
             .orElseThrow(() -> new RuntimeException("Report not found"));
             
         report.setDoctorNotes(notes);
-        return reportRepository.save(report);
+        Report updated = reportRepository.save(report);
+
+        // Notify Patient
+        notificationService.sendNotification(
+            updated.getPatient().getUser().getId(),
+            "AI_ANALYSIS",
+            "Doctor Updated Clinical Notes",
+            "Dr. " + user.getUsername() + " has added new clinical insights to your medical report.",
+            "/dashboard/reports",
+            "View Report"
+        );
+
+        return updated;
     }
 
     public List<Report> getMyReports(String username) {

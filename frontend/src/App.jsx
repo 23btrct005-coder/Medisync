@@ -1,8 +1,9 @@
-/* DEPLOY_SYNC_STAMP: 2026-04-17-10:28 */
+/* DEPLOY_SYNC_STAMP: 2026-04-17-11:06 */
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 import { ThemeProvider } from './context/ThemeContext';
 import DashboardLayout from './layouts/DashboardLayout';
 import DoctorLayout from './layouts/DoctorLayout';
@@ -62,65 +63,67 @@ function App() {
       <ErrorBoundary>
         <ThemeProvider>
           <AuthProvider>
-            <Toaster position="top-right" toastOptions={{ duration: 4000, style: { background: '#1e293b', color: '#fff' } }} />
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/doctor-login" element={<DoctorLogin />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/emergency/:patientId" element={<EmergencyInfo />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/terms-of-service" element={<TermsOfService />} />
-              <Route path="/ai-disclaimer" element={<AIDisclaimer />} />
-              
-              <Route path="/" element={<Landing />} />
-              
-              {/* Patient Routes */}
-              <Route path="/dashboard" element={
-                <ProtectedRoute allowedRole="ROLE_PATIENT">
-                  <DashboardLayout />
-                </ProtectedRoute>
-              }>
-                <Route index element={<Dashboard />} />
-                <Route path="records" element={<MedicalHistory />} />
-                <Route path="reports" element={<Reports />} />
-                <Route path="sessions" element={<Sessions />} />
-                <Route path="booking" element={<Booking />} />
-                <Route path="doctors" element={<DoctorsList />} />
-                <Route path="profile" element={<Profile />} />
-                <Route path="profile/edit" element={<EditProfile />} />
-                <Route path="settings" element={<Settings />} />
-                <Route path="support" element={<Support />} />
-              </Route>
+            <NotificationProvider>
+              <Toaster position="top-right" toastOptions={{ duration: 4000, style: { background: '#1e293b', color: '#fff' } }} />
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/doctor-login" element={<DoctorLogin />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/emergency/:patientId" element={<EmergencyInfo />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms-of-service" element={<TermsOfService />} />
+                <Route path="/ai-disclaimer" element={<AIDisclaimer />} />
+                
+                <Route path="/" element={<Landing />} />
+                
+                {/* Patient Routes */}
+                <Route path="/dashboard" element={
+                  <ProtectedRoute allowedRole="ROLE_PATIENT">
+                    <DashboardLayout />
+                  </ProtectedRoute>
+                }>
+                  <Route index element={<Dashboard />} />
+                  <Route path="records" element={<MedicalHistory />} />
+                  <Route path="reports" element={<Reports />} />
+                  <Route path="sessions" element={<Sessions />} />
+                  <Route path="booking" element={<Booking />} />
+                  <Route path="doctors" element={<DoctorsList />} />
+                  <Route path="profile" element={<Profile />} />
+                  <Route path="profile/edit" element={<EditProfile />} />
+                  <Route path="settings" element={<Settings />} />
+                  <Route path="support" element={<Support />} />
+                </Route>
 
-              {/* Doctor Routes */}
-              <Route path="/doctor-dashboard" element={
-                <ProtectedRoute allowedRole="ROLE_DOCTOR">
-                  <DoctorLayout />
-                </ProtectedRoute>
-              }>
-                <Route index element={<DoctorDashboard />} />
-                <Route path="patients" element={<PatientDirectory />} />
-                <Route path="patients/:id" element={<PatientManager />} />
-                <Route path="profile" element={<DoctorProfile />} />
-                <Route path="profile/edit" element={<EditDoctorProfile />} />
-                <Route path="settings" element={<Settings />} />
-                <Route path="support" element={<Support />} />
-              </Route>
+                {/* Doctor Routes */}
+                <Route path="/doctor-dashboard" element={
+                  <ProtectedRoute allowedRole="ROLE_DOCTOR">
+                    <DoctorLayout />
+                  </ProtectedRoute>
+                }>
+                  <Route index element={<DoctorDashboard />} />
+                  <Route path="patients" element={<PatientDirectory />} />
+                  <Route path="patients/:id" element={<PatientManager />} />
+                  <Route path="profile" element={<DoctorProfile />} />
+                  <Route path="profile/edit" element={<EditDoctorProfile />} />
+                  <Route path="settings" element={<Settings />} />
+                  <Route path="support" element={<Support />} />
+                </Route>
 
-              {/* Admin Routes */}
-              <Route path="/admin-dashboard" element={
-                <ProtectedRoute allowedRole="ROLE_ADMIN">
-                  <AdminLayout />
-                </ProtectedRoute>
-              }>
-                <Route index element={<AdminDashboard />} />
-              </Route>
+                {/* Admin Routes */}
+                <Route path="/admin-dashboard" element={
+                  <ProtectedRoute allowedRole="ROLE_ADMIN">
+                    <AdminLayout />
+                  </ProtectedRoute>
+                }>
+                  <Route index element={<AdminDashboard />} />
+                </Route>
 
-              {/* Catch-all Not Found Route */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+                {/* Catch-all Not Found Route */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </NotificationProvider>
           </AuthProvider>
         </ThemeProvider>
       </ErrorBoundary>

@@ -2,11 +2,14 @@ package com.health.medisync;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
 @SpringBootApplication(excludeName = {
     "org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration",
     "org.springframework.boot.autoconfigure.r2dbc.R2dbcRepositoriesAutoConfiguration",
     "org.springframework.boot.autoconfigure.data.r2dbc.R2dbcDataAutoConfiguration"
 })
+@EnableScheduling
 public class MedisyncApplication {
 
     static {

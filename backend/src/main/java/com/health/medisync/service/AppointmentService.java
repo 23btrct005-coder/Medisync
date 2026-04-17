@@ -32,6 +32,7 @@ public class AppointmentService {
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Value("${razorpay.key.id:}")
     private String razorpayKeyId;
@@ -42,11 +43,13 @@ public class AppointmentService {
     public AppointmentService(AppointmentRepository appointmentRepository, 
                               DoctorRepository doctorRepository, 
                               PatientRepository patientRepository,
-                              UserRepository userRepository) {
+                              UserRepository userRepository,
+                              NotificationService notificationService) {
         this.appointmentRepository = appointmentRepository;
         this.doctorRepository = doctorRepository;
         this.patientRepository = patientRepository;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     public List<String> getAvailableSlots(Long doctorId, LocalDate date) {
@@ -188,7 +191,27 @@ public class AppointmentService {
         appointment.setRazorpayPaymentId(paymentId);
         appointment.setStatus(AppointmentStatus.BOOKED);
         appointment.setCreatedAt(LocalDateTime.now()); // Reset timestamp to mark as confirmed
-        appointmentRepository.save(appointment);
+        Appointment booked = appointmentRepository.save(appointment);
+
+        // Notify Doctor
+        notificationService.sendNotification(
+            booked.getDoctor().getUser().getId(),
+            "APPOINTMENT",
+            "New Clinical Session Booked",
+             booked.getPatient().getName() + " has scheduled an appointment on " + booked.getAppointmentDate() + " at " + booked.getTimeSlot(),
+            "/doctor-dashboard",
+            "Open Schedule"
+        );
+
+        // Notify Patient
+        notificationService.sendNotification(
+            booked.getPatient().getUser().getId(),
+            "APPOINTMENT",
+            "Session Confirmed",
+            "Your appointment with Dr. " + booked.getDoctor().getName() + " on " + booked.getAppointmentDate() + " is confirmed.",
+            "/dashboard/sessions",
+            "View Details"
+        );
     }
 
     public List<Appointment> getPatientAppointments(String email) {
