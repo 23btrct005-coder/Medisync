@@ -27,6 +27,12 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.getAllApprovedDoctors());
     }
 
+    @PostMapping("/sync-marketplace")
+    public ResponseEntity<?> syncMarketplace() {
+        appointmentService.syncApprovedStatus();
+        return ResponseEntity.ok(Map.of("message", "Marketplace synchronized successfully"));
+    }
+
     @GetMapping("/slots")
     public ResponseEntity<List<String>> getAvailableSlots(
             @RequestParam Long doctorId,

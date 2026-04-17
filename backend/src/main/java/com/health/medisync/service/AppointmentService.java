@@ -210,4 +210,19 @@ public class AppointmentService {
     public List<Doctor> getAllApprovedDoctors() {
         return doctorRepository.findByApprovedTrue();
     }
+
+    @Transactional
+    public void syncApprovedStatus() {
+        List<Doctor> all = doctorRepository.findAll();
+        for (Doctor d : all) {
+            d.setApproved(true);
+            d.setAppointmentsEnabled(true);
+            User user = d.getUser();
+            if (user != null) {
+                user.setEnabled(true);
+                userRepository.save(user); // Also enable user login
+            }
+        }
+        doctorRepository.saveAll(all);
+    }
 }

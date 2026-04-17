@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, Filter, Calendar, Clock, ChevronRight, 
   User, Star, MapPin, Video, CheckCircle2, 
-  ArrowLeft, CreditCard, Loader2, Sparkles
+  ArrowLeft, CreditCard, Loader2, Sparkles, RefreshCw
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axiosConfig';
@@ -22,6 +22,7 @@ const Booking = () => {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [consultationType, setConsultationType] = useState('ONLINE');
   const [isBooking, setIsBooking] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [bookingStep, setBookingStep] = useState('list'); // 'list' | 'slots' | 'confirm'
 
   useEffect(() => {
@@ -77,11 +78,27 @@ const Booking = () => {
     }
   };
 
+  const handleSync = async () => {
+    setIsSyncing(true);
+    try {
+      await api.post('appointments/sync-marketplace');
+      toast.success("Clinical marketplace synchronized!");
+      fetchDoctors();
+    } catch (e) {
+      toast.error("Cloud synchronization failed.");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const specialties = ['All', ...new Set(doctors.map(d => d.specialization).filter(Boolean))];
   
   const filteredDoctors = doctors.filter(d => {
-    const matchesSearch = d.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         d.specialization?.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchLow = searchTerm.toLowerCase();
+    const matchesSearch = d.name.toLowerCase().includes(searchLow) || 
+                         d.specialization?.toLowerCase().includes(searchLow) ||
+                         d.hospital?.toLowerCase().includes(searchLow) ||
+                         d.medicalDegree?.toLowerCase().includes(searchLow);
     const matchesFilter = filterSpecialty === 'All' || d.specialization === filterSpecialty;
     return matchesSearch && matchesFilter;
   });
@@ -148,7 +165,21 @@ const Booking = () => {
               <div className="text-center py-24 glass-panel border-dashed border-slate-200">
                  <User size={64} className="mx-auto text-slate-200 mb-4" />
                  <h3 className="text-xl font-bold text-slate-800">No Physicians Found</h3>
-                 <p className="text-slate-500 font-medium mt-1">Try adjusting your filters or search keywords.</p>
+                 <p className="text-slate-500 font-medium mt-1 mb-8">Try adjusting your filters or search keywords.</p>
+                 
+                 <div className="flex flex-col items-center gap-4 bg-slate-50 p-6 rounded-3xl border border-slate-100 max-w-sm mx-auto">
+                    <div className="p-2 bg-primary/10 text-primary rounded-xl"><Sparkles size={20} /></div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Clinical Sync Utility</p>
+                    <p className="text-xs text-slate-500 text-center leading-relaxed">Incoming doctors may require administrative verification. Synchronize to enable instant access.</p>
+                    <button 
+                      onClick={handleSync}
+                      disabled={isSyncing}
+                      className="w-full btn-premium bg-slate-900 text-white py-4 text-xs flex items-center justify-center gap-2"
+                    >
+                      {isSyncing ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
+                      {isSyncing ? 'Synchronizing...' : 'Verify & Sync Directory'}
+                    </button>
+                 </div>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
