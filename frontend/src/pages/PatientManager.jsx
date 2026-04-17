@@ -222,7 +222,8 @@ const PatientManager = () => {
     isOpen: false,
     url: null,
     name: '',
-    type: ''
+    type: '',
+    id: null
   });
 
   useEffect(() => { fetchPatientDetails(); }, [id]);
@@ -366,7 +367,8 @@ const PatientManager = () => {
         isOpen: true,
         url,
         name: report.fileName,
-        type: report.fileType
+        type: report.fileType,
+        id: report.id
       });
     } catch (error) {
       console.error("Preview failed", error);
@@ -378,7 +380,7 @@ const PatientManager = () => {
 
   const closePreview = () => {
     if (previewData.url) window.URL.revokeObjectURL(previewData.url);
-    setPreviewData({ ...previewData, isOpen: false, url: null });
+    setPreviewData({ ...previewData, isOpen: false, url: null, id: null });
   };
 
   if (loading) return (
