@@ -225,7 +225,7 @@ const DoctorAppointmentCard = ({ appt, onClick, active, historical }) => {
                             <div className="text-[9px] uppercase tracking-widest opacity-60 mt-1">{(appt.timeSlot || '--').split(' ')[1] || 'Slot'}</div>
                         </div>
                         <div className="min-w-0">
-                            <h4 className="text-lg font-black text-slate-900 truncate">Patient Identity</h4>
+                            <h4 className="text-lg font-black text-slate-900 truncate">{appt.patient?.name || 'Patient Identity'}</h4>
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">{appt.patient?.email || 'Authorized Link'}</p>
                         </div>
                     </div>

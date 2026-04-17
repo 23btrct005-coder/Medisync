@@ -30,8 +30,15 @@ const InfoRow = ({ icon: Icon, label, value, color = 'text-primary-500' }) => (
 );
 
 // ── Patient Info Card ──────────────────────────────────────────────────────
-const PatientInfoCard = ({ patient }) => {
-  const [expanded, setExpanded] = useState(false);
+const PatientInfoCard = ({ patient, patientId }) => {
+  const [expanded, setExpanded] = useState(() => {
+    const saved = localStorage.getItem(`medisync_patient_info_expanded_${patientId}`);
+    return saved !== null ? JSON.parse(saved) : false;
+  });
+
+  useEffect(() => {
+    localStorage.setItem(`medisync_patient_info_expanded_${patientId}`, JSON.stringify(expanded));
+  }, [expanded, patientId]);
   const initials = (patient?.name || 'P').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'P';
   const photoUrl = patient?.id ? `${api.defaults.baseURL}/auth/patient/photo/${patient.id}` : null;
 
@@ -249,7 +256,14 @@ const PatientManager = () => {
     id: null
   });
 
-  const [isPrescriptionMinimized, setIsPrescriptionMinimized] = useState(true);
+  const [isPrescriptionMinimized, setIsPrescriptionMinimized] = useState(() => {
+    const saved = localStorage.getItem(`medisync_prescription_minimized_${id}`);
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  useEffect(() => {
+    localStorage.setItem(`medisync_prescription_minimized_${id}`, JSON.stringify(isPrescriptionMinimized));
+  }, [isPrescriptionMinimized, id]);
 
   const [summaryModal, setSummaryModal] = useState({
     isOpen: false,
@@ -491,7 +505,8 @@ const PatientManager = () => {
       <ClinicalAlertBanner patient={patient} />
 
       {/* ── Full Patient Information Card ── */}
-      <PatientInfoCard patient={patient} />
+      <section className="space-y-6">
+        <PatientInfoCard patient={patient} patientId={id} />
 
       {/* E-Prescription System */}
       <div className={`bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden transition-all duration-300 ${isPrescriptionMinimized ? 'p-4' : 'p-8'}`}>

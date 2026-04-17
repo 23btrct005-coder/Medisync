@@ -93,6 +93,10 @@ const DoctorDashboard = () => {
     }
   };
 
+  // Intelligence Stats logic
+  const activePatients = (requests || []).filter(r => r.status === 'ACCEPTED').length;
+  const pendingRequests = (requests || []).filter(r => r.status === 'PENDING').length;
+
   return (
     <div className="page-entry space-y-10 pb-12">
       <ProfileCompletionBanner />
@@ -158,11 +162,11 @@ const DoctorDashboard = () => {
               onClick={() => navigate('/doctor-dashboard/appointments')}
             />
             <StatCard 
-              title="Intelligence Alerts" 
-              value="2" 
+              title="Authorization Alerts" 
+              value={pendingRequests} 
               icon={Sparkles} 
               color="purple"
-              trend="AI Detected"
+              trend="Pending Access"
             />
             <StatCard 
               title="Node Status" 
