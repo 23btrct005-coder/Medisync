@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
@@ -64,6 +64,43 @@ const EditDoctorProfile = () => {
       setPhotoPreview(`${api.defaults.baseURL}/auth/doctor/photo/${user.id}?t=${Date.now()}`);
     }
   }, [user]);
+
+  // ── Google Maps Autocomplete ──
+  const addressInputRef = useRef(null);
+  const autocompleteRef = useRef(null);
+
+  useEffect(() => {
+    // Load Google Maps script dynamically
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    if (!apiKey) return;
+
+    if (!window.google) {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => initAutocomplete();
+      document.head.appendChild(script);
+    } else {
+      initAutocomplete();
+    }
+
+    function initAutocomplete() {
+      if (!addressInputRef.current) return;
+      
+      autocompleteRef.current = new window.google.maps.places.Autocomplete(addressInputRef.current, {
+        types: ['address'],
+        componentRestrictions: { country: 'IN' } // Optional: restrict to India as per user context
+      });
+
+      autocompleteRef.current.addListener('place_changed', () => {
+        const place = autocompleteRef.current.getPlace();
+        if (place.formatted_address) {
+          setFormData(prev => ({ ...prev, clinicAddress: place.formatted_address }));
+        }
+      });
+    }
+  }, []);
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files[0];
@@ -228,8 +265,19 @@ const EditDoctorProfile = () => {
               <input type="number" name="offlineConsultationFee" value={formData.offlineConsultationFee} onChange={handleChange} className={inputClass} placeholder="e.g. 800" />
             </div>
             <div className="md:col-span-2">
-              <label className={labelClass}>Clinic Address (for Offline Appointments)</label>
-              <textarea name="clinicAddress" rows="2" value={formData.clinicAddress} onChange={handleChange} className={inputClass} placeholder="Full address of your clinic..." />
+              <label className={labelClass}>Clinic Address (Search for your address)</label>
+              <input 
+                ref={addressInputRef}
+                type="text" 
+                name="clinicAddress" 
+                value={formData.clinicAddress} 
+                onChange={handleChange} 
+                className={inputClass} 
+                placeholder="Start typing your clinic address..." 
+              />
+              <p className="text-[10px] text-slate-400 mt-2 ml-1 italic">
+                 Note: Selecting an address from the dropdown ensures the map pin highlights your exact location.
+              </p>
             </div>
             <div className="md:col-span-2">
                 <label className={labelClass}>Razorpay Linked Account ID (for Direct Payments)</label>
