@@ -27,8 +27,8 @@ const InfoRow = ({ icon: Icon, label, value, color = 'text-primary-500' }) => (
 // ── Patient Info Card ──────────────────────────────────────────────────────
 const PatientInfoCard = ({ patient }) => {
   const [expanded, setExpanded] = useState(true);
-  const initials = patient.name?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'P';
-  const photoUrl = `${api.defaults.baseURL}/auth/patient/photo/${patient.id}`;
+  const initials = (patient?.name || 'P').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'P';
+  const photoUrl = patient?.id ? `${api.defaults.baseURL}/auth/patient/photo/${patient.id}` : null;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -50,7 +50,7 @@ const PatientInfoCard = ({ patient }) => {
             </div>
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-xl font-extrabold">{patient.name}</h3>
+            <h3 className="text-xl font-extrabold">{patient?.name || 'Authorized Subject'}</h3>
             <div className="flex flex-wrap gap-2 mt-2">
               {patient.gender && (
                 <span className="bg-white/20 px-2.5 py-0.5 rounded-full text-xs font-bold">{patient.gender}</span>
@@ -242,7 +242,8 @@ const PatientManager = () => {
     setRecordsLoading(true);
     try {
       const res = await api.get(`doctor/patients/${id}/records`);
-      setRecords(res.data.sort((a, b) => new Date(b.date) - new Date(a.date)));
+      const data = Array.isArray(res.data) ? res.data : [];
+      setRecords(data.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)));
     } catch (err) {
       console.error('Error fetching records', err);
       setRecordError('Unable to load clinical records at this time.');
@@ -255,8 +256,9 @@ const PatientManager = () => {
     setReportsLoading(true);
     try {
       const res = await api.get(`doctor/patients/${id}/reports`);
-      const data = res.data.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
-      setReports(data);
+      const data = Array.isArray(res.data) ? res.data : [];
+      const sorted = data.sort((a, b) => new Date(b.uploadDate || 0) - new Date(a.uploadDate || 0));
+      setReports(sorted);
       
       // Initialize editing notes with existing ones
       const initialNotes = {};
@@ -429,7 +431,7 @@ const PatientManager = () => {
                     <div className="flex items-center gap-3 mb-2">
                       <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-bold rounded-full">{record.diagnosis}</span>
                       <span className="text-sm text-slate-500 flex items-center gap-1">
-                        <Calendar size={14} /> {new Date(record.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        <Calendar size={14} /> {record.date ? new Date(record.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Pending Sync'}
                       </span>
                     </div>
                     <p className="text-slate-700 mt-2 whitespace-pre-line leading-relaxed">{record.prescription}</p>

@@ -74,7 +74,13 @@ const Register = () => {
   };
 
   const handleSendOtp = async () => {
-    if (!formData.email) { setError('Please enter an email address first.'); return; }
+    // Robust validation
+    const sanitizedUsername = formData.email.trim();
+    if(!sanitizedUsername) {
+        setError('Please enter a valid clinical identifier.');
+        return;
+    }
+    
     setVerifying(true);
     setError('');
     const timeoutId = setTimeout(() => {
@@ -84,7 +90,7 @@ const Register = () => {
       }
     }, 15000);
     try {
-      await api.post('auth/request-otp', { email: formData.email });
+      await api.post('auth/request-otp', { email: sanitizedUsername });
       clearTimeout(timeoutId);
       setOtpSent(true);
       setSuccess('Verification code sent to your email.');
@@ -114,8 +120,14 @@ const Register = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    if (!emailVerified) { setError('Please verify your email address first.'); return; }
-    if (formData.password !== formData.confirmPassword) { setError('Passwords do not match.'); return; }
+    if (!emailVerified) { setError('Please verify your clinical email first.'); return; }
+    
+    // Comprehensive Validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) { setError('Invalid clinical email format.'); return; }
+    if (formData.password.length < 8) { setError('Secure password must be at least 8 characters.'); return; }
+    if (formData.password !== formData.confirmPassword) { setError('Clinical passwords do not match.'); return; }
+    if (formData.phone.length < 10) { setError('Mobile number must be at least 10 digits.'); return; }
 
     setLoading(true);
     setError('');
