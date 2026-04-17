@@ -263,7 +263,7 @@ public class ReportService {
                 }
             }
         } catch (Exception e) {
-            System.err.println("Failed to extract date from AI JSON: \" + e.getMessage());
+            System.err.println("Failed to extract date from AI JSON: " + e.getMessage());
         }
         return fallback;
     }
