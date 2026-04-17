@@ -31,7 +31,7 @@ const InfoRow = ({ icon: Icon, label, value, color = 'text-primary-500' }) => (
 
 // ── Patient Info Card ──────────────────────────────────────────────────────
 const PatientInfoCard = ({ patient }) => {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   const initials = (patient?.name || 'P').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'P';
   const photoUrl = patient?.id ? `${api.defaults.baseURL}/auth/patient/photo/${patient.id}` : null;
 
@@ -249,7 +249,7 @@ const PatientManager = () => {
     id: null
   });
 
-  const [isPrescriptionMinimized, setIsPrescriptionMinimized] = useState(false);
+  const [isPrescriptionMinimized, setIsPrescriptionMinimized] = useState(true);
 
   const [summaryModal, setSummaryModal] = useState({
     isOpen: false,
