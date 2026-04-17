@@ -60,8 +60,9 @@ const Reports = () => {
 
   const fetchReports = async () => {
     try {
-      const res = await api.get('reports');
-      setReports(res.data || []);
+      const data = res.data || [];
+      const sorted = data.sort((a, b) => new Date(b.documentDate || b.uploadDate || 0) - new Date(a.documentDate || a.uploadDate || 0));
+      setReports(sorted);
     } catch (error) {
       console.error("Failed to load reports", error);
     } finally {
