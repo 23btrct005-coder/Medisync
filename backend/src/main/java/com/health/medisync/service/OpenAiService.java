@@ -62,25 +62,28 @@ public class OpenAiService implements AiProvider {
                 Map<String, Object> textPart = new HashMap<>();
                 textPart.put("type", "text");
                 textPart.put("text", "You are an elite clinical reasoning AI. Your task is to extract a structured diagnostic briefing from a medical document.\n\n" +
-                    "METADATA (Use this for 'patient_info' if not explicitly stated in document):\n" +
-                    "- System Name: " + patientName + "\n" +
-                    "- System Age: " + patientAge + "\n\n" +
-                    "STRICT RULES:\n" +
+                    "METADATA (MANDATORY: Use these for 'patient_info' and 'date' if not found in document):\n" +
+                    "- System Patient Name: " + patientName + "\n" +
+                    "- System Patient Age: " + patientAge + "\n" +
+                    "- System Current Date: " + new java.util.Date().toString() + "\n\n" +
+                    "STRICT EXTRACTION RULES:\n" +
                     "- Return ONLY valid JSON as per the schema below.\n" +
+                    "- NO conversational text before or after the JSON.\n" +
                     "- If document text is unreadable or empty, set 'diagnosis' to 'INCONCLUSIVE_DATA_SIGNAL'.\n" +
-                    "- For patient_info, PRIORITIZE the METADATA provided above if document data is missing.\n" +
+                    "- For 'patient_info', you MUST use the provided METADATA if the actual name/age is not explicitly in the text.\n" +
+                    "- For ANY field where no information is found, use null (do NOT use strings like 'Not Available' or 'N/A').\n" +
                     "- Keep bullet points short, high-density, and scannable.\n" +
                     "- Maximum 5 items per section.\n\n" +
                     "OUTPUT SCHEMA (JSON):\n" +
                     "{\n" +
-                    "  \"patient_info\": {\"name\": \"\", \"age\": \"\", \"date\": \"\"},\n" +
-                    "  \"diagnosis\": \"\",\n" +
+                    "  \"patient_info\": {\"name\": null, \"age\": null, \"date\": null},\n" +
+                    "  \"diagnosis\": null,\n" +
                     "  \"key_findings\": [],\n" +
                     "  \"critical_alerts\": [],\n" +
                     "  \"treatment\": [],\n" +
                     "  \"follow_up\": [],\n" +
                     "  \"additional_notes\": [],\n" +
-                    "  \"confidence\": \"\"\n" +
+                    "  \"confidence\": \"0%\"\n" +
                     "}\n\n" + 
                     (isPdf ? "DOCUMENT TEXT (PDF):\n" + extractedText : ""));
                 contentList.add(textPart);

@@ -65,9 +65,12 @@ const StructuredAiReport = ({ jsonData, legacyReasoning }) => {
     );
   }
 
+  const diagStr = (report.diagnosis || '').toString().toUpperCase().trim();
   const isInconclusive = 
-    report.diagnosis === 'INCONCLUSIVE_DATA_SIGNAL' || 
-    (report.diagnosis === 'Not Available' && (!report.key_findings || report.key_findings.length === 0 || report.key_findings[0] === 'Not Available'));
+    diagStr === 'INCONCLUSIVE_DATA_SIGNAL' || 
+    diagStr === 'NOT AVAILABLE' ||
+    diagStr === 'N/A' ||
+    (report.diagnosis == null && (!report.key_findings || report.key_findings.filter(Boolean).length === 0));
 
   if (isInconclusive) {
     return (
@@ -106,13 +109,14 @@ const StructuredAiReport = ({ jsonData, legacyReasoning }) => {
     </div>
   );
 
-  const BulletList = ({ items, emptyText = "Not Available" }) => {
-    if (!items || items.length === 0 || (items.length === 1 && items[0] === "Not Available")) {
-      return <p className="text-xs font-bold text-slate-400 italic uppercase tracking-widest ml-6">{emptyText}</p>;
+  const BulletList = ({ items, emptyText = "No data extracted" }) => {
+    const validItems = (items || []).filter(item => item != null && typeof item === 'string' && item.trim().length > 0 && item.toUpperCase() !== 'NOT AVAILABLE' && item.toUpperCase() !== 'N/A');
+    if (validItems.length === 0) {
+      return <p className="text-xs font-bold text-slate-300 italic tracking-widest ml-6">{emptyText}</p>;
     }
     return (
       <ul className="space-y-2.5 ml-1">
-        {items.map((item, idx) => (
+        {validItems.map((item, idx) => (
           <li key={idx} className="flex items-start gap-2.5 group">
             <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-slate-200 group-hover:bg-primary transition-colors shrink-0" />
             <span className="text-sm font-bold text-slate-700 leading-tight">{item}</span>
@@ -131,9 +135,9 @@ const StructuredAiReport = ({ jsonData, legacyReasoning }) => {
             <User size={12} className="text-slate-400" /> Patient Info
           </p>
           <div className="space-y-1">
-            <p className="text-sm font-black text-slate-900">{report.patient_info?.name || 'N/A'}</p>
+            <p className="text-sm font-black text-slate-900">{report.patient_info?.name || 'Patient'}</p>
             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">
-               {report.patient_info?.age || 'N/A'} • {report.patient_info?.date || 'N/A'}
+               Age: {report.patient_info?.age || '—'} • {report.patient_info?.date ? new Date(report.patient_info.date).toLocaleDateString() : 'Date unavailable'}
             </p>
           </div>
         </div>
@@ -161,7 +165,7 @@ const StructuredAiReport = ({ jsonData, legacyReasoning }) => {
           <BulletList items={report.key_findings} />
         </Section>
 
-        {report.critical_alerts && report.critical_alerts.length > 0 && report.critical_alerts[0] !== "Not Available" && (
+        {report.critical_alerts && report.critical_alerts.filter(a => a != null && a.toUpperCase() !== 'NOT AVAILABLE').length > 0 && (
           <Section icon={AlertTriangle} title="Critical Alerts" colorClass="text-red-600">
             <div className="bg-red-50 border border-red-100 p-4 rounded-2xl">
               <BulletList items={report.critical_alerts} />
@@ -177,7 +181,7 @@ const StructuredAiReport = ({ jsonData, legacyReasoning }) => {
           <BulletList items={report.follow_up} />
         </Section>
 
-        {report.additional_notes && report.additional_notes.length > 0 && report.additional_notes[0] !== "Not Available" && (
+        {report.additional_notes && report.additional_notes.filter(n => n != null && n.toUpperCase() !== 'NOT AVAILABLE').length > 0 && (
           <Section icon={Info} title="Physician Context" colorClass="text-slate-500">
             <BulletList items={report.additional_notes} />
           </Section>

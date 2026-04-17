@@ -97,18 +97,17 @@ public class ReportService {
         }
 
         if (analysisResult != null) {
-            // Clean Markdown code blocks if present (some AIs ignore "only JSON" rule)
-            String cleanJson = analysisResult.trim();
-            if (cleanJson.startsWith("```json")) {
-                cleanJson = cleanJson.substring(7);
-                if (cleanJson.endsWith("```")) {
-                    cleanJson = cleanJson.substring(0, cleanJson.length() - 3);
+            String rawResponse = analysisResult.trim();
+            String cleanJson = rawResponse;
+
+            try {
+                int firstBrace = rawResponse.indexOf('{');
+                int lastBrace = rawResponse.lastIndexOf('}');
+                if (firstBrace != -1 && lastBrace != -1 && lastBrace > firstBrace) {
+                    cleanJson = rawResponse.substring(firstBrace, lastBrace + 1);
                 }
-            } else if (cleanJson.startsWith("```")) {
-                cleanJson = cleanJson.substring(3);
-                if (cleanJson.endsWith("```")) {
-                    cleanJson = cleanJson.substring(0, cleanJson.length() - 3);
-                }
+            } catch (Exception e) {
+                System.err.println("JSON Extraction failed, using trimmed raw response: " + e.getMessage());
             }
 
             if (cleanJson.contains("ERROR_PROFILE_MISMATCH")) {
