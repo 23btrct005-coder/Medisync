@@ -6,7 +6,7 @@ import {
   Download, Loader2, Phone, MapPin, Heart, Droplet, ShieldCheck,
   Mail, Users, AlertCircle, ChevronDown, ChevronUp,
   Briefcase, Zap, Info, Scissors, Pill, Stethoscope, History,
-  RefreshCw, CheckCircle2
+  RefreshCw, CheckCircle2, Eye
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ClinicalAlertBanner from '../components/ClinicalAlertBanner';
