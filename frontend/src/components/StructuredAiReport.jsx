@@ -1,32 +1,52 @@
-import React from 'react';
 import { 
   User, Clipboard, AlertTriangle, Pill, Calendar, 
-  CheckCircle2, Info, Activity, ShieldAlert
+  CheckCircle2, Info, Activity, ShieldAlert, Zap
 } from 'lucide-react';
 
-const StructuredAiReport = ({ jsonData }) => {
+const StructuredAiReport = ({ jsonData, legacyReasoning }) => {
   let report = null;
-  let parseError = false;
+  let isJson = false;
 
   try {
     if (typeof jsonData === 'string') {
       report = JSON.parse(jsonData);
+      isJson = true;
     } else {
       report = jsonData;
+      isJson = true;
     }
   } catch (e) {
-    parseError = true;
+    isJson = false;
   }
 
-  if (parseError || !report) {
+  // Helper to convert plain text to bullets if it's not JSON
+  const textToBullets = (text) => {
+    if (!text || typeof text !== 'string' || text.trim().length === 0) return [];
+    return text.split(/[.!?\n]+/).map(s => s.trim()).filter(s => s.length > 5);
+  };
+
+  if (!isJson || !report) {
+    const combinedLegacy = [
+        ...textToBullets(jsonData),
+        ...(legacyReasoning && !legacyReasoning.includes('AI Model:') ? textToBullets(legacyReasoning) : [])
+    ];
+
     return (
-      <div className="p-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[2.5rem] text-center">
-        <Info className="mx-auto text-slate-300 mb-3" size={32} />
-        <h4 className="text-sm font-black text-slate-500 uppercase tracking-widest">Legacy Format Detected</h4>
-        <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-widest">Raw Analysis Available in Notes</p>
-        <div className="mt-4 p-4 bg-white rounded-2xl text-left border border-slate-100 italic text-slate-500 text-xs leading-relaxed">
-          {typeof jsonData === 'string' ? jsonData : 'Analysis data is malformed.'}
+      <div className="p-8 bg-slate-50 border-2 border-dashed border-slate-100 rounded-[2.5rem]">
+        <div className="flex items-center gap-2 mb-4">
+           <Zap size={14} className="text-primary" />
+           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Consolidated Clinical Brief</span>
         </div>
+        <ul className="space-y-3">
+          {combinedLegacy.length > 0 ? combinedLegacy.map((item, idx) => (
+            <li key={idx} className="flex items-start gap-3 text-left">
+              <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+              <span className="text-sm font-bold text-slate-700 leading-relaxed">{item}.</span>
+            </li>
+          )) : (
+            <p className="text-xs font-bold text-slate-400 italic">Analysis pending review...</p>
+          )}
+        </ul>
       </div>
     );
   }

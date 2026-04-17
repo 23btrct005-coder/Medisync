@@ -620,9 +620,9 @@ const PatientManager = () => {
                       <div className="divide-y divide-slate-100">
                         <div className="pb-5">
                           <h4 className="text-xs font-extrabold text-indigo-600 mb-4 uppercase tracking-widest flex items-center gap-1.5 px-1">
-                            ✨ Diagnostic Intelligence Brief
+                            ✨ Consolidated Intelligence Brief
                           </h4>
-                          <StructuredAiReport jsonData={r.aiSummary} />
+                          <StructuredAiReport jsonData={r.aiSummary} legacyReasoning={r.clinicalReasoning} />
                         </div>
 
                         {r.monaiDiagnosis && (
