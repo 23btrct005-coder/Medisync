@@ -61,9 +61,27 @@ public class OpenAiService implements AiProvider {
                 // Text Instruction
                 Map<String, Object> textPart = new HashMap<>();
                 textPart.put("type", "text");
-                textPart.put("text", "You are a world-class senior clinical diagnostic expert. Analyze this medical document for Name: " + patientName + ", Age: " + patientAge + ".\n" +
-                    "CRITICAL SECURITY RULE: If the patient name in the document definitively belongs to a different person than '" + patientName + "', reply ONLY with 'ERROR_PROFILE_MISMATCH'.\n" +
-                    "Otherwise, provide a HIGH-DENSITY CLINICAL BRIEF (max 3 professional sentences) for a doctor. Focus exactly on: 1) The primary medical problem. 2) What happened/Conclusion.\n\n" + 
+                textPart.put("text", "You are a clinical assistant designed to generate concise doctor-facing medical summaries. Analyze the document for Name: " + patientName + ", Age: " + patientAge + ".\n\n" +
+                    "Analyze the given medical report and return ONLY a structured summary in JSON format.\n" +
+                    "STRICT RULES:\n" +
+                    "- Keep it SHORT and SCANNABLE\n" +
+                    "- No paragraphs, No explanations, No repetition\n" +
+                    "- Use bullet-style short phrases\n" +
+                    "- Maximum 5 items per section\n" +
+                    "- If data is missing, return 'Not Available'\n" +
+                    "- Do NOT include any reasoning text\n\n" +
+                    "OUTPUT FORMAT (STRICT JSON):\n" +
+                    "{\n" +
+                    "  \"patient_info\": {\"name\": \"\", \"age\": \"\", \"date\": \"\"},\n" +
+                    "  \"diagnosis\": \"\",\n" +
+                    "  \"key_findings\": [],\n" +
+                    "  \"critical_alerts\": [],\n" +
+                    "  \"treatment\": [],\n" +
+                    "  \"follow_up\": [],\n" +
+                    "  \"additional_notes\": [],\n" +
+                    "  \"confidence\": \"\"\n" +
+                    "}\n" +
+                    "Return ONLY valid JSON. No extra text.\n\n" + 
                     (isPdf ? "PDF TEXT CONTENT:\n" + extractedText : ""));
                 contentList.add(textPart);
 

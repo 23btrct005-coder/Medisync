@@ -13,6 +13,7 @@ import ClinicalAlertBanner from '../components/ClinicalAlertBanner';
 import PrescriptionForm from '../components/PrescriptionForm';
 import ReportPreviewModal from '../components/ReportPreviewModal';
 import MedicalTimeline from '../components/MedicalTimeline';
+import StructuredAiReport from '../components/StructuredAiReport';
 
 // ── Reusable row for info display ──────────────────────────────────────────
 const InfoRow = ({ icon: Icon, label, value, color = 'text-primary-500' }) => (
@@ -618,40 +619,25 @@ const PatientManager = () => {
 
                       <div className="divide-y divide-slate-100">
                         <div className="pb-5">
-                          <h4 className="text-xs font-extrabold text-indigo-600 mb-3 uppercase tracking-widest flex items-center gap-1.5">
-                            ✨ High-Density Brief
+                          <h4 className="text-xs font-extrabold text-indigo-600 mb-4 uppercase tracking-widest flex items-center gap-1.5 px-1">
+                            ✨ Diagnostic Intelligence Brief
                           </h4>
-                          {r.aiSummary
-                            ? <p className="font-sans leading-relaxed text-slate-800 font-bold text-sm bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100">{r.aiSummary}</p>
-                            : <p className="italic text-slate-400 text-sm">No clinical summary generated.</p>
-                          }
+                          <StructuredAiReport jsonData={r.aiSummary} />
                         </div>
 
-                        {r.clinicalReasoning && (
-                          <div className="py-5">
-                            <h4 className="text-xs font-extrabold text-primary-600 mb-3 uppercase tracking-widest flex items-center gap-1.5">
-                              ⚕️ OpenAI Diagnostic Reasoning
-                            </h4>
-                            <div className="prose prose-sm max-w-none text-slate-700 bg-slate-50 border border-slate-100 p-5 rounded-2xl relative">
-                              <div className="absolute top-3 right-4 px-2 py-0.5 bg-primary-100 text-primary-700 text-[10px] font-black rounded uppercase tracking-wider">Master Reasoning</div>
-                              <pre className="font-sans whitespace-pre-wrap leading-relaxed">{r.clinicalReasoning}</pre>
-                            </div>
-                          </div>
-                        )}
-
                         {r.monaiDiagnosis && (
-                          <div className="py-5">
-                            <h4 className="text-xs font-extrabold text-emerald-600 mb-3 uppercase tracking-widest flex items-center gap-1.5">
+                          <div className="py-6 mt-4 border-t-2 border-dashed border-slate-100">
+                            <h4 className="text-xs font-extrabold text-emerald-600 mb-4 uppercase tracking-widest flex items-center gap-1.5">
                               🧬 MONAI Vision Diagnostic
                             </h4>
                             <div className="flex flex-wrap gap-4 items-center">
-                              <div className="bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-xl text-left">
-                                <p className="text-[10px] font-bold text-emerald-600 uppercase">Detection Result</p>
+                              <div className="bg-emerald-50 border border-emerald-100 px-5 py-3 rounded-2xl text-left">
+                                <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Detection Result</p>
                                 <p className="text-lg font-black text-emerald-900">{r.monaiDiagnosis}</p>
                               </div>
                               {r.monaiConfidence && (
-                                <div className="bg-blue-50 border border-blue-100 px-4 py-2 rounded-xl text-left">
-                                  <p className="text-[10px] font-bold text-blue-600 uppercase">AI Confidence</p>
+                                <div className="bg-blue-50 border border-blue-100 px-5 py-3 rounded-2xl text-left">
+                                  <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">AI Confidence</p>
                                   <p className="text-lg font-black text-blue-900">{(r.monaiConfidence * 100).toFixed(1)}%</p>
                                 </div>
                               )}

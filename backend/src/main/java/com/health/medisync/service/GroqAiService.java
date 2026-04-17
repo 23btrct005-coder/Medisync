@@ -56,9 +56,27 @@ public class GroqAiService implements AiProvider {
 
                 Map<String, Object> textObj = new HashMap<>();
                 textObj.put("type", "text");
-                textObj.put("text", "You are an expert senior medical consultant. Examine the document for Name: " + patientName + ", Age: " + patientAge + ".\n" +
-                    "SECURITY RULE: If the patient name in the document definitively belongs to a different person, reply ONLY with 'ERROR_PROFILE_MISMATCH'.\n" +
-                    "Otherwise, provide a HIGH-DENSITY BRIEF summary (max 3 sentences) for a doctor. Focus exactly on: 1) The primary medical problem. 2) What happened/Conclusion.\n\nDOCUMENT TEXT:\n" + extractedText);
+                textObj.put("text", "You are a clinical assistant designed to generate concise doctor-facing medical summaries. Analyze the document for Name: " + patientName + ", Age: " + patientAge + ".\n\n" +
+                    "Analyze the given medical report and return ONLY a structured summary in JSON format.\n" +
+                    "STRICT RULES:\n" +
+                    "- Keep it SHORT and SCANNABLE\n" +
+                    "- No paragraphs, No explanations, No repetition\n" +
+                    "- Use bullet-style short phrases\n" +
+                    "- Maximum 5 items per section\n" +
+                    "- If data is missing, return 'Not Available'\n" +
+                    "- Do NOT include any reasoning text\n\n" +
+                    "OUTPUT FORMAT (STRICT JSON):\n" +
+                    "{\n" +
+                    "  \"patient_info\": {\"name\": \"\", \"age\": \"\", \"date\": \"\"},\n" +
+                    "  \"diagnosis\": \"\",\n" +
+                    "  \"key_findings\": [],\n" +
+                    "  \"critical_alerts\": [],\n" +
+                    "  \"treatment\": [],\n" +
+                    "  \"follow_up\": [],\n" +
+                    "  \"additional_notes\": [],\n" +
+                    "  \"confidence\": \"\"\n" +
+                    "}\n" +
+                    "Return ONLY valid JSON. No extra text.\n\nDOCUMENT TEXT:\n" + extractedText);
 
                 List<Map<String, Object>> contentList = new ArrayList<>();
                 contentList.add(textObj);

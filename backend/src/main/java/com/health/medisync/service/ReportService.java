@@ -58,61 +58,85 @@ public class ReportService {
     public void performClinicalAnalysis(Report report, Patient patient) {
         byte[] fileData = report.getFileData();
         String contentType = report.getFileType();
-        String fileName = report.getFileName();
         String patientName = patient.getName();
         int patientAge = patient.getAge() != null ? patient.getAge() : 0;
 
-        // 1. High-Accuracy Master Reasoning (Powered by OpenAI GPT-4o)
-        String openAiAnalysis = null;
-        try {
-            openAiAnalysis = openAiService.analyzeReport(fileData, contentType, patientName, patientAge);
-        } catch (Exception e) {
-            System.err.println("OpenAI hard failure: " + e.getMessage());
-        }
+        boolean isImage = contentType != null && contentType.startsWith("image/");
+        String analysisResult = null;
+        String selectedProvider = null;
 
-        if (openAiAnalysis != null) {
-            if (openAiAnalysis.contains("ERROR_PROFILE_MISMATCH")) {
-                report.setClinicalReasoning("SECURITY BLOCK: This document belongs to a different patient.");
-            } else {
-                report.setClinicalReasoning(openAiAnalysis);
-            }
-        } else {
-            // Failover: Only use Groq for text-based PDFs. Images cannot failover to Groq anymore.
-            if (contentType != null && !contentType.startsWith("image/")) {
-                System.out.println("DEBUG: OpenAI unavailable or rate-limited. Falling back to Groq for Master Reasoning...");
-                try {
-                    String groqFailover = groqAiService.analyzeReport(fileData, contentType, patientName, patientAge);
-                    if (groqFailover != null && groqFailover.contains("ERROR_PROFILE_MISMATCH")) {
-                        report.setClinicalReasoning("SECURITY BLOCK: This document belongs to a different patient.");
-                    } else {
-                        report.setClinicalReasoning(groqFailover != null ? groqFailover : "Clinical reasoning is temporarily unavailable.");
-                    }
-                } catch (Exception e) {
-                    report.setClinicalReasoning("AI services are currently busy. Please try again later.");
+        // Selection Variation: Choice of AI for Text-based PDFs can vary
+        boolean useGroq = !isImage && Math.random() < 0.5;
+
+        try {
+            if (isImage || !useGroq) {
+                // OpenAI GPT-4o Master Clinical Reasoning
+                selectedProvider = "OpenAI GPT-4o";
+                analysisResult = openAiService.analyzeReport(fileData, contentType, patientName, patientAge);
+                
+                // Failover for Text-PDFs from OpenAI to Groq
+                if (analysisResult == null && !isImage) {
+                    System.out.println("DEBUG: OpenAI failed/busy for Text-PDF. Falling back to Groq...");
+                    selectedProvider = "Groq (Failover)";
+                    analysisResult = groqAiService.analyzeReport(fileData, contentType, patientName, patientAge);
                 }
             } else {
-                report.setClinicalReasoning("Clinical reasoning for images is currently unavailable from all providers. Please try again in 1 minute.");
-            }
-        }
+                // Groq High-Speed Clinical Summary
+                selectedProvider = "Groq Llama-3";
+                analysisResult = groqAiService.analyzeReport(fileData, contentType, patientName, patientAge);
 
-        // 2. High-Speed Clinical Summary (Powered by Groq for PDF, OpenAI for Images)
-        try {
-            String summary;
-            if (contentType != null && contentType.startsWith("image/")) {
-                // Groq vision is decommissioned, fallback to OpenAI for image summaries
-                summary = openAiAnalysis != null ? openAiAnalysis : openAiService.analyzeReport(fileData, contentType, patientName, patientAge);
-            } else {
-                summary = groqAiService.analyzeReport(fileData, contentType, patientName, patientAge);
-            }
-
-            if (summary != null && summary.contains("ERROR_PROFILE_MISMATCH")) {
-                report.setAiSummary("Security Block: Profile mismatch detected.");
-            } else {
-                report.setAiSummary(summary);
+                // Failover for Text-PDFs from Groq to OpenAI
+                if (analysisResult == null) {
+                    System.out.println("DEBUG: Groq failed/busy. Falling back to OpenAI...");
+                    selectedProvider = "OpenAI (Failover)";
+                    analysisResult = openAiService.analyzeReport(fileData, contentType, patientName, patientAge);
+                }
             }
         } catch (Exception e) {
-            System.err.println("Summary generation failed: " + e.getMessage());
+            System.err.println("Critical AI Dispatch error: " + e.getMessage());
         }
+
+        if (analysisResult != null) {
+            // Clean Markdown code blocks if present (some AIs ignore "only JSON" rule)
+            String cleanJson = analysisResult.trim();
+            if (cleanJson.startsWith("```json")) {
+                cleanJson = cleanJson.substring(7);
+                if (cleanJson.endsWith("```")) {
+                    cleanJson = cleanJson.substring(0, cleanJson.length() - 3);
+                }
+            } else if (cleanJson.startsWith("```")) {
+                cleanJson = cleanJson.substring(3);
+                if (cleanJson.endsWith("```")) {
+                    cleanJson = cleanJson.substring(0, cleanJson.length() - 3);
+                }
+            }
+
+            if (cleanJson.contains("ERROR_PROFILE_MISMATCH")) {
+                report.setAiSummary("{\"error\": \"SECURITY BLOCK: Profile mismatch detected.\"}");
+                report.setClinicalReasoning("Security Block.");
+            } else {
+                report.setAiSummary(cleanJson);
+                report.setClinicalReasoning("AI Model: " + selectedProvider); // Store the source for clinical auditing
+            }
+        } else {
+            report.setAiSummary("{\"error\": \"Clinical intelligence is momentarily unavailable.\"}");
+        }
+
+        // 3. Advanced Vision Analysis using MONAI (remains for specialized radiology if image)
+        if (isImage) {
+            try {
+                Map<String, Object> monaiResults = monaiService.analyzeXray(fileData, report.getFileName());
+                if (monaiResults != null && !monaiResults.containsKey("error")) {
+                    report.setMonaiDiagnosis((String) monaiResults.get("diagnosis"));
+                    if (monaiResults.containsKey("confidence")) {
+                        report.setMonaiConfidence(Double.valueOf(monaiResults.get("confidence").toString()));
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("MONAI local failure: " + e.getMessage());
+            }
+        }
+    }
 
         // 3. Advanced Vision Analysis using MONAI (for specialized radiology metrics)
         // Failover: If MONAI (local engine) is unreachable, fallback to OpenAI (Vision)

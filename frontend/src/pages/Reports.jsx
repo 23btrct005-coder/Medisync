@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import AiChatSidebar from '../components/AiChatSidebar';
 import SkeletonCard from '../components/SkeletonCard';
 import ReportPreviewModal from '../components/ReportPreviewModal';
+import StructuredAiReport from '../components/StructuredAiReport';
 
 const Reports = () => {
   const [reports, setReports] = useState([]);
@@ -338,16 +339,15 @@ const Reports = () => {
                           <div className="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-primary-500 mb-3 group-hover/ai-card:scale-110 transition-transform">
                              <Sparkles size={24} className="animate-pulse" />
                           </div>
-                          <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest">Clinical AI Summary Available</h4>
-                          <p className="text-[9px] text-slate-400 font-bold mt-1 uppercase tracking-widest group-hover/ai-card:text-primary-600 transition-colors">Tap to Reveal Insights</p>
+                          <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest">Diagnostic Intelligence Prepared</h4>
+                          <p className="text-[9px] text-slate-400 font-bold mt-1 uppercase tracking-widest group-hover/ai-card:text-primary-600 transition-colors">Tap to Reveal Structured Brief</p>
                        </div>
                     </button>
                   ) : (
-                    <div className="p-5 bg-primary/5 rounded-[2rem] border border-primary/10 relative overflow-hidden group/ai animate-in slide-in-from-top-4 duration-500">
-                      <Sparkles className="absolute -right-2 -top-2 text-primary/10 group-hover/ai:scale-150 transition-transform duration-700" size={60} />
-                      <div className="flex items-center justify-between mb-3 relative z-10">
+                    <div className="animate-in slide-in-from-top-4 duration-500">
+                      <div className="flex items-center justify-between mb-3 px-2">
                         <div className="flex items-center gap-2">
-                           <span className="badge-clinical bg-primary text-white border-none py-0.5">High-Density AI Brief</span>
+                           <span className="badge-clinical bg-primary text-white border-none py-0.5 px-3">Structured Clinical Briefing</span>
                            {report.monaiDiagnosis && <span className="badge-clinical bg-emerald-100 text-emerald-700 border-emerald-200 py-0.5">Vision Verified</span>}
                         </div>
                         <button 
@@ -357,9 +357,7 @@ const Reports = () => {
                           Hide Insights
                         </button>
                       </div>
-                      <p className="text-sm text-slate-900 font-bold leading-relaxed text-left relative z-10 border-l-4 border-primary/20 pl-4 py-1">
-                        {report.aiSummary || report.clinicalReasoning || "Full intelligence summary is pending."}
-                      </p>
+                      <StructuredAiReport jsonData={report.aiSummary} />
                     </div>
                   )}
                 </div>
