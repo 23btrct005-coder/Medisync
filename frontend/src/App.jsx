@@ -7,12 +7,12 @@ import { ThemeProvider } from './context/ThemeContext';
 import DashboardLayout from './layouts/DashboardLayout';
 import DoctorLayout from './layouts/DoctorLayout';
 import AdminLayout from './layouts/AdminLayout';
-
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Landing from './pages/Landing';
 import DoctorLogin from './pages/DoctorLogin';
 import Dashboard from './pages/Dashboard';
+import DoctorsList from './pages/DoctorsList';
 import MedicalHistory from './pages/MedicalHistory';
 import Reports from './pages/Reports';
 import Sessions from './pages/Sessions';
@@ -85,6 +85,7 @@ function App() {
                 <Route path="records" element={<MedicalHistory />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="sessions" element={<Sessions />} />
+                <Route path="doctors" element={<DoctorsList />} />
                 <Route path="profile" element={<Profile />} />
                 <Route path="profile/edit" element={<EditProfile />} />
                 <Route path="settings" element={<Settings />} />

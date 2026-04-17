@@ -27,7 +27,6 @@ const Dashboard = () => {
   const [showQRModal, setShowQRModal] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [showBooking, setShowBooking] = useState(false);
-  const [doctorEmail, setDoctorEmail] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -84,18 +83,6 @@ const Dashboard = () => {
       fetchRequests();
     } catch (e) {
       toast.error('Failed to parse request authorization.');
-    }
-  };
-
-  const handleGrantAccess = async () => {
-    if (!doctorEmail) return toast.error("Please enter a valid doctor email.");
-    try {
-      await api.post('patient/link-doctor', { doctorEmail });
-      toast.success('Direct Authorization granted to doctor.');
-      setDoctorEmail('');
-      fetchLinkedDoctors();
-    } catch (e) {
-      toast.error(e.response?.data?.message || 'Access authorization failed.');
     }
   };
 
@@ -175,6 +162,7 @@ const Dashboard = () => {
               icon={UserCheck} 
               color="purple"
               trend="Certified"
+              onClick={() => navigate('/doctors')}
             />
             <StatCard 
               title="System Integrity" 
@@ -226,25 +214,7 @@ const Dashboard = () => {
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="glass-panel p-6 space-y-4 border-l-4 border-primary group hover:bg-primary/5 transition-all">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 text-primary rounded-xl group-hover:scale-110 transition-transform"><UserCheck size={20} /></div>
-                <h3 className="text-lg font-bold text-slate-800">Direct Authorization</h3>
-              </div>
-              <p className="text-xs text-slate-500 font-medium">Instantly authorize a doctor via their registered email address.</p>
-              <div className="flex gap-2">
-                <input 
-                  type="email" 
-                  value={doctorEmail}
-                  onChange={(e) => setDoctorEmail(e.target.value)}
-                  placeholder="Physician Email..." 
-                  className="input-premium py-2 bg-white" 
-                />
-                <button onClick={handleGrantAccess} className="btn-premium py-2 px-4 whitespace-nowrap bg-primary text-white shadow-lg shadow-primary/20">Grant Access</button>
-              </div>
-            </div>
-
+          <div className="grid grid-cols-1 gap-6">
             <div className="glass-panel p-6 space-y-4 border-l-4 border-emerald-500 group hover:bg-emerald-50 transition-all">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl group-hover:scale-110 transition-transform"><Plus size={20} /></div>
