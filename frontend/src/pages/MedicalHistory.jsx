@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import MedicalTimeline from '../components/MedicalTimeline';
+import AiSummaryModal from '../components/AiSummaryModal';
 
 const MedicalHistory = () => {
     const [records, setRecords] = useState([]);
@@ -16,6 +17,11 @@ const MedicalHistory = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [lastSyncTime, setLastSyncTime] = useState(new Date());
     const [syncLabel, setSyncLabel] = useState('Just Now');
+    const [summaryModal, setSummaryModal] = useState({
+      isOpen: false,
+      jsonData: null,
+      legacyReasoning: null
+    });
     const navigate = useNavigate();
 
     // Relative time formatter
@@ -162,6 +168,11 @@ const MedicalHistory = () => {
                     <MedicalTimeline 
                       events={allEvents} 
                       onPreviewReport={(rep) => navigate(`/dashboard/reports`)} 
+                      onViewAiSummary={(ev) => setSummaryModal({
+                        isOpen: true,
+                        jsonData: ev.aiSummary || ev.diagnosis,
+                        legacyReasoning: ev.clinicalReasoning
+                      })}
                     />
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -171,6 +182,13 @@ const MedicalHistory = () => {
                     </div>
                 )}
             </div>
+
+            <AiSummaryModal 
+              isOpen={summaryModal.isOpen}
+              onClose={() => setSummaryModal({ ...summaryModal, isOpen: false })}
+              jsonData={summaryModal.jsonData}
+              legacyReasoning={summaryModal.legacyReasoning}
+            />
         </div>
     );
 };

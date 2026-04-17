@@ -14,6 +14,7 @@ import PrescriptionForm from '../components/PrescriptionForm';
 import ReportPreviewModal from '../components/ReportPreviewModal';
 import MedicalTimeline from '../components/MedicalTimeline';
 import StructuredAiReport from '../components/StructuredAiReport';
+import AiSummaryModal from '../components/AiSummaryModal';
 
 // ── Reusable row for info display ──────────────────────────────────────────
 const InfoRow = ({ icon: Icon, label, value, color = 'text-primary-500' }) => (
@@ -246,6 +247,12 @@ const PatientManager = () => {
     name: '',
     type: '',
     id: null
+  });
+
+  const [summaryModal, setSummaryModal] = useState({
+    isOpen: false,
+    jsonData: null,
+    legacyReasoning: null
   });
 
   useEffect(() => { fetchPatientDetails(); }, [id]);
@@ -542,9 +549,21 @@ const PatientManager = () => {
              <MedicalTimeline 
               events={clinicalTimeline} 
               onPreviewReport={(rep) => handlePreview(rep)}
+              onViewAiSummary={(ev) => setSummaryModal({
+                isOpen: true,
+                jsonData: ev.aiSummary || ev.diagnosis,
+                legacyReasoning: ev.clinicalReasoning
+              })}
              />
           </div>
         )}
+
+      <AiSummaryModal 
+        isOpen={summaryModal.isOpen}
+        onClose={() => setSummaryModal({ ...summaryModal, isOpen: false })}
+        jsonData={summaryModal.jsonData}
+        legacyReasoning={summaryModal.legacyReasoning}
+      />
 
       {/* ── Patient Reports & AI Summaries ── */}
       <div>

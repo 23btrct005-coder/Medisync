@@ -5,7 +5,7 @@ import {
   Download, Filter, Clipboard, Pill, Clock
 } from 'lucide-react';
 
-const MedicalTimeline = ({ events = [], onPreviewReport, onExport }) => {
+const MedicalTimeline = ({ events = [], onPreviewReport, onExport, onViewAiSummary }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
 
@@ -154,7 +154,10 @@ const MedicalTimeline = ({ events = [], onPreviewReport, onExport }) => {
                      </button>
                    )}
                    {(isConsultation || isReport) && (
-                     <button className="group relative p-2 bg-slate-900 text-white rounded-xl hover:bg-primary transition-all">
+                     <button 
+                        onClick={() => onViewAiSummary(event)}
+                        className="group relative p-2 bg-slate-900 text-white rounded-xl hover:bg-primary transition-all active:scale-90"
+                      >
                         <Sparkles size={14} />
                         <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-[8px] font-black text-white uppercase tracking-widest rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                            View AI Summary
