@@ -22,6 +22,11 @@ public class AppointmentController {
         this.appointmentService = appointmentService;
     }
 
+    @GetMapping("/doctors")
+    public ResponseEntity<List<com.health.medisync.model.Doctor>> getAllDoctors() {
+        return ResponseEntity.ok(appointmentService.getAllApprovedDoctors());
+    }
+
     @GetMapping("/slots")
     public ResponseEntity<List<String>> getAvailableSlots(
             @RequestParam Long doctorId,

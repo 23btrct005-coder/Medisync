@@ -16,6 +16,7 @@ import DoctorsList from './pages/DoctorsList';
 import MedicalHistory from './pages/MedicalHistory';
 import Reports from './pages/Reports';
 import Sessions from './pages/Sessions';
+import Booking from './pages/Booking';
 import Profile from './pages/Profile';
 import DoctorDashboard from './pages/DoctorDashboard';
 import PatientDirectory from './pages/PatientDirectory';
@@ -85,6 +86,7 @@ function App() {
                 <Route path="records" element={<MedicalHistory />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="sessions" element={<Sessions />} />
+                <Route path="booking" element={<Booking />} />
                 <Route path="doctors" element={<DoctorsList />} />
                 <Route path="profile" element={<Profile />} />
                 <Route path="profile/edit" element={<EditProfile />} />

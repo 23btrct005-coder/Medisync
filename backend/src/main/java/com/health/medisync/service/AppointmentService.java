@@ -206,4 +206,8 @@ public class AppointmentService {
             .orElseThrow(() -> new RuntimeException("Doctor profile not found"));
         return appointmentRepository.findByDoctorId(doctor.getId());
     }
+
+    public List<Doctor> getAllApprovedDoctors() {
+        return doctorRepository.findByApprovedTrue();
+    }
 }
