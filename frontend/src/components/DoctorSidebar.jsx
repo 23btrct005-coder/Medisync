@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, LogOut, Activity, UserCircle } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, Activity, UserCircle, Calendar } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
 
