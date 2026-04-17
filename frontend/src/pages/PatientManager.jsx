@@ -204,6 +204,7 @@ const PatientManager = () => {
   const [records, setRecords] = useState([]);
   const [prescriptions, setPrescriptions] = useState([]);
   const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState(new Date());
   const [syncLabel, setSyncLabel] = useState('Just Now');
