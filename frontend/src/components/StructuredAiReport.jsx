@@ -53,13 +53,42 @@ const StructuredAiReport = ({ jsonData, legacyReasoning }) => {
 
   if (report.error) {
     return (
-      <div className="p-8 bg-red-50 border border-red-100 rounded-[2.5rem] flex items-center gap-4">
+      <div className="p-8 bg-red-50 border border-red-100 rounded-[2.5rem] flex items-center gap-4 text-left">
         <div className="p-3 bg-red-500 text-white rounded-2xl shadow-lg">
           <ShieldAlert size={24} />
         </div>
         <div>
           <h4 className="text-sm font-black text-red-900 uppercase tracking-widest">Security or Service Alert</h4>
           <p className="text-xs font-bold text-red-600 mt-0.5">{report.error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const isInconclusive = 
+    report.diagnosis === 'INCONCLUSIVE_DATA_SIGNAL' || 
+    (report.diagnosis === 'Not Available' && (!report.key_findings || report.key_findings.length === 0 || report.key_findings[0] === 'Not Available'));
+
+  if (isInconclusive) {
+    return (
+      <div className="p-10 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[2.5rem] text-center max-w-lg mx-auto">
+        <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-slate-400 mx-auto mb-6">
+           <AlertTriangle size={32} />
+        </div>
+        <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight mb-2">Inconclusive Clinical Signal</h3>
+        <p className="text-xs text-slate-500 font-bold leading-relaxed mb-8">
+           AI was unable to extract digital telemetry from this document. This usually occurs with scanned physical reports or low-resolution images.
+        </p>
+        <div className="bg-white p-4 rounded-2xl border border-slate-100 text-left space-y-3">
+           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Optimization Steps:</p>
+           <div className="flex items-start gap-3">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5" />
+              <p className="text-[11px] font-bold text-slate-600">Upload digital-first PDF reports (e.g., from lab portals).</p>
+           </div>
+           <div className="flex items-start gap-3">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5" />
+              <p className="text-[11px] font-bold text-slate-600">Ensure physical scans are well-lit and flat.</p>
+           </div>
         </div>
       </div>
     );

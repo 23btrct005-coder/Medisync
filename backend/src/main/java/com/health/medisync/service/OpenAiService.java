@@ -61,16 +61,17 @@ public class OpenAiService implements AiProvider {
                 // Text Instruction
                 Map<String, Object> textPart = new HashMap<>();
                 textPart.put("type", "text");
-                textPart.put("text", "You are a clinical assistant designed to generate concise doctor-facing medical summaries. Analyze the document for Name: " + patientName + ", Age: " + patientAge + ".\n\n" +
-                    "Analyze the given medical report and return ONLY a structured summary in JSON format.\n" +
+                textPart.put("text", "You are an elite clinical reasoning AI. Your task is to extract a structured diagnostic briefing from a medical document.\n\n" +
+                    "METADATA (Use this for 'patient_info' if not explicitly stated in document):\n" +
+                    "- System Name: " + patientName + "\n" +
+                    "- System Age: " + patientAge + "\n\n" +
                     "STRICT RULES:\n" +
-                    "- Keep it SHORT and SCANNABLE\n" +
-                    "- No paragraphs, No explanations, No repetition\n" +
-                    "- Use bullet-style short phrases\n" +
-                    "- Maximum 5 items per section\n" +
-                    "- If data is missing, return 'Not Available'\n" +
-                    "- Do NOT include any reasoning text\n\n" +
-                    "OUTPUT FORMAT (STRICT JSON):\n" +
+                    "- Return ONLY valid JSON as per the schema below.\n" +
+                    "- If document text is unreadable or empty, set 'diagnosis' to 'INCONCLUSIVE_DATA_SIGNAL'.\n" +
+                    "- For patient_info, PRIORITIZE the METADATA provided above if document data is missing.\n" +
+                    "- Keep bullet points short, high-density, and scannable.\n" +
+                    "- Maximum 5 items per section.\n\n" +
+                    "OUTPUT SCHEMA (JSON):\n" +
                     "{\n" +
                     "  \"patient_info\": {\"name\": \"\", \"age\": \"\", \"date\": \"\"},\n" +
                     "  \"diagnosis\": \"\",\n" +
@@ -80,9 +81,8 @@ public class OpenAiService implements AiProvider {
                     "  \"follow_up\": [],\n" +
                     "  \"additional_notes\": [],\n" +
                     "  \"confidence\": \"\"\n" +
-                    "}\n" +
-                    "Return ONLY valid JSON. No extra text.\n\n" + 
-                    (isPdf ? "PDF TEXT CONTENT:\n" + extractedText : ""));
+                    "}\n\n" + 
+                    (isPdf ? "DOCUMENT TEXT (PDF):\n" + extractedText : ""));
                 contentList.add(textPart);
 
                 // Image data if not PDF (GPT-4o Vision)
