@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, FileText, ClipboardList, User, Users, LogOut } from 'lucide-react';
+import { LayoutDashboard, FileText, ClipboardList, User, Users, LogOut, CalendarPlus, Calendar, UserCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
 
@@ -18,6 +18,9 @@ const BottomNav = () => {
         { name: 'Home', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
         { name: 'Records', path: '/dashboard/records', icon: <ClipboardList size={20} /> },
         { name: 'Reports', path: '/dashboard/reports', icon: <FileText size={20} /> },
+        { name: 'Booking', path: '/dashboard/booking', icon: <CalendarPlus size={20} /> },
+        { name: 'Sessions', path: '/dashboard/sessions', icon: <Calendar size={20} /> },
+        { name: 'Doctors', path: '/dashboard/doctors', icon: <UserCheck size={20} /> },
         { name: 'Profile', path: '/dashboard/profile', icon: null }
     ];
 
@@ -30,8 +33,8 @@ const BottomNav = () => {
     const navItems = isDoctor ? doctorNav : patientNav;
 
     return (
-        <div className="md:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-xl border-t border-slate-200 px-6 py-2 pb-safe z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
-            <nav className="flex justify-between items-center max-w-lg mx-auto">
+        <div className="md:hidden fixed bottom-0 w-full bg-white/95 backdrop-blur-xl border-t border-slate-200 px-2 py-2 pb-safe z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.08)]">
+            <nav className="flex justify-between items-center max-w-2xl mx-auto overflow-x-auto scrollbar-none gap-1">
                 {navItems.map((item) => {
                     const isProfile = item.icon === null;
 
@@ -39,10 +42,10 @@ const BottomNav = () => {
                         <NavLink
                             key={item.name}
                             to={item.path}
-                            end={item.path === '/' || item.path === '/doctor-dashboard'}
+                            end={item.path === '/dashboard' || item.path === '/doctor-dashboard'}
                             className={({ isActive }) =>
-                                `flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${
-                                    isActive ? 'text-primary-600 scale-110' : 'text-slate-400 hover:text-slate-600'
+                                `flex flex-col items-center gap-1 p-2 min-w-[56px] rounded-xl transition-all relative ${
+                                    isActive ? 'text-primary-600 scale-105' : 'text-slate-400'
                                 }`
                             }
                         >
@@ -66,24 +69,23 @@ const BottomNav = () => {
                                     ) : (
                                         item.icon
                                     )}
-                                    <span className={`text-[10px] font-bold tracking-wide ${isActive ? 'opacity-100' : 'opacity-0 h-0 w-0 overflow-hidden'}`}>
+                                    <span className="text-[9px] font-black uppercase tracking-tighter text-center whitespace-nowrap">
                                         {item.name}
                                     </span>
-                                    {/* Active dot indicator */}
-                                    {isActive && <div className="absolute -bottom-1 w-1 h-1 bg-primary-600 rounded-full" />}
+                                    {isActive && <div className="absolute top-0 w-1 h-1 bg-primary-600 rounded-full" />}
                                 </>
                             )}
                         </NavLink>
                     );
                 })}
                 
-                {/* Logout Button */}
+                {/* Premium Logout Button */}
                 <button
                     onClick={logout}
-                    className="flex flex-col items-center gap-1 p-2 rounded-xl transition-all text-red-400 hover:text-red-500 hover:bg-red-50"
+                    className="flex flex-col items-center gap-1 p-2 px-3 min-w-[64px] rounded-2xl transition-all text-red-500 bg-red-50/80 border border-red-100/50 hover:bg-red-100 active:scale-90"
                 >
-                    <LogOut size={20} />
-                    <span className="text-[10px] font-bold tracking-wide">Logout</span>
+                    <LogOut size={18} />
+                    <span className="text-[9px] font-black uppercase tracking-tighter">Logout</span>
                 </button>
             </nav>
         </div>
