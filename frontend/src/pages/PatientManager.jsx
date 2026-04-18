@@ -504,10 +504,9 @@ const PatientManager = () => {
       {/* Critical Info Highlight */}
       <ClinicalAlertBanner patient={patient} />
 
-      {/* ── Full Patient Information Card ── */}
-      <section className="space-y-6">
+      <div className="space-y-6">
         <PatientInfoCard patient={patient} patientId={id} />
-      </section>
+      </div>
 
       {/* E-Prescription System */}
       <div className={`bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden transition-all duration-300 ${isPrescriptionMinimized ? 'p-4' : 'p-8'}`}>
@@ -533,7 +532,6 @@ const PatientManager = () => {
           <div className="mt-6 animate-in fade-in slide-in-from-top-4 duration-500">
             <PrescriptionForm patient={patient} onComplete={() => {
                fetchRecords();
-               // Optional: switch to records view
             }} />
           </div>
         )}
