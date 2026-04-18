@@ -152,7 +152,21 @@ const EditDoctorProfile = () => {
       async (position) => {
         const { latitude, longitude } = position.coords;
         if (!window.google) {
-          toast.error("Google Maps library not loaded.");
+          // Fallback to Nominatim (OpenStreetMap) if Google Maps is not loaded
+          try {
+            const nomRes = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
+            const nomData = await nomRes.json();
+            if (nomData && nomData.display_name) {
+              setFormData(prev => ({ ...prev, clinicAddress: nomData.display_name }));
+              toast.success("Location detected via OpenStreetMap Fallback.");
+              setLoading(false);
+              return;
+            }
+          } catch (nomErr) {
+            console.error("Nominatim fallback failed", nomErr);
+          }
+          
+          toast.error("Google Maps library not loaded and fallback failed.");
           setLoading(false);
           return;
         }
@@ -347,6 +361,30 @@ const EditDoctorProfile = () => {
             <div className="md:col-span-2">
               <label className={labelClass}>Consultation Timings</label>
               <input type="text" name="consultationTimings" value={formData.consultationTimings} onChange={handleChange} className={inputClass} placeholder="e.g. 10:00 AM - 04:00 PM" />
+            </div>
+
+            {/* Clinic Map Terminal */}
+            <div className="md:col-span-2 mt-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
+                    <MapPin size={22} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900 tracking-tight">Clinic Location Hub</h3>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5 leading-none">Global Navigation Node</p>
+                  </div>
+                </div>
+                {!user?.clinicAddress && (
+                  <button 
+                    onClick={() => navigate('/edit-profile')}
+                    className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/20 transition-all"
+                  >
+                    Add Location
+                  </button>
+                )}
+              </div>
+              <ClinicMap address={user?.clinicAddress} />
             </div>
 
             {/* Payment & Specific Fees */}

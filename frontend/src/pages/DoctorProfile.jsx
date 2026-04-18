@@ -4,7 +4,7 @@ import api from '../api/axiosConfig';
 import {
   Stethoscope, Mail, Phone, GraduationCap, BadgeCheck,
   Building2, Clock, Activity, AlertCircle, User, Users,
-  Calendar, CheckCircle, XCircle, Video, Edit3, MapPin
+  Calendar, CheckCircle, XCircle, Video, Edit3, MapPin, CreditCard, Wallet
 } from 'lucide-react';
 import ClinicMap from '../components/ClinicMap';
 
@@ -166,20 +166,37 @@ const DoctorProfile = () => {
           </div>
         </Section>
 
+        <Section title="Transactional Identity" icon={Wallet}>
+          <InfoRow icon={CreditCard} label="Razorpay Account ID" value={user.razorpayAccountId} color="text-emerald-500" />
+          <div className="py-3">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Direct Payment Node</p>
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border ${user.razorpayAccountId ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-400 border-slate-200'}`}>
+              {user.razorpayAccountId ? <><CheckCircle size={13} /> Linked</> : <><XCircle size={13} /> Unlinked</>}
+            </span>
+          </div>
+        </Section>
+
         {/* Clinic Mapping */}
         <div className="lg:col-span-2">
            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
-               <div className="flex items-center gap-2">
-                 <MapPin size={18} className="text-red-600" />
-                 <h4 className="font-bold text-slate-700 text-sm uppercase tracking-wide">Clinic Location Hub</h4>
-               </div>
-               {user.clinicAddress && (
-                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-white border border-slate-200 px-2.5 py-1 rounded-lg">
-                   Verified Terminal
-                 </span>
-               )}
-             </div>
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
+                <div className="flex items-center gap-2">
+                  <MapPin size={18} className="text-red-600" />
+                  <h4 className="font-bold text-slate-700 text-sm uppercase tracking-wide">Clinic Location Hub</h4>
+                </div>
+                {!user.clinicAddress ? (
+                  <button 
+                    onClick={() => navigate('/doctor-dashboard/profile/edit')}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all animate-pulse"
+                  >
+                    Add Location
+                  </button>
+                ) : (
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-white border border-slate-200 px-2.5 py-1 rounded-lg">
+                    Verified Terminal
+                  </span>
+                )}
+              </div>
              <div className="p-6">
                 <ClinicMap address={user.clinicAddress} height="350px" />
                 {user.clinicAddress && (
