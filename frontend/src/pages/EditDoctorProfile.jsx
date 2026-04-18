@@ -384,7 +384,7 @@ const EditDoctorProfile = () => {
                   </button>
                 )}
               </div>
-              <ClinicMap address={user?.clinicAddress} />
+              <ClinicMap address={formData.clinicAddress} />
             </div>
 
             {/* Payment & Specific Fees */}
