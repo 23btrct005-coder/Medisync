@@ -507,6 +507,7 @@ const PatientManager = () => {
       {/* ── Full Patient Information Card ── */}
       <section className="space-y-6">
         <PatientInfoCard patient={patient} patientId={id} />
+      </section>
 
       {/* E-Prescription System */}
       <div className={`bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden transition-all duration-300 ${isPrescriptionMinimized ? 'p-4' : 'p-8'}`}>
