@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
+import { toast } from 'react-hot-toast';
 import {
   User, Stethoscope, BadgeCheck, GraduationCap, Building2,
   Clock, Activity, Save, ArrowLeft, Mail, Phone, Calendar,
@@ -129,12 +130,29 @@ const EditDoctorProfile = () => {
     }
 
     setLoading(true);
+    
+    // Safety check: ensure Google Maps is loaded
+    if (!window.google) {
+      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+      if (apiKey) {
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+        script.async = true;
+        script.onload = () => actualGetLocation();
+        document.head.appendChild(script);
+        return;
+      }
+    }
+    
+    actualGetLocation();
+  };
+
+  const actualGetLocation = () => {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
-        
         if (!window.google) {
-          toast.error("Google Maps library not loaded. Please try again.");
+          toast.error("Google Maps library not loaded.");
           setLoading(false);
           return;
         }
@@ -203,13 +221,24 @@ const EditDoctorProfile = () => {
     setMessage({ type: '', text: '' });
 
     console.log("Submitting Profile Update Payload:", formData);
+    
+    // Safety timeout: stop loading state after 10 seconds if no response
+    const timeout = setTimeout(() => {
+      if (loading) {
+        setLoading(false);
+        toast.error("Update taking longer than expected. Please check your connection.");
+      }
+    }, 10000);
+
     try {
       await api.post('doctor/profile/sync', formData);
+      clearTimeout(timeout);
       await refreshUser();
       setMessage({ type: 'success', text: 'Professional profile updated successfully!' });
       window.scrollTo(0, 0);
       setTimeout(() => navigate('/profile'), 1500);
     } catch (err) {
+      clearTimeout(timeout);
       setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to update profile.' });
     } finally {
       setLoading(false);

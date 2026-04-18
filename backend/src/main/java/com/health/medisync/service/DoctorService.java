@@ -149,18 +149,20 @@ public class DoctorService {
         
         if (updates.containsKey("yearsOfExperience")) {
             Object exp = updates.get("yearsOfExperience");
-            if (exp != null) {
-                if (exp instanceof Number) {
-                    doctor.setYearsOfExperience(((Number) exp).intValue());
-                } else {
-                    try {
-                        doctor.setYearsOfExperience(Integer.parseInt(exp.toString()));
-                    } catch (Exception e) {}
+            if (exp != null && !exp.toString().trim().isEmpty()) {
+                try {
+                    if (exp instanceof Number) {
+                        doctor.setYearsOfExperience(((Number) exp).intValue());
+                    } else {
+                        doctor.setYearsOfExperience(Integer.parseInt(exp.toString().trim()));
+                    }
+                } catch (NumberFormatException e) {
+                    System.err.println("DEBUG: Failed to parse yearsOfExperience: " + exp);
                 }
             }
         }
         
-        if (updates.containsKey("consultationFee")) doctor.setConsultationFee((String) updates.get("consultationFee"));
+        if (updates.containsKey("consultationFee")) doctor.setConsultationFee(updates.get("consultationFee") != null ? updates.get("consultationFee").toString() : "");
         if (updates.containsKey("workingDays")) doctor.setWorkingDays((String) updates.get("workingDays"));
         if (updates.containsKey("consultationTimings")) doctor.setConsultationTimings((String) updates.get("consultationTimings"));
         if (updates.containsKey("onlineConsultation")) doctor.setOnlineConsultation((Boolean) updates.get("onlineConsultation"));
@@ -172,14 +174,22 @@ public class DoctorService {
         
         if (updates.containsKey("onlineConsultationFee")) {
             Object fee = updates.get("onlineConsultationFee");
-            if (fee != null && !fee.toString().isEmpty()) {
-                doctor.setOnlineConsultationFee(Double.parseDouble(fee.toString()));
+            if (fee != null && !fee.toString().trim().isEmpty()) {
+                try {
+                    doctor.setOnlineConsultationFee(Double.parseDouble(fee.toString().trim()));
+                } catch (NumberFormatException e) {
+                    System.err.println("DEBUG: Failed to parse onlineConsultationFee: " + fee);
+                }
             }
         }
         if (updates.containsKey("offlineConsultationFee")) {
             Object fee = updates.get("offlineConsultationFee");
-            if (fee != null && !fee.toString().isEmpty()) {
-                doctor.setOfflineConsultationFee(Double.parseDouble(fee.toString()));
+            if (fee != null && !fee.toString().trim().isEmpty()) {
+                try {
+                    doctor.setOfflineConsultationFee(Double.parseDouble(fee.toString().trim()));
+                } catch (NumberFormatException e) {
+                    System.err.println("DEBUG: Failed to parse offlineConsultationFee: " + fee);
+                }
             }
         }
 
