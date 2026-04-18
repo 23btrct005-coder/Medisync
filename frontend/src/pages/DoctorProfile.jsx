@@ -32,6 +32,8 @@ const DoctorProfile = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
+  console.log("Current Doctor Profile State:", user);
+
   if (loading) return (
     <div className="flex justify-center items-center p-20">
       <div className="animate-spin text-blue-600"><Activity size={36} /></div>

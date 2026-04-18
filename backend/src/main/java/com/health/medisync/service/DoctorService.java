@@ -134,6 +134,8 @@ public class DoctorService {
 
     public Doctor updateProfile(String doctorUsername, Map<String, Object> updates) {
         Doctor doctor = getDoctorProfile(doctorUsername);
+        System.out.println("DEBUG: Profile sync for " + doctorUsername);
+        System.out.println("DEBUG: Incoming updates: " + updates);
         
         if (updates.containsKey("name")) doctor.setName((String) updates.get("name"));
         if (updates.containsKey("phone")) doctor.setPhone((String) updates.get("phone"));

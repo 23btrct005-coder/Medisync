@@ -202,6 +202,7 @@ const EditDoctorProfile = () => {
     setLoading(true);
     setMessage({ type: '', text: '' });
 
+    console.log("Submitting Profile Update Payload:", formData);
     try {
       await api.post('doctor/profile/sync', formData);
       await refreshUser();
