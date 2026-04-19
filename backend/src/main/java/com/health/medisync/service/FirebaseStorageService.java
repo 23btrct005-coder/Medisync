@@ -20,7 +20,7 @@ public class FirebaseStorageService {
         }
 
         String fileName = folder + "/" + UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-        Bucket bucket = StorageClient.getInstance().getBucket();
+        Bucket bucket = StorageClient.getInstance().bucket();
         
         // Upload file
         Blob blob = bucket.create(fileName, file.getBytes(), file.getContentType());
@@ -37,10 +37,10 @@ public class FirebaseStorageService {
         try {
             // Extract path from signed URL if possible, or just ignore if it's a direct URL
             // This is a simplistic deletion. For production, you'd want better path parsing.
-            String bucketName = StorageClient.getInstance().getBucket().getName();
+            String bucketName = StorageClient.getInstance().bucket().getName();
             if (fileUrl.contains(bucketName)) {
                 String path = fileUrl.split(bucketName + "/")[1].split("\\?")[0];
-                StorageClient.getInstance().getBucket().get(path).delete();
+                StorageClient.getInstance().bucket().get(path).delete();
             }
         } catch (Exception e) {
             System.err.println("WARNING: Could not delete old Firebase file: " + e.getMessage());

@@ -21,6 +21,7 @@ import com.health.medisync.repository.DoctorRepository;
 
 import com.health.medisync.service.AuthService;
 import com.health.medisync.service.EmailService;
+import com.health.medisync.service.FirebaseStorageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
