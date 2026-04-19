@@ -49,6 +49,14 @@ const ProtectedRoute = ({ children, allowedRole }) => {
   return children;
 };
 
+const SmartProfileRedirect = ({ type = 'view' }) => {
+  const { userRole } = useAuth();
+  if (userRole === 'ROLE_DOCTOR') {
+    return <Navigate to={type === 'edit' ? '/doctor-dashboard/profile/edit' : '/doctor-dashboard/profile'} replace />;
+  }
+  return <Navigate to={type === 'edit' ? '/dashboard/profile/edit' : '/dashboard/profile'} replace />;
+};
+
 function App() {
   useEffect(() => {
     // Request Push Notification Permissions on load for PWA
@@ -78,9 +86,14 @@ function App() {
                 <Route path="/ai-disclaimer" element={<AIDisclaimer />} />
                 
                 {/* Legacy Redirects */}
+                <Route path="/profile" element={
+                  <ProtectedRoute>
+                    <SmartProfileRedirect type="view" />
+                  </ProtectedRoute>
+                } />
                 <Route path="/edit-profile" element={
                   <ProtectedRoute>
-                    <Navigate to="/dashboard/profile/edit" replace />
+                    <SmartProfileRedirect type="edit" />
                   </ProtectedRoute>
                 } />
 
