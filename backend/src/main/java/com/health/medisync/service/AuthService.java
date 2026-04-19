@@ -64,7 +64,7 @@ public class AuthService {
 
         if (user == null && normalizedInput != null && normalizedInput.contains("@")) {
             // Try searching by email in Patient and Doctor repositories
-            user = patientRepository.findByEmail(normalizedInput)
+            user = patientRepository.findByUserUsernameIgnoreCase(normalizedInput)
                     .map(Patient::getUser)
                     .orElseGet(() -> doctorRepository.findByEmail(normalizedInput)
                             .map(Doctor::getUser)
@@ -159,7 +159,7 @@ public class AuthService {
         User user = userRepository.findByUsername(normalizedEmail).orElse(null);
         if (user == null) {
             // If username isn't email, try finding by role link
-            user = patientRepository.findByEmail(normalizedEmail)
+            user = patientRepository.findByUserUsernameIgnoreCase(normalizedEmail)
                     .map(Patient::getUser)
                     .orElseGet(() -> doctorRepository.findByEmail(normalizedEmail)
                             .map(Doctor::getUser)

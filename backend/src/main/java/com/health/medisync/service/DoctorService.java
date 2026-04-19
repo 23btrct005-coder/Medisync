@@ -57,8 +57,8 @@ public class DoctorService {
 
     public void requestAccess(String doctorUsername, String patientEmail) {
         Doctor doctor = getDoctorProfile(doctorUsername);
-        Patient patient = patientRepository.findByEmail(patientEmail)
-            .orElseThrow(() -> new RuntimeException("Patient with email " + patientEmail + " not found"));
+        Patient patient = patientRepository.findByUserUsernameIgnoreCase(patientEmail)
+            .orElseThrow(() -> new RuntimeException("Patient with email/username " + patientEmail + " not found"));
         createAccessRequest(doctor, patient);
     }
 
