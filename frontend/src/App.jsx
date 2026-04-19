@@ -77,6 +77,13 @@ function App() {
                 <Route path="/terms-of-service" element={<TermsOfService />} />
                 <Route path="/ai-disclaimer" element={<AIDisclaimer />} />
                 
+                {/* Legacy Redirects */}
+                <Route path="/edit-profile" element={
+                  <ProtectedRoute>
+                    <Navigate to="/dashboard/profile/edit" replace />
+                  </ProtectedRoute>
+                } />
+
                 <Route path="/" element={<Landing />} />
                 
                 {/* Patient Routes */}

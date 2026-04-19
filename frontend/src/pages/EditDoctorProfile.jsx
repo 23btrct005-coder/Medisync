@@ -410,14 +410,6 @@ const EditDoctorProfile = () => {
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5 leading-none">Global Navigation Node</p>
                   </div>
                 </div>
-                {!user?.clinicAddress && (
-                  <button 
-                    onClick={() => navigate('/edit-profile')}
-                    className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/20 transition-all"
-                  >
-                    Add Location
-                  </button>
-                )}
               </div>
               <ClinicMap address={formData.clinicAddress} />
             </div>
