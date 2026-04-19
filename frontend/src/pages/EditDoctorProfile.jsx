@@ -6,8 +6,9 @@ import { toast } from 'react-hot-toast';
 import {
   User, Stethoscope, BadgeCheck, GraduationCap, Building2,
   Clock, Activity, Save, ArrowLeft, Mail, Phone, Calendar,
-  CheckCircle, AlertCircle, Video, Briefcase, Camera, Upload, Target, Navigation
+  CheckCircle, AlertCircle, Video, Briefcase, Camera, Upload, Target, Navigation, MapPin
 } from 'lucide-react';
+import ClinicMap from '../components/ClinicMap';
 
 const EditDoctorProfile = () => {
   const { user, refreshUser } = useAuth();
@@ -151,14 +152,27 @@ const EditDoctorProfile = () => {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
+        console.log(`GPS Acquired: ${latitude}, ${longitude}`);
+
         if (!window.google) {
-          // Fallback to Nominatim (OpenStreetMap) if Google Maps is not loaded
           try {
-            const nomRes = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
+            const nomRes = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+              { headers: { 'Accept-Language': 'en' } }
+            );
             const nomData = await nomRes.json();
             if (nomData && nomData.display_name) {
-              setFormData(prev => ({ ...prev, clinicAddress: nomData.display_name }));
-              toast.success("Location detected via OpenStreetMap Fallback.");
+              // Extract facility name if available (hospital, clinic, etc.)
+              const address = nomData.address;
+              const facility = address.hospital || address.clinic || address.doctors || address.amenity || address.building;
+              const fullAddress = facility ? `${facility}, ${nomData.display_name}` : nomData.display_name;
+              
+              setFormData(prev => ({ 
+                ...prev, 
+                clinicAddress: fullAddress,
+                hospital: facility || prev.hospital // Auto-fill hospital name too
+              }));
+              toast.success("Full clinical location synchronized.");
               setLoading(false);
               return;
             }
@@ -166,7 +180,7 @@ const EditDoctorProfile = () => {
             console.error("Nominatim fallback failed", nomErr);
           }
           
-          toast.error("Google Maps library not loaded and fallback failed.");
+          toast.error("Location resolution failed. Please enter manually.");
           setLoading(false);
           return;
         }
@@ -177,21 +191,42 @@ const EditDoctorProfile = () => {
         try {
           const response = await geocoder.geocode({ location: latlng });
           if (response.results[0]) {
-            setFormData(prev => ({ ...prev, clinicAddress: response.results[0].formatted_address }));
-            setMessage({ type: 'success', text: 'Clinic location synchronized via GPS!' });
+            const result = response.results[0];
+            // Look for a 'point_of_interest' or 'establishment' type to get the name
+            let facilityName = "";
+            const poiResult = response.results.find(res => res.types.includes('point_of_interest') || res.types.includes('establishment'));
+            if (poiResult && poiResult.name && !result.formatted_address.includes(poiResult.name)) {
+                facilityName = poiResult.name;
+            }
+
+            const finalAddress = facilityName ? `${facilityName}, ${result.formatted_address}` : result.formatted_address;
+            
+            setFormData(prev => ({ 
+                ...prev, 
+                clinicAddress: finalAddress,
+                hospital: facilityName || prev.hospital
+            }));
+            toast.success("Digital address synchronized via GPS!");
           } else {
-            toast.error("No results found for your location.");
+            toast.error("No address found for these coordinates.");
           }
         } catch (e) {
-          toast.error("Geocoder failed due to: " + e);
+          console.error("Google Geocoder failed", e);
+          toast.error("Mapping failed. Please enter manually.");
         } finally {
           setLoading(false);
         }
       },
-      () => {
-        toast.error("Unable to retrieve your location. Check your permissions.");
+      (error) => {
+        let errorMsg = "Unable to retrieve location.";
+        if (error.code === 1) errorMsg = "Location permission denied by browser.";
+        else if (error.code === 2) errorMsg = "GPS signal lost or unavailable.";
+        else if (error.code === 3) errorMsg = "Location request timed out.";
+        
+        toast.error(errorMsg);
         setLoading(false);
-      }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   };
 
