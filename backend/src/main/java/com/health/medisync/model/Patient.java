@@ -18,11 +18,11 @@ public class Patient {
     private User user;
 
     // Basic Info
-    private String name;
-    private String dateOfBirth;
+    @Transient private String name;
+    @Transient private String dateOfBirth;
     @Transient private Integer age;
-    private String gender;
-    private String bloodGroup;
+    @Transient private String gender;
+    @Transient private String bloodGroup;
     @Transient private String nationalId;
     @Transient private String maritalStatus;
     @Transient private String occupation;
