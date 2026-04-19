@@ -191,20 +191,26 @@ public class AppointmentService {
         }
 
         Appointment appointment = new Appointment();
-        appointment.setPatient(patient);
         appointment.setDoctor(doctor);
+        appointment.setPatient(patient);
         appointment.setAppointmentDate(date);
         appointment.setTimeSlot(slot);
         appointment.setConsultationType(type);
-        appointment.setAmount(fee);
+        appointment.setAmount(doctor.getConsultationFee() != null ? Double.valueOf(doctor.getConsultationFee().replaceAll("[^0-9]", "")) : 1.0);
         appointment.setRazorpayOrderId(orderId);
-        appointment.setStatus(isDemoMode ? AppointmentStatus.BOOKED : AppointmentStatus.PENDING);
+        appointment.setStatus(AppointmentStatus.PENDING);
+
+        // Auto-generate meeting link for Virtual consultations
+        if (type == ConsultationType.ONLINE) {
+            String randomSlug = java.util.UUID.randomUUID().toString().substring(0, 8);
+            appointment.setMeetLink("https://meet.google.com/msc-" + randomSlug);
+        }
+
+        Appointment saved = appointmentRepository.save(appointment);
         
         if (isDemoMode) {
             appointment.setRazorpayPaymentId("demo_payment_" + System.currentTimeMillis());
         }
-
-        Appointment saved = appointmentRepository.save(appointment);
 
         Map<String, Object> response = new HashMap<>();
         response.put("appointmentId", saved.getId());

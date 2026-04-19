@@ -259,9 +259,19 @@ const DoctorAppointmentCard = ({ appt, onClick, active, historical }) => {
                                 <div key={i} className="w-8 h-8 rounded-xl bg-white border-2 border-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-400">R</div>
                             ))}
                         </div>
-                        <button className="px-6 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary transition-all shadow-md active:scale-95">
-                            Open File
-                        </button>
+                        <div className="flex gap-2">
+                             {appt.consultationType === 'ONLINE' && appt.meetLink && (
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); window.open(appt.meetLink, '_blank'); }}
+                                    className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-emerald-500 transition-all shadow-md active:scale-95 flex items-center gap-2"
+                                >
+                                    <Video size={14} /> Enter Call
+                                </button>
+                             )}
+                            <button className="px-6 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary transition-all shadow-md active:scale-95">
+                                Open File
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

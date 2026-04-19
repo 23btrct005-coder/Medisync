@@ -34,6 +34,9 @@ public class Appointment {
     private Double amount;
     private String razorpayOrderId;
     private String razorpayPaymentId;
+    
+    private String meetLink;
+    private boolean meetNotified = false;
 
     private java.time.LocalDateTime createdAt = java.time.LocalDateTime.now();
 
@@ -73,4 +76,10 @@ public class Appointment {
 
     public java.time.LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(java.time.LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public String getMeetLink() { return meetLink; }
+    public void setMeetLink(String meetLink) { this.meetLink = meetLink; }
+
+    public boolean isMeetNotified() { return meetNotified; }
+    public void setMeetNotified(boolean meetNotified) { this.meetNotified = meetNotified; }
 }

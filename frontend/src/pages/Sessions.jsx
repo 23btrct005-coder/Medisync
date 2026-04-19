@@ -247,8 +247,11 @@ const SessionDetailModal = ({ appt, onClose }) => {
                     </div>
 
                     <div className="mt-8 pt-6 border-t border-slate-100 flex gap-3">
-                        {appt.consultationType === 'ONLINE' && appt.status !== 'EXPIRED' && (
-                            <button className="flex-1 btn-premium bg-emerald-50 text-emerald-700 shadow-none border-emerald-100 hover:bg-emerald-100 text-sm py-3">
+                        {appt.consultationType === 'ONLINE' && appt.status !== 'FAILED' && appt.meetLink && (
+                            <button 
+                                onClick={() => window.open(appt.meetLink, '_blank')}
+                                className="flex-1 btn-premium bg-emerald-50 text-emerald-700 shadow-none border-emerald-100 hover:bg-emerald-100 text-sm py-3 flex items-center justify-center gap-2"
+                            >
                                 <Video size={16} /> Enter Call
                             </button>
                         )}
