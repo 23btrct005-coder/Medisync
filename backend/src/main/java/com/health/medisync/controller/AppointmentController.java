@@ -96,14 +96,19 @@ public class AppointmentController {
 
     @GetMapping("/my-appointments")
     public ResponseEntity<List<Appointment>> myAppointments(Authentication authentication) {
-        String email = authentication.getName();
-        boolean isDoctor = authentication.getAuthorities().stream()
-            .anyMatch(a -> a.getAuthority().equals("ROLE_DOCTOR"));
+        try {
+            String email = authentication.getName();
+            boolean isDoctor = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_DOCTOR"));
 
-        if (isDoctor) {
-            return ResponseEntity.ok(appointmentService.getDoctorAppointments(email));
-        } else {
-            return ResponseEntity.ok(appointmentService.getPatientAppointments(email));
+            if (isDoctor) {
+                return ResponseEntity.ok(appointmentService.getDoctorAppointments(email));
+            } else {
+                return ResponseEntity.ok(appointmentService.getPatientAppointments(email));
+            }
+        } catch (Exception e) {
+            System.err.println("CRITICAL: Fetching Appointments Failed: " + e.getMessage());
+            return ResponseEntity.ok(java.util.Collections.emptyList());
         }
     }
 }

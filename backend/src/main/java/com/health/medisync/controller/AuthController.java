@@ -391,12 +391,21 @@ public class AuthController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping(value = "/patient/photo/{id}", produces = {MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE})
-    public ResponseEntity<byte[]> getPatientPhoto(@PathVariable Long id) {
+    @GetMapping(value = "/patient/photo/{id}")
+    public ResponseEntity<?> getPatientPhoto(@PathVariable Long id) {
         return patientRepository.findById(id)
             .map(patient -> {
-                if (patient.getProfilePicture() == null) return ResponseEntity.notFound().<byte[]>build();
-                return ResponseEntity.ok().body(patient.getProfilePicture());
+                if (patient.getProfilePicture() == null) {
+                    // Fallback to DiceBear placeholder if Photo columns are transient/masked
+                    String diceBearUrl = "https://api.dicebear.com/7.x/avataaars/svg?seed=" + 
+                                       (patient.getUser() != null ? patient.getUser().getUsername() : id.toString());
+                    return ResponseEntity.status(org.springframework.http.HttpStatus.FOUND)
+                                         .location(java.net.URI.create(diceBearUrl))
+                                         .build();
+                }
+                return ResponseEntity.ok()
+                                     .contentType(MediaType.IMAGE_JPEG)
+                                     .body(patient.getProfilePicture());
             })
             .orElse(ResponseEntity.notFound().build());
     }

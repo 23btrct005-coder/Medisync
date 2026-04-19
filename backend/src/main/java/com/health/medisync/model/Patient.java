@@ -91,7 +91,6 @@ public class Patient {
     @Transient private Boolean appNotifications = true;
     @Transient private Boolean smsNotifications = false;
 
-    @Transient
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "patient_doctors",

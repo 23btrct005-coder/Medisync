@@ -26,6 +26,11 @@ public class ReportController {
         return ResponseEntity.ok(reportService.getMyReports(username));
     }
 
+    @GetMapping("")
+    public ResponseEntity<List<Report>> getMyReportsGeneric(Authentication authentication) {
+        return getMyReports(authentication);
+    }
+
     @PostMapping("/upload")
     public ResponseEntity<?> uploadReport(@RequestParam("file") MultipartFile file, Authentication authentication) {
         try {
