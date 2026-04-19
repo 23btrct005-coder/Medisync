@@ -3,22 +3,18 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
 import QRCode from 'react-qr-code';
 import { 
-  Activity, ClipboardList, UserCheck, Calendar, CalendarPlus, QrCode, X, 
-  Download, UserX, Loader2, Video, MapPin, Clock, 
-  TrendingUp, ShieldCheck, Sparkles, ChevronRight, Plus,
-  Zap, MessageSquare, Heart, Target, Bell
+  Activity, ClipboardList, UserCheck, Calendar, QrCode, X, 
+  Download, Loader2, MessageSquare, ShieldCheck, Sparkles, 
+  ChevronRight, Plus, Zap, Heart, Bell, Database, Globe,
+  TrendingUp, ArrowUpRight, Lock
 } from 'lucide-react';
 import ProfileCompletionBanner from '../components/ProfileCompletionBanner';
-import BookingModal from './BookingModal';
 import ActivityHub from '../components/ActivityHub';
 import HealthSyncScore from '../components/HealthSyncScore';
-import StatCard from '../components/StatCard';
-import SkeletonCard, { SkeletonRow } from '../components/SkeletonCard';
-import AiChatSidebar from '../components/AiChatSidebar';
+import StatCardPro from '../components/StatCard'; 
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import ClinicalAlertBanner from '../components/ClinicalAlertBanner';
-import ActiveMedicationTracker from '../components/ActiveMedicationTracker';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -27,10 +23,7 @@ const Dashboard = () => {
   const [requests, setRequests] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [patient, setPatient] = useState(null);
-  const [prescriptions, setPrescriptions] = useState([]);
   const [showQRModal, setShowQRModal] = useState(false);
-  const [showChat, setShowChat] = useState(false);
-  const [showBooking, setShowBooking] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,15 +33,11 @@ const Dashboard = () => {
         fetchDashboardInfo(),
         fetchRequests(),
         fetchLinkedDoctors(),
-        fetchPatientData(),
-        fetchPrescriptions()
+        fetchPatientData()
       ]);
       setLoading(false);
     };
-    
     initDashboard();
-    const intervalId = setInterval(fetchRequests, 30000);
-    return () => clearInterval(intervalId);
   }, []);
 
   const fetchPatientData = async () => {
@@ -58,23 +47,12 @@ const Dashboard = () => {
     } catch (e) { console.error(e); }
   };
 
-  const fetchPrescriptions = async () => {
-    try {
-        const res = await api.get('prescriptions/my');
-        setPrescriptions(res.data || []);
-    } catch (e) { console.error(e); }
-  };
-
   const fetchDashboardInfo = async () => {
     try {
       const res = await api.get('records/my-records');
       const records = res.data;
       if(records && records.length > 0) {
-          const latest = [...records].sort((a,b) => {
-              const dateA = a.date ? new Date(a.date) : 0;
-              const dateB = b.date ? new Date(b.date) : 0;
-              return dateB - dateA;
-          })[0];
+          const latest = [...records].sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0))[0];
           setStats({
               recordsCount: records.length,
               latestDiagnosis: latest.diagnosis,
@@ -101,335 +79,232 @@ const Dashboard = () => {
   const handleApproveRequest = async (id) => {
     try {
       await api.post(`patient/requests/${id}/accept`);
-      toast.success('Access Request securely approved.');
+      toast.success('Clinical access granted.');
       fetchRequests();
     } catch (e) {
-      toast.error('Failed to parse request authorization.');
+      toast.error('Failed to authorize access.');
     }
   };
 
   const emergencyUrl = `${window.location.origin}/emergency/${user?.id}`;
 
   return (
-    <div className="page-entry space-y-10 pb-12">
-      <ProfileCompletionBanner />
+    <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-8 selection:bg-emerald-100">
+      <div className="max-w-7xl mx-auto space-y-8">
+        
+        {/* Pro Banner */}
+        <ProfileCompletionBanner />
 
-      {/* Super Hero Section */}
-      <section className="relative group">
-        <div className="relative bg-slate-900 rounded-[3rem] p-8 md:p-12 text-white shadow-2xl overflow-hidden">
-          <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/20 to-transparent pointer-events-none" />
-          <div className="relative z-10 flex flex-col md:flex-row justify-between items-center md:items-center gap-8 text-center md:text-left">
-            <div className="space-y-4 flex flex-col items-center md:items-start w-full">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full border border-white/10 backdrop-blur-md text-[10px] font-black uppercase tracking-widest text-primary-200">
-                <ShieldCheck size={14} className="text-emerald-300 animate-pulse" />
-                Secure Clinical Identity
-              </div>
-              <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight">
-                Hello, <span className="text-primary-400">{(user?.name || 'Patient').split(' ')[0]}</span>
-              </h1>
-              <p className="text-slate-400 font-medium max-w-lg leading-relaxed text-sm md:text-base">
-                Your medical data is synchronizing across secure encrypted nodes.
-              </p>
-              <div className="flex flex-wrap justify-center md:justify-start gap-4 pt-4">
-                <button 
-                  onClick={() => setShowQRModal(true)}
-                  className="btn-premium bg-primary text-white border-none shadow-lg shadow-primary/30"
-                >
-                  <QrCode size={18} />
-                  Emergency QR
-                </button>
-                <button 
-                  onClick={() => setShowChat(true)}
-                  className="btn-premium bg-white/10 text-white border-white/10 backdrop-blur-md hover:bg-white/20"
-                >
-                  <MessageSquare size={18} />
-                  AI Chat
-                </button>
-              </div>
-            </div>
+        {/* Hero Section: Unified OS Control Center */}
+        <section className="relative overflow-hidden group">
+          <div className="relative bg-[#0A1A1A] rounded-[3rem] p-10 md:p-14 text-white shadow-2xl overflow-hidden border border-white/5">
+            <div className="absolute top-0 right-0 w-2/3 h-full bg-gradient-to-l from-emerald-500/10 to-transparent pointer-events-none" />
             
-            <div className="hidden lg:block text-right">
-              <div onClick={() => navigate('/dashboard/profile')} className="cursor-pointer">
+            <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-10">
+              <div className="space-y-6 max-w-2xl">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400">
+                  <ShieldCheck size={14} className="animate-pulse" />
+                  Clinical Node Active
+                </div>
+                
+                <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-none">
+                  Welcome, <span className="text-emerald-400">{(user?.name || 'User').split(' ')[0]}</span>
+                </h1>
+                
+                <p className="text-slate-400 font-medium text-lg leading-relaxed">
+                  Your "Unified Healthcare OS" is currently synchronizing 
+                  <span className="text-white mx-1 font-bold">{stats.recordsCount} clinical archives</span> 
+                  across your secure medical network.
+                </p>
+
+                <div className="flex flex-wrap gap-4 pt-4">
+                  <button 
+                    onClick={() => setShowQRModal(true)}
+                    className="flex items-center gap-2 px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-[#0A1A1A] rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-xl shadow-emerald-500/20 active:scale-95"
+                  >
+                    <QrCode size={18} /> Emergency Key
+                  </button>
+                  <button 
+                    onClick={() => navigate('/dashboard/reports')}
+                    className="flex items-center gap-2 px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-95"
+                  >
+                    <Plus size={18} /> New Report
+                  </button>
+                </div>
+              </div>
+
+              <div className="hidden lg:block">
                  <HealthSyncScore user={user} />
               </div>
             </div>
+            
+            {/* Background Graphic */}
+            <Activity size={400} className="absolute -right-20 -bottom-20 text-emerald-500/5 rotate-12" />
           </div>
-          <Activity className="absolute -right-12 -bottom-12 text-white/5" size={300} />
-        </div>
-      </section>
-      
-      {/* Clinical Highlights */}
-      {!loading && patient && (
-         <ClinicalAlertBanner patient={patient} />
-      )}
+        </section>
 
-      {/* Mobile Quick Launch Hub (Primary Action Placing) */}
-      <section className="md:hidden grid grid-cols-2 gap-4">
-        <div 
-          onClick={() => navigate('/dashboard/reports')}
-          className="p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm active:scale-95 transition-all flex flex-col items-center text-center gap-3"
-        >
-          <div className="p-3 bg-primary/10 text-primary rounded-xl">
-             <Plus size={24} />
+        {/* Intelligence Feedback */}
+        {!loading && patient && (
+          <div className="animate-in slide-in-from-top-4 duration-700">
+            <ClinicalAlertBanner patient={patient} />
           </div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-800">Sync Report</span>
-        </div>
-        <div 
-          onClick={() => navigate('/dashboard/booking')}
-          className="p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm active:scale-95 transition-all flex flex-col items-center text-center gap-3"
-        >
-          <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
-             <CalendarPlus size={24} />
-          </div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-800">Book Doctor</span>
-        </div>
-      </section>
-
-      {/* Stats Ecosystem (Propel Content Higher with Horizontal Placing) */}
-      <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 overflow-x-auto md:overflow-visible pb-4 md:pb-0 scrollbar-none snap-x snap-mandatory">
-        {loading ? (
-          [1,2,3,4].map(i => <div key={i} className="min-w-[85%] md:min-w-0 h-32 bg-slate-100 rounded-[2rem] animate-pulse border border-slate-200" />)
-        ) : (
-          <>
-            <div className="min-w-[85%] md:min-w-0 snap-center">
-              <StatCard 
-                title="Archives" 
-                value={stats.recordsCount} 
-                icon={ClipboardList} 
-                color="primary"
-                trend="+Sync Active"
-              />
-            </div>
-            <div className="min-w-[85%] md:min-w-0 snap-center">
-              <StatCard 
-                title="Diagnosis" 
-                value={stats.latestDiagnosis} 
-                icon={TrendingUp} 
-                color="emerald"
-                trend="Verified AI"
-              />
-            </div>
-            <div className="min-w-[85%] md:min-w-0 snap-center">
-              <StatCard 
-                title="Doctors" 
-                value={doctors.length} 
-                icon={UserCheck} 
-                color="purple"
-                trend="Certified"
-                onClick={() => navigate('/dashboard/doctors')}
-              />
-            </div>
-            <div className="min-w-[85%] md:min-w-0 snap-center">
-              <StatCard 
-                title="Integrity" 
-                value="SECURE" 
-                icon={ShieldCheck} 
-                color="indigo"
-                trend="RLS Isolation"
-              />
-            </div>
-          </>
         )}
-      </div>
 
-      {/* Content Hub */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
-        
-        {/* Main Content Area (Col 1-8) */}
-        <div className="xl:col-span-8 space-y-8">
+        {/* Stats Grid: Operating Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCardPro 
+            title="Archives" 
+            value={stats.recordsCount} 
+            icon={Database} 
+            color="emerald" 
+            trend="+SYNC" 
+            subtitle="Secure Documents"
+          />
+          <StatCardPro 
+            title="Integrity" 
+            value="ACTIVE" 
+            icon={Lock} 
+            color="blue" 
+            trend="E2EE" 
+            subtitle="Privacy Hardened"
+          />
+          <StatCardPro 
+            title="Network" 
+            value={doctors.length} 
+            icon={Globe} 
+            color="purple" 
+            trend="VERIFIED" 
+            subtitle="Clinical Links"
+          />
+          <StatCardPro 
+            title="Diagnosis" 
+            value={stats.latestDiagnosis} 
+            icon={TrendingUp} 
+            color="emerald" 
+            trend="AI-V" 
+            subtitle="Latest Status"
+          />
+        </div>
+
+        {/* Data Architecture Hub */}
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
           
-          {/* Medication Tracker */}
-          {!loading && prescriptions.length > 0 && (
-             <ActiveMedicationTracker prescriptions={prescriptions} />
-          )}
-
-          {/* Requests & Quick Actions */}
-          {loading ? (
-             <div className="glass-panel p-8 space-y-4">
-                <SkeletonRow />
-                <SkeletonRow />
-             </div>
-          ) : requests.length > 0 && (
-            <div className="glass-panel p-6 border-l-4 border-amber-500 animate-in slide-in-from-left duration-500">
-               <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-amber-50 text-amber-600 rounded-xl"><Bell size={20} /></div>
-                  <h3 className="text-lg font-bold">Pending Access Requests</h3>
-               </div>
-               <div className="space-y-3">
+          <div className="xl:col-span-8 space-y-8">
+            {/* Access Requests */}
+            {requests.length > 0 && (
+              <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-xl relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500" />
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl"><Bell size={24} /></div>
+                    <h2 className="text-xl font-black text-slate-800 tracking-tight uppercase tracking-tighter">Access Requests</h2>
+                  </div>
+                  <span className="px-3 py-1 bg-emerald-500 text-white text-[10px] font-black rounded-full animate-pulse uppercase tracking-widest">{requests.length} Pending</span>
+                </div>
+                
+                <div className="space-y-4">
                   {requests.map(req => (
-                    <div key={req.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                       <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
-                             <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${req.doctorName}`} alt="" />
-                          </div>
-                          <div>
-                             <p className="text-sm font-bold text-slate-800">Dr. {req.doctorName}</p>
-                             <p className="text-xs text-slate-500">Professional Access Authorization</p>
-                          </div>
-                       </div>
-                       <div className="flex gap-2">
-                          <button onClick={() => handleApproveRequest(req.id)} className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary-600 transition">Approve</button>
-                       </div>
+                    <div key={req.id} className="flex items-center justify-between p-6 bg-slate-50 hover:bg-emerald-50/50 rounded-2xl border border-slate-100 transition-all group/item">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-white rounded-xl border border-slate-200 flex items-center justify-center font-black text-emerald-500 shadow-sm">Dr</div>
+                        <div>
+                          <p className="font-black text-slate-800">Dr. {req.doctorName}</p>
+                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Medical License: Verified</p>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => handleApproveRequest(req.id)}
+                        className="px-6 py-2.5 bg-[#0A1A1A] text-white text-[10px] font-black rounded-xl hover:bg-emerald-500 transition-all uppercase tracking-widest active:scale-95"
+                      >
+                        Authorize
+                      </button>
                     </div>
                   ))}
-               </div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="glass-panel p-6 space-y-4 border-l-4 border-emerald-500 group hover:bg-emerald-50 transition-all">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl group-hover:scale-110 transition-transform"><Plus size={20} /></div>
-                  <h3 className="text-lg font-bold text-slate-800">New Health Log</h3>
                 </div>
-                <p className="text-xs text-slate-500 font-medium">Add a self-reported record or upcoming appointment details.</p>
-                <div className="flex gap-2">
-                   <button onClick={() => navigate('/dashboard/reports')} className="flex-1 btn-premium bg-slate-900 text-white hover:bg-slate-800 text-xs">Report Detail</button>
-                   <button onClick={() => navigate('/dashboard/booking')} className="btn-premium bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-100 text-xs">Book Doctor</button>
+              </div>
+            )}
+
+            {/* Main Action Hub */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-xl group hover:shadow-2xl transition-all relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-full blur-3xl -z-10" />
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl group-hover:scale-110 transition-transform"><Plus size={24} /></div>
+                  <h3 className="text-xl font-black text-slate-800 uppercase tracking-tighter leading-none">Record Action</h3>
                 </div>
-            </div>
+                <p className="text-sm text-slate-500 font-medium mb-8 leading-relaxed">Expand your clinical node by adding a new imaging report or health log.</p>
+                <div className="flex gap-3">
+                  <button onClick={() => navigate('/dashboard/reports')} className="flex-1 py-3 bg-[#0A1A1A] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all">Add Report</button>
+                  <button onClick={() => navigate('/dashboard/booking')} className="flex-1 py-3 bg-emerald-50 text-emerald-700 rounded-xl text-[10px] font-black uppercase tracking-widest border border-emerald-100 hover:bg-emerald-100 transition-all">Book Node</button>
+                </div>
+              </div>
 
-            <PhysicianInvitationCard />
-          </div>
-        </div>
-
-        {/* Sidebar Activity Hub (Col 9-12) */}
-        <div className="xl:col-span-4 space-y-8">
-          <ActivityHub />
-          
-          {/* Security Deep-Dive */}
-          <div className="glass-panel p-6 bg-slate-900 border-none text-white overflow-hidden relative group">
-            <ShieldCheck className="absolute -right-4 -bottom-4 text-white/5 group-hover:scale-110 transition-transform duration-700" size={140} />
-            <div className="relative z-10">
-              <h4 className="text-lg font-black tracking-tight mb-2">Private Context AI</h4>
-              <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-                Your medical data never leaves the encrypted context. RLS isolation ensures only authorized keys can unlock your telemetry.
-              </p>
-              <div className="flex items-center gap-3 p-3 bg-white/5 rounded-2xl border border-white/10">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Security Hardened</span>
+              <div className="bg-[#0A1A1A] rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden group">
+                <Globe className="absolute -right-8 -bottom-8 text-white/5 group-hover:scale-110 transition-transform duration-1000" size={180} />
+                <div className="relative z-10">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="p-3 bg-emerald-500 text-white rounded-2xl"><UserCheck size={24} /></div>
+                    <h3 className="text-xl font-black text-white uppercase tracking-tighter leading-none">Security Node</h3>
+                  </div>
+                  <p className="text-sm text-slate-400 font-medium mb-8 leading-relaxed">Your data is stored in the "Unified AI Context". RLS locks ensure total isolation from external nodes.</p>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10 text-[9px] font-black text-emerald-400 uppercase tracking-widest">
+                    <ShieldCheck size={12} /> Privacy Hardened
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+
+          <div className="xl:col-span-4 space-y-8">
+            <ActivityHub />
+          </div>
         </div>
       </div>
 
-      {/* Emergency QR Modal */}
+      {/* Emergency Modal */}
       {showQRModal && (
         <QRModal url={emergencyUrl} onClose={() => setShowQRModal(false)} />
       )}
-
-      {/* Global Modals */}
-      <AiChatSidebar isOpen={showChat} onClose={() => setShowChat(false)} />
-      {showBooking && <BookingModal onClose={() => setShowBooking(false)} onBookingSuccess={() => { setShowBooking(false); }} />}
     </div>
   );
 };
 
 /* --- SUBCOMPONENTS --- */
 
-const EmptyState = ({ icon, text }) => (
-  <div className="text-center py-12 bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-200">
-    <div className="text-slate-200 mb-2 flex justify-center">
-      {React.cloneElement(icon, { size: 48 })}
-    </div>
-    <p className="text-slate-400 font-medium italic text-sm">{text}</p>
-  </div>
-);
-
-const PhysicianInvitationCard = () => {
-    const [email, setEmail] = useState('');
-    const [inviting, setInviting] = useState(false);
-
-    const handleInvite = async (e) => {
-        e.preventDefault();
-        if (!email.trim()) return;
-        setInviting(true);
-        try {
-            await api.post('patient/invite-doctor', { doctorEmail: email });
-            toast.success(`Secure invitation sent to ${email}`);
-            setEmail('');
-        } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to send clinical invitation');
-        } finally {
-            setInviting(false);
-        }
-    };
-
-    return (
-        <div className="glass-panel p-6 space-y-4 border-l-4 border-primary group hover:bg-primary-50 transition-all">
-            <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 text-primary rounded-xl group-hover:scale-110 transition-transform">
-                    <Zap size={20} />
-                </div>
-                <h3 className="text-lg font-bold text-slate-800">Invite Clinical Partner</h3>
-            </div>
-            <p className="text-xs text-slate-500 font-medium">Link a verified physician to your secure clinical context.</p>
-            <form onSubmit={handleInvite} className="space-y-3">
-                <input 
-                    type="email" 
-                    placeholder="doctor@medical.com" 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
-                    required
-                />
-                <button 
-                    disabled={inviting}
-                    type="submit" 
-                    className="w-full btn-premium bg-slate-900 text-white text-xs py-3 shadow-lg shadow-slate-200 disabled:opacity-50"
-                >
-                    {inviting ? <Loader2 size={16} className="animate-spin mx-auto" /> : 'Authorize Physician Access'}
-                </button>
-            </form>
-        </div>
-    );
-};
-
 const QRModal = ({ url, onClose }) => {
-  const handleDownload = () => {
-    const data = `MEDISYNC SECURE CLINICAL CONTEXT\n---\nEMERGENCY DECRYPTION URL:\n${url}\n\nINSTRUCTIONS:\nIf found, please scan the QR code or manually enter the URL to access critical medical telemetry.`;
-    const blob = new Blob([data], { type: 'text/plain' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'medisync-emergency-key.txt';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   return (
-  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
-    <div className="bg-white rounded-[2.5rem] p-10 max-sm w-full shadow-2xl relative animate-in zoom-in-95 duration-300 ring-1 ring-black/5">
-      <button onClick={onClose} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-900 transition hover:bg-slate-100 rounded-full">
-        <X size={24} />
-      </button>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0A1A1A]/90 backdrop-blur-xl animate-in fade-in duration-300">
+      <div className="bg-white rounded-[3rem] p-12 max-w-sm w-full shadow-2xl relative animate-in zoom-in-95">
+        <button onClick={onClose} className="absolute top-8 right-8 p-2 text-slate-400 hover:text-[#0A1A1A] transition hover:bg-slate-100 rounded-full">
+          <X size={24} />
+        </button>
 
-      <div className="text-center">
-        <div className="w-20 h-20 bg-primary/10 text-primary rounded-[2rem] flex items-center justify-center mx-auto mb-6 animate-pulse">
-          <QrCode size={40} />
-        </div>
-        <h3 className="text-2xl font-black text-slate-900 leading-tight tracking-tight">Secure QR Key</h3>
-        <p className="text-sm text-slate-500 mt-2 mb-8 font-medium">Unlock critical data in emergencies.</p>
+        <div className="text-center">
+          <div className="w-20 h-20 bg-emerald-500 text-white rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-xl shadow-emerald-500/20">
+            <QrCode size={40} />
+          </div>
+          <h3 className="text-3xl font-black text-slate-900 leading-tight tracking-tighter uppercase mb-2">Emergency Key</h3>
+          <p className="text-sm text-slate-500 mb-10 font-medium">Scan to unlock clinical telemetry.</p>
 
-        <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 inline-block mb-8 relative">
-          <QRCode 
-            value={url}
-            size={180}
-            bgColor="#f8fafc"
-            fgColor="#1e293b"
-            level="H"
-          />
-        </div>
+          <div className="p-8 bg-slate-50 rounded-[3rem] border border-slate-100 inline-block mb-10 relative group">
+            <div className="absolute inset-0 bg-emerald-500/5 blur-2xl group-hover:bg-emerald-500/10 transition-all" />
+            <div className="relative">
+              <QRCode 
+                value={url}
+                size={180}
+                bgColor="#f8fafc"
+                fgColor="#0a1a1a"
+                level="H"
+              />
+            </div>
+          </div>
 
-        <div className="flex flex-col gap-3">
-          <button onClick={handleDownload} className="btn-premium bg-primary text-white w-full py-4 text-md shadow-lg shadow-primary/30 border-none">
-            <Download size={20} /> Download Metadata
+          <button onClick={() => window.print()} className="w-full py-4 bg-[#0A1A1A] text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl active:scale-95 transition-all">
+             Print Emergency Card
           </button>
         </div>
       </div>
     </div>
-  </div>
   );
 };
 

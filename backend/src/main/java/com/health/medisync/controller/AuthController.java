@@ -39,11 +39,13 @@ public class AuthController {
     private final PatientRepository patientRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
+    private final FirebaseStorageService firebaseStorageService;
 
     public AuthController(AuthenticationManager authenticationManager, JwtUtils jwtUtils,
                           UserRepository userRepository, DoctorRepository doctorRepository,
                           PatientRepository patientRepository,
-                          PasswordEncoder passwordEncoder, AuthService authService) {
+                          PasswordEncoder passwordEncoder, AuthService authService,
+                          FirebaseStorageService firebaseStorageService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
         this.userRepository = userRepository;
@@ -51,6 +53,7 @@ public class AuthController {
         this.patientRepository = patientRepository;
         this.passwordEncoder = passwordEncoder;
         this.authService = authService;
+        this.firebaseStorageService = firebaseStorageService;
     }
     
     @GetMapping("/health")
@@ -153,6 +156,12 @@ public class AuthController {
 
         if (profilePicture != null && !profilePicture.isEmpty()) {
             doctor.setProfilePicture(profilePicture.getBytes());
+            try {
+                String photoUrl = firebaseStorageService.uploadFile(profilePicture, "doctors");
+                if (photoUrl != null) doctor.setProfilePictureUrl(photoUrl);
+            } catch (Exception e) {
+                System.err.println("WARNING: Firebase upload failed during doctor registration: " + e.getMessage());
+            }
         }
 
         doctorRepository.save(doctor);
@@ -228,6 +237,18 @@ public class AuthController {
         patient.setExistingDiseases(request.get("existingDiseases"));
         patient.setCurrentMedications(request.get("currentMedications"));
         patient.setPastSurgeries(request.get("pastSurgeries"));
+        
+        // New Antigravity Pro Fields
+        patient.setNationalId(request.get("nationalId"));
+        patient.setMaritalStatus(request.get("maritalStatus"));
+        patient.setOccupation(request.get("occupation"));
+        patient.setAltEmergencyPhone(request.get("altEmergencyPhone"));
+        patient.setHeight(request.get("height"));
+        patient.setWeight(request.get("weight"));
+        if (request.containsKey("hasDisability")) {
+            patient.setHasDisability(Boolean.parseBoolean(request.get("hasDisability")));
+        }
+        patient.setDisabilityDetails(request.get("disabilityDetails"));
 
         // Auto-calculate age from DOB if age not directly provided
         if (request.containsKey("age") && request.get("age") != null && !request.get("age").isEmpty()) {
@@ -240,6 +261,12 @@ public class AuthController {
 
         if (profilePicture != null && !profilePicture.isEmpty()) {
             patient.setProfilePicture(profilePicture.getBytes());
+            try {
+                String photoUrl = firebaseStorageService.uploadFile(profilePicture, "patients");
+                if (photoUrl != null) patient.setProfilePictureUrl(photoUrl);
+            } catch (Exception e) {
+                System.err.println("WARNING: Firebase upload failed during patient registration: " + e.getMessage());
+            }
         }
 
         patientRepository.save(patient);

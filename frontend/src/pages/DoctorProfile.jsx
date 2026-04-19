@@ -48,7 +48,7 @@ const DoctorProfile = () => {
   );
 
   const initials = user.name?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'DR';
-  const photoUrl = `${api.defaults.baseURL}/auth/doctor/photo/${user.id}`;
+  const photoUrl = user.profilePictureUrl || `${api.defaults.baseURL}/auth/doctor/photo/${user.id}`;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12">

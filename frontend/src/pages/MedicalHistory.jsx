@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import api from '../api/axiosConfig';
 import { 
   LayoutList, History, Loader2, Plus, Download, ChevronRight,
-  RefreshCw, Search
+  RefreshCw, Search, ShieldCheck, Sparkles, Activity, Clock,
+  Database, Target, ArrowUpRight
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import MedicalTimeline from '../components/MedicalTimeline';
 import AiSummaryModal from '../components/AiSummaryModal';
@@ -15,7 +17,7 @@ const MedicalHistory = () => {
     const [prescriptions, setPrescriptions] = useState([]);
     const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [viewMode, setViewMode] = useState('timeline'); // 'timeline' or 'list'
+    const [viewMode, setViewMode] = useState('timeline'); 
     const [searchTerm, setSearchTerm] = useState('');
     const [lastSyncTime, setLastSyncTime] = useState(new Date());
     const [syncLabel, setSyncLabel] = useState('Just Now');
@@ -34,7 +36,6 @@ const MedicalHistory = () => {
     });
     const navigate = useNavigate();
 
-    // Relative time formatter
     const getRelativeTime = (date) => {
         const diff = Math.floor((new Date() - date) / 1000);
         if (diff < 60) return 'Just Now';
@@ -98,7 +99,7 @@ const MedicalHistory = () => {
             const [recordsRes, prescriptionsRes, reportsRes] = await Promise.all([
                 api.get('records/my-records'),
                 api.get('prescriptions/my'),
-                api.get('reports')
+                api.get('reports/my')
             ]);
             setRecords(recordsRes.data || []);
             setPrescriptions(prescriptionsRes.data || []);
@@ -129,7 +130,6 @@ const MedicalHistory = () => {
         fetchAllData();
     }, []);
 
-    // Merge and sort for timeline
     const allEvents = [
         ...(records || []).map(r => ({ ...r, type: 'CONSULTATION', timestamp: r.date ? new Date(r.date) : new Date(0) })),
         ...(prescriptions || []).map(p => ({ ...p, type: 'PRESCRIPTION', timestamp: p.createdAt ? new Date(p.createdAt) : new Date(0) })),
@@ -146,95 +146,127 @@ const MedicalHistory = () => {
     });
 
     return (
-        <div className="page-entry space-y-8 pb-12">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                 <h1 className="text-4xl font-black text-slate-900 tracking-tight">Medical Journey</h1>
-                 <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100 shadow-sm">
-                    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
-                    <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none">
-                       {syncLabel === 'Just Now' ? 'Secure Node Connected' : `Synced ${syncLabel}`}
-                    </span>
-                 </div>
-              </div>
-              <p className="text-slate-500 font-medium">Verified chronological stream of your clinical history</p>
-            </div>
-            
-            <div className="flex items-center gap-3">
-               <button 
-                 onClick={fetchAllData}
-                 className="p-3.5 bg-white text-slate-400 hover:text-primary hover:bg-slate-50 rounded-2xl border border-slate-200 transition-all shadow-sm group"
-               >
-                 <RefreshCw size={20} className={`group-hover:rotate-180 transition-transform duration-500 ${loading ? 'animate-spin text-primary' : ''}`} />
-               </button>
-               <div className="flex p-1 bg-slate-100 rounded-2xl border border-slate-200 shadow-inner">
-                    <button 
-                        onClick={() => setViewMode('timeline')}
-                        className={`p-2 rounded-xl transition-all ${viewMode === 'timeline' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                    >
-                        <History size={20} />
-                    </button>
-                    <button 
-                        onClick={() => setViewMode('list')}
-                        className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                    >
-                        <LayoutList size={20} />
-                    </button>
-               </div>
-               <button onClick={handleExport} className="flex items-center gap-2 px-6 py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl transition-all font-black text-sm shadow-xl active:scale-95">
-                 <Download size={18} />
-                 Export Archive
-               </button>
-            </div>
-        </div>
-
-            {/* Actions Bar */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                   <div className="py-1 px-3 bg-indigo-50 text-indigo-700 rounded-lg text-[10px] font-black uppercase tracking-widest">
-                      Live Clinical Stream
-                   </div>
+        <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-8 selection:bg-emerald-100">
+            <div className="max-w-7xl mx-auto space-y-8">
+                
+                {/* Pro Header */}
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 mb-12">
+                    <div>
+                        <div className="flex items-center gap-3 mb-2">
+                             <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none">Clinical Journey</h1>
+                             <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100 shadow-sm">
+                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
+                                <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none">
+                                   {syncLabel === 'Just Now' ? 'Secure Node Connected' : `Synced ${syncLabel}`}
+                                </span>
+                             </div>
+                        </div>
+                        <p className="text-slate-500 font-medium text-lg">Your "Unified Healthcare OS" diagnostic timeline.</p>
+                    </div>
+                    
+                    <div className="flex flex-wrap items-center gap-4">
+                       <button 
+                         onClick={fetchAllData}
+                         className="p-4 bg-white text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-2xl border border-slate-200 transition-all shadow-sm group"
+                       >
+                         <RefreshCw size={22} className={`group-hover:rotate-180 transition-transform duration-500 ${loading ? 'animate-spin text-emerald-500' : ''}`} />
+                       </button>
+                       
+                       <div className="flex p-1.5 bg-slate-100 rounded-2xl border border-slate-200 shadow-inner">
+                            <button 
+                                onClick={() => setViewMode('timeline')}
+                                className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${viewMode === 'timeline' ? 'bg-white text-[#0A1A1A] shadow-md font-black' : 'text-slate-400 hover:text-slate-600 font-bold'}`}
+                            >
+                                <History size={20} />
+                                <span className="text-[10px] uppercase tracking-widest">Timeline</span>
+                            </button>
+                            <button 
+                                onClick={() => setViewMode('list')}
+                                className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${viewMode === 'list' ? 'bg-white text-[#0A1A1A] shadow-md font-black' : 'text-slate-400 hover:text-slate-600 font-bold'}`}
+                            >
+                                <LayoutList size={20} />
+                                <span className="text-[10px] uppercase tracking-widest">Grid</span>
+                            </button>
+                       </div>
+                       
+                       <button onClick={handleExport} className="flex items-center gap-2 px-8 py-4 bg-[#0A1A1A] hover:bg-emerald-600 text-white rounded-2xl transition-all font-black text-sm uppercase tracking-widest shadow-xl active:scale-95 shadow-emerald-500/5">
+                         <Download size={18} />
+                         Export Archive
+                       </button>
+                    </div>
                 </div>
-                <div className="flex gap-2">
-                    <button onClick={handleExport} className="btn-premium py-2 px-4 bg-white border border-slate-200 text-slate-600 shadow-sm hover:bg-slate-50 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
-                        <Download size={14} />
-                        Export Archive
-                    </button>
-                </div>
-            </div>
 
-            {/* Content Display */}
-            <div className="pt-4">
-                {loading ? (
-                    <div className="flex flex-col items-center justify-center py-32 space-y-4">
-                        <Loader2 className="text-primary animate-spin" size={48} />
-                        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Decrypting Clinical Data...</p>
+                {/* Filter & Connectivity Hub */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                    <div className="lg:col-span-8 relative group">
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" size={20} />
+                        <input 
+                          type="text" 
+                          placeholder="Search clinical findings, diagnoses, or physicians..." 
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="w-full bg-white border border-slate-100 rounded-[2rem] pl-16 pr-6 py-5 text-sm font-bold shadow-xl shadow-slate-200/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all placeholder:text-slate-300"
+                        />
                     </div>
-                ) : allEvents.length === 0 ? (
-                    <div className="text-center py-32 glass-panel border-dashed bg-slate-50/50">
-                        <History className="mx-auto text-slate-200 mb-4" size={64} />
-                        <h3 className="text-xl font-bold text-slate-800">No records found</h3>
-                        <p className="text-slate-500 mt-2">Adjust your filters or add a new record to get started.</p>
+                    <div className="lg:col-span-4 flex items-center justify-end gap-3 px-6 py-5 bg-[#0A1A1A] rounded-[2rem] shadow-2xl border border-white/5 relative overflow-hidden group">
+                        <ShieldCheck className="absolute -right-2 -bottom-2 text-white/5 group-hover:scale-110 transition-transform duration-1000" size={80} />
+                        <div className="relative z-10 flex items-center gap-3">
+                            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">RLS Node Isolation Active</span>
+                        </div>
                     </div>
-                ) : viewMode === 'timeline' ? (
-                    <MedicalTimeline 
-                      events={allEvents} 
-                      onPreviewReport={handlePreviewReport} 
-                      onViewAiSummary={(ev) => setSummaryModal({
-                        isOpen: true,
-                        jsonData: ev.aiSummary || ev.diagnosis,
-                        legacyReasoning: ev.clinicalReasoning,
-                        reportId: ev.id
-                      })}
-                    />
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {allEvents.map(event => (
-                            <ListCard key={event.id + event.type} record={event} />
-                        ))}
-                    </div>
-                )}
+                </div>
+
+                {/* Main Content Display */}
+                <div className="pt-8">
+                    {loading ? (
+                        <div className="flex flex-col items-center justify-center py-40 space-y-6">
+                            <div className="relative">
+                                <Loader2 className="text-emerald-500 animate-spin" size={64} />
+                                <Activity className="absolute inset-0 m-auto text-emerald-300 opacity-30" size={32} />
+                            </div>
+                            <div className="text-center space-y-2">
+                                <p className="text-sm font-black text-slate-900 uppercase tracking-[0.2em]">Decrypting Journey</p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Synchronizing Decentralized Nodes</p>
+                            </div>
+                        </div>
+                    ) : filteredEvents.length === 0 ? (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-center py-40 bg-white rounded-[3rem] border border-dashed border-slate-200 shadow-xl"
+                        >
+                            <div className="w-24 h-24 bg-slate-50 rounded-[2rem] flex items-center justify-center mx-auto mb-8">
+                                <History className="text-slate-200" size={48} />
+                            </div>
+                            <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-2">No Records Found</h3>
+                            <p className="text-slate-500 font-medium mb-8">Your clinical node has not yet synchronized any historical telemetry.</p>
+                            <button 
+                                onClick={() => navigate('/dashboard/reports')}
+                                className="px-8 py-3 bg-[#0A1A1A] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl active:scale-95"
+                            >
+                                Initialize First Sync
+                            </button>
+                        </motion.div>
+                    ) : viewMode === 'timeline' ? (
+                        <MedicalTimeline 
+                          events={filteredEvents} 
+                          onPreviewReport={handlePreviewReport} 
+                          onViewAiSummary={(ev) => setSummaryModal({
+                            isOpen: true,
+                            jsonData: ev.aiSummary || ev.diagnosis,
+                            legacyReasoning: ev.clinicalReasoning,
+                            reportId: ev.id
+                          })}
+                        />
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-12">
+                            {filteredEvents.map(event => (
+                                <ListCardPro key={event.id + event.type} record={event} />
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
 
             <AiSummaryModal 
@@ -259,38 +291,51 @@ const MedicalHistory = () => {
 
 /* --- SUBCOMPONENTS --- */
 
-const ListCard = ({ record }) => (
-    <div className="glass-card p-6 group">
-        <div className="flex items-start justify-between mb-4">
-            <div className="p-3 bg-primary/5 text-primary rounded-2xl group-hover:scale-110 transition-transform">
-                <ClipboardList size={24} />
+const ListCardPro = ({ record }) => (
+    <motion.div 
+        whileHover={{ y: -5 }}
+        className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-xl relative overflow-hidden group hover:shadow-2xl transition-all"
+    >
+        <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-full blur-3xl -z-10 group-hover:scale-150 transition-transform duration-700" />
+        
+        <div className="flex items-start justify-between mb-8">
+            <div className={`p-4 rounded-2xl shadow-sm group-hover:scale-110 transition-transform ${record.type === 'REPORT' ? 'bg-emerald-50 text-emerald-600' : record.type === 'PRESCRIPTION' ? 'bg-blue-50 text-blue-600' : 'bg-[#0A1A1A] text-white'}`}>
+                {record.type === 'REPORT' ? <Database size={24} /> : record.type === 'PRESCRIPTION' ? <Target size={24} /> : <Activity size={24} />}
             </div>
             <div className="text-right">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Date of Visit</p>
-                <p className="text-sm font-bold text-slate-700">{record.date ? new Date(record.date).toLocaleDateString() : 'Historical'}</p>
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1">Diagnostic Visit</p>
+                <div className="flex items-center gap-2 justify-end">
+                    <Clock size={12} className="text-slate-300" />
+                    <span className="text-sm font-black text-slate-800">{record.date ? new Date(record.date).toLocaleDateString() : 'SYNC'}</span>
+                </div>
             </div>
         </div>
         
-        <h3 className="text-xl font-bold text-slate-800 mb-2 truncate" title={record.diagnosis}>{record.diagnosis}</h3>
+        <div className="mb-6 h-[5.5rem] flex flex-col justify-center">
+            <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-slate-50 rounded-lg mb-3 border border-slate-100 w-fit">
+               <span className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-500">{record.type} Node</span>
+            </div>
+            <h3 className="text-2xl font-black text-slate-900 tracking-tighter truncate leading-tight" title={record.diagnosis}>{record.diagnosis}</h3>
+        </div>
         
-        <div className="space-y-4">
-            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 min-h-[80px]">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Clinical Management</p>
-                <p className="text-sm text-slate-600 line-clamp-2 leading-relaxed italic">"{record.prescription}"</p>
+        <div className="space-y-6">
+            <div className="p-5 bg-slate-50/80 rounded-2xl border border-slate-100 relative group-hover:bg-white transition-colors">
+                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">Decrypted Telemetry</p>
+                <p className="text-xs text-slate-600 font-medium line-clamp-3 leading-relaxed italic">
+                    "{record.prescription || record.observations || 'Secure clinical findings recorded.'}"
+                </p>
+                <Sparkles size={14} className="absolute bottom-4 right-4 text-emerald-500/30 group-hover:text-emerald-500 transition-colors" />
             </div>
             
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Calendar size={14} className="text-primary/60" />
-                    <span className="text-xs font-bold text-slate-500">{record.date ? new Date(record.date).getFullYear() : 'Sync'} Archive</span>
+            <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center font-black text-emerald-500 text-[10px] shadow-sm">Dr</div>
+                    <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest pb-0.5 border-b border-dashed border-slate-200">Dr. {record.doctorName || 'OS System'}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-400">Dr. {record.doctorName}</span>
-                    <ChevronRight size={16} className="text-slate-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                </div>
+                <ArrowUpRight size={18} className="text-slate-300 group-hover:text-emerald-500 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
             </div>
         </div>
-    </div>
+    </motion.div>
 );
 
 export default MedicalHistory;

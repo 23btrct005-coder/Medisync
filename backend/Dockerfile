@@ -3,7 +3,8 @@ FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
-# Build the application, skipping tests to make deployment faster
+# Enforce low-memory build for free tier
+ENV MAVEN_OPTS="-Xmx256m"
 RUN mvn clean package -DskipTests
 
 # Runtime stage
@@ -11,4 +12,5 @@ FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 COPY --from=build /app/target/medisync-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-Djava.net.preferIPv4Stack=true", "-jar", "app.jar"]
+# Strict memory management for clinical stability
+ENTRYPOINT ["java", "-Xmx256m", "-Xms128m", "-Djava.net.preferIPv4Stack=true", "-jar", "app.jar"]

@@ -1,170 +1,186 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Activity, QrCode, Shield, Zap, Sparkles, 
-  ArrowRight, ShieldCheck, Smartphone, Brain 
+  Activity, Shield, Zap, Sparkles, 
+  ArrowRight, ShieldCheck, ChevronRight,
+  Stethoscope, Database, Globe
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Landing = () => {
   const navigate = useNavigate();
   const { user, userRole, loading } = useAuth();
-  const [step, setStep] = useState(1);
 
   const dashboardPath = userRole === 'ROLE_DOCTOR' ? '/doctor-dashboard' : '/dashboard';
 
-  useEffect(() => {
-    // 1. Immediate redirect for logged-in users
-    if (!loading && user) {
-      navigate(dashboardPath);
-      return;
-    }
-
-    // 2. Splash Sequence
-    if (!loading && !user) {
-      const t1 = setTimeout(() => setStep(2), 1500); // Shift to 'Why' after 1.5s
-      const t2 = setTimeout(() => navigate('/login'), 3500); // Shift to Login after 3.5s total
-
-      return () => {
-        clearTimeout(t1);
-        clearTimeout(t2);
-      };
-    }
-  }, [user, loading, navigate, dashboardPath]);
-
-  // Page 1: "The What"
-  const PageOne = () => (
-    <motion.div 
-      key="page-one"
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      className="flex flex-col items-center justify-center text-center space-y-8 h-full"
-    >
-      <motion.div 
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="p-4 bg-orange-500 text-white rounded-[2rem] shadow-2xl shadow-orange-500/30"
-      >
-        <Activity size={48} />
-      </motion.div>
-      
-      <div className="space-y-2">
-        <motion.h1 
-          className="text-5xl md:text-8xl font-black text-slate-900 tracking-tight leading-tight"
-        >
-          Your health, <br />
-          <span className="bg-gradient-to-r from-orange-500 via-orange-600 to-rose-500 bg-clip-text text-transparent italic">
-            Simply Synchronized.
-          </span>
-        </motion.h1>
-        <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="text-lg md:text-2xl text-slate-400 font-bold uppercase tracking-[0.2em]"
-        >
-          The Clinical Bridge
-        </motion.p>
-      </div>
-
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
-        className="flex items-center gap-8 grayscale opacity-50"
-      >
-        <div className="flex items-center gap-2 font-black text-xs tracking-widest uppercase"><ShieldCheck size={16} className="text-emerald-500" /> HIPAA Secure</div>
-        <div className="flex items-center gap-2 font-black text-xs tracking-widest uppercase"><Brain size={16} className="text-blue-500" /> AI Insights</div>
-      </motion.div>
-    </motion.div>
-  );
-
-  // Page 2: "The Why"
-  const PageTwo = () => (
-    <motion.div 
-      key="page-two"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.5 }}
-      className="flex flex-col items-center justify-center text-center space-y-12 h-full max-w-5xl mx-auto px-6"
-    >
-      <div className="space-y-2">
-         <motion.h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">Why MediSync?</motion.h2>
-         <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Better Care. Faster Recovery.</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
-         {[
-           { icon: QrCode, title: "Emergency Speed", desc: "Life-saving data via QR keys.", color: "orange" },
-           { icon: Brain, title: "AI Intelligence", desc: "Clinical reports made simple.", color: "blue" },
-           { icon: Shield, title: "Total Privacy", desc: "Secure RLS-locked sync.", color: "emerald" }
-         ].map((item, i) => (
-           <motion.div 
-             key={i}
-             initial={{ opacity: 0, y: 20 }}
-             animate={{ opacity: 1, y: 0 }}
-             transition={{ delay: i * 0.15 }}
-             className="p-8 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col items-center text-center space-y-4"
-           >
-             <div className={`p-4 bg-${item.color}-50 text-${item.color}-500 rounded-2xl`}>
-                <item.icon size={32} />
-             </div>
-             <h4 className="font-black text-slate-900 text-lg">{item.title}</h4>
-             <p className="text-xs text-slate-500 font-medium leading-relaxed">{item.desc}</p>
-           </motion.div>
-         ))}
-      </div>
-
-      <div className="flex flex-col items-center gap-3">
-        <div className="w-48 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-          <motion.div 
-            initial={{ width: 0 }}
-            animate={{ width: "100%" }}
-            transition={{ duration: 1.5, ease: "linear" }}
-            className="h-full bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)]"
-          />
-        </div>
-        <div className="flex items-center gap-2 text-primary font-black animate-pulse uppercase tracking-[0.2em] text-[10px]">
-          Redirecting to Portal <Zap size={10} />
-        </div>
-      </div>
-    </motion.div>
-  );
-
-  if (loading) return (
-    <div className="h-screen w-screen flex flex-col items-center justify-center bg-[#FAFAFE]">
-      <motion.div 
-        animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
-        transition={{ repeat: Infinity, duration: 2 }}
-        className="p-6 bg-orange-100 text-orange-600 rounded-[2.5rem]"
-      >
-        <Activity size={64} />
-      </motion.div>
-      <p className="mt-8 text-xs font-black text-slate-400 uppercase tracking-[0.3em] animate-pulse">Synchronizing clinical nodes...</p>
-    </div>
-  );
+  if (!loading && user) {
+    navigate(dashboardPath);
+    return null;
+  }
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#FAFAFE] relative selection:bg-orange-200">
-      {/* Background Decor */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-orange-400/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-400/5 blur-[100px] rounded-full translate-y-1/2 -translate-x-1/2" />
-      
-      <main className="h-full w-full relative z-10">
-        <AnimatePresence mode="wait">
-          {step === 1 ? <PageOne key="p1" /> : <PageTwo key="p2" />}
-        </AnimatePresence>
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#0A1A1A] text-white selection:bg-emerald-500/30">
+      {/* Dynamic Background Decor */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-emerald-600/10 blur-[150px] rounded-full" />
+        <div className="absolute bottom-[20%] left-[-10%] w-[500px] h-[500px] bg-blue-600/10 blur-[150px] rounded-full" />
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03]" />
+      </div>
+
+      {/* Navigation */}
+      <nav className="relative z-50 flex items-center justify-between px-6 py-6 max-w-7xl mx-auto">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-emerald-500 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+            <Activity size={24} className="text-white" />
+          </div>
+          <span className="text-xl font-black tracking-tighter uppercase">MediSync</span>
+        </div>
+        
+        <div className="hidden md:flex items-center gap-8 text-[10px] font-bold uppercase tracking-widest text-emerald-100/60">
+          <a href="#features" className="hover:text-emerald-400 transition-colors">Infrastructure</a>
+          <a href="#security" className="hover:text-emerald-400 transition-colors">Security</a>
+          <a href="#ai" className="hover:text-emerald-400 transition-colors">AI Engine</a>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => navigate('/login')}
+            className="px-6 py-2 text-sm font-bold hover:text-emerald-400 transition-colors"
+          >
+            Log In
+          </button>
+          <button 
+            onClick={() => navigate('/register')}
+            className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
+          >
+            Join Now
+          </button>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <main className="relative z-10 pt-20 pb-32 px-6">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          
+          <motion.div 
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+            className="space-y-8"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-widest animate-pulse">
+              <Zap size={12} /> Unified Healthcare OS
+            </div>
+
+            <h1 className="text-6xl md:text-8xl font-black leading-[0.9] tracking-tighter text-white">
+              Secure Healthcare, <br />
+              <span className="text-emerald-400 italic">Synced</span> Effortlessly.
+            </h1>
+
+            <p className="text-lg md:text-xl text-slate-400 max-w-xl leading-relaxed font-medium">
+              A production-ready record management system designed for clinical excellence. 
+              Powered by AI and secured with enterprise-grade encryption.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <button 
+                onClick={() => navigate('/login')}
+                className="group flex items-center justify-center gap-3 px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-white rounded-2xl font-black text-lg transition-all shadow-2xl shadow-emerald-500/20 active:scale-95"
+              >
+                Go to Dashboard
+                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+              </button>
+              <button 
+                className="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl font-black text-lg transition-all active:scale-95"
+              >
+                Request Demo
+              </button>
+            </div>
+
+            <div className="flex items-center gap-8 pt-8 opacity-40">
+              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
+                <ShieldCheck size={14} className="text-emerald-500" /> HIPAA Certified
+              </div>
+              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
+                <Globe size={14} className="text-blue-500" /> Global Nodes
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Visual Showcase (Glass Card Stack) */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, delay: 0.2 }}
+            className="relative hidden lg:block"
+          >
+            <div className="relative z-20 bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[3rem] shadow-2xl overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 blur-3xl rounded-full group-hover:bg-emerald-500/40 transition-all duration-700" />
+              
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center font-black">M</div>
+                    <div>
+                      <h4 className="font-bold text-sm">Patient Unified Node</h4>
+                      <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Linked ID: 81922534</p>
+                    </div>
+                  </div>
+                  <div className="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-[10px] font-black uppercase tracking-widest">Active Sync</div>
+                </div>
+
+                <div className="h-px bg-white/10" />
+
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    { label: "Blood Glucose", val: "92 mg/dL", color: "text-emerald-400" },
+                    { label: "Heart Rate", val: "72 BPM", color: "text-blue-400" },
+                    { label: "Clinical AI Score", val: "9.8/10", color: "text-purple-400" },
+                    { label: "Sync Latency", val: "14ms", color: "text-orange-400" }
+                  ].map((stat, i) => (
+                    <div key={i} className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                      <p className="text-[10px] font-bold text-slate-500 uppercase mb-1">{stat.label}</p>
+                      <p className={`text-xl font-black ${stat.color}`}>{stat.val}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Database size={18} className="text-emerald-400" />
+                    <span className="text-xs font-bold">Cloud Instance Proactive</span>
+                  </div>
+                  <ChevronRight size={14} className="text-slate-500" />
+                </div>
+              </div>
+            </div>
+
+            {/* Ghost Cards */}
+            <div className="absolute top-8 -right-8 w-full h-full bg-blue-500/10 backdrop-blur-md rounded-[3rem] -z-10 translate-x-4 translate-y-4" />
+            <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-emerald-500/30 blur-[80px] -z-20" />
+          </motion.div>
+
+        </div>
       </main>
 
-      {/* Mini Branding Footer */}
-      <div className="absolute bottom-8 w-full flex justify-center items-center gap-2 opacity-20 hover:opacity-100 transition-opacity">
-        <div className="p-1.5 bg-slate-900 text-white rounded-lg"><Activity size={14} /></div>
-        <span className="text-xs font-black tracking-tighter text-slate-900 uppercase">MediSync Clinical Engine</span>
-      </div>
+      {/* Trust Footer */}
+      <footer className="relative z-10 border-t border-white/5 py-12">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500">
+          <div className="flex items-center gap-2 font-black text-sm uppercase tracking-tighter">
+            <Stethoscope size={20} className="text-emerald-500" />
+            Designed for Hospitals
+          </div>
+          <div className="flex items-center gap-2 font-black text-sm uppercase tracking-tighter text-blue-400">
+            <Zap size={20} />
+            Instant Deploy 2026
+          </div>
+          <div className="flex items-center gap-2 font-black text-sm uppercase tracking-tighter text-purple-400">
+            <Shield size={20} />
+            Enterprise Grade
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

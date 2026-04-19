@@ -25,16 +25,19 @@ public class DoctorService {
     private final MedicalRecordRepository recordRepository;
     private final ReportRepository reportRepository;
     private final AccessRequestRepository accessRequestRepository;
+    private final FirebaseStorageService firebaseStorageService;
 
     public DoctorService(DoctorRepository doctorRepository, UserRepository userRepository,
                          PatientRepository patientRepository, MedicalRecordRepository recordRepository,
-                         ReportRepository reportRepository, AccessRequestRepository accessRequestRepository) {
+                         ReportRepository reportRepository, AccessRequestRepository accessRequestRepository,
+                         FirebaseStorageService firebaseStorageService) {
         this.doctorRepository = doctorRepository;
         this.userRepository = userRepository;
         this.patientRepository = patientRepository;
         this.recordRepository = recordRepository;
         this.reportRepository = reportRepository;
         this.accessRequestRepository = accessRequestRepository;
+        this.firebaseStorageService = firebaseStorageService;
     }
 
     public Doctor getDoctorProfile(String username) {
@@ -196,9 +199,15 @@ public class DoctorService {
         return doctorRepository.save(doctor);
     }
 
-    public void updateProfilePhoto(String username, byte[] photoBytes) {
+    public void updateProfilePhoto(String username, org.springframework.web.multipart.MultipartFile photo) throws java.io.IOException {
         Doctor doctor = getDoctorProfile(username);
-        doctor.setProfilePicture(photoBytes);
+        doctor.setProfilePicture(photo.getBytes());
+        try {
+            String photoUrl = firebaseStorageService.uploadFile(photo, "doctors");
+            if (photoUrl != null) doctor.setProfilePictureUrl(photoUrl);
+        } catch (Exception e) {
+            System.err.println("WARNING: Firebase upload failed for doctor profile update: " + e.getMessage());
+        }
         doctorRepository.save(doctor);
     }
 }

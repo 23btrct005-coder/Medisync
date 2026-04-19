@@ -24,6 +24,9 @@ public class Patient {
     private Integer age;
     private String gender;
     private String bloodGroup;
+    private String nationalId;
+    private String maritalStatus;
+    private String occupation;
 
     // Contact
     private String phone;
@@ -39,6 +42,7 @@ public class Patient {
     private String emergencyContactName;
     private String emergencyContactRelationship;
     private String emergencyContactPhone;
+    private String altEmergencyPhone;
 
     // ── Insurance Details ──
     private String insuranceProvider;
@@ -49,6 +53,12 @@ public class Patient {
     private String smokingStatus;       // e.g. Non-smoker, Occasional, Regular
     private String alcoholStatus;       // e.g. Non-drinker, Rare, Social, Regular
     private String exerciseFrequency;   // e.g. Daily, 3-4 times/week, Rare, None
+    
+    private String height;              // e.g. 175cm
+    private String weight;              // e.g. 70kg
+    private Boolean hasDisability;
+    @Column(columnDefinition = "TEXT")
+    private String disabilityDetails;
 
     // ── Advanced Health Details ──
     @Column(columnDefinition = "TEXT")
@@ -89,6 +99,9 @@ public class Patient {
     @JdbcTypeCode(SqlTypes.BINARY)
     @Column(name = "profile_picture")
     private byte[] profilePicture;
+
+    @Column(name = "profile_picture_url")
+    private String profilePictureUrl;
 
     // ── Getters & Setters ──
     public Long getId() { return id; }
@@ -194,4 +207,32 @@ public class Patient {
     public void setAppNotifications(Boolean v) { this.appNotifications = v; }
     public Boolean getSmsNotifications() { return smsNotifications; }
     public void setSmsNotifications(Boolean v) { this.smsNotifications = v; }
+
+    public String getProfilePictureUrl() { return profilePictureUrl; }
+    public void setProfilePictureUrl(String profilePictureUrl) { this.profilePictureUrl = profilePictureUrl; }
+
+    // New Fields Getters & Setters
+    public String getNationalId() { return nationalId; }
+    public void setNationalId(String v) { this.nationalId = v; }
+
+    public String getMaritalStatus() { return maritalStatus; }
+    public void setMaritalStatus(String v) { this.maritalStatus = v; }
+
+    public String getOccupation() { return occupation; }
+    public void setOccupation(String v) { this.occupation = v; }
+
+    public String getAltEmergencyPhone() { return altEmergencyPhone; }
+    public void setAltEmergencyPhone(String v) { this.altEmergencyPhone = v; }
+
+    public String getHeight() { return height; }
+    public void setHeight(String v) { this.height = v; }
+
+    public String getWeight() { return weight; }
+    public void setWeight(String v) { this.weight = v; }
+
+    public Boolean getHasDisability() { return hasDisability; }
+    public void setHasDisability(Boolean v) { this.hasDisability = v; }
+
+    public String getDisabilityDetails() { return disabilityDetails; }
+    public void setDisabilityDetails(String v) { this.disabilityDetails = v; }
 }

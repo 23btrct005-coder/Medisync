@@ -1,0 +1,40 @@
+-- SQL Migration: Robust Schema Expansion for Antigravity Pro
+-- This script uses 'IF NOT EXISTS' to ensure idempotency and prevent 42701 errors.
+
+ALTER TABLE patients 
+    ADD COLUMN IF NOT EXISTS national_id VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS marital_status VARCHAR(50),
+    ADD COLUMN IF NOT EXISTS occupation VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS alternate_phone VARCHAR(20),
+    ADD COLUMN IF NOT EXISTS street VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS city VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS state VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS pin_code VARCHAR(20),
+    ADD COLUMN IF NOT EXISTS emergency_contact_name VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS emergency_contact_relationship VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS emergency_contact_phone VARCHAR(20),
+    ADD COLUMN IF NOT EXISTS alt_emergency_phone VARCHAR(20),
+    ADD COLUMN IF NOT EXISTS insurance_provider VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS policy_number VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS insurance_validity VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS smoking_status VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS alcohol_status VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS exercise_frequency VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS height VARCHAR(20),
+    ADD COLUMN IF NOT EXISTS weight VARCHAR(20),
+    ADD COLUMN IF NOT EXISTS has_disability BOOLEAN DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS disability_details TEXT,
+    ADD COLUMN IF NOT EXISTS family_medical_history TEXT,
+    ADD COLUMN IF NOT EXISTS organ_donor_status VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS medical_info TEXT,
+    ADD COLUMN IF NOT EXISTS allergies TEXT,
+    ADD COLUMN IF NOT EXISTS existing_diseases TEXT,
+    ADD COLUMN IF NOT EXISTS current_medications TEXT,
+    ADD COLUMN IF NOT EXISTS past_surgeries TEXT,
+    ADD COLUMN IF NOT EXISTS mfa_enabled BOOLEAN DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS email_notifications BOOLEAN DEFAULT TRUE,
+    ADD COLUMN IF NOT EXISTS app_notifications BOOLEAN DEFAULT TRUE,
+    ADD COLUMN IF NOT EXISTS sms_notifications BOOLEAN DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS profile_picture_url VARCHAR(1024);
+
+-- Documentation: This script ensures parity between the JPA Patient model and the PostgreSQL schema.

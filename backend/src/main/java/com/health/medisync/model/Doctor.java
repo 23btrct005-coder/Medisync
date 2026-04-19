@@ -57,6 +57,9 @@ public class Doctor {
     @Column(name = "profile_picture")
     private byte[] profilePicture;
 
+    @Column(name = "profile_picture_url")
+    private String profilePictureUrl;
+
     // Getters & Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -138,4 +141,7 @@ public class Doctor {
 
     public Boolean getAppointmentsEnabled() { return appointmentsEnabled != null ? appointmentsEnabled : true; }
     public void setAppointmentsEnabled(Boolean appointmentsEnabled) { this.appointmentsEnabled = appointmentsEnabled; }
+
+    public String getProfilePictureUrl() { return profilePictureUrl; }
+    public void setProfilePictureUrl(String profilePictureUrl) { this.profilePictureUrl = profilePictureUrl; }
 }

@@ -9,7 +9,7 @@ import DashboardLayout from './layouts/DashboardLayout';
 import DoctorLayout from './layouts/DoctorLayout';
 import AdminLayout from './layouts/AdminLayout';
 import Login from './pages/Login';
-import Register from './pages/Register';
+import Register from './pages/RegisterPro';
 import Landing from './pages/Landing';
 import DoctorLogin from './pages/DoctorLogin';
 import Dashboard from './pages/Dashboard';

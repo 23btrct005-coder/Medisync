@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { 
-  Users, FileStack, Stethoscope, AlertCircle, QrCode, X, 
-  Camera, Calendar, Clock, ShieldCheck, TrendingUp, Sparkles, 
-  Search, Bell, UserPlus, ChevronRight, Activity, Target
+  Users, Stethoscope, Camera, Calendar, ShieldCheck, Sparkles, 
+  Search, Bell, UserPlus, ChevronRight, Activity, Target,
+  Zap, Globe, Database, ArrowUpRight, X, QrCode, AlertCircle
 } from 'lucide-react';
 import api from '../api/axiosConfig';
 import { Html5Qrcode } from 'html5-qrcode';
 import { useNavigate } from 'react-router-dom';
 import ProfileCompletionBanner from '../components/ProfileCompletionBanner';
-import StatCard from '../components/StatCard';
-import SkeletonCard, { SkeletonRow } from '../components/SkeletonCard';
+import StatCardPro from '../components/StatCard';
+import { SkeletonRow } from '../components/SkeletonCard';
 import toast from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const DoctorDashboard = () => {
   const { user } = useAuth();
@@ -40,7 +41,6 @@ const DoctorDashboard = () => {
       console.error("Failed to fetch doctor requests", err);
     }
   };
-
 
   useEffect(() => {
     let html5QrCode = null;
@@ -85,7 +85,7 @@ const DoctorDashboard = () => {
       await api.post('doctor/request-access', { patientEmail });
       setPatientEmail('');
       fetchRequests();
-      toast.success('Access signal requested successfully.');
+      toast.success('Access signal requested.');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to send request');
     } finally {
@@ -93,270 +93,273 @@ const DoctorDashboard = () => {
     }
   };
 
-  // Intelligence Stats logic
   const activePatients = (requests || []).filter(r => r.status === 'ACCEPTED').length;
   const pendingRequests = (requests || []).filter(r => r.status === 'PENDING').length;
 
   return (
-    <div className="page-entry space-y-10 pb-12">
-      <ProfileCompletionBanner />
+    <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-8 selection:bg-emerald-100">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <ProfileCompletionBanner />
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-slate-900 rounded-[3rem] p-8 md:p-12 text-white shadow-2xl">
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/20 to-transparent pointer-events-none" />
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-          <div className="space-y-4 text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full border border-white/10 backdrop-blur-md text-[10px] font-black uppercase tracking-widest text-emerald-400">
-              <ShieldCheck size={14} className="animate-pulse" />
-              Verified Clinical Professional
+        {/* Physician Power Unit */}
+        <section className="relative overflow-hidden group">
+          <div className="relative bg-[#0A1A1A] rounded-[3rem] p-10 md:p-14 text-white shadow-2xl overflow-hidden border border-white/5">
+            <div className="absolute top-0 right-0 w-2/3 h-full bg-gradient-to-l from-emerald-500/10 to-transparent pointer-events-none" />
+            
+            <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-10">
+              <div className="space-y-6 max-w-2xl text-left">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400">
+                  <Stethoscope size={14} className="animate-pulse" />
+                  Verified Clinical Gateway
+                </div>
+                
+                <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-none">
+                  Clinical Hub, <span className="text-emerald-400">Dr. {(user?.name || 'Physician').split(' ').pop()}</span>
+                </h1>
+                
+                <p className="text-slate-400 font-medium text-lg leading-relaxed">
+                  Your "Unified Healthcare OS" gateway is active. Oversighting 
+                  <span className="text-white mx-1 font-bold">{activePatients} verified nodes</span> 
+                  with real-time decryption capabilities.
+                </p>
+
+                <div className="flex flex-wrap gap-4 pt-4">
+                  <button 
+                    onClick={() => setShowScanner(true)}
+                    className="flex items-center gap-2 px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-[#0A1A1A] rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-xl shadow-emerald-500/20 active:scale-95"
+                  >
+                    <Camera size={18} /> Scan Patient QR
+                  </button>
+                  <button 
+                    onClick={() => navigate('/doctor-dashboard/patients')}
+                    className="flex items-center gap-2 px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-95"
+                  >
+                    <Users size={18} /> Directory
+                  </button>
+                </div>
+              </div>
+
+              <div className="hidden lg:block relative">
+                 <div className="w-48 h-48 rounded-[3rem] bg-gradient-to-br from-emerald-500/20 to-blue-500/20 border border-white/10 backdrop-blur-3xl flex items-center justify-center relative group-hover:scale-105 transition-transform duration-700">
+                    <Activity size={80} className="text-emerald-400 opacity-40 animate-pulse" />
+                    <Database size={24} className="absolute top-4 right-4 text-emerald-500/50" />
+                 </div>
+              </div>
             </div>
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
-              Clinical Hub, <span className="text-primary-400">Dr. {(user?.name || 'Physician').split(' ').pop()}</span>
-            </h1>
-            <p className="text-slate-400 font-medium max-w-lg leading-relaxed">
-              Your physician gateway is active. Oversighting secure patient telemetry nodes.
-            </p>
-            <div className="flex flex-wrap gap-4 pt-4">
-              <button 
-                onClick={() => setShowScanner(true)}
-                className="btn-premium bg-emerald-500 text-white border-none shadow-lg shadow-emerald-500/30"
-              >
-                <Camera size={18} />
-                Scan Patient QR
-              </button>
-              <button onClick={() => navigate('/doctor-dashboard/patients')} className="btn-premium bg-white/10 text-white border-white/10 backdrop-blur-md hover:bg-white/20">
-                <Users size={18} />
-                Directory
-              </button>
+            
+            <Stethoscope size={400} className="absolute -right-20 -bottom-20 text-emerald-500/5 -rotate-12" />
+          </div>
+        </section>
+
+        {/* Operating Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCardPro 
+            title="Active Nodes" 
+            value={activePatients} 
+            icon={Globe} 
+            color="emerald" 
+            trend="OVERSIGHT" 
+            subtitle="Verified Patients"
+          />
+          <StatCardPro 
+            title="Access Stream" 
+            value={pendingRequests} 
+            icon={Zap} 
+            color="amber" 
+            trend="PENDING" 
+            subtitle="Secure Signals"
+          />
+          <StatCardPro 
+            title="Session Log" 
+            value="LIVE" 
+            icon={Calendar} 
+            color="blue" 
+            trend="CLOCK" 
+            subtitle="Consult Hub"
+            onClick={() => navigate('/doctor-dashboard/appointments')}
+          />
+          <StatCardPro 
+            title="OS Status" 
+            value="SYNCED" 
+            icon={ShieldCheck} 
+            color="indigo" 
+            trend="SECURE" 
+            subtitle="AES-256 Link"
+          />
+        </div>
+
+        {/* Clinical Control Architecture */}
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+          
+          <div className="xl:col-span-8 space-y-8">
+            {/* Access Signal Requestor */}
+            <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-xl relative overflow-hidden group">
+               <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500" />
+               <div className="flex items-center gap-4 mb-8">
+                  <div className="p-4 bg-emerald-50 text-emerald-600 rounded-[1.5rem] group-hover:scale-110 transition-transform shadow-sm">
+                     <UserPlus size={24} />
+                  </div>
+                  <div className="text-left">
+                     <h3 className="text-xl font-black text-slate-800 uppercase tracking-tighter leading-none">Expand Clinical Node</h3>
+                     <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-2">Request secure decryption signal via patient identifier.</p>
+                  </div>
+               </div>
+               <div className="flex flex-col md:flex-row gap-4">
+                  <div className="relative flex-1 group/field">
+                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/field:text-emerald-500 transition-colors" size={18} />
+                     <input 
+                        type="email" 
+                        placeholder="patient_node@medisync.io" 
+                        value={patientEmail}
+                        onChange={(e) => setPatientEmail(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-4 py-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all"
+                     />
+                  </div>
+                  <button 
+                     onClick={handleSendRequest}
+                     disabled={sending}
+                     className="px-10 py-4 bg-[#0A1A1A] text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-emerald-600 transition-all shadow-xl active:scale-95 disabled:opacity-50 border-none"
+                  >
+                     {sending ? 'Broadcasting...' : 'Initialize Signal'}
+                  </button>
+               </div>
+            </div>
+
+            {/* Quick Actions Hub */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <button onClick={() => navigate('/doctor-dashboard/appointments')} className="bg-white border border-slate-100 rounded-[2.5rem] p-10 shadow-xl group hover:shadow-2xl transition-all relative text-left overflow-hidden">
+                  <div className="absolute top-[-20px] right-[-20px] w-24 h-24 bg-blue-500/5 rounded-full group-hover:scale-150 transition-transform duration-700" />
+                  <div className="p-4 bg-blue-50 text-blue-600 rounded-2xl mb-6 inline-block group-hover:scale-110 transition-transform">
+                     <Calendar size={28} />
+                  </div>
+                  <h4 className="text-xl font-black text-slate-900 uppercase tracking-tighter leading-none mb-2">Scheduler Node</h4>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Manage Live Consultations</p>
+               </button>
+               <button onClick={() => navigate('/doctor-dashboard/patients')} className="bg-[#0A1A1A] rounded-[2.5rem] p-10 shadow-2xl group hover:shadow-emerald-500/10 transition-all relative text-left overflow-hidden">
+                  <Globe className="absolute -right-8 -top-8 text-white/5 group-hover:rotate-12 transition-transform duration-700" size={120} />
+                  <div className="p-4 bg-emerald-500 text-white rounded-2xl mb-6 inline-block group-hover:scale-110 transition-transform">
+                     <Users size={28} />
+                  </div>
+                  <h4 className="text-xl font-black text-white uppercase tracking-tighter leading-none mb-2">Patient Directory</h4>
+                  <p className="text-[10px] text-emerald-500/60 font-bold uppercase tracking-widest">Active Clinical Registry</p>
+               </button>
             </div>
           </div>
-          
-          <div className="hidden lg:block relative">
-             <div className="w-48 h-48 rounded-[2rem] bg-gradient-to-br from-primary/20 to-indigo-500/20 border border-white/10 backdrop-blur-3xl flex items-center justify-center animate-pulse-soft">
-                <Stethoscope size={80} className="text-primary-300 opacity-40" />
-             </div>
+
+          {/* Authorization Log Stream */}
+          <div className="xl:col-span-4 h-full">
+            <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-xl h-full flex flex-col min-h-[500px]">
+               <div className="flex items-center justify-between mb-10">
+                  <div className="flex items-center gap-3">
+                     <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl"><Target size={22} className="animate-pulse" /></div>
+                     <div className="text-left">
+                        <h3 className="text-xl font-black text-slate-800 uppercase tracking-tighter leading-none">Authorization Stream</h3>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-2">Active Signals Only</p>
+                     </div>
+                  </div>
+               </div>
+
+               <div className="space-y-4 flex-1">
+                  {loading ? (
+                     [1,2,3,4,5].map(i => <SkeletonRow key={i} />)
+                  ) : requests.length === 0 ? (
+                     <div className="flex-1 flex flex-col items-center justify-center text-center opacity-30">
+                        <Zap size={48} className="text-slate-200 mb-4" />
+                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Scanning for incoming nodes...</p>
+                     </div>
+                  ) : (
+                     <div className="space-y-3">
+                        {requests.slice(0, 6).map(req => (
+                           <div key={req.id} className="flex items-center justify-between p-4 bg-slate-50/50 hover:bg-emerald-50/50 border border-slate-100 rounded-2xl group transition-all">
+                              <div className="min-w-0 text-left">
+                                 <p className="text-xs font-black text-slate-800 truncate">Patient Identity Link</p>
+                                 <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tight">{req.patient?.email || 'Secured Identifier'}</p>
+                              </div>
+                              <div className={`px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-[0.1em] ${
+                                req.status === 'ACCEPTED' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 
+                                req.status === 'PENDING' ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20' : 'bg-red-500/10 text-red-600'
+                              }`}>
+                                {req.status}
+                              </div>
+                           </div>
+                        ))}
+                     </div>
+                  )}
+               </div>
+               
+               <div className="mt-8 pt-6 border-t border-slate-50">
+                  <div className="flex items-center justify-between gap-3 p-4 bg-[#0A1A1A] rounded-[2rem]">
+                     <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
+                        <span className="text-[8px] font-black uppercase tracking-widest text-emerald-400">Node Secure</span>
+                     </div>
+                     <ArrowUpRight size={14} className="text-white/20" />
+                  </div>
+               </div>
+            </div>
           </div>
         </div>
-        <Activity className="absolute -left-12 -bottom-12 text-white/5" size={300} />
-      </section>
-
-      {/* Intelligence Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {loading ? (
-          [1,2,3,4].map(i => <div key={i} className="h-32 bg-slate-100 rounded-[2rem] animate-pulse border border-slate-100" />)
-        ) : (
-          <>
-            <StatCard 
-              title="Active Patients" 
-              value={requests.filter(r => r.status === 'ACCEPTED').length} 
-              icon={Users} 
-              color="primary"
-              trend="Live Oversight"
-            />
-            <StatCard 
-              title="Daily Consults" 
-              value="LIVE" 
-              icon={Calendar} 
-              color="emerald"
-              trend="Check Pulse"
-              onClick={() => navigate('/doctor-dashboard/appointments')}
-            />
-            <StatCard 
-              title="Authorization Alerts" 
-              value={pendingRequests} 
-              icon={Sparkles} 
-              color="purple"
-              trend="Pending Access"
-            />
-            <StatCard 
-              title="Node Status" 
-              value="SYNCED" 
-              icon={ShieldCheck} 
-              color="indigo"
-              trend="HIPAA Sync"
-            />
-          </>
-        )}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
-        
-        {/* Left Section (Access Management) */}
-        <div className="xl:col-span-8 space-y-8">
-          
-          {/* Quick Access Grant */}
-          <div className="glass-panel p-8 border-l-4 border-primary group">
-             <div className="flex items-center gap-4 mb-6">
-                <div className="p-4 bg-primary/10 text-primary rounded-2xl group-hover:scale-110 transition-transform">
-                   <UserPlus size={24} />
-                </div>
-                <div className="text-left">
-                   <h3 className="text-xl font-black text-slate-900 tracking-tight">Expand Clinical Oversight</h3>
-                   <p className="text-xs text-slate-500 font-medium">Request secure record access via patient telemetry identifier.</p>
-                </div>
-             </div>
-             <div className="flex flex-col md:flex-row gap-4">
-                <div className="relative flex-1">
-                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                   <input 
-                      type="email" 
-                      placeholder="Enter Patient Email Identifier..." 
-                      value={patientEmail}
-                      onChange={(e) => setPatientEmail(e.target.value)}
-                      className="input-premium pl-12 py-4 bg-slate-50/50"
-                   />
-                </div>
-                <button 
-                   onClick={handleSendRequest}
-                   disabled={sending}
-                   className="btn-premium bg-slate-900 text-white px-8 py-4 shadow-xl hover:bg-black disabled:opacity-50 border-none"
-                >
-                   {sending ? 'Initiating Sync...' : 'Request Access Signal'}
-                </button>
-             </div>
-          </div>
-
-          {/* Streamlined Activity Feed */}
-          <div className="glass-panel p-8 border-t-8 border-indigo-500 font-sans">
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-4 text-left">
-                  <div className="p-4 bg-indigo-50 text-indigo-600 rounded-[1.5rem] shadow-sm"><Activity size={24} className="animate-pulse" /></div>
-                  <div className="text-left">
-                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">System Pulse</h3>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Real-time Telemetry Active</p>
-                  </div>
-                </div>
-                <div className="hidden sm:flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-full border border-slate-100">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full" />
-                  <span className="text-[10px] font-black uppercase text-slate-500">Node Synchronized</span>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                 <button onClick={() => navigate('/doctor-dashboard/appointments')} className="flex flex-col items-center justify-center p-8 bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200 hover:border-primary-500 hover:bg-white transition-all group scale-100 hover:scale-[1.02]">
-                    <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-primary-500 mb-4 group-hover:scale-110 transition-transform">
-                       <Calendar size={32} />
-                    </div>
-                    <span className="text-sm font-black text-slate-900 uppercase tracking-widest">Clinical Pulse</span>
-                    <span className="text-[10px] text-slate-400 font-bold mt-1">Real-time Scheduler</span>
-                 </button>
-                 <button onClick={() => navigate('/doctor-dashboard/patients')} className="flex flex-col items-center justify-center p-8 bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200 hover:border-emerald-500 hover:bg-white transition-all group scale-100 hover:scale-[1.02]">
-                    <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-emerald-500 mb-4 group-hover:scale-110 transition-transform">
-                       <Users size={32} />
-                    </div>
-                    <span className="text-sm font-black text-slate-900 uppercase tracking-widest">Patient Directory</span>
-                    <span className="text-[10px] text-slate-400 font-bold mt-1">Manage active subjects</span>
-                 </button>
-              </div>
-            </div>
-        </div>
-
-        {/* Right Section (Access Logs) */}
-        <div className="xl:col-span-4 space-y-8">
-           <div className="glass-panel p-6 h-full flex flex-col min-h-[400px]">
-              <div className="flex items-center justify-between mb-8">
-                 <div className="flex items-center gap-3">
-                    <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
-                       <Target size={22} className="animate-pulse" />
+      {/* Optical Link Scanner */}
+      <AnimatePresence>
+        {showScanner && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-[#0A1A1A]/95 backdrop-blur-2xl"
+          >
+             <motion.div 
+               initial={{ scale: 0.9, y: 20 }}
+               animate={{ scale: 1, y: 0 }}
+               className="bg-white rounded-[3rem] p-10 max-w-lg w-full shadow-2xl relative border border-white/5"
+             >
+                <div className="flex justify-between items-center mb-10">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 bg-emerald-500 text-white rounded-[1.5rem] flex items-center justify-center shadow-xl shadow-emerald-500/20 animate-pulse">
+                      <QrCode size={28} />
                     </div>
                     <div className="text-left">
-                       <h3 className="text-xl font-black text-slate-900 tracking-tight">Access Signals</h3>
-                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Authorization Stream</p>
+                      <h3 className="text-2xl font-black text-[#0A1A1A] tracking-tighter uppercase leading-none">Node Scanner</h3>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Initialize Optical Sync</p>
                     </div>
-                 </div>
-              </div>
-
-              <div className="space-y-4">
-                 {loading ? (
-                    [1,2,3,4].map(i => <SkeletonRow key={i} />)
-                 ) : requests.length === 0 ? (
-                    <div className="flex-1 flex flex-col items-center justify-center text-center py-10">
-                       <AlertCircle size={40} className="text-slate-200 mb-4" />
-                       <p className="text-xs text-slate-400 font-medium italic">No active access signals.</p>
-                    </div>
-                 ) : (
-                    requests.map(req => (
-                       <div key={req.id} className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-2xl group hover:border-primary transition-colors">
-                          <div className="min-w-0 text-left">
-                             <p className="text-sm font-black text-slate-800 truncate">Patient Identity</p>
-                             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">{req.patient?.email || 'Authorized Link'}</p>
-                          </div>
-                          <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                            req.status === 'PENDING' ? 'bg-amber-100 text-amber-700' : 
-                            req.status === 'ACCEPTED' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
-                          }`}>
-                            {req.status}
-                          </span>
-                       </div>
-                    ))
-                 )}
-              </div>
-              
-              <div className="mt-auto pt-6 border-t border-slate-100">
-                 <div className="flex items-center gap-2 p-3 bg-slate-900 rounded-2xl">
-                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Security Gate Active</span>
-                 </div>
-              </div>
-           </div>
-        </div>
-      </div>
-
-      {/* Scanner Modal */}
-      {showScanner && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-300">
-           <div className="bg-white rounded-[2.5rem] p-8 max-w-lg w-full shadow-2xl relative animate-in zoom-in-95 duration-300 border border-slate-100">
-              <div className="flex justify-between items-center mb-8">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-emerald-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                    <QrCode size={24} />
                   </div>
-                  <div className="text-left">
-                    <h3 className="text-xl font-black text-slate-900 tracking-tight">Signal Scanner</h3>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Optical Telemetry Link</p>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => setShowScanner(false)}
-                  className="p-2 text-slate-400 hover:text-slate-900 transition hover:bg-slate-50 rounded-full"
-                >
-                  <X size={24} />
-                </button>
-              </div>
-
-              {scanError ? (
-                <div className="bg-red-50 border border-red-100 rounded-[2rem] p-10 text-center">
-                   <AlertCircle className="text-red-500 mx-auto mb-4" size={48} />
-                   <p className="text-red-800 font-black uppercase tracking-widest text-xs">{scanError}</p>
-                   <button 
+                  <button 
                     onClick={() => setShowScanner(false)}
-                    className="mt-6 px-8 py-3 bg-red-600 text-white rounded-xl text-xs font-black uppercase tracking-widest"
-                   >
-                    Emergency Abort
-                   </button>
+                    className="p-3 text-slate-400 hover:text-black transition hover:bg-slate-50 rounded-full"
+                  >
+                    <X size={24} />
+                  </button>
                 </div>
-              ) : (
-                <>
-                  <div id="qr-reader" className="overflow-hidden rounded-[2rem] border-[6px] border-slate-50 bg-slate-900 aspect-square shadow-inner"></div>
-                  <p className="mt-8 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    Stabilizing optical link... Align QR.
-                  </p>
-                </>
-              )}
-           </div>
-        </div>
-      )}
+
+                {scanError ? (
+                  <div className="bg-red-50/50 border border-red-100 rounded-[2.5rem] p-12 text-center">
+                     <AlertCircle className="text-red-500 mx-auto mb-6" size={56} />
+                     <p className="text-red-900 font-black uppercase tracking-[0.2em] text-xs">{scanError}</p>
+                     <button 
+                      onClick={() => setShowScanner(false)}
+                      className="mt-8 px-10 py-4 bg-red-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95"
+                     >
+                      Abort Initialization
+                     </button>
+                  </div>
+                ) : (
+                  <div className="space-y-10">
+                    <div id="qr-reader" className="overflow-hidden rounded-[2.5rem] border-[10px] border-slate-50 bg-[#0A1A1A] aspect-square shadow-2xl relative shadow-inner">
+                        <div className="absolute inset-x-8 top-1/2 h-0.5 bg-emerald-500/50 animate-scan z-10" />
+                    </div>
+                    <p className="text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] animate-pulse">
+                      Aligning with remote telemetry node...
+                    </p>
+                  </div>
+                )}
+             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
-
-const EmptyState = ({ icon, text }) => (
-  <div className="text-center py-16 bg-slate-50/50 rounded-[2.5rem] border-2 border-dashed border-slate-200">
-    <div className="text-slate-200 mb-4 flex justify-center">
-      {React?.cloneElement ? React.cloneElement(icon, { size: 64 }) : null}
-    </div>
-    <p className="text-slate-400 font-extrabold uppercase tracking-widest text-[10px] px-8 leading-relaxed max-w-xs mx-auto">{text}</p>
-  </div>
-);
 
 export default DoctorDashboard;
