@@ -18,78 +18,72 @@ public class Patient {
     private User user;
 
     // Basic Info
-    @Transient private String name;
-    @Transient private String dateOfBirth;
-    @Transient private Integer age;
-    @Transient private String gender;
-    @Transient private String bloodGroup;
-    @Transient private String nationalId;
-    @Transient private String maritalStatus;
-    @Transient private String occupation;
+    private String name;
+    private String dateOfBirth;
+    private Integer age;
+    private String gender;
+    private String bloodGroup;
+    private String nationalId;
+    private String maritalStatus;
+    private String occupation;
 
     // Contact
-    @Transient private String phone;
-    @Transient private String alternatePhone;
+    private String phone;
+    private String alternatePhone;
 
     // Address
-    @Transient private String street;
-    @Transient private String city;
-    @Transient private String state;
-    @Transient private String pinCode;
+    private String street;
+    private String city;
+    private String state;
+    private String pinCode;
 
     // Emergency Contact
-    @Transient private String emergencyContactName;
-    @Transient private String emergencyContactRelationship;
-    @Transient private String emergencyContactPhone;
-    @Transient private String altEmergencyPhone;
+    private String emergencyContactName;
+    private String emergencyContactRelationship;
+    private String emergencyContactPhone;
+    private String altEmergencyPhone;
 
     // ── Insurance Details ──
-    @Transient private String insuranceProvider;
-    @Transient private String policyNumber;
-    @Transient private String insuranceValidity;
+    private String insuranceProvider;
+    private String policyNumber;
+    private String insuranceValidity;
 
     // ── Lifestyle Details ──
-    @Transient private String smokingStatus;       // e.g. Non-smoker, Occasional, Regular
-    @Transient private String alcoholStatus;       // e.g. Non-drinker, Rare, Social, Regular
-    @Transient private String exerciseFrequency;   // e.g. Daily, 3-4 times/week, Rare, None
+    private String smokingStatus;       // e.g. Non-smoker, Occasional, Regular
+    private String alcoholStatus;       // e.g. Non-drinker, Rare, Social, Regular
+    private String exerciseFrequency;   // e.g. Daily, 3-4 times/week, Rare, None
     
-    @Transient private String height;              // e.g. 175cm
-    @Transient private String weight;              // e.g. 70kg
-    @Transient private Boolean hasDisability;
-    @Transient 
+    private String height;              // e.g. 175cm
+    private String weight;              // e.g. 70kg
+    private Boolean hasDisability;
+    
     @Column(columnDefinition = "TEXT")
     private String disabilityDetails;
 
     // ── Advanced Health Details ──
-    @Transient
     @Column(columnDefinition = "TEXT")
     private String familyMedicalHistory;
-    @Transient private String organDonorStatus;    // e.g. Yes, No, Undecided
+    private String organDonorStatus;    // e.g. Yes, No, Undecided
 
     // General Medical Info
-    @Transient
     @Column(columnDefinition = "TEXT")
     private String medicalInfo;
 
     // ── Critical Medical Fields (for QR Emergency Card) ──
-    @Transient
     @Column(columnDefinition = "TEXT")
     private String allergies;           // e.g. Penicillin, Sulfa drugs
-    @Transient
     @Column(columnDefinition = "TEXT")
     private String existingDiseases;    // e.g. Diabetes Type 2, Hypertension
-    @Transient
     @Column(columnDefinition = "TEXT")
     private String currentMedications;  // e.g. Metformin 500mg, Amlodipine 5mg
-    @Transient
     @Column(columnDefinition = "TEXT")
     private String pastSurgeries;       // e.g. Appendectomy 2018, CABG 2021
 
     // ── Settings & Preferences ──
-    @Transient private Boolean mfaEnabled = false;
-    @Transient private Boolean emailNotifications = true;
-    @Transient private Boolean appNotifications = true;
-    @Transient private Boolean smsNotifications = false;
+    private Boolean mfaEnabled = false;
+    private Boolean emailNotifications = true;
+    private Boolean appNotifications = true;
+    private Boolean smsNotifications = false;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -99,12 +93,10 @@ public class Patient {
     )
     private Set<Doctor> doctors = new HashSet<>();
 
-    @Transient
     @JdbcTypeCode(SqlTypes.BINARY)
     @Column(name = "profile_picture")
     private byte[] profilePicture;
 
-    @Transient
     @Column(name = "profile_picture_url")
     private String profilePictureUrl;
 

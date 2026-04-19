@@ -395,8 +395,9 @@ public class AuthController {
     public ResponseEntity<?> getPatientPhoto(@PathVariable Long id) {
         return patientRepository.findById(id)
             .map(patient -> {
+                // Now that persistence is re-enabled, we check the real DB field
                 if (patient.getProfilePicture() == null) {
-                    // Fallback to DiceBear placeholder if Photo columns are transient/masked
+                    // Fallback to DiceBear if user hasn't uploaded yet (Clean UI, no 404s)
                     String diceBearUrl = "https://api.dicebear.com/7.x/avataaars/svg?seed=" + 
                                        (patient.getUser() != null ? patient.getUser().getUsername() : id.toString());
                     return ResponseEntity.status(org.springframework.http.HttpStatus.FOUND)

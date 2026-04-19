@@ -2,9 +2,12 @@
 -- This script uses 'IF NOT EXISTS' to ensure idempotency and prevent 42701 errors.
 
 ALTER TABLE patients 
-    ADD COLUMN IF NOT EXISTS national_id VARCHAR(255),
-    ADD COLUMN IF NOT EXISTS marital_status VARCHAR(50),
-    ADD COLUMN IF NOT EXISTS occupation VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS name VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS date_of_birth VARCHAR(50),
+    ADD COLUMN IF NOT EXISTS age INTEGER,
+    ADD COLUMN IF NOT EXISTS gender VARCHAR(20),
+    ADD COLUMN IF NOT EXISTS blood_group VARCHAR(10),
+    ADD COLUMN IF NOT EXISTS phone VARCHAR(20),
     ADD COLUMN IF NOT EXISTS alternate_phone VARCHAR(20),
     ADD COLUMN IF NOT EXISTS street VARCHAR(255),
     ADD COLUMN IF NOT EXISTS city VARCHAR(100),
@@ -14,6 +17,9 @@ ALTER TABLE patients
     ADD COLUMN IF NOT EXISTS emergency_contact_relationship VARCHAR(100),
     ADD COLUMN IF NOT EXISTS emergency_contact_phone VARCHAR(20),
     ADD COLUMN IF NOT EXISTS alt_emergency_phone VARCHAR(20),
+    ADD COLUMN IF NOT EXISTS national_id VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS marital_status VARCHAR(50),
+    ADD COLUMN IF NOT EXISTS occupation VARCHAR(255),
     ADD COLUMN IF NOT EXISTS insurance_provider VARCHAR(255),
     ADD COLUMN IF NOT EXISTS policy_number VARCHAR(255),
     ADD COLUMN IF NOT EXISTS insurance_validity VARCHAR(100),
@@ -35,6 +41,10 @@ ALTER TABLE patients
     ADD COLUMN IF NOT EXISTS email_notifications BOOLEAN DEFAULT TRUE,
     ADD COLUMN IF NOT EXISTS app_notifications BOOLEAN DEFAULT TRUE,
     ADD COLUMN IF NOT EXISTS sms_notifications BOOLEAN DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS profile_picture BYTEA,
     ADD COLUMN IF NOT EXISTS profile_picture_url VARCHAR(1024);
 
--- Documentation: This script ensures parity between the JPA Patient model and the PostgreSQL schema.
+-- Doctor Table Expansion
+ALTER TABLE doctors
+    ADD COLUMN IF NOT EXISTS profile_picture BYTEA,
+    ADD COLUMN IF NOT EXISTS profile_picture_url VARCHAR(1024);
