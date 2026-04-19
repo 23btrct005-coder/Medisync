@@ -1,13 +1,20 @@
 -- SQL Migration: Robust Schema Expansion for Antigravity Pro
 -- This script uses 'IF NOT EXISTS' to ensure idempotency and prevent 42701 errors.
 
+-- Priority Core Fields (Ensures booking and profile sync works immediately)
 ALTER TABLE patients 
     ADD COLUMN IF NOT EXISTS name VARCHAR(255),
-    ADD COLUMN IF NOT EXISTS date_of_birth VARCHAR(50),
-    ADD COLUMN IF NOT EXISTS age INTEGER,
-    ADD COLUMN IF NOT EXISTS gender VARCHAR(20),
-    ADD COLUMN IF NOT EXISTS blood_group VARCHAR(10),
     ADD COLUMN IF NOT EXISTS phone VARCHAR(20),
+    ADD COLUMN IF NOT EXISTS date_of_birth VARCHAR(50),
+    ADD COLUMN IF NOT EXISTS gender VARCHAR(20),
+    ADD COLUMN IF NOT EXISTS age INTEGER,
+    ADD COLUMN IF NOT EXISTS blood_group VARCHAR(10);
+
+-- Extended Clinical Schema
+ALTER TABLE patients 
+    ADD COLUMN IF NOT EXISTS national_id VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS marital_status VARCHAR(50),
+    ADD COLUMN IF NOT EXISTS occupation VARCHAR(255),
     ADD COLUMN IF NOT EXISTS alternate_phone VARCHAR(20),
     ADD COLUMN IF NOT EXISTS street VARCHAR(255),
     ADD COLUMN IF NOT EXISTS city VARCHAR(100),
@@ -17,9 +24,6 @@ ALTER TABLE patients
     ADD COLUMN IF NOT EXISTS emergency_contact_relationship VARCHAR(100),
     ADD COLUMN IF NOT EXISTS emergency_contact_phone VARCHAR(20),
     ADD COLUMN IF NOT EXISTS alt_emergency_phone VARCHAR(20),
-    ADD COLUMN IF NOT EXISTS national_id VARCHAR(255),
-    ADD COLUMN IF NOT EXISTS marital_status VARCHAR(50),
-    ADD COLUMN IF NOT EXISTS occupation VARCHAR(255),
     ADD COLUMN IF NOT EXISTS insurance_provider VARCHAR(255),
     ADD COLUMN IF NOT EXISTS policy_number VARCHAR(255),
     ADD COLUMN IF NOT EXISTS insurance_validity VARCHAR(100),
@@ -44,7 +48,7 @@ ALTER TABLE patients
     ADD COLUMN IF NOT EXISTS profile_picture BYTEA,
     ADD COLUMN IF NOT EXISTS profile_picture_url VARCHAR(1024);
 
--- Doctor Table Expansion
+-- Doctor Persistence Hardening
 ALTER TABLE doctors
     ADD COLUMN IF NOT EXISTS profile_picture BYTEA,
     ADD COLUMN IF NOT EXISTS profile_picture_url VARCHAR(1024);

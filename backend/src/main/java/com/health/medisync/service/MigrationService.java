@@ -23,30 +23,35 @@ public class MigrationService {
 
     @PostConstruct
     public void runMigration() {
-        try {
-            if (migrationScript.exists()) {
-                System.out.println("INFO: Starting database schema expansion...");
-                String sql = StreamUtils.copyToString(migrationScript.getInputStream(), StandardCharsets.UTF_8);
+        new Thread(() -> {
+            try {
+                // Wait slightly for DB pool to stabilize
+                Thread.sleep(5000);
                 
-                // Split by semicolon and execute each statement
-                String[] statements = sql.split(";");
-                for (String statement : statements) {
-                    if (!statement.trim().isEmpty()) {
-                        try {
-                            jdbcTemplate.execute(statement.trim());
-                        } catch (Exception e) {
-                            // Ignore if column already exists (though script uses IF NOT EXISTS)
-                            System.out.println("DEBUG: Statement partially executed or skipped: " + e.getMessage());
+                if (migrationScript.exists()) {
+                    System.out.println("INFO: Starting ISOLATED database schema expansion...");
+                    String sql = StreamUtils.copyToString(migrationScript.getInputStream(), StandardCharsets.UTF_8);
+                    
+                    String[] statements = sql.split(";");
+                    for (String statement : statements) {
+                        String trimmed = statement.trim();
+                        if (!trimmed.isEmpty()) {
+                            try {
+                                // Use direct execute to bypass transaction manager
+                                jdbcTemplate.execute(trimmed);
+                            } catch (Exception e) {
+                                // Expected if column exists, but we log the state
+                                if (!e.getMessage().contains("already exists")) {
+                                    System.out.println("DEBUG: Statement status: " + e.getMessage());
+                                }
+                            }
                         }
                     }
+                    System.out.println("SUCCESS: Isolated schema expansion completed.");
                 }
-                System.out.println("SUCCESS: Database schema expansion completed successfully.");
-            } else {
-                System.err.println("WARNING: Migration script not found at " + migrationScript.getFilename());
+            } catch (Exception e) {
+                System.err.println("ERROR: Fatal migration failure: " + e.getMessage());
             }
-        } catch (Exception e) {
-            System.err.println("ERROR: Database migration failed: " + e.getMessage());
-            e.printStackTrace();
-        }
+        }).start();
     }
 }
