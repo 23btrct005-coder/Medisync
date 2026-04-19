@@ -20,12 +20,12 @@ public class Patient {
     // Basic Info
     private String name;
     private String dateOfBirth;
-    private Integer age;
+    @Transient private Integer age;
     private String gender;
     private String bloodGroup;
-    private String nationalId;
-    private String maritalStatus;
-    private String occupation;
+    @Transient private String nationalId;
+    @Transient private String maritalStatus;
+    @Transient private String occupation;
 
     // Contact
     private String phone;
@@ -41,28 +41,30 @@ public class Patient {
     private String emergencyContactName;
     private String emergencyContactRelationship;
     private String emergencyContactPhone;
-    private String altEmergencyPhone;
+    @Transient private String altEmergencyPhone;
 
     // ── Insurance Details ──
-    private String insuranceProvider;
-    private String policyNumber;
-    private String insuranceValidity;
+    @Transient private String insuranceProvider;
+    @Transient private String policyNumber;
+    @Transient private String insuranceValidity;
 
     // ── Lifestyle Details ──
-    private String smokingStatus;       // e.g. Non-smoker, Occasional, Regular
-    private String alcoholStatus;       // e.g. Non-drinker, Rare, Social, Regular
-    private String exerciseFrequency;   // e.g. Daily, 3-4 times/week, Rare, None
+    @Transient private String smokingStatus;       // e.g. Non-smoker, Occasional, Regular
+    @Transient private String alcoholStatus;       // e.g. Non-drinker, Rare, Social, Regular
+    @Transient private String exerciseFrequency;   // e.g. Daily, 3-4 times/week, Rare, None
     
-    private String height;              // e.g. 175cm
-    private String weight;              // e.g. 70kg
-    private Boolean hasDisability;
+    @Transient private String height;              // e.g. 175cm
+    @Transient private String weight;              // e.g. 70kg
+    @Transient private Boolean hasDisability;
+    @Transient 
     @Column(columnDefinition = "TEXT")
     private String disabilityDetails;
 
     // ── Advanced Health Details ──
+    @Transient
     @Column(columnDefinition = "TEXT")
     private String familyMedicalHistory;
-    private String organDonorStatus;    // e.g. Yes, No, Undecided
+    @Transient private String organDonorStatus;    // e.g. Yes, No, Undecided
 
     // General Medical Info
     @Column(columnDefinition = "TEXT")
