@@ -65,9 +65,14 @@ public class AppointmentController {
             Map<String, Object> response = appointmentService.initiateBooking(authentication.getName(), doctorId, date, slot, type);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            System.err.println("CRITICAL: Booking Initiation Failed");
+            String errorMessage = (e.getMessage() != null) ? e.getMessage() : e.toString();
+            System.err.println("CRITICAL: Booking Initiation Failed: " + errorMessage);
             e.printStackTrace();
-            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage() != null ? e.getMessage() : "Unexpected booking failure"));
+            // Return actual error message so frontend toast is helpful
+            return ResponseEntity.badRequest().body(Map.of(
+                "message", errorMessage,
+                "errorType", e.getClass().getSimpleName()
+            ));
         }
     }
 

@@ -133,6 +133,7 @@ public class AppointmentService {
 
         Double fee = (type == ConsultationType.ONLINE) ? doctor.getOnlineConsultationFee() : doctor.getOfflineConsultationFee();
         if (fee == null) {
+            System.out.println("DEBUG: Explicit fees missing for doctor. Checking legacy string fee...");
             String feeStr = doctor.getConsultationFee();
             if (feeStr != null && !feeStr.isEmpty()) {
                 String numericFee = feeStr.replaceAll("[^0-9]", "");
@@ -140,6 +141,12 @@ public class AppointmentService {
                     fee = Double.valueOf(numericFee);
                 }
             }
+        }
+
+        // Final Stabilization Fallback: Ensure fee is NEVER null to prevent NPE
+        if (fee == null) {
+            System.out.println("WARNING: No fees configured for doctor " + doctorId + ". Using Clinical Default: ₹1.0");
+            fee = 1.0; 
         }
         
         // Payment Configuration Check with Robust Demo Mode Fallback
@@ -158,7 +165,8 @@ public class AppointmentService {
                 System.out.println("INFO: Initializing official Razorpay transaction...");
                 RazorpayClient client = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
                 JSONObject orderRequest = new JSONObject();
-                orderRequest.put("amount", (int)(fee * 100)); // amount in paise
+                int amountInPaise = (int)((fee != null ? fee : 1.0) * 100);
+                orderRequest.put("amount", amountInPaise); // amount in paise
                 orderRequest.put("currency", "INR");
                 orderRequest.put("receipt", "appt_" + System.currentTimeMillis());
 
