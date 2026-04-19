@@ -106,7 +106,7 @@ public class AppointmentService {
                 if (user != null) {
                     Patient p = new Patient();
                     p.setUser(user);
-                    p.setName(user.getName() != null ? user.getName() : patientEmail.split("@")[0]);
+                    p.setName(patientEmail.split("@")[0]);
                     p.setEmail(patientEmail.toLowerCase());
                     return patientRepository.save(p);
                 }
