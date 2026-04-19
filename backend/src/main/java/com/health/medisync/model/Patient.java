@@ -91,6 +91,7 @@ public class Patient {
     @Transient private Boolean appNotifications = true;
     @Transient private Boolean smsNotifications = false;
 
+    @Transient
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "patient_doctors",
@@ -99,10 +100,12 @@ public class Patient {
     )
     private Set<Doctor> doctors = new HashSet<>();
 
+    @Transient
     @JdbcTypeCode(SqlTypes.BINARY)
     @Column(name = "profile_picture")
     private byte[] profilePicture;
 
+    @Transient
     @Column(name = "profile_picture_url")
     private String profilePictureUrl;
 

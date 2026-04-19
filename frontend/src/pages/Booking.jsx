@@ -265,12 +265,19 @@ const Booking = () => {
                          </div>
                       </div>
 
-                      {/* New Map Integration */}
                       {selectedDoctor.clinicAddress && (
                         <div className="mt-6 glass-panel p-6 bg-white border-slate-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
-                           <div className="flex items-center gap-2 mb-4">
-                             <MapPin size={16} className="text-red-500" />
-                             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none text-slate-900">Clinic Geographic Terminal</h4>
+                           <div className="flex items-center justify-between mb-4">
+                             <div className="flex items-center gap-2">
+                               <MapPin size={16} className="text-red-500" />
+                               <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none text-slate-900">Clinic Terminal</h4>
+                             </div>
+                             {selectedDoctor.consultationTimings && (
+                               <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-100 rounded-lg border border-slate-200">
+                                  <Clock size={10} className="text-slate-500" />
+                                  <span className="text-[9px] font-bold text-slate-600 uppercase tracking-tighter">{selectedDoctor.consultationTimings}</span>
+                               </div>
+                             )}
                            </div>
                            <ClinicMap address={selectedDoctor.clinicAddress} hospitalName={selectedDoctor.hospital} height="250px" />
                         </div>
@@ -303,21 +310,26 @@ const Booking = () => {
                       </h3>
                       <div className="grid grid-cols-2 gap-4">
                          {[
-                           { id: 'ONLINE', name: 'Virtual Sync', icon: Video, desc: 'High-def clinical video session' },
-                           { id: 'OFFLINE', name: 'Clinic Visit', icon: MapPin, desc: 'In-person physical assessment' }
+                           { id: 'ONLINE', name: 'Virtual Sync', icon: Video, desc: 'High-def clinical video session', disabled: !selectedDoctor.onlineConsultation },
+                           { id: 'OFFLINE', name: 'Clinic Visit', icon: MapPin, desc: 'In-person physical assessment', disabled: false }
                          ].map(type => (
                            <button 
                             key={type.id}
+                            disabled={type.disabled}
                             onClick={() => setConsultationType(type.id)}
                             className={`p-5 rounded-[1.5rem] border-2 text-left transition-all relative overflow-hidden ${
+                              type.disabled ? 'opacity-40 grayscale cursor-not-allowed' :
                               consultationType === type.id 
                               ? 'bg-indigo-50 border-indigo-500 shadow-xl shadow-indigo-500/10' 
                               : 'bg-white border-slate-100 hover:bg-slate-50'
                             }`}
                            >
                              <type.icon size={24} className={consultationType === type.id ? 'text-indigo-600' : 'text-slate-400'} />
-                             <p className={`font-black text-sm mt-3 ${consultationType === type.id ? 'text-slate-900' : 'text-slate-500'}`}>{type.name}</p>
-                             <p className="text-[10px] text-slate-400 mt-1 font-medium">{type.desc}</p>
+                             <p className={`font-black text-sm mt-3 ${consultationType === type.id ? 'text-slate-900' : 'text-slate-500'}`}>
+                               {type.name}
+                               {type.disabled && <span className="ml-2 text-[8px] bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded-md">OFFLINE ONLY</span>}
+                             </p>
+                             <p className="text-[10px] text-slate-400 mt-1 font-medium">{type.disabled ? 'Consultation mode disabled by physician.' : type.desc}</p>
                              {consultationType === type.id && <div className="absolute top-3 right-3"><CheckCircle2 size={16} className="text-indigo-600" /></div>}
                            </button>
                          ))}
@@ -329,29 +341,48 @@ const Booking = () => {
                       <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
                         <Clock size={18} className="text-emerald-500" /> Available Cloud Windows
                       </h3>
-                      {availableSlots.length === 0 ? (
+                       {availableSlots.length === 0 ? (
                         <div className="p-8 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center">
                            <Clock className="mx-auto text-slate-300 mb-2" size={32} />
                            <p className="text-xs font-bold text-slate-400 italic">No windows open for this date.</p>
                         </div>
                       ) : (
                         <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                          {availableSlots.map(slot => (
-                            <button 
-                              key={slot}
-                              onClick={() => setSelectedSlot(slot)}
-                              className={`py-3 rounded-xl border-2 text-xs font-bold transition-all ${
-                                selectedSlot === slot 
-                                ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20 scale-105' 
-                                : 'bg-white border-slate-100 text-slate-600 hover:border-emerald-200 hover:text-emerald-600'
-                              }`}
-                            >
-                              {slot}
-                            </button>
-                          ))}
+                          {availableSlots.map(slot => {
+                            // Logic to disable past time slots for today
+                            let isPast = false;
+                            const todayStr = new Date().toISOString().split('T')[0];
+                            if (bookingDate === todayStr) {
+                               try {
+                                 const [time, period] = slot.split(' ');
+                                 let [hours, minutes] = time.split(':').map(Number);
+                                 if (period === 'PM' && hours !== 12) hours += 12;
+                                 if (period === 'AM' && hours === 12) hours = 0;
+                                 const slotDate = new Date();
+                                 slotDate.setHours(hours, minutes, 0, 0);
+                                 isPast = slotDate < new Date();
+                               } catch (e) { isPast = false; }
+                            }
+
+                            return (
+                              <button 
+                                key={slot}
+                                disabled={isPast}
+                                onClick={() => setSelectedSlot(slot)}
+                                className={`py-3 rounded-xl border-2 text-xs font-bold transition-all ${
+                                  isPast ? 'opacity-30 cursor-not-allowed border-slate-100 text-slate-300' :
+                                  selectedSlot === slot 
+                                  ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20 scale-105' 
+                                  : 'bg-white border-slate-100 text-slate-600 hover:border-emerald-200 hover:text-emerald-600'
+                                }`}
+                              >
+                                {slot}
+                              </button>
+                            );
+                          })}
                         </div>
                       )}
-                   </section>
+ section>
 
                    <div className="pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-6">
                       <div>

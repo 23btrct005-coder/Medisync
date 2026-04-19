@@ -190,6 +190,30 @@ public class AppointmentService {
             }
         }
 
+        // 1. Block past dates
+        LocalDate today = LocalDate.now();
+        if (date.isBefore(today)) {
+            throw new RuntimeException("Cannot book appointments for past dates.");
+        }
+
+        // 2. Block past time slots for today
+        if (date.isEqual(today)) {
+            try {
+                java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("h:mm a", java.util.Locale.ENGLISH);
+                java.time.LocalTime slotTime = java.time.LocalTime.parse(slot.trim().toUpperCase(), formatter);
+                if (slotTime.isBefore(java.time.LocalTime.now().plusMinutes(5))) {
+                    throw new RuntimeException("This time slot has already passed or is too close to start.");
+                }
+            } catch (Exception e) {
+                // If parsing fails, we skip time-specific block but keep the date block
+            }
+        }
+
+        // 3. Block Online if Disabled
+        if (type == Appointment.ConsultationType.ONLINE && (doctor.getOnlineConsultation() == null || !doctor.getOnlineConsultation())) {
+            throw new RuntimeException("This doctor is currently not accepting virtual consultations.");
+        }
+
         Appointment appointment = new Appointment();
         appointment.setDoctor(doctor);
         appointment.setPatient(patient);
