@@ -51,7 +51,7 @@ const ClinicMap = ({ address, height = "300px" }) => {
 
       <div className="absolute bottom-4 right-4 z-10">
         <a 
-          href={`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`}
+          href={`https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl active:scale-95 group/btn"
