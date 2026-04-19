@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axiosConfig';
 import { 
-  LayoutList, History, Loader2, Plus, Download, ChevronRight,
+  LayoutList, History as HistoryIcon, Loader2, Plus, Download, ChevronRight,
   RefreshCw, Search, ShieldCheck, Sparkles, Activity, Clock,
   Database, Target, ArrowUpRight
 } from 'lucide-react';
@@ -177,7 +177,7 @@ const MedicalHistory = () => {
                                 onClick={() => setViewMode('timeline')}
                                 className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${viewMode === 'timeline' ? 'bg-white text-[#0A1A1A] shadow-md font-black' : 'text-slate-400 hover:text-slate-600 font-bold'}`}
                             >
-                                <History size={20} />
+                                <HistoryIcon size={20} />
                                 <span className="text-[10px] uppercase tracking-widest">Timeline</span>
                             </button>
                             <button 
@@ -237,7 +237,7 @@ const MedicalHistory = () => {
                           className="text-center py-40 bg-white rounded-[3rem] border border-dashed border-slate-200 shadow-xl"
                         >
                             <div className="w-24 h-24 bg-slate-50 rounded-[2rem] flex items-center justify-center mx-auto mb-8">
-                                <History className="text-slate-200" size={48} />
+                                <HistoryIcon className="text-slate-200" size={48} />
                             </div>
                             <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-2">No Records Found</h3>
                             <p className="text-slate-500 font-medium mb-8">Your clinical node has not yet synchronized any historical telemetry.</p>

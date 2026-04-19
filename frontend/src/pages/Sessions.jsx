@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import api from '../api/axiosConfig';
-import { Calendar, Clock, ChevronRight, Video, MapPin, X, Loader2 } from 'lucide-react';
+import { Calendar, Clock, ChevronRight, Video, MapPin, X, Loader2, History as HistoryIcon } from 'lucide-react';
 
 const Sessions = () => {
     const [appointments, setAppointments] = useState([]);
@@ -129,7 +129,7 @@ const Sessions = () => {
                     {activeTab === 'past' && (
                         <div className="space-y-6">
                             {pastAppointments.length === 0 ? (
-                                <EmptyState icon={<History />} text="Clinical archive is currently empty." />
+                                <EmptyState icon={<HistoryIcon />} text="Clinical archive is currently empty." />
                             ) : (
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 opacity-80 hover:opacity-100 transition-opacity">
                                     {pastAppointments.map(appt => (

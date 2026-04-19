@@ -5,7 +5,7 @@ import {
   ArrowLeft, User, Activity, FileText, PlusCircle, Calendar,
   Download, Loader2, Phone, MapPin, Heart, Droplet, ShieldCheck,
   Mail, Users, AlertCircle, ChevronDown, ChevronUp,
-  Briefcase, Zap, Info, Scissors, Pill, Stethoscope, History,
+  Briefcase, Zap, Info, Scissors, Pill, Stethoscope, History as HistoryIcon,
   RefreshCw, CheckCircle2, Eye
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -566,7 +566,7 @@ const PatientManager = () => {
 
         <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <History size={20} className="text-primary-500" /> Clinical History Pulse
+            <HistoryIcon size={20} className="text-primary-500" /> Clinical History Pulse
           </div>
           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
             {clinicalTimeline.length} Verified Events
