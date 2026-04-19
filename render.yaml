@@ -1,25 +1,26 @@
 services:
   - type: web
     name: medisync-f87y
-    env: docker
-    dockerContext: ./backend
-    dockerfilePath: Dockerfile
+    runtime: docker
+    dockerContext: .
+    dockerfilePath: backend/Dockerfile
     plan: free
     region: singapore
-    healthCheckPath: /api/auth/health
+    healthCheckPath: /api/health
     envVars:
-      # ── Supabase PostgreSQL Connection ──
-      - key: SPRING_DATASOURCE_URL
-        value: jdbc:postgresql://aws-1-ap-south-1.pooler.supabase.com:5432/postgres?user=postgres.bwjmzottkkxrdztqqeju&password=Medisync123&ssl=true&sslmode=require&sslfactory=org.postgresql.ssl.NonValidatingFactory
-      - key: SPRING_DATASOURCE_DRIVER_CLASS_NAME
-        value: org.postgresql.Driver
-      # ── App Config ──
+      - key: PORT
+        value: 8080
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_SENDER_EMAIL
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
       - key: JWT_SECRET
         value: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
       - key: GROQ_API_KEY
         value: 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
-      # ── Brevo Email ──
-      - key: BREVO_API_KEY
-        sync: false   # Set this manually in Render dashboard
-      - key: BREVO_SENDER_EMAIL
-        sync: false   # Set this manually in Render dashboard
