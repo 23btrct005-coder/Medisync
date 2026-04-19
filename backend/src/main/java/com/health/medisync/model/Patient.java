@@ -28,19 +28,19 @@ public class Patient {
     @Transient private String occupation;
 
     // Contact
-    private String phone;
-    private String alternatePhone;
+    @Transient private String phone;
+    @Transient private String alternatePhone;
 
     // Address
-    private String street;
-    private String city;
-    private String state;
-    private String pinCode;
+    @Transient private String street;
+    @Transient private String city;
+    @Transient private String state;
+    @Transient private String pinCode;
 
     // Emergency Contact
-    private String emergencyContactName;
-    private String emergencyContactRelationship;
-    private String emergencyContactPhone;
+    @Transient private String emergencyContactName;
+    @Transient private String emergencyContactRelationship;
+    @Transient private String emergencyContactPhone;
     @Transient private String altEmergencyPhone;
 
     // ── Insurance Details ──
@@ -67,27 +67,29 @@ public class Patient {
     @Transient private String organDonorStatus;    // e.g. Yes, No, Undecided
 
     // General Medical Info
+    @Transient
     @Column(columnDefinition = "TEXT")
     private String medicalInfo;
 
     // ── Critical Medical Fields (for QR Emergency Card) ──
+    @Transient
     @Column(columnDefinition = "TEXT")
     private String allergies;           // e.g. Penicillin, Sulfa drugs
-
+    @Transient
     @Column(columnDefinition = "TEXT")
     private String existingDiseases;    // e.g. Diabetes Type 2, Hypertension
-
+    @Transient
     @Column(columnDefinition = "TEXT")
     private String currentMedications;  // e.g. Metformin 500mg, Amlodipine 5mg
-
+    @Transient
     @Column(columnDefinition = "TEXT")
     private String pastSurgeries;       // e.g. Appendectomy 2018, CABG 2021
 
     // ── Settings & Preferences ──
-    private Boolean mfaEnabled = false;
-    private Boolean emailNotifications = true;
-    private Boolean appNotifications = true;
-    private Boolean smsNotifications = false;
+    @Transient private Boolean mfaEnabled = false;
+    @Transient private Boolean emailNotifications = true;
+    @Transient private Boolean appNotifications = true;
+    @Transient private Boolean smsNotifications = false;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

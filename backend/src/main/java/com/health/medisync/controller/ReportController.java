@@ -20,7 +20,7 @@ public class ReportController {
         this.reportService = reportService;
     }
 
-    @GetMapping
+    @GetMapping("/my")
     public ResponseEntity<List<Report>> getMyReports(Authentication authentication) {
         String username = authentication.getName();
         return ResponseEntity.ok(reportService.getMyReports(username));

@@ -62,8 +62,8 @@ public class ReportService {
     public void performClinicalAnalysis(Report report, Patient patient) {
         byte[] fileData = report.getFileData();
         String contentType = report.getFileType();
-        String patientName = patient.getName();
-        int patientAge = patient.getAge() != null ? patient.getAge() : 0;
+        String patientName = (patient != null && patient.getName() != null) ? patient.getName() : "Patient";
+        int patientAge = (patient != null && patient.getAge() != null) ? patient.getAge() : 0;
 
         boolean isImage = contentType != null && contentType.startsWith("image/");
         String analysisResult = null;
