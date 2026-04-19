@@ -17,8 +17,16 @@ public class MedicalRecordService {
     }
 
     public List<MedicalRecord> getMyRecords(String username, String search) {
+        System.out.println("DEBUG: Fetching medical records for user: " + username);
         Patient patient = patientService.getPatientProfile(username);
+        
+        if (patient == null) {
+            System.err.println("ERROR: No patient profile found for record fetch: " + username);
+            return List.of(); // Return empty instead of crashing
+        }
+
         if (search != null && !search.trim().isEmpty()) {
+            System.out.println("DEBUG: Searching records with query: " + search);
             return recordRepository.findByPatientIdAndDiagnosisContainingIgnoreCase(patient.getId(), search);
         }
         return recordRepository.findByPatientId(patient.getId());

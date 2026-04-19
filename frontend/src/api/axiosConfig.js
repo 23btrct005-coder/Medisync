@@ -64,7 +64,8 @@ api.interceptors.response.use(
     } else if (status === 403) {
        toast.error('Unauthorized clinical access attempt.');
     } else if (status >= 500) {
-       toast.error('A critical server exception occurred. Clinical sync paused.');
+       const errorMessage = error.response?.data?.message || 'A critical server exception occurred. Clinical sync paused.';
+       toast.error(errorMessage);
     }
 
     return Promise.reject(error);

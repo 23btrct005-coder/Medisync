@@ -29,23 +29,28 @@ public class PatientService {
         this.emailService = emailService;
     }
 
-    public Patient getPatientProfile(String username) {
+    public Patient getPatientProfile(String rawUsername) {
+        final String username = (rawUsername != null) ? rawUsername.trim().toLowerCase() : null;
+        System.out.println("DEBUG: Resolving patient profile for: " + username);
+        
         User user = userRepository.findByUsernameIgnoreCase(username)
             .orElseGet(() -> {
-                // Auto-create stub user for Supabase bridged profiles
+                System.out.println("INFO: Auto-creating stub user for managed identity: " + username);
                 User newUser = new User();
                 newUser.setUsername(username);
                 newUser.setPassword("supabase_managed");
                 newUser.setRole("ROLE_PATIENT");
+                newUser.setEnabled(true);
                 return userRepository.save(newUser);
             });
 
         return patientRepository.findByUserId(user.getId())
             .orElseGet(() -> {
+                System.out.println("INFO: Linking fresh clinical profile for user ID: " + user.getId());
                 Patient newPatient = new Patient();
                 newPatient.setUser(user);
                 newPatient.setEmail(username);
-                newPatient.setName(username);
+                newPatient.setName(username != null && username.contains("@") ? username.split("@")[0] : username);
                 newPatient.setAge(0);
                 newPatient.setBloodGroup("Unknown");
                 return patientRepository.save(newPatient);

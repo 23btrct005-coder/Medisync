@@ -142,11 +142,12 @@ public class AppointmentService {
             }
         }
         
-        // Final fallback if all else fails
-        if (fee == null || fee <= 0) fee = 500.0; 
-
-        // Payment Configuration Check with Demo Mode Fallback
-        boolean isDemoMode = (razorpayKeyId == null || razorpayKeyId.isEmpty() || razorpayKeySecret == null || razorpayKeySecret.isEmpty());
+        // Payment Configuration Check with Robust Demo Mode Fallback
+        boolean isDemoMode = (razorpayKeyId == null || razorpayKeyId.trim().isEmpty() || 
+                             razorpayKeySecret == null || razorpayKeySecret.trim().isEmpty() ||
+                             razorpayKeyId.contains("YOUR_") || razorpayKeySecret.contains("YOUR_"));
+        
+        System.out.println("DEBUG: Payment Mode Check - isDemoMode: " + isDemoMode + " (Key: " + (razorpayKeyId != null ? "PRESENT" : "NULL") + ")");
         
         String orderId;
         if (isDemoMode) {

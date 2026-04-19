@@ -67,9 +67,14 @@ public class PrescriptionService {
         return prescriptionRepository.findByPatientIdOrderByCreatedAtDesc(patientId);
     }
 
-    public List<Prescription> getMyPrescriptions(String patientEmail) {
-        Patient patient = patientRepository.findByEmail(patientEmail).orElse(null);
-        if (patient == null) return List.of();
+    public List<Prescription> getMyPrescriptions(String rawEmail) {
+        final String email = (rawEmail != null) ? rawEmail.trim().toLowerCase() : null;
+        System.out.println("DEBUG: Fetching prescriptions for user: " + email);
+        Patient patient = patientRepository.findByEmailIgnoreCase(email).orElse(null);
+        if (patient == null) {
+            System.err.println("WARNING: No patient profile found for prescription fetch: " + email);
+            return List.of();
+        }
         return prescriptionRepository.findByPatientIdOrderByCreatedAtDesc(patient.getId());
     }
 }
