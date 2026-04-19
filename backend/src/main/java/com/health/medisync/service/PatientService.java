@@ -44,7 +44,7 @@ public class PatientService {
                 return userRepository.save(newUser);
             });
 
-        return patientRepository.findByUserId(user.getId())
+        return patientRepository.findByUserUsernameIgnoreCase(username)
             .orElseGet(() -> {
                 System.out.println("INFO: Linking fresh clinical profile for user ID: " + user.getId());
                 Patient newPatient = new Patient();
@@ -201,7 +201,6 @@ public class PatientService {
         Patient patient = getPatientProfile(patientUsername);
         String doctorEmailLower = doctorEmail.trim().toLowerCase();
 
-        // 1. Check if already linked
         boolean isAlreadyLinked = patient.getDoctors().stream()
             .anyMatch(d -> d.getEmail().equalsIgnoreCase(doctorEmailLower));
         

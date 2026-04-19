@@ -19,7 +19,6 @@ public class Patient {
 
     // Basic Info
     private String name;
-    private String email;
     private String dateOfBirth;
     private Integer age;
     private String gender;
@@ -113,8 +112,8 @@ public class Patient {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public String getEmail() { return user != null ? user.getUsername() : null; }
+    public void setEmail(String email) { if(user != null) user.setUsername(email); }
 
     public String getDateOfBirth() { return dateOfBirth; }
     public void setDateOfBirth(String dateOfBirth) { this.dateOfBirth = dateOfBirth; }

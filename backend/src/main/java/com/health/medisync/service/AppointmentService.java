@@ -102,7 +102,7 @@ public class AppointmentService {
         final String patientEmail = (rawEmail != null) ? rawEmail.trim().toLowerCase() : null;
         System.out.println("DEBUG: Initiating booking for " + patientEmail + ", Doctor: " + doctorId + ", Type: " + type);
 
-        Patient patient = patientRepository.findByEmailIgnoreCase(patientEmail)
+        Patient patient = patientRepository.findByUserUsernameIgnoreCase(patientEmail)
             .orElseGet(() -> {
                 System.out.println("INFO: Patient profile missing for " + patientEmail + ". Attempting self-healing...");
                 User user = userRepository.findByUsernameIgnoreCase(patientEmail).orElse(null);

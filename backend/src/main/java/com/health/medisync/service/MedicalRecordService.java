@@ -18,6 +18,7 @@ public class MedicalRecordService {
 
     public List<MedicalRecord> getMyRecords(String username, String search) {
         System.out.println("DEBUG: Fetching medical records for user: " + username);
+        // PatientService.getPatientProfile already handles findByUserUsernameIgnoreCase and normalization
         Patient patient = patientService.getPatientProfile(username);
         
         if (patient == null) {
