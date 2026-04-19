@@ -27,7 +27,6 @@ const EditDoctorProfile = () => {
     medicalLicenseNumber: '',
     hospital: '',
     yearsOfExperience: '',
-    consultationFee: '',
     workingDays: '',
     consultationTimings: '',
     onlineConsultation: false,
@@ -51,7 +50,6 @@ const EditDoctorProfile = () => {
         medicalLicenseNumber: user.medicalLicenseNumber || '',
         hospital: user.hospital || '',
         yearsOfExperience: user.yearsOfExperience || '',
-        consultationFee: user.consultationFee || '',
         workingDays: user.workingDays || '',
         consultationTimings: user.consultationTimings || '',
         onlineConsultation: user.onlineConsultation || false,
@@ -391,10 +389,6 @@ const EditDoctorProfile = () => {
                 className={inputClass} 
                 placeholder="e.g. Apollo Hospital, City Clinic" 
               />
-            </div>
-            <div>
-              <label className={labelClass}>Consultation Fee (INR)</label>
-              <input type="text" name="consultationFee" value={formData.consultationFee} onChange={handleChange} className={inputClass} placeholder="e.g. 500" />
             </div>
             <div>
               <label className={labelClass}>Working Days</label>
