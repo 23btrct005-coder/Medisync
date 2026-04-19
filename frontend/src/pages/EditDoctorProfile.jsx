@@ -150,7 +150,6 @@ const EditDoctorProfile = () => {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
-        console.log(`GPS Acquired: ${latitude}, ${longitude}`);
 
         if (!window.google) {
           try {
@@ -266,8 +265,6 @@ const EditDoctorProfile = () => {
     e.preventDefault();
     setLoading(true);
     setMessage({ type: '', text: '' });
-
-    console.log("Submitting Profile Update Payload:", formData);
     
     // VALIDATION: Required Address for Offline Consultations
     if (formData.appointmentsEnabled && !formData.clinicAddress) {
