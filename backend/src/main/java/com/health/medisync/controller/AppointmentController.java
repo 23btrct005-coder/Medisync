@@ -44,16 +44,30 @@ public class AppointmentController {
     public ResponseEntity<?> initiateBooking(
             Authentication authentication,
             @RequestBody Map<String, Object> request) {
+        System.out.println("DEBUG: Incoming Booking Request: " + request);
         try {
-            Long doctorId = Long.valueOf(request.get("doctorId").toString());
-            LocalDate date = LocalDate.parse(request.get("date").toString());
-            String slot = request.get("slot").toString();
-            ConsultationType type = ConsultationType.valueOf(request.get("type").toString());
+            if (authentication == null) throw new RuntimeException("Security context missing (authentication is null)");
+            
+            Object doctorIdObj = request.get("doctorId");
+            Object dateObj = request.get("date");
+            Object slotObj = request.get("slot");
+            Object typeObj = request.get("type");
+
+            if (doctorIdObj == null || dateObj == null || slotObj == null || typeObj == null) {
+                throw new RuntimeException("Missing required fields: doctorId, date, slot, or type");
+            }
+
+            Long doctorId = Long.valueOf(doctorIdObj.toString());
+            LocalDate date = LocalDate.parse(dateObj.toString());
+            String slot = slotObj.toString();
+            ConsultationType type = ConsultationType.valueOf(typeObj.toString());
 
             Map<String, Object> response = appointmentService.initiateBooking(authentication.getName(), doctorId, date, slot, type);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+            System.err.println("CRITICAL: Booking Initiation Failed");
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage() != null ? e.getMessage() : "Unexpected booking failure"));
         }
     }
 

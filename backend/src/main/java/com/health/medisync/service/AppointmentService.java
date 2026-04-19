@@ -98,19 +98,24 @@ public class AppointmentService {
     }
 
     @Transactional
-    public Map<String, Object> initiateBooking(String patientEmail, Long doctorId, LocalDate date, String slot, ConsultationType type) throws Exception {
+    public Map<String, Object> initiateBooking(String rawEmail, Long doctorId, LocalDate date, String slot, ConsultationType type) throws Exception {
+        final String patientEmail = (rawEmail != null) ? rawEmail.trim().toLowerCase() : null;
+        System.out.println("DEBUG: Initiating booking for " + patientEmail + ", Doctor: " + doctorId + ", Type: " + type);
+
         Patient patient = patientRepository.findByEmailIgnoreCase(patientEmail)
             .orElseGet(() -> {
-                // Self-healing: Create a basic patient profile if missing for authenticated user
+                System.out.println("INFO: Patient profile missing for " + patientEmail + ". Attempting self-healing...");
                 User user = userRepository.findByUsernameIgnoreCase(patientEmail).orElse(null);
                 if (user != null) {
                     Patient p = new Patient();
                     p.setUser(user);
                     p.setName(patientEmail.split("@")[0]);
-                    p.setEmail(patientEmail.toLowerCase());
+                    p.setEmail(patientEmail);
+                    System.out.println("SUCCESS: Reconstructed patient profile for " + patientEmail);
                     return patientRepository.save(p);
                 }
-                throw new RuntimeException("Patient and User account not found for: " + patientEmail);
+                System.err.println("ERROR: No User account found for " + patientEmail);
+                throw new RuntimeException("Patient profile and User account not found for: " + patientEmail);
             });
         Doctor doctor = doctorRepository.findById(doctorId)
             .orElseThrow(() -> new RuntimeException("Doctor not found"));
@@ -145,19 +150,19 @@ public class AppointmentService {
         
         String orderId;
         if (isDemoMode) {
-            // Simulated Order for testing/demo environments without API keys
+            System.out.println("INFO: Razorpay keys missing. Operating in Clinical Demo Mode.");
             orderId = "demo_order_" + System.currentTimeMillis();
         } else {
-            // Create Official Razorpay Order
             try {
+                System.out.println("INFO: Initializing official Razorpay transaction...");
                 RazorpayClient client = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
                 JSONObject orderRequest = new JSONObject();
                 orderRequest.put("amount", (int)(fee * 100)); // amount in paise
                 orderRequest.put("currency", "INR");
                 orderRequest.put("receipt", "appt_" + System.currentTimeMillis());
 
-                // Razorpay Route - Transfer directly to doctor
                 if (doctor.getRazorpayAccountId() != null && !doctor.getRazorpayAccountId().isEmpty()) {
+                    System.out.println("INFO: Route enabled - sending funds to " + doctor.getRazorpayAccountId());
                     JSONArray transfers = new JSONArray();
                     JSONObject transfer = new JSONObject();
                     transfer.put("account", doctor.getRazorpayAccountId());
@@ -169,8 +174,9 @@ public class AppointmentService {
 
                 Order order = client.orders.create(orderRequest);
                 orderId = order.get("id");
+                System.out.println("SUCCESS: Razorpay order created: " + orderId);
             } catch (Exception e) {
-                // Fallback to error if Razorpay fails but keys were provided
+                System.err.println("FATAL: Razorpay communication failure: " + e.getMessage());
                 throw new RuntimeException("Payment gateway error: " + e.getMessage());
             }
         }
