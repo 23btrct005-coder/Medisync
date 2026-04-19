@@ -52,20 +52,17 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**", "/auth/**").permitAll()
+                .requestMatchers("/api/health/**", "/health/**").permitAll()
                 .requestMatchers("/api/patient/profile/sync", "/patient/profile/sync").permitAll()
                 .requestMatchers("/ws/**").permitAll()
-                .requestMatchers("/h2-console/**").permitAll()
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             );
 
-        // H2 console requires framing to be disabled
-        http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
-        
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -73,11 +70,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    public FilterRegistrationBean<CorsFilter> customCorsFilter() {
+    public CorsConfigurationSource corsConfigurationSource() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         
-        // Use setAllowedOriginPatterns for flexible Vercel subdomain support
         config.setAllowedOriginPatterns(Arrays.asList(
             "https://*.vercel.app",
             "http://localhost:5173",
@@ -90,9 +86,6 @@ public class SecurityConfig {
         config.setMaxAge(3600L);
         
         source.registerCorsConfiguration("/**", config);
-        
-        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
-        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-        return bean;
+        return source;
     }
 }
