@@ -271,6 +271,13 @@ const EditDoctorProfile = () => {
 
     console.log("Submitting Profile Update Payload:", formData);
     
+    // VALIDATION: Required Address for Offline Consultations
+    if (formData.appointmentsEnabled && !formData.clinicAddress) {
+      toast.error("Clinic Address is required to accept new appointments.");
+      setLoading(false);
+      return;
+    }
+
     // Safety timeout: stop loading state after 10 seconds if no response
     const timeout = setTimeout(() => {
       if (loading) {
@@ -429,7 +436,10 @@ const EditDoctorProfile = () => {
               <input type="number" name="offlineConsultationFee" value={formData.offlineConsultationFee} onChange={handleChange} className={inputClass} placeholder="e.g. 800" />
             </div>
             <div className="md:col-span-2">
-              <label className={labelClass}>Clinic Address (Search or use current location)</label>
+              <label className={labelClass}>
+                Clinic Address (Search or use current location) 
+                {formData.appointmentsEnabled && <span className="text-red-500 ml-1 font-bold">*</span>}
+              </label>
               <div className="relative group/addr">
                 <input 
                   ref={addressInputRef}
