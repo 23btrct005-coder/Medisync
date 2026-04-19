@@ -40,7 +40,9 @@ public class AppointmentController {
         try {
             return ResponseEntity.ok(appointmentService.getAvailableSlots(doctorId, date));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+            String errorMsg = e.getClass().getSimpleName() + ": " + e.getMessage();
+            System.err.println("ERROR: Slot retrieval failed for doc " + doctorId + " on " + date + ": " + errorMsg);
+            return ResponseEntity.badRequest().body(Map.of("message", errorMsg));
         }
     }
 

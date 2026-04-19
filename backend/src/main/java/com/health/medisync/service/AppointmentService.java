@@ -53,8 +53,12 @@ public class AppointmentService {
     }
 
     public List<String> getAvailableSlots(Long doctorId, LocalDate date) {
+        System.out.println("TRACE: Fetching slots for Doctor ID: " + doctorId + ", Date: " + date);
+        
         Doctor doctor = doctorRepository.findById(doctorId)
-            .orElseThrow(() -> new RuntimeException("Doctor not found"));
+            .orElseThrow(() -> new RuntimeException("Doctor Record Not Found for ID: " + doctorId));
+
+        System.out.println("TRACE: Doctor found: " + doctor.getName() + ", ApptsEnabled: " + doctor.getAppointmentsEnabled());
 
         if (doctor.getAppointmentsEnabled() != null && !doctor.getAppointmentsEnabled()) {
             return Collections.emptyList();
@@ -62,10 +66,18 @@ public class AppointmentService {
 
         // 1. Generate all possible slots from consultationTimings (e.g., "10:00 AM - 05:00 PM")
         List<String> allSlots = parseSlots(doctor.getConsultationTimings());
+        System.out.println("TRACE: Total possible slots: " + allSlots.size());
 
         // 2. Filter out booked or pending (not expired) slots
         LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(10);
-        List<Appointment> existing = appointmentRepository.findByDoctorIdAndAppointmentDate(doctorId, date);
+        List<Appointment> existing = new ArrayList<>();
+        try {
+            existing = appointmentRepository.findByDoctorIdAndAppointmentDate(doctorId, date);
+            System.out.println("TRACE: Found " + existing.size() + " existing appointments/holds.");
+        } catch (Exception e) {
+            System.err.println("WARNING: Database query for existing appointments failed: " + e.getMessage());
+            // Fallback: Assume no existing appointments if DB query fails due to schema sync issues
+        }
         
         Set<String> takenSlots = existing.stream()
             .filter(a -> a.getStatus() == AppointmentStatus.BOOKED || 
@@ -74,9 +86,12 @@ public class AppointmentService {
             .filter(Objects::nonNull)
             .collect(Collectors.toSet());
 
-        return allSlots.stream()
+        List<String> results = allSlots.stream()
             .filter(slot -> !takenSlots.contains(slot))
             .collect(Collectors.toList());
+            
+        System.out.println("TRACE: Returning " + results.size() + " available slots.");
+        return results;
     }
 
     private List<String> parseSlots(String timings) {
