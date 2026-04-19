@@ -198,7 +198,7 @@ const DoctorProfile = () => {
                 )}
               </div>
              <div className="p-6">
-                <ClinicMap address={user.clinicAddress} height="350px" />
+                <ClinicMap address={user.clinicAddress} hospitalName={user.hospital} height="350px" />
                 {user.clinicAddress && (
                   <p className="mt-4 text-xs font-bold text-slate-400 flex items-center gap-2">
                      <AlertCircle size={14} className="text-amber-500" />

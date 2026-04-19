@@ -436,7 +436,7 @@ const EditDoctorProfile = () => {
                   </div>
                 </div>
               </div>
-              <ClinicMap address={formData.clinicAddress} />
+              <ClinicMap address={formData.clinicAddress} hospitalName={formData.hospital} />
             </div>
 
             {/* Payment & Specific Fees */}

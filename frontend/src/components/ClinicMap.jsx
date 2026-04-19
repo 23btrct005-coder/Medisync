@@ -1,7 +1,7 @@
 import React from 'react';
 import { MapPin, ExternalLink } from 'lucide-react';
 
-const ClinicMap = ({ address, height = "300px" }) => {
+const ClinicMap = ({ address, hospitalName, height = "300px" }) => {
   if (!address || address.trim() === '') {
     return (
       <div className="w-full bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl p-8 text-center flex flex-col items-center justify-center gap-3">
@@ -16,7 +16,8 @@ const ClinicMap = ({ address, height = "300px" }) => {
     );
   }
 
-  const encodedAddress = encodeURIComponent(address);
+  const query = hospitalName ? `${hospitalName}, ${address}` : address;
+  const encodedAddress = encodeURIComponent(query);
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
   
   // Official Embed URL for precise location visualization (Requires API Key)

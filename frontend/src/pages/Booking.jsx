@@ -272,7 +272,7 @@ const Booking = () => {
                              <MapPin size={16} className="text-red-500" />
                              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none text-slate-900">Clinic Geographic Terminal</h4>
                            </div>
-                           <ClinicMap address={selectedDoctor.clinicAddress} height="250px" />
+                           <ClinicMap address={selectedDoctor.clinicAddress} hospitalName={selectedDoctor.hospital} height="250px" />
                         </div>
                       )}
                    </div>
