@@ -56,7 +56,7 @@ public class AppointmentService {
         Doctor doctor = doctorRepository.findById(doctorId)
             .orElseThrow(() -> new RuntimeException("Doctor not found"));
 
-        if (!doctor.getAppointmentsEnabled()) {
+        if (doctor.getAppointmentsEnabled() != null && !doctor.getAppointmentsEnabled()) {
             return Collections.emptyList();
         }
 
@@ -69,8 +69,9 @@ public class AppointmentService {
         
         Set<String> takenSlots = existing.stream()
             .filter(a -> a.getStatus() == AppointmentStatus.BOOKED || 
-                        (a.getStatus() == AppointmentStatus.PENDING && a.getCreatedAt().isAfter(expiryTime)))
+                        (a.getStatus() == AppointmentStatus.PENDING && a.getCreatedAt() != null && a.getCreatedAt().isAfter(expiryTime)))
             .map(a -> a.getTimeSlot())
+            .filter(Objects::nonNull)
             .collect(Collectors.toSet());
 
         return allSlots.stream()
@@ -79,7 +80,9 @@ public class AppointmentService {
     }
 
     private List<String> parseSlots(String timings) {
-        // Logic to parse "10:00 AM - 05:00 PM" into 30 min intervals
+        if (timings == null || timings.trim().isEmpty()) {
+            return Arrays.asList("09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM");
+        }
         try {
             String[] parts = timings.split(" - ");
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);

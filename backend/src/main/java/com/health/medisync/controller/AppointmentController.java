@@ -34,10 +34,14 @@ public class AppointmentController {
     }
 
     @GetMapping("/slots")
-    public ResponseEntity<List<String>> getAvailableSlots(
+    public ResponseEntity<?> getAvailableSlots(
             @RequestParam Long doctorId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return ResponseEntity.ok(appointmentService.getAvailableSlots(doctorId, date));
+        try {
+            return ResponseEntity.ok(appointmentService.getAvailableSlots(doctorId, date));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 
     @PostMapping("/book")
