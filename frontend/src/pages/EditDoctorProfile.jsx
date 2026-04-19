@@ -266,11 +266,29 @@ const EditDoctorProfile = () => {
     setLoading(true);
     setMessage({ type: '', text: '' });
     
-    // VALIDATION: Required Address for Offline Consultations
-    if (formData.appointmentsEnabled && !formData.clinicAddress) {
-      toast.error("Clinic Address is required to accept new appointments.");
-      setLoading(false);
-      return;
+    // VALIDATION: Required Fields for Active Consultations
+    const isActive = formData.appointmentsEnabled || formData.onlineConsultation;
+    if (isActive) {
+      if (!formData.hospital) {
+        toast.error("Facility Name is required.");
+        setLoading(false);
+        return;
+      }
+      if (!formData.workingDays) {
+        toast.error("Working Days are required.");
+        setLoading(false);
+        return;
+      }
+      if (!formData.consultationTimings) {
+        toast.error("Consultation Timings are required.");
+        setLoading(false);
+        return;
+      }
+      if (formData.appointmentsEnabled && !formData.clinicAddress) {
+        toast.error("Clinic Address is required for offline appointments.");
+        setLoading(false);
+        return;
+      }
     }
 
     // Safety timeout: stop loading state after 10 seconds if no response
@@ -376,7 +394,10 @@ const EditDoctorProfile = () => {
           <h3 className={sectionTitleClass}><Building2 className="text-indigo-600" size={20} /> Clinical Practice</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
-              <label className={labelClass}>Primary Hospital / Clinic Name (Search for your facility)</label>
+              <label className={labelClass}>
+                Primary Hospital / Clinic Name (Search for your facility)
+                {(formData.appointmentsEnabled || formData.onlineConsultation) && <span className="text-red-500 ml-1 font-bold">*</span>}
+              </label>
               <input 
                 ref={hospitalInputRef}
                 type="text" 
@@ -388,11 +409,17 @@ const EditDoctorProfile = () => {
               />
             </div>
             <div>
-              <label className={labelClass}>Working Days</label>
+              <label className={labelClass}>
+                Working Days
+                {(formData.appointmentsEnabled || formData.onlineConsultation) && <span className="text-red-500 ml-1 font-bold">*</span>}
+              </label>
               <input type="text" name="workingDays" value={formData.workingDays} onChange={handleChange} className={inputClass} placeholder="e.g. Mon-Fri" />
             </div>
             <div className="md:col-span-2">
-              <label className={labelClass}>Consultation Timings</label>
+              <label className={labelClass}>
+                Consultation Timings
+                {(formData.appointmentsEnabled || formData.onlineConsultation) && <span className="text-red-500 ml-1 font-bold">*</span>}
+              </label>
               <input type="text" name="consultationTimings" value={formData.consultationTimings} onChange={handleChange} className={inputClass} placeholder="e.g. 10:00 AM - 04:00 PM" />
             </div>
 
