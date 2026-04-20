@@ -16,12 +16,7 @@ import com.health.medisync.model.Patient;
 import com.health.medisync.repository.PatientRepository;
 import com.health.medisync.model.User;
 import com.health.medisync.model.Doctor;
-import com.health.medisync.repository.UserRepository;
-import com.health.medisync.repository.DoctorRepository;
-
-import com.health.medisync.service.AuthService;
-import com.health.medisync.service.EmailService;
-import com.health.medisync.service.FirebaseStorageService;
+import com.health.medisync.repository.PasswordResetTokenRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
@@ -31,22 +26,17 @@ import java.io.IOException;
 @RestController
 @RequestMapping({"/api/auth", "/auth"})
 @CrossOrigin(origins = "*", maxAge = 3600)
-public class AuthController {
-
-    private final AuthenticationManager authenticationManager;
-    private final JwtUtils jwtUtils;
-    private final UserRepository userRepository;
-    private final DoctorRepository doctorRepository;
-    private final PatientRepository patientRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
     private final FirebaseStorageService firebaseStorageService;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     public AuthController(AuthenticationManager authenticationManager, JwtUtils jwtUtils,
                           UserRepository userRepository, DoctorRepository doctorRepository,
                           PatientRepository patientRepository,
                           PasswordEncoder passwordEncoder, AuthService authService,
-                          FirebaseStorageService firebaseStorageService) {
+                          FirebaseStorageService firebaseStorageService,
+                          PasswordResetTokenRepository passwordResetTokenRepository) {
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
         this.userRepository = userRepository;
@@ -55,6 +45,7 @@ public class AuthController {
         this.passwordEncoder = passwordEncoder;
         this.authService = authService;
         this.firebaseStorageService = firebaseStorageService;
+        this.passwordResetTokenRepository = passwordResetTokenRepository;
     }
     
     @GetMapping("/health")
@@ -70,7 +61,7 @@ public class AuthController {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         
-        User user = userRepository.findByUsername(authentication.getName())
+        User user = userRepository.findByUsernameIgnoreCase(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Error: User not found."));
                 
         String jwt = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole());
@@ -94,12 +85,13 @@ public class AuthController {
         // Use email as username if none provided
         final String finalUsername = (username == null || username.isEmpty()) ? email : username;
 
-        userRepository.findByUsername(finalUsername).ifPresent(existing -> {
+        userRepository.findByUsernameIgnoreCase(finalUsername).ifPresent(existing -> {
             boolean hasProfile = doctorRepository.findByUserId(existing.getId()).isPresent();
             if (existing.isEnabled() && hasProfile) {
                 throw new RuntimeException("Error: This account is already registered and verified. Please log in.");
             }
-            // Delete incomplete/unverified user so registration can proceed
+            // Delete incomplete/unverified user and linked data so registration can proceed
+            passwordResetTokenRepository.findByUser(existing).ifPresent(passwordResetTokenRepository::delete);
             doctorRepository.findByUserId(existing.getId()).ifPresent(doctorRepository::delete);
             userRepository.delete(existing);
         });
@@ -186,11 +178,12 @@ public class AuthController {
         final String finalUsername = (username == null || username.isEmpty()) ? email : username;
         
         try {
-            userRepository.findByUsername(finalUsername).ifPresent(existing -> {
+            userRepository.findByUsernameIgnoreCase(finalUsername).ifPresent(existing -> {
                 if (existing.isEnabled()) {
                     throw new RuntimeException("Error: This account is already registered and verified. Please log in.");
                 }
-                // Delete ghost/unverified user so registration can proceed
+                // Delete ghost/unverified user and linked data so registration can proceed
+                passwordResetTokenRepository.findByUser(existing).ifPresent(passwordResetTokenRepository::delete);
                 patientRepository.findByUserId(existing.getId()).ifPresent(patientRepository::delete);
                 userRepository.delete(existing);
             });
