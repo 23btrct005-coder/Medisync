@@ -238,7 +238,7 @@ public class AppointmentService {
         appointment.setAppointmentDate(date);
         appointment.setTimeSlot(slot);
         appointment.setConsultationType(type);
-        appointment.setAmount(doctor.getConsultationFee() != null ? Double.valueOf(doctor.getConsultationFee().replaceAll("[^0-9]", "")) : 1.0);
+        appointment.setAmount(fee);
         appointment.setRazorpayOrderId(orderId);
         appointment.setStatus(AppointmentStatus.PENDING);
 
