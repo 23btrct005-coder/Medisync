@@ -28,9 +28,17 @@ public class AdminController {
 
     @GetMapping("/doctors/pending")
     @Transactional(readOnly = true)
-    public ResponseEntity<List<Doctor>> getPendingDoctors() {
-        List<Doctor> pending = doctorRepository.findByApprovedFalse();
-        return ResponseEntity.ok(pending);
+    public ResponseEntity<?> getPendingDoctors() {
+        try {
+            List<Doctor> pending = doctorRepository.findByApprovedFalse();
+            return ResponseEntity.ok(pending);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of(
+                "error", e.getMessage() != null ? e.getMessage() : "Unknown Diagnostic Error",
+                "type", e.getClass().getName(),
+                "suggestion", "Check for orphaned records or JPA mapping mismatches"
+            ));
+        }
     }
 
     @PostMapping("/doctors/{id}/approve")
