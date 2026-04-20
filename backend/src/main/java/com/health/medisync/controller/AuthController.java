@@ -382,11 +382,18 @@ public class AuthController {
     // ── Profile Photo Serving Endpoints ──
 
     @GetMapping(value = "/doctor/photo/{id}", produces = {MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE})
-    public ResponseEntity<byte[]> getDoctorPhoto(@PathVariable Long id) {
+    public ResponseEntity<?> getDoctorPhoto(@PathVariable Long id) {
         return doctorRepository.findById(id)
             .map(doctor -> {
-                if (doctor.getProfilePicture() == null) return ResponseEntity.notFound().<byte[]>build();
-                return ResponseEntity.ok().body(doctor.getProfilePicture());
+                if (doctor.getProfilePicture() != null) {
+                    return ResponseEntity.ok().body(doctor.getProfilePicture());
+                }
+                if (doctor.getProfilePictureUrl() != null && !doctor.getProfilePictureUrl().isEmpty()) {
+                    return ResponseEntity.status(org.springframework.http.HttpStatus.FOUND)
+                                         .location(java.net.URI.create(doctor.getProfilePictureUrl()))
+                                         .build();
+                }
+                return ResponseEntity.notFound().build();
             })
             .orElse(ResponseEntity.notFound().build());
     }
@@ -395,18 +402,24 @@ public class AuthController {
     public ResponseEntity<?> getPatientPhoto(@PathVariable Long id) {
         return patientRepository.findById(id)
             .map(patient -> {
-                // Now that persistence is re-enabled, we check the real DB field
-                if (patient.getProfilePicture() == null) {
-                    // Fallback to DiceBear if user hasn't uploaded yet (Clean UI, no 404s)
-                    String diceBearUrl = "https://api.dicebear.com/7.x/avataaars/svg?seed=" + 
-                                       (patient.getUser() != null ? patient.getUser().getUsername() : id.toString());
+                if (patient.getProfilePicture() != null) {
+                    return ResponseEntity.ok()
+                                         .contentType(MediaType.IMAGE_JPEG)
+                                         .body(patient.getProfilePicture());
+                }
+                
+                if (patient.getProfilePictureUrl() != null && !patient.getProfilePictureUrl().isEmpty()) {
                     return ResponseEntity.status(org.springframework.http.HttpStatus.FOUND)
-                                         .location(java.net.URI.create(diceBearUrl))
+                                         .location(java.net.URI.create(patient.getProfilePictureUrl()))
                                          .build();
                 }
-                return ResponseEntity.ok()
-                                     .contentType(MediaType.IMAGE_JPEG)
-                                     .body(patient.getProfilePicture());
+
+                // Fallback to DiceBear if both are missing
+                String diceBearUrl = "https://api.dicebear.com/7.x/avataaars/svg?seed=" + 
+                                   (patient.getUser() != null ? patient.getUser().getUsername() : id.toString());
+                return ResponseEntity.status(org.springframework.http.HttpStatus.FOUND)
+                                     .location(java.net.URI.create(diceBearUrl))
+                                     .build();
             })
             .orElse(ResponseEntity.notFound().build());
     }
