@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api/axiosConfig';
 import {
   Stethoscope, Mail, Phone, GraduationCap, BadgeCheck,
-  Building2, Clock, Activity, AlertCircle, User, Users,
+  Building2, Clock, Activity, AlertCircle, User, Users, Star,
   Calendar, CheckCircle, XCircle, Video, Edit3, MapPin, CreditCard, Wallet
 } from 'lucide-react';
 import ClinicMap from '../components/ClinicMap';
@@ -100,6 +100,9 @@ const DoctorProfile = () => {
               )}
               <span className="bg-emerald-400/30 border border-emerald-400/40 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
                 <CheckCircle size={12} /> Active Provider
+              </span>
+              <span className="bg-amber-400/30 border border-amber-400/40 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                <Star size={12} fill="currentColor" /> {user.averageRating || '0.0'} ({user.ratingCount || 0} reviews)
               </span>
             </div>
           </div>

@@ -19,6 +19,8 @@ public class DoctorDTO {
     private Boolean onlineConsultation;
     private String clinicAddress;
     private String consultationTimings;
+    private Double averageRating;
+    private Long ratingCount;
 
     // Constructors
     public DoctorDTO() {}
@@ -92,4 +94,10 @@ public class DoctorDTO {
 
     public String getConsultationTimings() { return consultationTimings; }
     public void setConsultationTimings(String consultationTimings) { this.consultationTimings = consultationTimings; }
+
+    public Double getAverageRating() { return averageRating; }
+    public void setAverageRating(Double averageRating) { this.averageRating = averageRating; }
+
+    public Long getRatingCount() { return ratingCount; }
+    public void setRatingCount(Long ratingCount) { this.ratingCount = ratingCount; }
 }

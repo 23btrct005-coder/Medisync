@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { 
   Users, Stethoscope, Camera, Calendar, ShieldCheck, Sparkles, 
   Search, Bell, UserPlus, ChevronRight, Activity, Target,
-  Zap, Globe, Database, ArrowUpRight, X, QrCode, AlertCircle
+  Zap, Globe, Database, ArrowUpRight, X, QrCode, AlertCircle, Star
 } from 'lucide-react';
 import api from '../api/axiosConfig';
 import { Html5Qrcode } from 'html5-qrcode';
@@ -169,22 +169,16 @@ const DoctorDashboard = () => {
             trend="PENDING" 
             subtitle="Secure Signals"
           />
-          <StatCardPro 
-            title="Session Log" 
-            value="LIVE" 
-            icon={Calendar} 
-            color="blue" 
-            trend="CLOCK" 
             subtitle="Consult Hub"
             onClick={() => navigate('/doctor-dashboard/appointments')}
           />
           <StatCardPro 
-            title="OS Status" 
-            value="SYNCED" 
-            icon={ShieldCheck} 
+            title="Clinical Reputation" 
+            value={`${user?.averageRating || '0.0'} ★`} 
+            icon={Star} 
             color="indigo" 
             trend="SECURE" 
-            subtitle="AES-256 Link"
+            subtitle={`${user?.ratingCount || 0} Patient Feedbacks`}
           />
         </div>
 

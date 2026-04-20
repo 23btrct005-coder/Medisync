@@ -511,7 +511,7 @@ const DoctorCard = ({ doctor, onSelect }) => (
        </div>
        <div className="flex items-center gap-3">
           <div className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
-             <Star size={10} fill="currentColor" /> {doctor.rating || '4.9'}
+             <Star size={10} fill="currentColor" /> {doctor.averageRating || '0.0'} ({doctor.ratingCount || 0})
           </div>
           <div className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full border border-primary-100">
              <Clock size={10} /> Active

@@ -10,6 +10,8 @@ import com.health.medisync.repository.AppointmentRepository;
 import com.health.medisync.repository.DoctorRepository;
 import com.health.medisync.repository.PatientRepository;
 import com.health.medisync.repository.UserRepository;
+import com.health.medisync.repository.RatingRepository;
+import com.health.medisync.model.DoctorDTO;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 import com.razorpay.Utils;
@@ -34,6 +36,7 @@ public class AppointmentService {
     private final PatientRepository patientRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    private final RatingRepository ratingRepository;
 
     @Value("${razorpay.key.id:}")
     private String razorpayKeyId;
@@ -45,12 +48,14 @@ public class AppointmentService {
                               DoctorRepository doctorRepository, 
                               PatientRepository patientRepository,
                               UserRepository userRepository,
-                              NotificationService notificationService) {
+                              NotificationService notificationService,
+                              RatingRepository ratingRepository) {
         this.appointmentRepository = appointmentRepository;
         this.doctorRepository = doctorRepository;
         this.patientRepository = patientRepository;
         this.userRepository = userRepository;
         this.notificationService = notificationService;
+        this.ratingRepository = ratingRepository;
     }
 
     public List<String> getAvailableSlots(Long doctorId, LocalDate date) {
@@ -225,8 +230,9 @@ public class AppointmentService {
             }
         }
 
+        ZoneId clinicalZone = ZoneId.of("Asia/Kolkata");
         // 1. Block past dates
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clinicalZone);
         if (date.isBefore(today)) {
             throw new RuntimeException("Cannot book appointments for past dates.");
         }
@@ -236,8 +242,8 @@ public class AppointmentService {
             try {
                 java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("h:mm a", java.util.Locale.ENGLISH);
                 java.time.LocalTime slotTime = java.time.LocalTime.parse(slot.trim().toUpperCase(), formatter);
-                if (slotTime.isBefore(java.time.LocalTime.now().plusMinutes(5))) {
-                    throw new RuntimeException("This time slot has already passed or is too close to start.");
+                if (slotTime.isBefore(java.time.LocalTime.now(clinicalZone).plusMinutes(5))) {
+                    throw new RuntimeException("This time slot has already passed or is too close to start in your clinical timeline.");
                 }
             } catch (Exception e) {
                 // If parsing fails, we skip time-specific block but keep the date block
@@ -326,7 +332,13 @@ public class AppointmentService {
             .orElseThrow(() -> new RuntimeException("User not found"));
         Patient patient = patientRepository.findByUserId(user.getId())
             .orElseThrow(() -> new RuntimeException("Patient profile not found"));
-        return appointmentRepository.findByPatientId(patient.getId());
+        List<Appointment> appts = appointmentRepository.findByPatientId(patient.getId());
+        
+        // Sync 'rated' status in real-time
+        for (Appointment a : appts) {
+            a.setRated(ratingRepository.findByAppointmentId(a.getId()).isPresent());
+        }
+        return appts;
     }
 
     public List<Appointment> getDoctorAppointments(String email) {
@@ -334,12 +346,25 @@ public class AppointmentService {
             .orElseThrow(() -> new RuntimeException("User not found"));
         Doctor doctor = doctorRepository.findByUserId(user.getId())
             .orElseThrow(() -> new RuntimeException("Doctor profile not found"));
-        return appointmentRepository.findByDoctorId(doctor.getId());
+        List<Appointment> appts = appointmentRepository.findById(doctor.getId());
+        
+        // Sync 'rated' status for doctor history too
+        for (Appointment a : appts) {
+            a.setRated(ratingRepository.findByAppointmentId(a.getId()).isPresent());
+        }
+        return appts;
     }
 
-    public List<com.health.medisync.model.DoctorDTO> getAllApprovedDoctors() {
+    public List<DoctorDTO> getAllApprovedDoctors() {
         return doctorRepository.findByApprovedTrue().stream()
-                .map(com.health.medisync.model.DoctorDTO::new)
+                .map(d -> {
+                    DoctorDTO dto = new DoctorDTO(d);
+                    // Inject Real-Time Metrics
+                    Double avg = ratingRepository.getAverageRatingByDoctorId(d.getId());
+                    dto.setAverageRating(avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0);
+                    dto.setRatingCount(ratingRepository.countByDoctorId(d.getId()));
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 

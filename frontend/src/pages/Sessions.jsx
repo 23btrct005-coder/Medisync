@@ -62,12 +62,18 @@ const Sessions = () => {
 
     const d = new Date();
     const todayString = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
-    const todaysAppointments = (appointments || []).filter(a => a.appointmentDate === todayString);
-    const pastAppointments = (appointments || []).filter(a => a.appointmentDate < todayString);
-    const upcomingAppointments = (appointments || []).filter(a => a.appointmentDate > todayString);
+    
+    // Status Segregation Tier 1: Split into active vs pending
+    const activeAppts = (appointments || []).filter(a => a.status === 'BOOKED');
+    const pendingAppointments = (appointments || []).filter(a => a.status === 'PENDING');
+    
+    const todaysAppointments = activeAppts.filter(a => a.appointmentDate === todayString);
+    const pastAppointments = activeAppts.filter(a => a.appointmentDate < todayString);
+    const upcomingAppointments = activeAppts.filter(a => a.appointmentDate > todayString);
 
     const tabs = [
         { id: 'today', label: 'Today', count: todaysAppointments.length, color: 'emerald' },
+        { id: 'pending', label: 'Pending', count: pendingAppointments.length, color: 'amber' },
         { id: 'upcoming', label: 'Upcoming', count: upcomingAppointments.length, color: 'primary' },
         { id: 'past', label: 'History', count: pastAppointments.length, color: 'slate' }
     ];
@@ -128,6 +134,20 @@ const Sessions = () => {
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     {todaysAppointments.map(appt => (
                                         <SessionCard key={appt.id} appt={appt} onClick={() => setSelectedAppt(appt)} active canEnter={isCallActive(appt.appointmentDate, appt.timeSlot)} />
+                                    ))}
+                                </div>
+                             )}
+                        </div>
+                    )}
+
+                    {activeTab === 'pending' && (
+                        <div className="space-y-6">
+                            {pendingAppointments.length === 0 ? (
+                                <EmptyState icon={<Clock className="text-amber-400" />} text="No pending clinical sessions detected." />
+                            ) : (
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    {pendingAppointments.map(appt => (
+                                        <SessionCard key={appt.id} appt={appt} onClick={() => setSelectedAppt(appt)} isPending />
                                     ))}
                                 </div>
                              )}
@@ -219,21 +239,34 @@ const SessionCard = ({ appt, onClick, active, historical, canEnter, onRate }) =>
                     <p className={`text-[10px] font-bold uppercase tracking-tighter flex items-center gap-1 ${active ? 'text-primary-700' : 'text-slate-400'}`}>
                         <Clock size={10} /> {appt.timeSlot}
                     </p>
-                    <p className={`text-[10px] font-bold uppercase tracking-tighter flex items-center gap-1 ${active ? 'text-emerald-600' : 'text-slate-400'}`}>
-                        {appt.consultationType === 'ONLINE' ? <Video size={10} /> : <MapPin size={10} />}
-                        {appt.consultationType}
-                    </p>
+                    {appt.status !== 'PENDING' && (
+                        <p className={`text-[10px] font-bold uppercase tracking-tighter flex items-center gap-1 ${active ? 'text-emerald-600' : 'text-slate-400'}`}>
+                            {appt.consultationType === 'ONLINE' ? <Video size={10} /> : <MapPin size={10} />}
+                            {appt.consultationType}
+                        </p>
+                    )}
+                    {appt.status === 'PENDING' && (
+                        <p className="text-[10px] font-black uppercase tracking-widest text-amber-500 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-100">
+                           Awaiting Confirmation
+                        </p>
+                    )}
                 </div>
             </div>
 
-            {historical ? (
+            {historical && !appt.rated && (
                 <button 
                     onClick={(e) => { e.stopPropagation(); onRate(); }}
                     className="px-4 py-2 bg-primary-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg hover:bg-primary-700 transition-colors"
                 >
                     Rate
                 </button>
-            ) : (
+            )}
+            {historical && appt.rated && (
+                <div className="px-4 py-2 bg-slate-100 text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-xl border border-slate-200">
+                    Feedback Received
+                </div>
+            )}
+            {!historical && (
                 <div className={`p-2 rounded-xl border border-slate-200 transition-colors ${
                     active ? 'bg-white text-primary-600' : 'bg-slate-50 text-slate-400 group-hover:text-primary-600 group-hover:border-primary-200'
                 }`}>
@@ -354,7 +387,7 @@ const SessionDetailModal = ({ appt, onClose, canEnter }) => {
                             </div>
                         </div>
 
-                        {appt.consultationType === 'OFFLINE' && appt.doctor?.clinicAddress && (
+                        {appt.status === 'BOOKED' && appt.consultationType === 'OFFLINE' && appt.doctor?.clinicAddress && (
                             <div className="space-y-4">
                                 <div className="bg-emerald-50/50 rounded-2xl p-4 border border-emerald-100/50">
                                     <p className="text-[10px] font-black uppercase text-emerald-600 tracking-widest mb-1 flex items-center gap-1"><MapPin size={10} /> Clinic Address</p>
@@ -369,10 +402,17 @@ const SessionDetailModal = ({ appt, onClose, canEnter }) => {
                                 </div>
                             </div>
                         )}
+                        {appt.status === 'PENDING' && (
+                           <div className="bg-amber-50 border border-amber-100 p-6 rounded-3xl text-center space-y-2">
+                               <AlertCircle size={24} className="text-amber-500 mx-auto" />
+                               <p className="text-sm font-bold text-slate-800">Payment Pending</p>
+                               <p className="text-xs text-slate-500 font-medium leading-relaxed">Exact session coordinates and communication links will activate immediately upon clinical confirmation.</p>
+                           </div>
+                        )}
                     </div>
 
                     <div className="mt-8 pt-6 border-t border-slate-100 flex gap-3">
-                        {appt.consultationType === 'ONLINE' && appt.status !== 'FAILED' && appt.meetLink && (
+                        {appt.status === 'BOOKED' && appt.consultationType === 'ONLINE' && appt.status !== 'FAILED' && appt.meetLink && (
                             canEnter ? (
                                 <button 
                                     onClick={() => window.open(appt.meetLink, '_blank')}

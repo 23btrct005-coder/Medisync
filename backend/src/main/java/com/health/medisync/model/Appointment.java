@@ -38,6 +38,9 @@ public class Appointment {
     private String meetLink;
     private boolean meetNotified = false;
 
+    @Transient
+    private boolean rated;
+
     private java.time.LocalDateTime createdAt = java.time.LocalDateTime.now();
 
     public enum ConsultationType { ONLINE, OFFLINE }
@@ -82,4 +85,7 @@ public class Appointment {
 
     public boolean isMeetNotified() { return meetNotified; }
     public void setMeetNotified(boolean meetNotified) { this.meetNotified = meetNotified; }
+
+    public boolean isRated() { return rated; }
+    public void setRated(boolean rated) { this.rated = rated; }
 }
