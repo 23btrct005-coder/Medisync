@@ -35,11 +35,18 @@ export const NotificationProvider = ({ children }) => {
   }, [user]);
 
   const connectWebSocket = () => {
-    const socket = new SockJS(`${rawBaseURL}/ws`);
+    // Ensure we use wss:// if the base URL is secure, otherwise SockJS might struggle on some proxies
+    const wsUrl = rawBaseURL.startsWith('https') 
+      ? `${rawBaseURL}/ws` 
+      : `${rawBaseURL}/ws`;
+
+    const socket = new SockJS(wsUrl);
     const client = Stomp.over(socket);
     
     // Disable logging for cleaner console
-    client.debug = () => {};
+    client.debug = (msg) => {
+      if (process.env.NODE_ENV === 'development') console.log(msg);
+    };
 
     client.connect({}, () => {
       setStompClient(client);
