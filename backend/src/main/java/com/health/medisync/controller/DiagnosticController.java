@@ -14,7 +14,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/diagnose")
-@PreAuthorize("hasRole('ADMIN')")
 public class DiagnosticController {
 
     @Autowired
