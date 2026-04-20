@@ -31,7 +31,7 @@ public class AdminController {
     @GetMapping("/doctors/pending")
     @Transactional(readOnly = true)
     public ResponseEntity<?> getPendingDoctors() {
-        List<Doctor> pending = doctorRepository.findByApprovedFalse();
+        List<Doctor> pending = doctorRepository.findPendingHardened();
         List<DoctorDTO> dtos = pending.stream()
             .map(DoctorDTO::new)
             .collect(Collectors.toList());

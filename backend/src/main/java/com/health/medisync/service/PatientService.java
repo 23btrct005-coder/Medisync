@@ -20,17 +20,15 @@ public class PatientService {
     private final DoctorRepository doctorRepository;
     private final AccessRequestRepository accessRequestRepository;
     private final EmailService emailService;
-    private final FirebaseStorageService firebaseStorageService;
 
     public PatientService(PatientRepository patientRepository, UserRepository userRepository, 
                           DoctorRepository doctorRepository, AccessRequestRepository accessRequestRepository,
-                          EmailService emailService, FirebaseStorageService firebaseStorageService) {
+                          EmailService emailService) {
         this.patientRepository = patientRepository;
         this.userRepository = userRepository;
         this.doctorRepository = doctorRepository;
         this.accessRequestRepository = accessRequestRepository;
         this.emailService = emailService;
-        this.firebaseStorageService = firebaseStorageService;
     }
 
     public Patient getPatientProfile(String rawUsername) {
@@ -228,14 +226,13 @@ public class PatientService {
         emailService.sendDoctorInvitationEmail(doctorEmailLower, patient.getName());
     }
 
-    public void updateProfilePhoto(String username, MultipartFile photo) throws IOException {
-        Patient patient = getPatientProfile(username);
-        try {
-            String photoUrl = firebaseStorageService.uploadFile(photo, "patients");
-            if (photoUrl != null) patient.setProfilePictureUrl(photoUrl);
-        } catch (Exception e) {
-            System.err.println("WARNING: Firebase upload failed for patient profile update: " + e.getMessage());
-        }
+    public void updateProfilePhoto(String email, MultipartFile file) {
+        Patient patient = patientRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("Patient not found"));
+        
+        // Removed Firebase logic: instead of uploading, we now prioritize avatar fallback
+        // The frontend will automatically generate an avatar based on the name.
+        patient.setProfilePictureUrl(null); 
         patientRepository.save(patient);
     }
 }

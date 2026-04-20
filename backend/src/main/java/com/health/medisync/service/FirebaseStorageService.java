@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-@Service
+// @Service // Disabling Firebase Storage as requested
 public class FirebaseStorageService {
 
     public String uploadFile(MultipartFile file, String folder) throws IOException {

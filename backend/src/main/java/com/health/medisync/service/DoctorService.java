@@ -29,15 +29,13 @@ public class DoctorService {
 
     public DoctorService(DoctorRepository doctorRepository, UserRepository userRepository,
                          PatientRepository patientRepository, MedicalRecordRepository recordRepository,
-                         ReportRepository reportRepository, AccessRequestRepository accessRequestRepository,
-                         FirebaseStorageService firebaseStorageService) {
+                         ReportRepository reportRepository, AccessRequestRepository accessRequestRepository) {
         this.doctorRepository = doctorRepository;
         this.userRepository = userRepository;
         this.patientRepository = patientRepository;
         this.recordRepository = recordRepository;
         this.reportRepository = reportRepository;
         this.accessRequestRepository = accessRequestRepository;
-        this.firebaseStorageService = firebaseStorageService;
     }
 
     public Doctor getDoctorProfile(String username) {
@@ -199,14 +197,10 @@ public class DoctorService {
         return doctorRepository.save(doctor);
     }
 
-    public void updateProfilePhoto(String username, org.springframework.web.multipart.MultipartFile photo) throws java.io.IOException {
+    public void updateProfilePhoto(String username, org.springframework.web.multipart.MultipartFile photo) {
         Doctor doctor = getDoctorProfile(username);
-        try {
-            String photoUrl = firebaseStorageService.uploadFile(photo, "doctors");
-            if (photoUrl != null) doctor.setProfilePictureUrl(photoUrl);
-        } catch (Exception e) {
-            System.err.println("WARNING: Firebase upload failed for doctor profile update: " + e.getMessage());
-        }
+        // Removed Firebase logic: prioritize avatar fallback
+        doctor.setProfilePictureUrl(null); 
         doctorRepository.save(doctor);
     }
 }
