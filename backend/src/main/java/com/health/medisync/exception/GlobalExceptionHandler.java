@@ -41,22 +41,23 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGeneralException(Exception ex, WebRequest request) {
+    public ResponseEntity<?> handleGeneralException(Exception ex, WebRequest request) {
         System.err.println("CRITICAL: Clinical System Error: " + ex.getMessage());
-        ex.printStackTrace(); // Logs to Render console for deep inspection
         
         Map<String, Object> body = new HashMap<>();
         body.put("message", "A secure clinical node exception occurred.");
         body.put("error", ex.getMessage());
         body.put("type", ex.getClass().getName());
         body.put("path", request.getDescription(false));
-        body.put("phase", "global-interception");
         
         StackTraceElement[] trace = ex.getStackTrace();
         if (trace != null && trace.length > 0) {
             body.put("at", trace[0].toString());
         }
         
-        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+        // Protocol Awareness: Force JSON content type to resolve converter collisions
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .header(org.springframework.http.HttpHeaders.CONTENT_TYPE, org.springframework.http.MediaType.APPLICATION_JSON_VALUE)
+            .body(body);
     }
 }

@@ -4,6 +4,11 @@ import api from '../api/axiosConfig';
 import { Calendar, Clock, ChevronRight, Video, MapPin, X, Loader2, History as HistoryIcon } from 'lucide-react';
 
 const Sessions = () => {
+    const location = useLocation();
+    const [appointments, setAppointments] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedAppt, setSelectedAppt] = useState(null);
+    const [activeTab, setActiveTab] = useState('today');
     const [showRatingModal, setShowRatingModal] = useState(null);
 
     const isCallActive = (apptDate, slot) => {
