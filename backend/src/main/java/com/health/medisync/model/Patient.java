@@ -3,6 +3,7 @@ package com.health.medisync.model;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -95,6 +96,7 @@ public class Patient {
 
     @JdbcTypeCode(SqlTypes.BINARY)
     @Column(name = "profile_picture")
+    @JsonIgnore
     private byte[] profilePicture;
 
     @Column(name = "profile_picture_url")
