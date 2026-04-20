@@ -60,7 +60,15 @@ const Booking = () => {
   };
 
   const handleBook = async () => {
-    if (!selectedSlot) return;
+    if (!selectedDoctor || !selectedDoctor.id) {
+      toast.error("Physician selection invalid. Please re-select from marketplace.");
+      setBookingStep('list');
+      return;
+    }
+    if (!selectedSlot) {
+      toast.error("Cloud window not selected. Please choose a time.");
+      return;
+    }
     setIsBooking(true);
     try {
       const res = await api.post('appointments/book', {

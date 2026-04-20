@@ -41,7 +41,10 @@ import ErrorBoundary from './components/ErrorBoundary';
 const ProtectedRoute = ({ children, allowedRole }) => {
   const { user, userRole, loading } = useAuth();
   if (loading) return <div className="h-screen flex items-center justify-center text-primary-600">Loading...</div>;
-  if (!user) return <Navigate to="/login" />;
+  if (!user) {
+    if (allowedRole === 'ROLE_DOCTOR') return <Navigate to="/doctor-login" />;
+    return <Navigate to="/login" />;
+  }
   if (allowedRole && userRole !== allowedRole) {
     if (userRole === 'ROLE_ADMIN') return <Navigate to="/admin-dashboard" />;
     return <Navigate to={userRole === 'ROLE_DOCTOR' ? '/doctor-dashboard' : '/'} />;

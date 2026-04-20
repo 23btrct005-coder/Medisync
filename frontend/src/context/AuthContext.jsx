@@ -72,7 +72,8 @@ export const AuthProvider = ({ children }) => {
       setUser(profileData);
     } catch (error) {
       console.error("Error fetching profile from backend", error);
-      logout();
+      // Removed automatic logout to prevent redirect loops during diagnostic phase
+      // logout(); 
     } finally {
       setLoading(false);
     }
