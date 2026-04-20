@@ -10,7 +10,6 @@ const Sessions = () => {
     const [selectedAppt, setSelectedAppt] = useState(null);
     const [activeTab, setActiveTab] = useState('today');
     const [showRatingModal, setShowRatingModal] = useState(null);
-    const location = useLocation();
 
     useEffect(() => {
         fetchAppointments();
