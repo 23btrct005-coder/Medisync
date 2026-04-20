@@ -16,7 +16,9 @@ const ClinicMap = ({ address, hospitalName, height = "300px" }) => {
     );
   }
 
-  const query = hospitalName ? `${hospitalName}, ${address}` : address;
+  // Precision Hardening: Combine attributes to create a unique geographical signature
+  // We append 'India' as a regional anchor to force localization when no city is specified
+  const query = `${hospitalName ? hospitalName + ', ' : ''}${address}${address.length < 20 ? ', India' : ''}`;
   const encodedAddress = encodeURIComponent(query);
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
   
