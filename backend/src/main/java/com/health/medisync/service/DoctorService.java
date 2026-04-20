@@ -25,17 +25,19 @@ public class DoctorService {
     private final MedicalRecordRepository recordRepository;
     private final ReportRepository reportRepository;
     private final AccessRequestRepository accessRequestRepository;
-    private final FirebaseStorageService firebaseStorageService;
+    private final SupabaseStorageService supabaseStorageService;
 
     public DoctorService(DoctorRepository doctorRepository, UserRepository userRepository,
                          PatientRepository patientRepository, MedicalRecordRepository recordRepository,
-                         ReportRepository reportRepository, AccessRequestRepository accessRequestRepository) {
+                         ReportRepository reportRepository, AccessRequestRepository accessRequestRepository,
+                         SupabaseStorageService supabaseStorageService) {
         this.doctorRepository = doctorRepository;
         this.userRepository = userRepository;
         this.patientRepository = patientRepository;
         this.recordRepository = recordRepository;
         this.reportRepository = reportRepository;
         this.accessRequestRepository = accessRequestRepository;
+        this.supabaseStorageService = supabaseStorageService;
     }
 
     public Doctor getDoctorProfile(String username) {
@@ -199,8 +201,10 @@ public class DoctorService {
 
     public void updateProfilePhoto(String username, org.springframework.web.multipart.MultipartFile photo) {
         Doctor doctor = getDoctorProfile(username);
-        // Removed Firebase logic: prioritize avatar fallback
-        doctor.setProfilePictureUrl(null); 
-        doctorRepository.save(doctor);
+        String photoUrl = supabaseStorageService.uploadFile(photo);
+        if (photoUrl != null) {
+            doctor.setProfilePictureUrl(photoUrl);
+            doctorRepository.save(doctor);
+        }
     }
 }

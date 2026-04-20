@@ -20,15 +20,17 @@ public class PatientService {
     private final DoctorRepository doctorRepository;
     private final AccessRequestRepository accessRequestRepository;
     private final EmailService emailService;
+    private final SupabaseStorageService supabaseStorageService;
 
     public PatientService(PatientRepository patientRepository, UserRepository userRepository, 
                           DoctorRepository doctorRepository, AccessRequestRepository accessRequestRepository,
-                          EmailService emailService) {
+                          EmailService emailService, SupabaseStorageService supabaseStorageService) {
         this.patientRepository = patientRepository;
         this.userRepository = userRepository;
         this.doctorRepository = doctorRepository;
         this.accessRequestRepository = accessRequestRepository;
         this.emailService = emailService;
+        this.supabaseStorageService = supabaseStorageService;
     }
 
     public Patient getPatientProfile(String rawUsername) {
@@ -230,9 +232,10 @@ public class PatientService {
         Patient patient = patientRepository.findByEmail(email)
             .orElseThrow(() -> new RuntimeException("Patient not found"));
         
-        // Removed Firebase logic: instead of uploading, we now prioritize avatar fallback
-        // The frontend will automatically generate an avatar based on the name.
-        patient.setProfilePictureUrl(null); 
-        patientRepository.save(patient);
+        String photoUrl = supabaseStorageService.uploadFile(file);
+        if (photoUrl != null) {
+            patient.setProfilePictureUrl(photoUrl);
+            patientRepository.save(patient);
+        }
     }
 }
