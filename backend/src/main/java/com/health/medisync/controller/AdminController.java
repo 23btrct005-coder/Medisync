@@ -79,6 +79,7 @@ public class AdminController {
             User user = doctor.getUser();
             if (user != null) {
                 user.setEnabled(true);
+                user.setRole("ROLE_DOCTOR");
                 userRepository.save(user);
             }
             doctorRepository.save(doctor);
