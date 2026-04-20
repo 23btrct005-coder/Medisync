@@ -47,27 +47,31 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                } else if (jwtUtils.validateToken(jwt)) {
-                    try {
-                        String username = jwtUtils.getUsernameFromToken(jwt);
-                        Long userId = jwtUtils.getUserIdFromToken(jwt);
-                        String role = jwtUtils.getRoleFromToken(jwt);
-                        
-                        // Set context for RLS early
-                        UserContext.setContext(userId, role);
-                        
-                        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                                userDetails, null, userDetails.getAuthorities());
-                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                        SecurityContextHolder.getContext().setAuthentication(authentication);
-                    } catch (Exception e) {
-                        // If token is valid but user context is missing from DB (e.g. after a reset)
-                        // we must halt the chain and ask for re-authentication to prevent 500s later
-                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                        response.setContentType("application/json");
-                        response.getWriter().write("{\"message\": \"Clinical session integrity lost. Please log in again.\"}");
-                        return;
+                } else {
+                    boolean isValid = jwtUtils.validateToken(jwt);
+                    if (isValid) {
+                        try {
+                            String username = jwtUtils.getUsernameFromToken(jwt);
+                            Long userId = jwtUtils.getUserIdFromToken(jwt);
+                            String role = jwtUtils.getRoleFromToken(jwt);
+                            
+                            // Set context for RLS early
+                            UserContext.setContext(userId, role);
+                            
+                            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                                    userDetails, null, userDetails.getAuthorities());
+                            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                            SecurityContextHolder.getContext().setAuthentication(authentication);
+                        } catch (Exception e) {
+                            System.err.println("AUTH_ERROR: Token valid but User/Context missing: " + e.getMessage());
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"message\": \"Clinical session integrity lost. Please log in again.\"}");
+                            return;
+                        }
+                    } else {
+                        System.err.println("AUTH_ERROR: JWT validation failed for token starting with: " + (jwt.length() > 10 ? jwt.substring(0, 10) : "short"));
                     }
                 }
             }
