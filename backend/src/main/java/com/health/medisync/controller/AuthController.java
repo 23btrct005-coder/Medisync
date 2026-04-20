@@ -21,7 +21,7 @@ import com.health.medisync.repository.DoctorRepository;
 import com.health.medisync.repository.PasswordResetTokenRepository;
 import com.health.medisync.service.AuthService;
 import com.health.medisync.service.EmailService;
-import com.health.medisync.service.FirebaseStorageService;
+import com.health.medisync.service.SupabaseStorageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
@@ -40,14 +40,14 @@ public class AuthController {
     private final PatientRepository patientRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
-    private final FirebaseStorageService firebaseStorageService;
+    private final SupabaseStorageService supabaseStorageService;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     public AuthController(AuthenticationManager authenticationManager, JwtUtils jwtUtils,
                           UserRepository userRepository, DoctorRepository doctorRepository,
                           PatientRepository patientRepository,
                           PasswordEncoder passwordEncoder, AuthService authService,
-                          FirebaseStorageService firebaseStorageService,
+                          SupabaseStorageService supabaseStorageService,
                           PasswordResetTokenRepository passwordResetTokenRepository) {
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
@@ -56,7 +56,7 @@ public class AuthController {
         this.patientRepository = patientRepository;
         this.passwordEncoder = passwordEncoder;
         this.authService = authService;
-        this.firebaseStorageService = firebaseStorageService;
+        this.supabaseStorageService = supabaseStorageService;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
     }
     
@@ -160,12 +160,8 @@ public class AuthController {
         }
 
         if (profilePicture != null && !profilePicture.isEmpty()) {
-            try {
-                String photoUrl = firebaseStorageService.uploadFile(profilePicture, "doctors");
-                if (photoUrl != null) doctor.setProfilePictureUrl(photoUrl);
-            } catch (Exception e) {
-                System.err.println("WARNING: Firebase upload failed during doctor registration: " + e.getMessage());
-            }
+            String photoUrl = supabaseStorageService.uploadFile(profilePicture);
+            if (photoUrl != null) doctor.setProfilePictureUrl(photoUrl);
         }
 
         doctorRepository.save(doctor);
@@ -265,12 +261,8 @@ public class AuthController {
         }
 
         if (profilePicture != null && !profilePicture.isEmpty()) {
-            try {
-                String photoUrl = firebaseStorageService.uploadFile(profilePicture, "patients");
-                if (photoUrl != null) patient.setProfilePictureUrl(photoUrl);
-            } catch (Exception e) {
-                System.err.println("WARNING: Firebase upload failed during patient registration: " + e.getMessage());
-            }
+            String photoUrl = supabaseStorageService.uploadFile(profilePicture);
+            if (photoUrl != null) patient.setProfilePictureUrl(photoUrl);
         }
 
         patientRepository.save(patient);
