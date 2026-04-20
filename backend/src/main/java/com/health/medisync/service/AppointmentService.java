@@ -304,7 +304,7 @@ public class AppointmentService {
             "APPOINTMENT",
             "New Clinical Session Booked",
              booked.getPatient().getName() + " has scheduled an appointment on " + booked.getAppointmentDate() + " at " + booked.getTimeSlot(),
-            "/doctor-dashboard",
+            "/doctor-dashboard/appointments",
             "Open Schedule"
         );
 

@@ -20,8 +20,13 @@ const NotificationBell = () => {
 
   const handleAction = (n) => {
     if (n.actionLink) {
-      navigate(n.actionLink);
-      setIsOpen(false);
+      if (window.location.pathname === n.actionLink) {
+        // Force refresh or just close menu if already there
+        setIsOpen(false);
+      } else {
+        navigate(n.actionLink);
+        setIsOpen(false);
+      }
     }
     if (!n.read) {
       markAsRead(n.id);
