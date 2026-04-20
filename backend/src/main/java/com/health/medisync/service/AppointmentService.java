@@ -338,8 +338,11 @@ public class AppointmentService {
                 d.setAppointmentsEnabled(true);
                 User user = d.getUser();
                 if (user != null) {
-                    System.out.println("DEBUG: Enabling linked user: " + user.getUsername());
+                    System.out.println("DEBUG: Enabling and Promoting linked user: " + user.getUsername());
                     user.setEnabled(true);
+                    if (!"ROLE_DOCTOR".equals(user.getRole())) {
+                        user.setRole("ROLE_DOCTOR");
+                    }
                     userRepository.save(user);
                 }
                 doctorRepository.save(d); // Save individually to pinpoint failure
