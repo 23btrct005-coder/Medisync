@@ -15,6 +15,8 @@ import com.health.medisync.model.DoctorDTO;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.ArrayList;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -35,32 +37,39 @@ public class AdminController {
     @GetMapping("/doctors/pending")
     @Transactional(readOnly = true)
     public ResponseEntity<?> getPendingDoctors() {
-        String sql = "SELECT id, name, email, phone, specialization, medical_degree, medical_license_number, hospital, years_of_experience, profile_picture_url, approved FROM doctors WHERE approved = false";
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
-        
-        List<DoctorDTO> dtos = new ArrayList<>();
-        for (Map<String, Object> row : rows) {
-            DoctorDTO dto = new DoctorDTO();
-            dto.setId(((Number) row.get("id")).longValue());
-            dto.setName((String) row.get("name"));
-            dto.setEmail((String) row.get("email"));
-            dto.setPhone((String) row.get("phone"));
-            dto.setSpecialization((String) row.get("specialization"));
-            dto.setMedicalDegree((String) row.get("medical_degree"));
-            dto.setMedicalLicenseNumber((String) row.get("medical_license_number"));
-            dto.setHospital((String) row.get("hospital"));
+        try {
+            String sql = "SELECT id, name, email, phone, specialization, medical_degree, medical_license_number, hospital, years_of_experience, profile_picture_url, approved FROM doctors WHERE approved = false";
+            List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
             
-            Object exp = row.get("years_of_experience");
-            dto.setYearsOfExperience(exp != null ? ((Number) exp).intValue() : 0);
-            
-            dto.setProfilePictureUrl((String) row.get("profile_picture_url"));
-            
-            Object app = row.get("approved");
-            dto.setApproved(app != null && (Boolean) app);
-            
-            dtos.add(dto);
+            List<DoctorDTO> dtos = new ArrayList<>();
+            for (Map<String, Object> row : rows) {
+                DoctorDTO dto = new DoctorDTO();
+                dto.setId(((Number) row.get("id")).longValue());
+                dto.setName((String) row.get("name"));
+                dto.setEmail((String) row.get("email"));
+                dto.setPhone((String) row.get("phone"));
+                dto.setSpecialization((String) row.get("specialization"));
+                dto.setMedicalDegree((String) row.get("medical_degree"));
+                dto.setMedicalLicenseNumber((String) row.get("medical_license_number"));
+                dto.setHospital((String) row.get("hospital"));
+                
+                Object exp = row.get("years_of_experience");
+                dto.setYearsOfExperience(exp != null ? ((Number) exp).intValue() : 0);
+                
+                dto.setProfilePictureUrl((String) row.get("profile_picture_url"));
+                
+                Object app = row.get("approved");
+                dto.setApproved(app != null && (Boolean) app);
+                
+                dtos.add(dto);
+            }
+            return ResponseEntity.ok(dtos);
+        } catch (Exception e) {
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            PinpointDiagnosticController.setLastError("ADMIN_500_ERROR: " + sw.toString());
+            throw e;
         }
-        return ResponseEntity.ok(dtos);
     }
 
     @PostMapping("/doctors/{id}/approve")

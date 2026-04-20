@@ -5,12 +5,13 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import com.health.medisync.controller.PinpointDiagnosticController;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 
 import java.util.UUID;
 
 @Service
-public class SupabaseStorageService {
-
     @Value("${supabase.url:https://bwjmzottkkxrdztqqeju.supabase.co}")
     private String supabaseUrl;
 
@@ -25,7 +26,9 @@ public class SupabaseStorageService {
     public String uploadFile(MultipartFile file) {
         System.out.println("DEBUG: Initiating Supabase upload to bucket: " + bucketName);
         if (supabaseKey == null || supabaseKey.isEmpty()) {
-            System.err.println("CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing from environment. Photo upload will fail.");
+            String err = "CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing from environment.";
+            System.err.println(err);
+            PinpointDiagnosticController.setLastError("STORAGE_INIT_ERROR: " + err);
             return null;
         }
 
@@ -50,13 +53,20 @@ public class SupabaseStorageService {
             if (response.getStatusCode().is2xxSuccessful()) {
                 return supabaseUrl + "/storage/v1/object/public/" + bucketName + "/" + fileName;
             } else {
-                System.err.println("ERROR: Supabase upload failed. Status: " + response.getStatusCode() + " Body: " + response.getBody());
+                String err = "ERROR: Supabase upload failed. Status: " + response.getStatusCode() + " Body: " + response.getBody();
+                System.err.println(err);
+                PinpointDiagnosticController.setLastError("STORAGE_API_REJECTED: " + err);
                 return null;
             }
         } catch (org.springframework.web.client.HttpStatusCodeException e) {
-            System.err.println("ERROR: Supabase API Error. Status: " + e.getStatusCode() + " Body: " + e.getResponseBodyAsString());
+            String err = "ERROR: Supabase API Error. Status: " + e.getStatusCode() + " Body: " + e.getResponseBodyAsString();
+            System.err.println(err);
+            PinpointDiagnosticController.setLastError("STORAGE_HTTP_ERROR: " + err);
             return null;
         } catch (Exception e) {
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            PinpointDiagnosticController.setLastError("STORAGE_EXCEPTION: " + sw.toString());
             System.err.println("ERROR: Supabase Storage exception: " + e.getMessage());
             return null;
         }

@@ -16,6 +16,17 @@ public class PinpointDiagnosticController {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    private static String lastError = "No errors captured yet.";
+
+    public static void setLastError(String error) {
+        lastError = error;
+    }
+
+    @GetMapping("/blackbox")
+    public String getLastError() {
+        return lastError;
+    }
+
     @GetMapping("/pinpoint")
     public Map<String, Object> pinpoint() {
         Map<String, Object> results = new LinkedHashMap<>();
