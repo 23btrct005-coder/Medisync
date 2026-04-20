@@ -88,6 +88,17 @@ public class AppointmentService {
 
         List<String> results = allSlots.stream()
             .filter(slot -> !takenSlots.contains(slot))
+            .filter(slot -> {
+                // HARDEN: Filter out past slots if date is today
+                if (date.isEqual(LocalDate.now())) {
+                    try {
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);
+                        java.time.LocalTime slotTime = java.time.LocalTime.parse(slot.trim(), formatter);
+                        return slotTime.isAfter(java.time.LocalTime.now().plusMinutes(2)); // 2-min buffer
+                    } catch (Exception e) { return true; }
+                }
+                return true;
+            })
             .collect(Collectors.toList());
             
         System.out.println("TRACE: Returning " + results.size() + " available slots.");
@@ -142,11 +153,15 @@ public class AppointmentService {
             throw new RuntimeException("This doctor is not accepting appointments at the moment.");
         }
 
-        // Concurrency check
+        // Concurrency check (Harden: Final Conflict Shield)
         LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(10);
         List<Appointment> conflicts = appointmentRepository.findConflictingAppointments(doctor, date, slot, expiryTime);
         if (!conflicts.isEmpty()) {
-            throw new RuntimeException("This slot was just taken. Please choose another time.");
+            boolean hasBooked = conflicts.stream().anyMatch(a -> a.getStatus() == Appointment.AppointmentStatus.BOOKED);
+            if (hasBooked) {
+                throw new RuntimeException("This slot is already officially booked by another patient. Please select another cloud window.");
+            }
+            throw new RuntimeException("This slot is currently being authorized by another patient. Please wait a few minutes or choose another time.");
         }
 
         Double fee = (type == ConsultationType.ONLINE) ? doctor.getOnlineConsultationFee() : doctor.getOfflineConsultationFee();

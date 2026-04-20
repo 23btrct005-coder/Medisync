@@ -444,7 +444,7 @@ const Booking = () => {
                       <div>
                          <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Total Clinical Fee</p>
                          <div className="flex items-baseline gap-1">
-                            <span className="text-3xl font-black text-slate-900">₹{consultationType === 'ONLINE' ? (selectedDoctor.onlineConsultationFee || 500) : (selectedDoctor.offlineConsultationFee || 800)}</span>
+                            <span className="text-3xl font-black text-slate-900">₹{consultationType === 'ONLINE' ? (selectedDoctor.onlineConsultationFee || selectedDoctor.consultationFee || 500) : (selectedDoctor.offlineConsultationFee || selectedDoctor.consultationFee || 800)}</span>
                             <span className="text-xs font-bold text-slate-400">Total</span>
                          </div>
                       </div>

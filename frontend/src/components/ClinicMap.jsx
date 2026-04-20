@@ -23,10 +23,10 @@ const ClinicMap = ({ address, hospitalName, height = "300px" }) => {
   // Official Embed URL for precise location visualization (Requires API Key)
   const mapUrl = `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${encodedAddress}`;
   
-  // Fallback search URL if no key is provided
-  const searchUrl = `https://maps.google.com/maps?q=${encodedAddress}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
-
-  const finalUrl = apiKey ? mapUrl : searchUrl;
+  // Hardened keyless fallback: Uses the standard search-to-embed redirection which is highly reliable
+  const fallbackUrl = `https://maps.google.com/maps?q=${encodedAddress}&output=embed&z=15`;
+  
+  const finalUrl = (apiKey && apiKey !== "YOUR_GOOGLE_MAPS_API_KEY") ? mapUrl : fallbackUrl;
 
   return (
     <div className="relative group overflow-hidden rounded-3xl border border-slate-200 shadow-sm bg-slate-50">
