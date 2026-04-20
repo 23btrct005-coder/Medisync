@@ -383,7 +383,7 @@ public class AuthController {
 
     @GetMapping(value = "/doctor/photo/{id}", produces = {MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE})
     public ResponseEntity<?> getDoctorPhoto(@PathVariable Long id) {
-        return doctorRepository.findById(id)
+        return doctorRepository.findByUserId(id)
             .map(doctor -> {
                 if (doctor.getProfilePicture() != null) {
                     return ResponseEntity.ok().body(doctor.getProfilePicture());
@@ -400,7 +400,7 @@ public class AuthController {
 
     @GetMapping(value = "/patient/photo/{id}")
     public ResponseEntity<?> getPatientPhoto(@PathVariable Long id) {
-        return patientRepository.findById(id)
+        return patientRepository.findByUserId(id)
             .map(patient -> {
                 if (patient.getProfilePicture() != null) {
                     return ResponseEntity.ok()
