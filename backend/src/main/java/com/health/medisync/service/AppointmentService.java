@@ -320,22 +320,35 @@ public class AppointmentService {
         return appointmentRepository.findByDoctorId(doctor.getId());
     }
 
-    public List<Doctor> getAllApprovedDoctors() {
-        return doctorRepository.findByApprovedTrue();
+    public List<com.health.medisync.model.DoctorDTO> getAllApprovedDoctors() {
+        return doctorRepository.findByApprovedTrue().stream()
+                .map(com.health.medisync.model.DoctorDTO::new)
+                .collect(Collectors.toList());
     }
 
     @Transactional
     public void syncApprovedStatus() {
-        List<Doctor> all = doctorRepository.findAll();
-        for (Doctor d : all) {
-            d.setApproved(true);
-            d.setAppointmentsEnabled(true);
-            User user = d.getUser();
-            if (user != null) {
-                user.setEnabled(true);
-                userRepository.save(user); // Also enable user login
+        System.out.println("DEBUG: Starting Marketplace Sync...");
+        try {
+            List<Doctor> all = doctorRepository.findAll();
+            System.out.println("DEBUG: Found " + all.size() + " doctors to sync.");
+            for (Doctor d : all) {
+                System.out.println("DEBUG: Syncing doctor: " + d.getName() + " (ID: " + d.getId() + ")");
+                d.setApproved(true);
+                d.setAppointmentsEnabled(true);
+                User user = d.getUser();
+                if (user != null) {
+                    System.out.println("DEBUG: Enabling linked user: " + user.getUsername());
+                    user.setEnabled(true);
+                    userRepository.save(user);
+                }
+                doctorRepository.save(d); // Save individually to pinpoint failure
             }
+            System.out.println("SUCCESS: Marketplace Sync Completed.");
+        } catch (Exception e) {
+            System.err.println("FATAL: Marketplace Sync Failed!");
+            e.printStackTrace();
+            throw e;
         }
-        doctorRepository.saveAll(all);
     }
 }

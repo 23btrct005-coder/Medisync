@@ -23,7 +23,7 @@ public class AppointmentController {
     }
 
     @GetMapping("/doctors")
-    public ResponseEntity<List<com.health.medisync.model.Doctor>> getAllDoctors() {
+    public ResponseEntity<List<com.health.medisync.model.DoctorDTO>> getAllDoctors() {
         return ResponseEntity.ok(appointmentService.getAllApprovedDoctors());
     }
 
