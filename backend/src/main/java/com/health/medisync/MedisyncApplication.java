@@ -3,6 +3,11 @@ package com.health.medisync;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Bean;
+import com.health.medisync.repository.UserRepository;
+import com.health.medisync.model.User;
+import java.util.Optional;
 
 @SpringBootApplication(excludeName = {
     "org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration",
@@ -43,6 +48,33 @@ public class MedisyncApplication {
             e.printStackTrace();
             System.err.flush();
         }
+    }
+
+    @Bean
+    public CommandLineRunner adminBootstrap(UserRepository userRepository) {
+        return args -> {
+            System.out.println("[BOOTSTRAP] Checking for admin promotion...");
+            
+            // Fix for 'admin' (Global ID 3 in screenshot)
+            Optional<User> adminUser = userRepository.findAll().stream()
+                .filter(u -> u.getUsername().equalsIgnoreCase("admin") || u.getUsername().equalsIgnoreCase("admin@medisync.com"))
+                .findFirst();
+
+            if (adminUser.isPresent()) {
+                User user = adminUser.get();
+                if (!"ROLE_ADMIN".equals(user.getRole())) {
+                    System.out.println("[BOOTSTRAP] Promoting user '" + user.getUsername() + "' to ROLE_ADMIN");
+                    user.setRole("ROLE_ADMIN");
+                    user.setEnabled(true);
+                    userRepository.save(user);
+                    System.out.println("[BOOTSTRAP] Promotion successful!");
+                } else {
+                    System.out.println("[BOOTSTRAP] User '" + user.getUsername() + "' is already ROLE_ADMIN");
+                }
+            } else {
+                System.out.println("[BOOTSTRAP] No user named 'admin' found for promotion.");
+            }
+        };
     }
 
     private static String maskPassword(String url) {
