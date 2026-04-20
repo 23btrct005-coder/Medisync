@@ -381,7 +381,8 @@ const Booking = () => {
                             );
                           })}
                         </div>
-                   </section>
+                        )}
+                    </section>
 
                    <div className="pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-6">
                       <div>
