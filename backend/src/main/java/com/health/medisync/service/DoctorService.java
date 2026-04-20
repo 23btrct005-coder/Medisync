@@ -2,6 +2,8 @@ package com.health.medisync.service;
 
 import com.health.medisync.model.Appointment;
 import com.health.medisync.model.Doctor;
+import com.health.medisync.model.Patient;
+import com.health.medisync.model.User;
 import com.health.medisync.model.MedicalRecord;
 import com.health.medisync.model.MedicalRecordRequest;
 import com.health.medisync.repository.DoctorRepository;
