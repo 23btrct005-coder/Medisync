@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/diagnose")
@@ -25,6 +26,11 @@ public class PinpointDiagnosticController {
     @GetMapping("/blackbox")
     public String getLastError() {
         return lastError;
+    }
+
+    @GetMapping("/data")
+    public List<Map<String, Object>> dumpData() {
+        return jdbcTemplate.queryForList("SELECT id, name, profile_picture_url FROM doctors LIMIT 5");
     }
 
     @GetMapping("/pinpoint")
