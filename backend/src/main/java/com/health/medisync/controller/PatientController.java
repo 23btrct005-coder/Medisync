@@ -82,7 +82,7 @@ public class PatientController {
     @PostMapping("/profile/photo")
     public ResponseEntity<?> uploadPhoto(@RequestPart("photo") MultipartFile photo, Authentication authentication) {
         try {
-            patientService.updateProfilePhoto(authentication.getName(), photo.getBytes());
+            patientService.updateProfilePhoto(authentication.getName(), photo);
             return ResponseEntity.ok(Map.of("message", "Photo updated successfully"));
         } catch (IOException e) {
             return ResponseEntity.badRequest().body(Map.of("message", "Failed to upload photo"));

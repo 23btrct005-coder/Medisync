@@ -9,6 +9,8 @@ import com.health.medisync.repository.PatientRepository;
 import com.health.medisync.repository.UserRepository;
 import com.health.medisync.repository.AccessRequestRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -18,15 +20,17 @@ public class PatientService {
     private final DoctorRepository doctorRepository;
     private final AccessRequestRepository accessRequestRepository;
     private final EmailService emailService;
+    private final FirebaseStorageService firebaseStorageService;
 
     public PatientService(PatientRepository patientRepository, UserRepository userRepository, 
                           DoctorRepository doctorRepository, AccessRequestRepository accessRequestRepository,
-                          EmailService emailService) {
+                          EmailService emailService, FirebaseStorageService firebaseStorageService) {
         this.patientRepository = patientRepository;
         this.userRepository = userRepository;
         this.doctorRepository = doctorRepository;
         this.accessRequestRepository = accessRequestRepository;
         this.emailService = emailService;
+        this.firebaseStorageService = firebaseStorageService;
     }
 
     public Patient getPatientProfile(String rawUsername) {
@@ -222,5 +226,16 @@ public class PatientService {
 
         // 3. Trigger Email Notification
         emailService.sendDoctorInvitationEmail(doctorEmailLower, patient.getName());
+    }
+
+    public void updateProfilePhoto(String username, MultipartFile photo) throws IOException {
+        Patient patient = getPatientProfile(username);
+        try {
+            String photoUrl = firebaseStorageService.uploadFile(photo, "patients");
+            if (photoUrl != null) patient.setProfilePictureUrl(photoUrl);
+        } catch (Exception e) {
+            System.err.println("WARNING: Firebase upload failed for patient profile update: " + e.getMessage());
+        }
+        patientRepository.save(patient);
     }
 }
