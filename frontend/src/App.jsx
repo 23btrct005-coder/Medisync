@@ -96,6 +96,11 @@ function App() {
                     <SmartProfileRedirect type="edit" />
                   </ProtectedRoute>
                 } />
+                <Route path="/profile/edit" element={
+                  <ProtectedRoute>
+                    <SmartProfileRedirect type="edit" />
+                  </ProtectedRoute>
+                } />
 
                 <Route path="/" element={<Landing />} />
                 

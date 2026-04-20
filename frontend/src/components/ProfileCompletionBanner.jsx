@@ -8,7 +8,7 @@ const ProfileCompletionBanner = () => {
 
   if (profileStatus.isComplete) return null;
 
-  const targetPath = userRole === 'ROLE_DOCTOR' ? '/doctor-dashboard/profile/edit' : '/profile/edit';
+  const targetPath = userRole === 'ROLE_DOCTOR' ? '/doctor-dashboard/profile/edit' : '/dashboard/profile/edit';
   const missingLabel = profileStatus.missingFields.join(', ');
 
   return (

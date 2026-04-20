@@ -19,12 +19,12 @@ export const AuthProvider = ({ children }) => {
     if (role === 'ROLE_PATIENT') {
       if (!profile.bloodGroup || profile.bloodGroup === 'Unknown') missing.push('Blood Group');
       if (!profile.phone) missing.push('Phone Number');
-      if (!profile.profilePicture) missing.push('Profile Photo');
+      if (!profile.profilePictureUrl) missing.push('Profile Photo');
     } else if (role === 'ROLE_DOCTOR') {
       if (!profile.specialization) missing.push('Specialization');
       if (!profile.medicalLicenseNumber) missing.push('Medical License');
       if (!profile.yearsOfExperience) missing.push('Years of Experience');
-      if (!profile.profilePicture) missing.push('Profile Photo');
+      if (!profile.profilePictureUrl) missing.push('Profile Photo');
     }
 
     return {
