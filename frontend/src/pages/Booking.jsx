@@ -71,18 +71,66 @@ const Booking = () => {
     }
     setIsBooking(true);
     try {
-      const res = await api.post('appointments/book', {
+      const { data: order } = await api.post('appointments/book', {
         doctorId: selectedDoctor.id,
         date: bookingDate,
         slot: selectedSlot,
         type: consultationType
       });
-      
-      // Simulate Razorpay success for now as per plan
-      toast.success("Clinical session synchronized!");
-      navigate('/dashboard/sessions', { state: { autoOpenApptId: res.data.appointmentId } });
-    } catch (e) {
-      toast.error(e.response?.data?.message || "Booking infrastructure timeout.");
+
+      console.log("SECURE_ORDER_SYNC: Order created", order);
+
+      if (order.isDemo) {
+        toast.info("Clinical Demo Mode active. Finalizing without payment...");
+        navigate('/dashboard/sessions', { state: { autoOpenApptId: order.appointmentId } });
+        return;
+      }
+
+      const options = {
+        key: order.razorpayKeyId,
+        amount: order.amount * 100,
+        currency: "INR",
+        name: "MEDISYNC HEALTH",
+        description: `Consultation with Dr. ${selectedDoctor.name}`,
+        image: "/icon.svg",
+        order_id: order.razorpayOrderId,
+        handler: async (response) => {
+          try {
+            console.log("PAYMENT_SUCCESS: Verifying with backend...", response);
+            await api.post('appointments/verify', {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            });
+            toast.success("Transaction Authorized! Session Synchronized.");
+            navigate('/dashboard/sessions', { state: { autoOpenApptId: order.appointmentId } });
+          } catch (err) {
+            console.error("VERIFICATION_FAILURE:", err);
+            toast.error("Payment verification failed. Please contact clinical support.");
+          }
+        },
+        prefill: {
+          name: "",
+          email: "",
+          contact: ""
+        },
+        theme: {
+          color: "#2563eb"
+        },
+        modal: {
+          ondismiss: () => {
+            setIsBooking(false);
+            toast.warn("Clinical transaction cancelled.");
+          }
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+
+    } catch (err) {
+      console.error("BOOKING_CRITICAL_FAILURE:", err);
+      toast.error(err.response?.data?.message || "Cloud synchronization failed. Please try again.");
     } finally {
       setIsBooking(false);
     }
