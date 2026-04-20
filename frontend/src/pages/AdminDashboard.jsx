@@ -163,15 +163,18 @@ const AdminDashboard = () => {
             <div key={doctor.id} className="bg-white border border-slate-100 rounded-[32px] p-6 sm:p-8 hover:shadow-xl hover:shadow-slate-200/50 hover:border-primary-100 transition-all duration-300 group flex flex-col xl:flex-row xl:items-center justify-between gap-8">
               <div className="flex items-start gap-6">
                 <div className="w-20 h-20 shrink-0 bg-slate-100 rounded-3xl overflow-hidden flex items-center justify-center border-4 border-slate-50 shadow-inner">
-                    {doctor.profilePicture ? (
-                        <img 
-                            src={`${api.defaults.baseURL}/auth/doctor/photo/${doctor.id}`} 
-                            alt={doctor.name}
-                            className="w-full h-full object-cover"
-                        />
-                    ) : (
+                    <img 
+                        src={doctor.profilePictureUrl || `${api.defaults.baseURL}/auth/doctor/photo/${doctor.id}?t=${Date.now()}`} 
+                        alt={doctor.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                        }}
+                    />
+                    <div className="hidden items-center justify-center w-full h-full">
                         <Stethoscope size={32} className="text-slate-300" />
-                    )}
+                    </div>
                 </div>
                 <div className="min-w-0">
                     <h3 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">

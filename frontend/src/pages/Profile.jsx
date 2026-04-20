@@ -49,7 +49,7 @@ const Profile = () => {
 
   const initials = user.name?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'P';
   const emergencyUrl = `${window.location.origin}/emergency/${user.id}`;
-  const photoUrl = `${api.defaults.baseURL}/auth/patient/photo/${user.id}`;
+  const photoUrl = user.profilePictureUrl || `${api.defaults.baseURL}/auth/patient/photo/${user.id}?t=${Date.now()}`;
 
   const handleDownloadQR = () => {
     const svg = document.getElementById('patient-qr-svg');
