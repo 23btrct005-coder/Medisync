@@ -40,7 +40,19 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGlobalException(Exception e) {
         System.err.println("CRITICAL: Clinical System Error: " + e.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(Map.of("message", "A secure clinical node exception occurred. Please retry.", "error", e.getClass().getSimpleName()));
+        e.printStackTrace();
+
+        Map<String, Object> body = new java.util.HashMap<>();
+        body.put("message", "A secure clinical node exception occurred.");
+        body.put("error", e.getMessage());
+        body.put("type", e.getClass().getName());
+        body.put("phase", "global-interception");
+        
+        StackTraceElement[] trace = e.getStackTrace();
+        if (trace != null && trace.length > 0) {
+            body.put("at", trace[0].toString());
+        }
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
 }

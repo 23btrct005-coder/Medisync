@@ -9,7 +9,7 @@ import org.springframework.web.context.request.WebRequest;
 import java.util.HashMap;
 import java.util.Map;
 
-@ControllerAdvice
+// Conflict resolved: Re-read original GlobalExceptionHandler in com.health.medisync.config
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
