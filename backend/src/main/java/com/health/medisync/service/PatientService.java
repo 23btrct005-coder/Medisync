@@ -229,7 +229,7 @@ public class PatientService {
     }
 
     public void updateProfilePhoto(String email, MultipartFile file) {
-        Patient patient = patientRepository.findByEmail(email)
+        Patient patient = patientRepository.findByUserUsernameIgnoreCase(email)
             .orElseThrow(() -> new RuntimeException("Patient not found"));
         
         String photoUrl = supabaseStorageService.uploadFile(file);
