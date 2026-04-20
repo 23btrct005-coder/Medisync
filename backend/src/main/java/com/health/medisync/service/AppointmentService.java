@@ -259,7 +259,7 @@ public class AppointmentService {
 
         // Auto-generate secure meeting link for Virtual consultations
         if (type == ConsultationType.ONLINE) {
-            String deterministicId = "ms-" + saved.getId() + "-" + java.util.UUID.randomUUID().toString().substring(0, 6);
+            String deterministicId = "ms-" + java.util.UUID.randomUUID().toString().substring(0, 12);
             appointment.setMeetLink("https://meet.google.com/" + deterministicId);
         }
 
