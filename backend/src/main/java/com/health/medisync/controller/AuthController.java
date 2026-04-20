@@ -68,6 +68,27 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody AuthRequest loginRequest) {
         String normalizedUsername = loginRequest.getUsername() != null ? loginRequest.getUsername().toLowerCase() : null;
+        
+        // PRE-AUTH SELF-HEALING: Proactively enable and promote physicians
+        userRepository.findByUsernameIgnoreCase(normalizedUsername).ifPresent(user -> {
+            if (doctorRepository.findByUserId(user.getId()).isPresent()) {
+                boolean needsUpdate = false;
+                if (!user.isEnabled()) {
+                    System.out.println("SELF-HEALING (PRE-AUTH): Activating doctor account " + normalizedUsername);
+                    user.setEnabled(true);
+                    needsUpdate = true;
+                }
+                if (!"ROLE_DOCTOR".equals(user.getRole())) {
+                    System.out.println("SELF-HEALING (PRE-AUTH): Promoting " + normalizedUsername + " to ROLE_DOCTOR.");
+                    user.setRole("ROLE_DOCTOR");
+                    needsUpdate = true;
+                }
+                if (needsUpdate) {
+                    userRepository.save(user);
+                }
+            }
+        });
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(normalizedUsername, loginRequest.getPassword()));
 
@@ -76,15 +97,6 @@ public class AuthController {
         User user = userRepository.findByUsernameIgnoreCase(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Error: User not found."));
 
-        // SELF-HEALING LOGIN: Promote to ROLE_DOCTOR if user has a physician profile
-        if (!"ROLE_DOCTOR".equals(user.getRole())) {
-            if (doctorRepository.findByUserId(user.getId()).isPresent()) {
-                System.out.println("SELF-HEALING: Promoting " + user.getUsername() + " to ROLE_DOCTOR.");
-                user.setRole("ROLE_DOCTOR");
-                userRepository.save(user);
-            }
-        }
-                
         String jwt = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole());
         String role = user.getRole();
         
