@@ -23,21 +23,21 @@ public class DatabaseSessionAspect {
             // Only execute if we have a valid connection and context
             if (entityManager != null && entityManager.isOpen()) {
                 if (userId != null) {
-                    // Set current user ID for RLS
-                    entityManager.createNativeQuery("SET LOCAL medisync.current_user_id = :userId")
+                    // Set current user ID for RLS using set_config (avoids bind parameter issues in SET LOCAL)
+                    entityManager.createNativeQuery("SELECT set_config('medisync.current_user_id', :userId, true)")
                             .setParameter("userId", userId.toString())
-                            .executeUpdate();
+                            .getSingleResult();
                     
                     // Set current user role for RLS
-                    entityManager.createNativeQuery("SET LOCAL medisync.current_user_role = :role")
+                    entityManager.createNativeQuery("SELECT set_config('medisync.current_user_role', :role, true)")
                             .setParameter("role", role != null ? role : "ROLE_PATIENT")
-                            .executeUpdate();
+                            .getSingleResult();
                 } else {
                     // Reset variables for unauthenticated requests
-                    entityManager.createNativeQuery("SET LOCAL medisync.current_user_id = '0'")
-                            .executeUpdate();
-                    entityManager.createNativeQuery("SET LOCAL medisync.current_user_role = 'GUEST'")
-                            .executeUpdate();
+                    entityManager.createNativeQuery("SELECT set_config('medisync.current_user_id', '0', true)")
+                            .getSingleResult();
+                    entityManager.createNativeQuery("SELECT set_config('medisync.current_user_role', 'GUEST', true)")
+                            .getSingleResult();
                 }
             }
         } catch (Exception e) {
