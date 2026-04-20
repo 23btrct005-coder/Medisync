@@ -257,10 +257,10 @@ public class AppointmentService {
         appointment.setRazorpayOrderId(orderId);
         appointment.setStatus(AppointmentStatus.PENDING);
 
-        // Auto-generate meeting link for Virtual consultations
+        // Auto-generate secure meeting link for Virtual consultations
         if (type == ConsultationType.ONLINE) {
-            String randomSlug = java.util.UUID.randomUUID().toString().substring(0, 8);
-            appointment.setMeetLink("https://meet.google.com/msc-" + randomSlug);
+            String deterministicId = "ms-" + saved.getId() + "-" + java.util.UUID.randomUUID().toString().substring(0, 6);
+            appointment.setMeetLink("https://meet.google.com/" + deterministicId);
         }
 
         Appointment saved = appointmentRepository.save(appointment);

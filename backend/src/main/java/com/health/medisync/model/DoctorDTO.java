@@ -13,6 +13,13 @@ public class DoctorDTO {
     private String profilePictureUrl;
     private boolean approved;
 
+    // Hardened Sync Fields
+    private Double onlineConsultationFee;
+    private Double offlineConsultationFee;
+    private Boolean onlineConsultation;
+    private String clinicAddress;
+    private String consultationTimings;
+
     // Constructors
     public DoctorDTO() {}
 
@@ -28,6 +35,13 @@ public class DoctorDTO {
         this.yearsOfExperience = d.getYearsOfExperience();
         this.profilePictureUrl = d.getProfilePictureUrl();
         this.approved = d.isApproved();
+        
+        // Populate Hardened Sync Fields
+        this.onlineConsultationFee = d.getOnlineConsultationFee();
+        this.offlineConsultationFee = d.getOfflineConsultationFee();
+        this.onlineConsultation = d.getOnlineConsultation();
+        this.clinicAddress = d.getClinicAddress();
+        this.consultationTimings = d.getConsultationTimings();
     }
 
     // Getters and Setters
@@ -63,4 +77,19 @@ public class DoctorDTO {
 
     public boolean isApproved() { return approved; }
     public void setApproved(boolean approved) { this.approved = approved; }
+
+    public Double getOnlineConsultationFee() { return onlineConsultationFee; }
+    public void setOnlineConsultationFee(Double onlineConsultationFee) { this.onlineConsultationFee = onlineConsultationFee; }
+
+    public Double getOfflineConsultationFee() { return offlineConsultationFee; }
+    public void setOfflineConsultationFee(Double offlineConsultationFee) { this.offlineConsultationFee = offlineConsultationFee; }
+
+    public Boolean getOnlineConsultation() { return onlineConsultation; }
+    public void setOnlineConsultation(Boolean onlineConsultation) { this.onlineConsultation = onlineConsultation; }
+
+    public String getClinicAddress() { return clinicAddress; }
+    public void setClinicAddress(String clinicAddress) { this.clinicAddress = clinicAddress; }
+
+    public String getConsultationTimings() { return consultationTimings; }
+    public void setConsultationTimings(String consultationTimings) { this.consultationTimings = consultationTimings; }
 }

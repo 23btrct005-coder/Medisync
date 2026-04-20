@@ -4,15 +4,26 @@ import api from '../api/axiosConfig';
 import { Calendar, Clock, ChevronRight, Video, MapPin, X, Loader2, History as HistoryIcon } from 'lucide-react';
 
 const Sessions = () => {
-    const [appointments, setAppointments] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [selectedAppt, setSelectedAppt] = useState(null);
-    const [activeTab, setActiveTab] = useState('today'); // 'today', 'upcoming', 'past'
-    const location = useLocation();
+    const [showRatingModal, setShowRatingModal] = useState(null);
 
-    useEffect(() => {
-        fetchAppointments();
-    }, []);
+    const isCallActive = (apptDate, slot) => {
+        try {
+            const now = new Date();
+            const [time, period] = slot.split(' ');
+            let [hours, minutes] = time.split(':');
+            hours = parseInt(hours);
+            if (period === 'PM' && hours !== 12) hours += 12;
+            if (period === 'AM' && hours === 12) hours = 0;
+            
+            const sessionTime = new Date(apptDate);
+            sessionTime.setHours(hours, minutes, 0);
+            
+            const diffMinutes = (sessionTime - now) / (1000 * 60);
+            return diffMinutes <= 10 && diffMinutes >= -60; // Active 10 mins before and up to 1 hour after
+        } catch (e) {
+            return false;
+        }
+    };
 
     const fetchAppointments = async () => {
         setLoading(true);
@@ -26,7 +37,6 @@ const Sessions = () => {
                 if (apptToOpen) setSelectedAppt(apptToOpen);
             }
 
-            // Auto-switch tab if today has data
             const todayStr = new Date().toISOString().split('T')[0];
             const hasToday = (data || []).some(a => a.appointmentDate === todayStr);
             if (!hasToday && (data || []).some(a => a.appointmentDate > todayStr)) {
@@ -105,10 +115,10 @@ const Sessions = () => {
                             ) : (
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     {todaysAppointments.map(appt => (
-                                        <SessionCard key={appt.id} appt={appt} onClick={() => setSelectedAppt(appt)} active />
+                                        <SessionCard key={appt.id} appt={appt} onClick={() => setSelectedAppt(appt)} active canEnter={isCallActive(appt.appointmentDate, appt.timeSlot)} />
                                     ))}
                                 </div>
-                            )}
+                             )}
                         </div>
                     )}
 
@@ -133,7 +143,7 @@ const Sessions = () => {
                             ) : (
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 opacity-80 hover:opacity-100 transition-opacity">
                                     {pastAppointments.map(appt => (
-                                        <SessionCard key={appt.id} appt={appt} onClick={() => setSelectedAppt(appt)} historical />
+                                        <SessionCard key={appt.id} appt={appt} onClick={() => setSelectedAppt(appt)} historical onRate={() => setShowRatingModal(appt)} />
                                     ))}
                                 </div>
                             )}
@@ -142,7 +152,17 @@ const Sessions = () => {
                 </div>
             )}
 
-            {selectedAppt && <SessionDetailModal appt={selectedAppt} onClose={() => setSelectedAppt(null)} />}
+            {selectedAppt && (
+                <SessionDetailModal 
+                    appt={selectedAppt} 
+                    onClose={() => setSelectedAppt(null)} 
+                    canEnter={isCallActive(selectedAppt.appointmentDate, selectedAppt.timeSlot)}
+                />
+            )}
+            
+            {showRatingModal && (
+                <RatingModal appt={showRatingModal} onClose={() => setShowRatingModal(null)} onRatingSubmitted={fetchAppointments} />
+            )}
         </div>
     );
 };
@@ -161,10 +181,10 @@ const EmptyState = ({ icon, text }) => (
     </div>
 );
 
-const SessionCard = ({ appt, onClick, active, historical }) => {
+const SessionCard = ({ appt, onClick, active, historical, canEnter, onRate }) => {
     return (
         <div 
-            onClick={onClick}
+            onClick={historical ? undefined : onClick}
             className={`p-4 rounded-3xl border flex items-center gap-4 cursor-pointer transition-all group ${
                 active 
                 ? 'bg-primary-50 border-primary-200 hover:shadow-lg shadow-primary-500/20' 
@@ -173,14 +193,14 @@ const SessionCard = ({ appt, onClick, active, historical }) => {
         >
             <div className={`w-14 h-14 rounded-2xl flex flex-col items-center justify-center font-bold shrink-0 ${
                 active ? 'bg-primary-600 text-white shadow-inner' : 
-                historical ? 'bg-slate-100 text-slate-500' : 'bg-slate-100 text-slate-700'
+                historical ? 'bg-slate-100 text-slate-400' : 'bg-slate-100 text-slate-700'
             }`}>
                 <div className="text-sm">{appt.appointmentDate?.split('-')[2]}</div>
                 <div className="text-[9px] uppercase tracking-wider">{new Date(appt.appointmentDate).toLocaleString('en-US', { month: 'short' })}</div>
             </div>
             
             <div className="flex-1 min-w-0">
-                <h4 className={`text-base font-extrabold truncate ${historical ? 'text-slate-600' : 'text-slate-800'}`}>
+                <h4 className={`text-base font-extrabold truncate ${historical ? 'text-slate-500' : 'text-slate-800'}`}>
                     Dr. {appt.doctor?.name}
                 </h4>
                 <div className="flex items-center gap-3 mt-1">
@@ -194,16 +214,93 @@ const SessionCard = ({ appt, onClick, active, historical }) => {
                 </div>
             </div>
 
-            <div className={`p-2 rounded-xl border border-slate-200 transition-colors ${
-                active ? 'bg-white text-primary-600' : 'bg-slate-50 text-slate-400 group-hover:text-primary-600 group-hover:border-primary-200'
-            }`}>
-                <ChevronRight size={18} />
+            {historical ? (
+                <button 
+                    onClick={(e) => { e.stopPropagation(); onRate(); }}
+                    className="px-4 py-2 bg-primary-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg hover:bg-primary-700 transition-colors"
+                >
+                    Rate
+                </button>
+            ) : (
+                <div className={`p-2 rounded-xl border border-slate-200 transition-colors ${
+                    active ? 'bg-white text-primary-600' : 'bg-slate-50 text-slate-400 group-hover:text-primary-600 group-hover:border-primary-200'
+                }`}>
+                    <ChevronRight size={18} />
+                </div>
+            )}
+        </div>
+    );
+};
+
+const RatingModal = ({ appt, onClose, onRatingSubmitted }) => {
+    const [rating, setRating] = useState(5);
+    const [comment, setComment] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+
+    const handleSubmit = async () => {
+        setSubmitting(true);
+        try {
+            await api.post('ratings', {
+                appointmentId: appt.id,
+                stars: rating,
+                comment: comment
+            });
+            onRatingSubmitted();
+            onClose();
+        } catch (e) {
+            console.error(e);
+            alert("Feedback submission failed. Protocol interrupted.");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-300">
+            <div className="bg-white rounded-[2.5rem] w-full max-w-md p-8 animate-in zoom-in-95 duration-300">
+                <div className="text-center mb-8">
+                    <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-none mb-2">Physician Feedback</h3>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Rate Dr. {appt.doctor?.name}</p>
+                </div>
+
+                <div className="flex justify-center gap-2 mb-8">
+                    {[1, 2, 3, 4, 5].map(star => (
+                        <button 
+                            key={star} 
+                            onClick={() => setRating(star)}
+                            className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl transition-all ${
+                                rating >= star ? 'bg-amber-400 text-white shadow-lg scale-110' : 'bg-slate-100 text-slate-300'
+                            }`}
+                        >
+                            ★
+                        </button>
+                    ))}
+                </div>
+
+                <textarea
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    placeholder="Provide clinical feedback (optional)"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm font-medium placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 mb-8"
+                    rows={4}
+                />
+
+                <div className="flex gap-3">
+                    <button onClick={onClose} className="flex-1 py-4 text-xs font-black uppercase text-slate-400 tracking-widest hover:bg-slate-50 rounded-2xl transition-colors">Abort</button>
+                    <button 
+                        onClick={handleSubmit} 
+                        disabled={submitting}
+                        className="flex-1 py-4 bg-primary-600 text-white text-xs font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary-500/20 hover:bg-primary-700 disabled:opacity-50"
+                    >
+                        {submitting ? 'Syncing...' : 'Submit Review'}
+                    </button>
+                </div>
             </div>
         </div>
     );
 };
 
-const SessionDetailModal = ({ appt, onClose }) => {
+const SessionDetailModal = ({ appt, onClose, canEnter }) => {
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300 px-4 sm:px-0">
             <div className="bg-white rounded-[2.5rem] w-full max-w-md shadow-2xl relative animate-in zoom-in-95 duration-300">
@@ -222,7 +319,7 @@ const SessionDetailModal = ({ appt, onClose }) => {
                     <div className="space-y-4">
                         <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex items-center gap-4">
                             <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden shrink-0">
-                                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${appt.doctor?.name}`} alt="" />
+                                <img src={appt.doctor?.profilePictureUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${appt.doctor?.name}`} alt="" className="w-full h-full object-cover" />
                             </div>
                             <div className="min-w-0">
                                 <p className="text-[10px] font-black uppercase text-primary-600 tracking-widest">Attending Physician</p>
@@ -244,16 +341,29 @@ const SessionDetailModal = ({ appt, onClose }) => {
                                 </p>
                             </div>
                         </div>
+
+                        {appt.consultationType === 'OFFLINE' && appt.doctor?.clinicAddress && (
+                            <div className="bg-emerald-50/50 rounded-2xl p-4 border border-emerald-100/50">
+                                <p className="text-[10px] font-black uppercase text-emerald-600 tracking-widest mb-1 flex items-center gap-1"><MapPin size={10} /> Clinic Address</p>
+                                <p className="text-xs font-bold text-slate-700 leading-relaxed">{appt.doctor.clinicAddress}</p>
+                            </div>
+                        )}
                     </div>
 
                     <div className="mt-8 pt-6 border-t border-slate-100 flex gap-3">
                         {appt.consultationType === 'ONLINE' && appt.status !== 'FAILED' && appt.meetLink && (
-                            <button 
-                                onClick={() => window.open(appt.meetLink, '_blank')}
-                                className="flex-1 btn-premium bg-emerald-50 text-emerald-700 shadow-none border-emerald-100 hover:bg-emerald-100 text-sm py-3 flex items-center justify-center gap-2"
-                            >
-                                <Video size={16} /> Enter Call
-                            </button>
+                            canEnter ? (
+                                <button 
+                                    onClick={() => window.open(appt.meetLink, '_blank')}
+                                    className="flex-1 btn-premium bg-emerald-600 text-white shadow-xl hover:bg-emerald-700 text-sm py-3 flex items-center justify-center gap-2 border-none"
+                                >
+                                    <Video size={16} /> Enter Call
+                                </button>
+                            ) : (
+                                <div className="flex-1 bg-slate-100 text-slate-400 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center text-center p-3">
+                                    Link activates 10m before
+                                </div>
+                            )
                         )}
                         <button onClick={onClose} className="flex-1 btn-premium bg-slate-900 text-white shadow-xl hover:bg-slate-800 border-none text-sm py-3">
                             Acknowledge
