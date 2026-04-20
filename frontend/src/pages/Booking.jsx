@@ -395,7 +395,7 @@ const Booking = () => {
                                    </div>
                                 </div>
                                 <ClinicMap 
-                                   address={selectedDoctor.clinicAddress || selectedDoctor.hospital || 'Care Center'} 
+                                   address={selectedDoctor.clinicAddress || `Dr. ${selectedDoctor.name}, ${selectedDoctor.specialization}, ${selectedDoctor.hospital}`} 
                                    hospitalName={selectedDoctor.hospital} 
                                    height="280px" 
                                 />
