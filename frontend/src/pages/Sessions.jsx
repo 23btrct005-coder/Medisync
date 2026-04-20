@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import api from '../api/axiosConfig';
 import { Calendar, Clock, ChevronRight, Video, MapPin, X, Loader2, History as HistoryIcon } from 'lucide-react';
+import ClinicMap from '../components/ClinicMap';
 
 const Sessions = () => {
     const location = useLocation();
@@ -352,9 +353,18 @@ const SessionDetailModal = ({ appt, onClose, canEnter }) => {
                         </div>
 
                         {appt.consultationType === 'OFFLINE' && appt.doctor?.clinicAddress && (
-                            <div className="bg-emerald-50/50 rounded-2xl p-4 border border-emerald-100/50">
-                                <p className="text-[10px] font-black uppercase text-emerald-600 tracking-widest mb-1 flex items-center gap-1"><MapPin size={10} /> Clinic Address</p>
-                                <p className="text-xs font-bold text-slate-700 leading-relaxed">{appt.doctor.clinicAddress}</p>
+                            <div className="space-y-4">
+                                <div className="bg-emerald-50/50 rounded-2xl p-4 border border-emerald-100/50">
+                                    <p className="text-[10px] font-black uppercase text-emerald-600 tracking-widest mb-1 flex items-center gap-1"><MapPin size={10} /> Clinic Address</p>
+                                    <p className="text-xs font-bold text-slate-700 leading-relaxed">{appt.doctor.clinicAddress}</p>
+                                </div>
+                                <div className="rounded-2xl overflow-hidden border border-slate-100 shadow-sm">
+                                    <ClinicMap 
+                                        address={appt.doctor.clinicAddress} 
+                                        hospitalName={`Dr. ${appt.doctor.name} - ${appt.doctor.specialization || 'Clinical Clinic'}`}
+                                        height="200px" 
+                                    />
+                                </div>
                             </div>
                         )}
                     </div>
