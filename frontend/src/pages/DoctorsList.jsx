@@ -176,8 +176,8 @@ const DoctorCard = ({ doctor, onRevoke }) => (
     <div className="flex items-center gap-5">
       <div className="relative">
         <div className="w-16 h-16 bg-slate-100 rounded-2xl overflow-hidden border-2 border-white shadow-inner flex items-center justify-center text-slate-400">
-           {doctor.photo ? (
-             <img src={`data:image/jpeg;base64,${doctor.photo}`} className="w-full h-full object-cover" alt={doctor.name} />
+           {doctor.profilePictureUrl ? (
+             <img src={doctor.profilePictureUrl} className="w-full h-full object-cover" alt={doctor.name} />
            ) : <Activity size={32} />}
         </div>
         <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 border-4 border-white rounded-full" />

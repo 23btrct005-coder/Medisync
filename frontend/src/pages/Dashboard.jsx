@@ -206,7 +206,11 @@ const Dashboard = () => {
                   {requests.map(req => (
                     <div key={req.id} className="flex items-center justify-between p-6 bg-slate-50 hover:bg-emerald-50/50 rounded-2xl border border-slate-100 transition-all group/item">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-white rounded-xl border border-slate-200 flex items-center justify-center font-black text-emerald-500 shadow-sm">Dr</div>
+                        <div className="w-12 h-12 bg-white rounded-xl border border-slate-200 flex items-center justify-center font-black text-emerald-500 shadow-sm overflow-hidden">
+                          {req.doctor?.profilePictureUrl ? (
+                            <img src={req.doctor.profilePictureUrl} className="w-full h-full object-cover" alt="Dr." />
+                          ) : "Dr"}
+                        </div>
                         <div>
                           <p className="font-black text-slate-800">Dr. {req.doctor?.name || 'Physician'}</p>
                           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Medical License: Verified</p>

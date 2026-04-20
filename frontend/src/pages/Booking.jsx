@@ -476,9 +476,11 @@ const DoctorCard = ({ doctor, onSelect }) => (
     </div>
     
     <div className="flex items-center gap-4 mb-4 relative z-10">
-       <div className="w-14 h-14 md:w-16 md:h-16 bg-slate-100 rounded-2xl overflow-hidden border-2 border-white shadow-inner flex items-center justify-center text-slate-400">
-          <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${doctor.name}`} className="w-full h-full object-cover" alt={doctor.name} />
-       </div>
+        <div className="w-14 h-14 md:w-16 md:h-16 bg-slate-100 rounded-2xl overflow-hidden border-2 border-white shadow-inner flex items-center justify-center text-slate-400">
+           {doctor.profilePictureUrl ? (
+             <img src={doctor.profilePictureUrl} className="w-full h-full object-cover" alt={doctor.name} />
+           ) : <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${doctor.name}`} className="w-full h-full object-cover" alt={doctor.name} />}
+        </div>
        <div className="min-w-0">
           <h3 className="text-lg md:text-xl font-bold text-slate-900 tracking-tight group-hover:text-primary transition-colors truncate">Dr. {doctor.name}</h3>
           <p className="text-[10px] text-slate-500 font-bold truncate uppercase tracking-widest">{doctor.specialization || "Physician"}</p>
