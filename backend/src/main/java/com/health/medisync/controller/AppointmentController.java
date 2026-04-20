@@ -59,14 +59,35 @@ public class AppointmentController {
             Object slotObj = request.get("slot");
             Object typeObj = request.get("type");
 
-            if (doctorIdObj == null || dateObj == null || slotObj == null || typeObj == null) {
-                throw new RuntimeException("Missing required fields: doctorId, date, slot, or type");
+            Long doctorId;
+            try {
+                String dIdStr = doctorIdObj.toString().trim();
+                if (dIdStr.isEmpty()) throw new Exception("FIELD_EMPTY: doctorId");
+                doctorId = Long.valueOf(dIdStr.split("\\.")[0]);
+            } catch (Exception e) {
+                throw new RuntimeException("PARSE_ERROR: invalid doctorId [" + doctorIdObj + "]: " + e.getMessage());
             }
 
-            Long doctorId = Long.valueOf(doctorIdObj.toString());
-            LocalDate date = LocalDate.parse(dateObj.toString());
+            LocalDate date;
+            try {
+                String dStr = dateObj.toString().trim();
+                if (dStr.isEmpty()) throw new Exception("FIELD_EMPTY: date");
+                date = LocalDate.parse(dStr);
+            } catch (Exception e) {
+                throw new RuntimeException("PARSE_ERROR: invalid date [" + dateObj + "]: " + e.getMessage());
+            }
+
+            ConsultationType type;
+            try {
+                String tStr = typeObj.toString().trim();
+                if (tStr.isEmpty()) throw new Exception("FIELD_EMPTY: type");
+                type = ConsultationType.valueOf(tStr);
+            } catch (Exception e) {
+                throw new RuntimeException("PARSE_ERROR: invalid type [" + typeObj + "]: " + e.getMessage());
+            }
+
             String slot = slotObj.toString();
-            ConsultationType type = ConsultationType.valueOf(typeObj.toString());
+            if (slot.trim().isEmpty()) throw new RuntimeException("FIELD_EMPTY: slot");
 
             Map<String, Object> response = appointmentService.initiateBooking(authentication.getName(), doctorId, date, slot, type);
             return ResponseEntity.ok(response);
