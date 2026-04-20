@@ -100,8 +100,8 @@ public class DoctorController {
         try {
             doctorService.updateProfilePhoto(authentication.getName(), photo);
             return ResponseEntity.ok(Map.of("message", "Photo updated successfully"));
-        } catch (IOException e) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Failed to upload photo"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Failed to upload photo: " + e.getMessage()));
         }
     }
 }
