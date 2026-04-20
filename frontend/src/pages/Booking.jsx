@@ -296,7 +296,11 @@ const Booking = () => {
                    <div className="absolute -right-10 -top-10 w-40 h-40 bg-primary/20 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
                    <div className="relative z-10 flex flex-col items-center text-center">
                       <div className="w-24 h-24 rounded-3xl overflow-hidden border-4 border-white/10 mb-6 shadow-2xl">
-                         <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedDoctor.name}`} alt="" className="w-full h-full object-cover" />
+                         {selectedDoctor.profilePictureUrl ? (
+                           <img src={selectedDoctor.profilePictureUrl} className="w-full h-full object-cover" alt="" />
+                         ) : (
+                           <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedDoctor.name}`} alt="" className="w-full h-full object-cover" />
+                         )}
                       </div>
                       <h2 className="text-3xl font-black tracking-tight leading-none mb-2">Dr. {selectedDoctor.name}</h2>
                       <p className="text-primary-400 font-bold uppercase tracking-[0.2em] text-[10px] mb-8">{selectedDoctor.specialization}</p>
@@ -320,24 +324,6 @@ const Booking = () => {
                             <span className="text-xs font-black uppercase tracking-widest underline decoration-primary decoration-2">{selectedDoctor.yearsOfExperience || '8+'} Years</span>
                          </div>
                       </div>
-
-                      {selectedDoctor.clinicAddress && (
-                        <div className="mt-6 glass-panel p-6 bg-white border-slate-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
-                           <div className="flex items-center justify-between mb-4">
-                             <div className="flex items-center gap-2">
-                               <MapPin size={16} className="text-red-500" />
-                               <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none text-slate-900">Clinic Terminal</h4>
-                             </div>
-                             {selectedDoctor.consultationTimings && (
-                               <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-100 rounded-lg border border-slate-200">
-                                  <Clock size={10} className="text-slate-500" />
-                                  <span className="text-[9px] font-bold text-slate-600 uppercase tracking-tighter">{selectedDoctor.consultationTimings}</span>
-                               </div>
-                             )}
-                           </div>
-                           <ClinicMap address={selectedDoctor.clinicAddress} hospitalName={selectedDoctor.hospital} height="250px" />
-                        </div>
-                      )}
                    </div>
                 </div>
              </div>
@@ -359,38 +345,65 @@ const Booking = () => {
                       />
                    </section>
 
-                   {/* Modality Selection */}
-                   <section className="space-y-4">
-                      <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                        <Video size={18} className="text-indigo-500" /> Health Sync Modality
-                      </h3>
-                      <div className="grid grid-cols-2 gap-4">
-                         {[
-                           { id: 'ONLINE', name: 'Virtual Sync', icon: Video, desc: 'High-def clinical video session', disabled: !selectedDoctor.onlineConsultation },
-                           { id: 'OFFLINE', name: 'Clinic Visit', icon: MapPin, desc: 'In-person physical assessment', disabled: false }
-                         ].map(type => (
-                           <button 
-                            key={type.id}
-                            disabled={type.disabled}
-                            onClick={() => setConsultationType(type.id)}
-                            className={`p-5 rounded-[1.5rem] border-2 text-left transition-all relative overflow-hidden ${
-                              type.disabled ? 'opacity-40 grayscale cursor-not-allowed' :
-                              consultationType === type.id 
-                              ? 'bg-indigo-50 border-indigo-500 shadow-xl shadow-indigo-500/10' 
-                              : 'bg-white border-slate-100 hover:bg-slate-50'
-                            }`}
+                    {/* Modality Selection */}
+                    <section className="space-y-4">
+                       <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                         <Video size={18} className="text-indigo-500" /> Health Sync Modality
+                       </h3>
+                       <div className="grid grid-cols-2 gap-4">
+                          {[
+                            { id: 'ONLINE', name: 'Virtual Sync', icon: Video, desc: 'High-def clinical video session', disabled: !selectedDoctor.onlineConsultation },
+                            { id: 'OFFLINE', name: 'Clinic Visit', icon: MapPin, desc: 'In-person physical assessment', disabled: false }
+                          ].map(type => (
+                            <button 
+                             key={type.id}
+                             disabled={type.disabled}
+                             onClick={() => setConsultationType(type.id)}
+                             className={`p-5 rounded-[1.5rem] border-2 text-left transition-all relative overflow-hidden ${
+                               type.disabled ? 'opacity-40 grayscale cursor-not-allowed' :
+                               consultationType === type.id 
+                               ? 'bg-indigo-50 border-indigo-500 shadow-xl shadow-indigo-500/10' 
+                               : 'bg-white border-slate-100 hover:bg-slate-50'
+                             }`}
+                            >
+                              <type.icon size={24} className={consultationType === type.id ? 'text-indigo-600' : 'text-slate-400'} />
+                              <p className={`font-black text-sm mt-3 ${consultationType === type.id ? 'text-slate-900' : 'text-slate-500'}`}>
+                                {type.name}
+                                {type.disabled && <span className="ml-2 text-[8px] bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded-md">OFFLINE ONLY</span>}
+                              </p>
+                              <p className="text-[10px] text-slate-400 mt-1 font-medium">{type.disabled ? 'Consultation mode disabled by physician.' : type.desc}</p>
+                              {consultationType === type.id && <div className="absolute top-3 right-3"><CheckCircle2 size={16} className="text-indigo-600" /></div>}
+                            </button>
+                          ))}
+                       </div>
+
+                       {/* Robust Map Visibility Node */}
+                       <AnimatePresence>
+                         {consultationType === 'OFFLINE' && (
+                           <motion.div 
+                             initial={{ opacity: 0, height: 0 }}
+                             animate={{ opacity: 1, height: 'auto' }}
+                             exit={{ opacity: 0, height: 0 }}
+                             className="overflow-hidden"
                            >
-                             <type.icon size={24} className={consultationType === type.id ? 'text-indigo-600' : 'text-slate-400'} />
-                             <p className={`font-black text-sm mt-3 ${consultationType === type.id ? 'text-slate-900' : 'text-slate-500'}`}>
-                               {type.name}
-                               {type.disabled && <span className="ml-2 text-[8px] bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded-md">OFFLINE ONLY</span>}
-                             </p>
-                             <p className="text-[10px] text-slate-400 mt-1 font-medium">{type.disabled ? 'Consultation mode disabled by physician.' : type.desc}</p>
-                             {consultationType === type.id && <div className="absolute top-3 right-3"><CheckCircle2 size={16} className="text-indigo-600" /></div>}
-                           </button>
-                         ))}
-                      </div>
-                   </section>
+                             <div className="mt-4 p-5 bg-white border-2 border-slate-100 rounded-3xl shadow-sm">
+                                <div className="flex items-center gap-2 mb-4">
+                                   <MapPin size={16} className="text-primary" />
+                                   <div className="flex flex-col">
+                                      <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest leading-none">Clinical Location</h4>
+                                      <p className="text-[9px] text-slate-400 font-bold uppercase mt-1">{selectedDoctor.clinicAddress || selectedDoctor.hospital || 'Care Center'}</p>
+                                   </div>
+                                </div>
+                                <ClinicMap 
+                                   address={selectedDoctor.clinicAddress || selectedDoctor.hospital || 'Care Center'} 
+                                   hospitalName={selectedDoctor.hospital} 
+                                   height="280px" 
+                                />
+                             </div>
+                           </motion.div>
+                         )}
+                       </AnimatePresence>
+                    </section>
 
                    {/* Time Slots */}
                    <section className="space-y-4">

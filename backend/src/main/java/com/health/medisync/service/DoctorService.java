@@ -197,14 +197,14 @@ public class DoctorService {
             }
         }
 
-        // AUTO-SYNC: If descriptive fee was updated but numeric tiers are missing/stale, attempt extraction
-        if (doctor.getOnlineConsultationFee() == null || doctor.getOnlineConsultationFee() <= 1.0) {
+        // AUTO-SYNC: Only perform extraction if numeric tiers are strictly missing (null)
+        if (doctor.getOnlineConsultationFee() == null) {
            String numeric = doctor.getConsultationFee().replaceAll("[^0-9]", "");
            if (!numeric.isEmpty()) {
                try { 
                    double val = Double.parseDouble(numeric);
                    doctor.setOnlineConsultationFee(val);
-                   if (doctor.getOfflineConsultationFee() == null || doctor.getOfflineConsultationFee() <= 1.0) {
+                   if (doctor.getOfflineConsultationFee() == null) {
                        doctor.setOfflineConsultationFee(val);
                    }
                } catch (Exception e) {}
