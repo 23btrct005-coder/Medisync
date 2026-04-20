@@ -17,8 +17,11 @@ const Booking = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterSpecialty, setFilterSpecialty] = useState('All');
   
+  const date = new Date();
+  const localToday = [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
+  
   const [selectedDoctor, setSelectedDoctor] = useState(null);
-  const [bookingDate, setBookingDate] = useState(new Date().toISOString().split('T')[0]);
+  const [bookingDate, setBookingDate] = useState(localToday);
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [consultationType, setConsultationType] = useState('ONLINE');
@@ -338,7 +341,7 @@ const Booking = () => {
                       </h3>
                       <input 
                         type="date"
-                        min={new Date().toISOString().split('T')[0]}
+                        min={localToday}
                         value={bookingDate}
                         onChange={(e) => setBookingDate(e.target.value)}
                         className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-primary outline-none font-bold text-slate-800"
@@ -421,7 +424,7 @@ const Booking = () => {
                             // Logic to disable past time slots for today
                             let isPast = false;
                             const todayStr = new Date().toISOString().split('T')[0];
-                            if (bookingDate === todayStr) {
+                            if (bookingDate === localToday) {
                                try {
                                  const [time, period] = slot.split(' ');
                                  let [hours, minutes] = time.split(':').map(Number);
@@ -429,7 +432,8 @@ const Booking = () => {
                                  if (period === 'AM' && hours === 12) hours = 0;
                                  const slotDate = new Date();
                                  slotDate.setHours(hours, minutes, 0, 0);
-                                 isPast = slotDate < new Date();
+                                 // Add a 5 minute safety buffer
+                                 isPast = slotDate.getTime() < (new Date().getTime() + 5 * 60 * 1000);
                                } catch (e) { isPast = false; }
                             }
 

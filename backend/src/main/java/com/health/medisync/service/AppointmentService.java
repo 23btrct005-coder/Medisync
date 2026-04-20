@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -86,15 +87,16 @@ public class AppointmentService {
             .filter(Objects::nonNull)
             .collect(Collectors.toSet());
 
+        ZoneId clinicalZone = ZoneId.of("Asia/Kolkata");
         List<String> results = allSlots.stream()
             .filter(slot -> !takenSlots.contains(slot))
             .filter(slot -> {
-                // HARDEN: Filter out past slots if date is today
-                if (date.isEqual(LocalDate.now())) {
+                // HARDEN: Filter out past slots if date is today (Local Context)
+                if (date.isEqual(LocalDate.now(clinicalZone))) {
                     try {
                         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);
                         java.time.LocalTime slotTime = java.time.LocalTime.parse(slot.trim(), formatter);
-                        return slotTime.isAfter(java.time.LocalTime.now().plusMinutes(2)); // 2-min buffer
+                        return slotTime.isAfter(java.time.LocalTime.now(clinicalZone).plusMinutes(2)); // 2-min buffer
                     } catch (Exception e) { return true; }
                 }
                 return true;

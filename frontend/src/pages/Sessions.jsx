@@ -47,7 +47,8 @@ const Sessions = () => {
                 if (apptToOpen) setSelectedAppt(apptToOpen);
             }
 
-            const todayStr = new Date().toISOString().split('T')[0];
+            const d = new Date();
+            const todayStr = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
             const hasToday = (data || []).some(a => a.appointmentDate === todayStr);
             if (!hasToday && (data || []).some(a => a.appointmentDate > todayStr)) {
                 setActiveTab('upcoming');
@@ -59,7 +60,8 @@ const Sessions = () => {
         }
     };
 
-    const todayString = new Date().toISOString().split('T')[0];
+    const d = new Date();
+    const todayString = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
     const todaysAppointments = (appointments || []).filter(a => a.appointmentDate === todayString);
     const pastAppointments = (appointments || []).filter(a => a.appointmentDate < todayString);
     const upcomingAppointments = (appointments || []).filter(a => a.appointmentDate > todayString);
