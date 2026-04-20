@@ -72,9 +72,9 @@ const AdminDashboard = () => {
   };
 
   const filteredDoctors = pendingDoctors.filter(d => 
-    d.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    d.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    d.medicalLicenseNumber.toLowerCase().includes(searchTerm.toLowerCase())
+    (d.name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) || 
+    (d.email?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+    (d.medicalLicenseNumber?.toLowerCase() || "").includes(searchTerm.toLowerCase())
   );
 
   return (
