@@ -49,9 +49,15 @@ public class AdminController {
             dto.setMedicalDegree((String) row.get("medical_degree"));
             dto.setMedicalLicenseNumber((String) row.get("medical_license_number"));
             dto.setHospital((String) row.get("hospital"));
-            dto.setYearsOfExperience((Integer) row.get("years_of_experience"));
+            
+            Object exp = row.get("years_of_experience");
+            dto.setYearsOfExperience(exp != null ? ((Number) exp).intValue() : 0);
+            
             dto.setProfilePictureUrl((String) row.get("profile_picture_url"));
-            dto.setApproved((Boolean) row.get("approved"));
+            
+            Object app = row.get("approved");
+            dto.setApproved(app != null && (Boolean) app);
+            
             dtos.add(dto);
         }
         return ResponseEntity.ok(dtos);

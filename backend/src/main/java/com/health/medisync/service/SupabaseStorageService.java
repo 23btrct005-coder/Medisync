@@ -48,12 +48,14 @@ public class SupabaseStorageService {
             );
 
             if (response.getStatusCode().is2xxSuccessful()) {
-                // Return the public URL for the newly uploaded file
                 return supabaseUrl + "/storage/v1/object/public/" + bucketName + "/" + fileName;
             } else {
-                System.err.println("ERROR: Supabase upload failed with status: " + response.getStatusCode());
+                System.err.println("ERROR: Supabase upload failed. Status: " + response.getStatusCode() + " Body: " + response.getBody());
                 return null;
             }
+        } catch (org.springframework.web.client.HttpStatusCodeException e) {
+            System.err.println("ERROR: Supabase API Error. Status: " + e.getStatusCode() + " Body: " + e.getResponseBodyAsString());
+            return null;
         } catch (Exception e) {
             System.err.println("ERROR: Supabase Storage exception: " + e.getMessage());
             return null;
