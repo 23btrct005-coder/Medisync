@@ -1,5 +1,6 @@
 package com.health.medisync.security;
 
+import com.health.medisync.controller.PinpointDiagnosticController;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -64,14 +65,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                             SecurityContextHolder.getContext().setAuthentication(authentication);
                         } catch (Exception e) {
-                            System.err.println("AUTH_ERROR: Token valid but User/Context missing: " + e.getMessage());
+                            String errMsg = "AUTH_ERROR: Token valid but User/Context missing: " + e.getMessage();
+                            PinpointDiagnosticController.setLastError(errMsg);
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType("application/json");
                             response.getWriter().write("{\"message\": \"Clinical session integrity lost. Please log in again.\"}");
                             return;
                         }
                     } else {
-                        System.err.println("AUTH_ERROR: JWT validation failed for token starting with: " + (jwt.length() > 10 ? jwt.substring(0, 10) : "short"));
+                        PinpointDiagnosticController.setLastError("AUTH_ERROR: JWT validation failed.");
                     }
                 }
             }
