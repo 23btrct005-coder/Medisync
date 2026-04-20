@@ -20,6 +20,7 @@ import com.health.medisync.repository.UserRepository;
 import com.health.medisync.repository.DoctorRepository;
 import com.health.medisync.repository.PasswordResetTokenRepository;
 import com.health.medisync.service.AuthService;
+import com.health.medisync.service.EmailService;
 import com.health.medisync.service.FirebaseStorageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.multipart.MultipartFile;
@@ -102,7 +103,7 @@ public class AuthController {
                 throw new RuntimeException("Error: This account is already registered and verified. Please log in.");
             }
             // Delete incomplete/unverified user and linked data so registration can proceed
-            passwordResetTokenRepository.findByUser(existing).ifPresent(passwordResetTokenRepository::delete);
+            passwordResetTokenRepository.deleteByUserId(existing.getId());
             doctorRepository.findByUserId(existing.getId()).ifPresent(doctorRepository::delete);
             userRepository.delete(existing);
         });
@@ -194,7 +195,7 @@ public class AuthController {
                     throw new RuntimeException("Error: This account is already registered and verified. Please log in.");
                 }
                 // Delete ghost/unverified user and linked data so registration can proceed
-                passwordResetTokenRepository.findByUser(existing).ifPresent(passwordResetTokenRepository::delete);
+                passwordResetTokenRepository.deleteByUserId(existing.getId());
                 patientRepository.findByUserId(existing.getId()).ifPresent(patientRepository::delete);
                 userRepository.delete(existing);
             });
