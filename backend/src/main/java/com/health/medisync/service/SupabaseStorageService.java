@@ -23,14 +23,16 @@ public class SupabaseStorageService {
     private final RestTemplate restTemplate = new RestTemplate();
 
     public String uploadFile(MultipartFile file) {
+        System.out.println("DEBUG: Initiating Supabase upload to bucket: " + bucketName);
         if (supabaseKey == null || supabaseKey.isEmpty()) {
-            System.err.println("WARNING: SUPABASE_SERVICE_ROLE_KEY is missing. Storage upload skipped.");
+            System.err.println("CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing from environment. Photo upload will fail.");
             return null;
         }
 
         try {
             String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
             String uploadUrl = supabaseUrl + "/storage/v1/object/" + bucketName + "/" + fileName;
+            System.out.println("DEBUG: Target upload URL: " + uploadUrl);
 
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + supabaseKey);
