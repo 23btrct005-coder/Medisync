@@ -94,11 +94,6 @@ public class Patient {
     )
     private Set<Doctor> doctors = new HashSet<>();
 
-    @JdbcTypeCode(SqlTypes.BINARY)
-    @Column(name = "profile_picture")
-    @JsonIgnore
-    private byte[] profilePicture;
-
     @Column(name = "profile_picture_url")
     private String profilePictureUrl;
 
@@ -171,10 +166,6 @@ public class Patient {
 
     public Set<Doctor> getDoctors() { return doctors; }
     public void setDoctors(Set<Doctor> doctors) { this.doctors = doctors; }
-
-    @JsonIgnore
-    public byte[] getProfilePicture() { return profilePicture; }
-    public void setProfilePicture(byte[] profilePicture) { this.profilePicture = profilePicture; }
 
     // Insurance Getters & Setters
     public String getInsuranceProvider() { return insuranceProvider; }

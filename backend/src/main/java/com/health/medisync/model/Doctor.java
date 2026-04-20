@@ -54,11 +54,6 @@ public class Doctor {
     // Payment Integration
     private String razorpayAccountId; // For Razorpay Route / Connected Accounts
 
-    @JdbcTypeCode(SqlTypes.BINARY)
-    @Column(name = "profile_picture")
-    @JsonIgnore
-    private byte[] profilePicture;
-
     @Column(name = "profile_picture_url")
     private String profilePictureUrl;
 
@@ -126,9 +121,6 @@ public class Doctor {
     public boolean isApproved() { return approved; }
     public void setApproved(boolean approved) { this.approved = approved; }
 
-    @JsonIgnore
-    public byte[] getProfilePicture() { return profilePicture; }
-    public void setProfilePicture(byte[] profilePicture) { this.profilePicture = profilePicture; }
 
     public Double getOnlineConsultationFee() { return onlineConsultationFee; }
     public void setOnlineConsultationFee(Double onlineConsultationFee) { this.onlineConsultationFee = onlineConsultationFee; }
