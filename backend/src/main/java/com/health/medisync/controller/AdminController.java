@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.transaction.annotation.Transactional;
 
 @RestController
@@ -20,10 +21,12 @@ public class AdminController {
 
     private final DoctorRepository doctorRepository;
     private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
 
-    public AdminController(DoctorRepository doctorRepository, UserRepository userRepository) {
+    public AdminController(DoctorRepository doctorRepository, UserRepository userRepository, ObjectMapper objectMapper) {
         this.doctorRepository = doctorRepository;
         this.userRepository = userRepository;
+        this.objectMapper = objectMapper;
     }
 
     @GetMapping("/doctors/pending")
@@ -31,12 +34,15 @@ public class AdminController {
     public ResponseEntity<?> getPendingDoctors() {
         try {
             List<Doctor> pending = doctorRepository.findByApprovedFalse();
+            // FORCIBLY serialize here to catch errors occurring during JSON mapping (e.g., circular refs or lazy refs)
+            objectMapper.writeValueAsString(pending);
             return ResponseEntity.ok(pending);
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of(
-                "error", e.getMessage() != null ? e.getMessage() : "Unknown Diagnostic Error",
+                "error", e.getMessage() != null ? e.getMessage() : "Unknown Serialization Fault",
                 "type", e.getClass().getName(),
-                "suggestion", "Check for orphaned records or JPA mapping mismatches"
+                "phase", "diagnostic-serialization",
+                "suggestion", "Review Doctor and User model relationships for circularity or orphaned records"
             ));
         }
     }

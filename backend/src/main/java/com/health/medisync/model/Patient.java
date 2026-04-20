@@ -172,6 +172,7 @@ public class Patient {
     public Set<Doctor> getDoctors() { return doctors; }
     public void setDoctors(Set<Doctor> doctors) { this.doctors = doctors; }
 
+    @JsonIgnore
     public byte[] getProfilePicture() { return profilePicture; }
     public void setProfilePicture(byte[] profilePicture) { this.profilePicture = profilePicture; }
 
