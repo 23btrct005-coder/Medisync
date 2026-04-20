@@ -75,6 +75,15 @@ public class AuthController {
         
         User user = userRepository.findByUsernameIgnoreCase(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Error: User not found."));
+
+        // SELF-HEALING LOGIN: Promote to ROLE_DOCTOR if user has a physician profile
+        if (!"ROLE_DOCTOR".equals(user.getRole())) {
+            if (doctorRepository.findByUserId(user.getId()).isPresent()) {
+                System.out.println("SELF-HEALING: Promoting " + user.getUsername() + " to ROLE_DOCTOR.");
+                user.setRole("ROLE_DOCTOR");
+                userRepository.save(user);
+            }
+        }
                 
         String jwt = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole());
         String role = user.getRole();
