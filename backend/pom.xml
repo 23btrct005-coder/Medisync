@@ -99,13 +99,6 @@
       <version>1.4.3</version>
     </dependency>
 
-    <!-- Firebase Admin SDK -->
-    <dependency>
-      <groupId>com.google.firebase</groupId>
-      <artifactId>firebase-admin</artifactId>
-      <version>9.2.0</version>
-    </dependency>
-
     <!-- Health & Monitoring -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
