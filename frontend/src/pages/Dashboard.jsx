@@ -208,7 +208,7 @@ const Dashboard = () => {
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-white rounded-xl border border-slate-200 flex items-center justify-center font-black text-emerald-500 shadow-sm">Dr</div>
                         <div>
-                          <p className="font-black text-slate-800">Dr. {req.doctorName}</p>
+                          <p className="font-black text-slate-800">Dr. {req.doctor?.name || 'Physician'}</p>
                           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Medical License: Verified</p>
                         </div>
                       </div>
