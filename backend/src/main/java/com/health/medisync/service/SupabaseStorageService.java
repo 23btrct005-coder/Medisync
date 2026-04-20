@@ -12,6 +12,8 @@ import java.io.PrintWriter;
 import java.util.UUID;
 
 @Service
+public class SupabaseStorageService {
+
     @Value("${supabase.url:https://bwjmzottkkxrdztqqeju.supabase.co}")
     private String supabaseUrl;
 
