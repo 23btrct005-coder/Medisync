@@ -167,11 +167,6 @@ public class PatientService {
         accessRequestRepository.save(request);
     }
 
-    public void updateProfilePhoto(String username, byte[] photoBytes) {
-        Patient patient = getPatientProfile(username);
-        patient.setProfilePicture(photoBytes);
-        patientRepository.save(patient);
-    }
     public List<Doctor> getLinkedDoctors(String username) {
         Patient patient = getPatientProfile(username);
         return List.copyOf(patient.getDoctors());

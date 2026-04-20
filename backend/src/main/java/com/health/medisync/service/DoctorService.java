@@ -201,7 +201,6 @@ public class DoctorService {
 
     public void updateProfilePhoto(String username, org.springframework.web.multipart.MultipartFile photo) throws java.io.IOException {
         Doctor doctor = getDoctorProfile(username);
-        doctor.setProfilePicture(photo.getBytes());
         try {
             String photoUrl = firebaseStorageService.uploadFile(photo, "doctors");
             if (photoUrl != null) doctor.setProfilePictureUrl(photoUrl);

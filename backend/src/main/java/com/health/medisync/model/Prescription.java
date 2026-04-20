@@ -15,7 +15,7 @@ public class Prescription {
 
     @ManyToOne
     @JoinColumn(name = "doctor_id", nullable = false)
-    @JsonIgnoreProperties({"profilePicture", "user", "patients", "appointments"})
+    @JsonIgnoreProperties({"user", "patients", "appointments"})
     private Doctor doctor;
 
     @ManyToOne
