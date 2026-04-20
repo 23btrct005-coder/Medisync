@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import com.health.medisync.model.DoctorDTO;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.jdbc.core.JdbcTemplate;
+import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -22,19 +24,36 @@ public class AdminController {
 
     private final DoctorRepository doctorRepository;
     private final UserRepository userRepository;
+    private final JdbcTemplate jdbcTemplate;
 
-    public AdminController(DoctorRepository doctorRepository, UserRepository userRepository) {
+    public AdminController(DoctorRepository doctorRepository, UserRepository userRepository, JdbcTemplate jdbcTemplate) {
         this.doctorRepository = doctorRepository;
         this.userRepository = userRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @GetMapping("/doctors/pending")
     @Transactional(readOnly = true)
     public ResponseEntity<?> getPendingDoctors() {
-        List<Doctor> pending = doctorRepository.findPendingHardened();
-        List<DoctorDTO> dtos = pending.stream()
-            .map(DoctorDTO::new)
-            .collect(Collectors.toList());
+        String sql = "SELECT id, name, email, phone, specialization, medical_degree, medical_license_number, hospital, years_of_experience, profile_picture_url, approved FROM doctors WHERE approved = false";
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
+        
+        List<DoctorDTO> dtos = new ArrayList<>();
+        for (Map<String, Object> row : rows) {
+            DoctorDTO dto = new DoctorDTO();
+            dto.setId(((Number) row.get("id")).longValue());
+            dto.setName((String) row.get("name"));
+            dto.setEmail((String) row.get("email"));
+            dto.setPhone((String) row.get("phone"));
+            dto.setSpecialization((String) row.get("specialization"));
+            dto.setMedicalDegree((String) row.get("medical_degree"));
+            dto.setMedicalLicenseNumber((String) row.get("medical_license_number"));
+            dto.setHospital((String) row.get("hospital"));
+            dto.setYearsOfExperience((Integer) row.get("years_of_experience"));
+            dto.setProfilePictureUrl((String) row.get("profile_picture_url"));
+            dto.setApproved((Boolean) row.get("approved"));
+            dtos.add(dto);
+        }
         return ResponseEntity.ok(dtos);
     }
 
