@@ -16,7 +16,11 @@ import com.health.medisync.model.Patient;
 import com.health.medisync.repository.PatientRepository;
 import com.health.medisync.model.User;
 import com.health.medisync.model.Doctor;
+import com.health.medisync.repository.UserRepository;
+import com.health.medisync.repository.DoctorRepository;
 import com.health.medisync.repository.PasswordResetTokenRepository;
+import com.health.medisync.service.AuthService;
+import com.health.medisync.service.FirebaseStorageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
@@ -26,6 +30,13 @@ import java.io.IOException;
 @RestController
 @RequestMapping({"/api/auth", "/auth"})
 @CrossOrigin(origins = "*", maxAge = 3600)
+public class AuthController {
+
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtils jwtUtils;
+    private final UserRepository userRepository;
+    private final DoctorRepository doctorRepository;
+    private final PatientRepository patientRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
     private final FirebaseStorageService firebaseStorageService;
