@@ -31,17 +31,11 @@ public class AdminController {
     @GetMapping("/doctors/pending")
     @Transactional(readOnly = true)
     public ResponseEntity<?> getPendingDoctors() {
-        try {
-            List<Doctor> pending = doctorRepository.findByApprovedFalse();
-            List<DoctorDTO> dtos = pending.stream()
-                .map(DoctorDTO::new)
-                .collect(Collectors.toList());
-            return ResponseEntity.ok(dtos);
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of(
-                "error", "Failed to retrieve pending list: " + (e.getMessage() != null ? e.getMessage() : "Unknown error")
-            ));
-        }
+        List<Doctor> pending = doctorRepository.findByApprovedFalse();
+        List<DoctorDTO> dtos = pending.stream()
+            .map(DoctorDTO::new)
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
     @PostMapping("/doctors/{id}/approve")
