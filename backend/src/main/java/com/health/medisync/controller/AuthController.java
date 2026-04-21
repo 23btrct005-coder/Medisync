@@ -399,40 +399,47 @@ public class AuthController {
 
     @GetMapping(value = "/doctor/photo/{id}")
     public ResponseEntity<?> getDoctorPhoto(@PathVariable Long id) {
-        return doctorRepository.findByUserId(id)
-            .map(doctor -> {
-                if (doctor.getProfilePictureUrl() != null && !doctor.getProfilePictureUrl().isEmpty()) {
-                    return ResponseEntity.status(org.springframework.http.HttpStatus.FOUND)
-                                         .location(java.net.URI.create(doctor.getProfilePictureUrl()))
-                                         .build();
-                }
-                // Fallback to DiceBear
-                String diceBearUrl = "https://api.dicebear.com/7.x/avataaars/svg?seed=" + 
-                                   (doctor.getUser() != null ? doctor.getUser().getUsername() : id.toString());
-                return ResponseEntity.status(org.springframework.http.HttpStatus.FOUND)
-                                     .location(java.net.URI.create(diceBearUrl))
-                                     .build();
-            })
-            .orElse(ResponseEntity.notFound().build());
+        // Smart Resolver: Try findById first, fall back to findByUserId
+        com.health.medisync.model.Doctor doctor = doctorRepository.findById(id)
+            .filter(d -> d.getProfilePictureUrl() != null && !d.getProfilePictureUrl().isEmpty())
+            .orElseGet(() -> doctorRepository.findByUserId(id).orElseGet(() -> doctorRepository.findById(id).orElse(null)));
+
+        if (doctor == null) return ResponseEntity.notFound().build();
+
+        if (doctor.getProfilePictureUrl() != null && !doctor.getProfilePictureUrl().isEmpty()) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FOUND)
+                                 .location(java.net.URI.create(doctor.getProfilePictureUrl()))
+                                 .build();
+        }
+
+        // Fallback to DiceBear
+        String diceBearUrl = "https://api.dicebear.com/7.x/avataaars/svg?seed=" + 
+                           (doctor.getUser() != null ? doctor.getUser().getUsername() : id.toString());
+        return ResponseEntity.status(org.springframework.http.HttpStatus.FOUND)
+                             .location(java.net.URI.create(diceBearUrl))
+                             .build();
     }
 
     @GetMapping(value = "/patient/photo/{id}")
     public ResponseEntity<?> getPatientPhoto(@PathVariable Long id) {
-        return patientRepository.findByUserId(id)
-            .map(patient -> {
-                if (patient.getProfilePictureUrl() != null && !patient.getProfilePictureUrl().isEmpty()) {
-                    return ResponseEntity.status(org.springframework.http.HttpStatus.FOUND)
-                                         .location(java.net.URI.create(patient.getProfilePictureUrl()))
-                                         .build();
-                }
+        // Smart Resolver: Try findById first, fall back to findByUserId
+        com.health.medisync.model.Patient patient = patientRepository.findById(id)
+            .filter(p -> p.getProfilePictureUrl() != null && !p.getProfilePictureUrl().isEmpty())
+            .orElseGet(() -> patientRepository.findByUserId(id).orElseGet(() -> patientRepository.findById(id).orElse(null)));
+
+        if (patient == null) return ResponseEntity.notFound().build();
+
+        if (patient.getProfilePictureUrl() != null && !patient.getProfilePictureUrl().isEmpty()) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FOUND)
+                                 .location(java.net.URI.create(patient.getProfilePictureUrl()))
+                                 .build();
+        }
  
-                // Fallback to DiceBear if missing
-                String diceBearUrl = "https://api.dicebear.com/7.x/avataaars/svg?seed=" + 
-                                   (patient.getUser() != null ? patient.getUser().getUsername() : id.toString());
-                return ResponseEntity.status(org.springframework.http.HttpStatus.FOUND)
-                                     .location(java.net.URI.create(diceBearUrl))
-                                     .build();
-            })
-            .orElse(ResponseEntity.notFound().build());
+        // Fallback to DiceBear if missing
+        String diceBearUrl = "https://api.dicebear.com/7.x/avataaars/svg?seed=" + 
+                           (patient.getUser() != null ? patient.getUser().getUsername() : id.toString());
+        return ResponseEntity.status(org.springframework.http.HttpStatus.FOUND)
+                             .location(java.net.URI.create(diceBearUrl))
+                             .build();
     }
 }
