@@ -91,6 +91,7 @@ public class Patient {
     private Boolean appNotifications = true;
     private Boolean smsNotifications = false;
 
+    @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "patient_doctors",

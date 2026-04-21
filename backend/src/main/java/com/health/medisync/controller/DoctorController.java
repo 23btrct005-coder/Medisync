@@ -106,7 +106,11 @@ public class DoctorController {
     }
 
     @GetMapping("/patient-by-code/{code}")
-    public ResponseEntity<Patient> getPatientByCode(@PathVariable String code, Authentication authentication) {
-        return ResponseEntity.ok(doctorService.getPatientByShortCode(code));
+    public ResponseEntity<?> getPatientByCode(@PathVariable String code, Authentication authentication) {
+        try {
+            return ResponseEntity.ok(doctorService.getPatientByShortCode(code));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 }
