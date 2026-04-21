@@ -383,7 +383,7 @@ public class AppointmentService {
                     DoctorDTO dto = new DoctorDTO(d);
                     Double avg = avgRatings.getOrDefault(d.getId(), 0.0);
                     dto.setAverageRating(Math.round(avg * 10.0) / 10.0);
-                    dto.setRatingCount(counts.getOrDefault(d.getId(), 0L).intValue());
+                    dto.setRatingCount(counts.getOrDefault(d.getId(), 0L));
                     return dto;
                 })
                 .collect(Collectors.toList());
