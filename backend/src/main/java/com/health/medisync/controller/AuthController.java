@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
 import java.util.Map;
+import java.util.List;
 import java.io.IOException;
 
 @RestController
