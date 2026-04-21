@@ -399,7 +399,7 @@ public class AuthController {
 
     @GetMapping(value = "/doctor/photo/{id}")
     public ResponseEntity<?> getDoctorPhoto(@PathVariable Long id) {
-        return doctorRepository.findById(id)
+        return doctorRepository.findByUserId(id)
             .map(doctor -> {
                 if (doctor.getProfilePictureUrl() != null && !doctor.getProfilePictureUrl().isEmpty()) {
                     return ResponseEntity.status(org.springframework.http.HttpStatus.FOUND)
@@ -418,7 +418,7 @@ public class AuthController {
 
     @GetMapping(value = "/patient/photo/{id}")
     public ResponseEntity<?> getPatientPhoto(@PathVariable Long id) {
-        return patientRepository.findById(id)
+        return patientRepository.findByUserId(id)
             .map(patient -> {
                 if (patient.getProfilePictureUrl() != null && !patient.getProfilePictureUrl().isEmpty()) {
                     return ResponseEntity.status(org.springframework.http.HttpStatus.FOUND)
