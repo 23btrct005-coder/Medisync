@@ -55,6 +55,24 @@ public class MedisyncApplication {
     }
 
     @Bean
+    public CommandLineRunner patientIdBootstrap(com.health.medisync.repository.PatientRepository patientRepository) {
+        return args -> {
+            System.out.println("[BOOTSTRAP] Checking for missing Patient IDs...");
+            long count = patientRepository.findAll().stream()
+                .filter(p -> p.getPatientId() == null || p.getPatientId().startsWith("MS-TEMP"))
+                .peek(p -> p.setPatientId("MS-" + String.format("%04d", p.getId())))
+                .map(patientRepository::save)
+                .count();
+            
+            if (count > 0) {
+                System.out.println("[BOOTSTRAP] Successfully generated MS-XXXX IDs for " + count + " existing patients.");
+            } else {
+                System.out.println("[BOOTSTRAP] All patients already have valid IDs.");
+            }
+        };
+    }
+
+    @Bean
     public CommandLineRunner adminBootstrap(UserRepository userRepository) {
         return args -> {
             System.out.println("[BOOTSTRAP] Checking for admin promotion...");
