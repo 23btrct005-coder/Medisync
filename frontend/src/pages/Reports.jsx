@@ -255,6 +255,12 @@ const Reports = () => {
              <Camera size={18} />
              Scan Physical
            </button>
+           {uploading && (
+             <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-xl text-primary animate-pulse">
+               <Loader2 size={16} className="animate-spin" />
+               <span className="text-[10px] font-black uppercase tracking-widest">Uploading...</span>
+             </div>
+           )}
         </div>
       </div>
 
@@ -298,6 +304,12 @@ const Reports = () => {
                         New Report
                      </div>
                   )}
+                  {!report.aiSummary && (
+                    <div className="px-3 py-1.5 bg-amber-500 rounded-xl text-[9px] font-black text-white shadow-xl border border-amber-400 flex items-center gap-2 uppercase tracking-widest">
+                      <Loader2 size={10} className="animate-spin" />
+                      AI Analyzing...
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3 min-w-0">
@@ -336,7 +348,11 @@ const Reports = () => {
                       className={`p-2 rounded-xl transition-all ${revealedAiReports[report.id] ? 'text-primary bg-primary/10' : 'text-slate-400 hover:text-primary hover:bg-primary/5'}`}
                       title={revealedAiReports[report.id] ? "Minimize AI Insight" : "Maximize AI Insight"}
                     >
-                      <Sparkles size={18} className={!revealedAiReports[report.id] ? 'animate-pulse' : ''} />
+                      {!report.aiSummary ? (
+                        <Loader2 size={18} className="animate-spin text-amber-500" />
+                      ) : (
+                        <Sparkles size={18} className={!revealedAiReports[report.id] ? 'animate-pulse' : ''} />
+                      )}
                     </button>
                     <button 
                       onClick={(e) => { e.stopPropagation(); handleDelete(report.id); }}

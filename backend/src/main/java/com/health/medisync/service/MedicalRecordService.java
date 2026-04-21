@@ -4,9 +4,11 @@ import com.health.medisync.model.MedicalRecord;
 import com.health.medisync.model.Patient;
 import com.health.medisync.repository.MedicalRecordRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 public class MedicalRecordService {
     private final MedicalRecordRepository recordRepository;
     private final PatientService patientService;

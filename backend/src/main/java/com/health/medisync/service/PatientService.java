@@ -9,11 +9,13 @@ import com.health.medisync.repository.PatientRepository;
 import com.health.medisync.repository.UserRepository;
 import com.health.medisync.repository.AccessRequestRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 public class PatientService {
     private final PatientRepository patientRepository;
     private final UserRepository userRepository;
@@ -33,34 +35,38 @@ public class PatientService {
         this.supabaseStorageService = supabaseStorageService;
     }
 
+    @Transactional
     public Patient getPatientProfile(String rawUsername) {
         final String username = (rawUsername != null) ? rawUsername.trim().toLowerCase() : null;
-        System.out.println("DEBUG: Resolving patient profile for: " + username);
+        if (username == null) return null;
         
-        User user = userRepository.findByUsernameIgnoreCase(username)
-            .orElseGet(() -> {
-                System.out.println("INFO: Auto-creating stub user for managed identity: " + username);
-                User newUser = new User();
-                newUser.setUsername(username);
-                newUser.setPassword("supabase_managed");
-                newUser.setRole("ROLE_PATIENT");
-                newUser.setEnabled(true);
-                return userRepository.save(newUser);
-            });
-
+        // Direct check for patient profile first as it's the most common path
         return patientRepository.findByUserUsernameIgnoreCase(username)
             .orElseGet(() -> {
+                System.out.println("DEBUG: Resolving full clinical identity for: " + username);
+                User user = userRepository.findByUsernameIgnoreCase(username)
+                    .orElseGet(() -> {
+                        System.out.println("INFO: Auto-creating stub user for managed identity: " + username);
+                        User newUser = new User();
+                        newUser.setUsername(username);
+                        newUser.setPassword("supabase_managed");
+                        newUser.setRole("ROLE_PATIENT");
+                        newUser.setEnabled(true);
+                        return userRepository.save(newUser);
+                    });
+
                 System.out.println("INFO: Linking fresh clinical profile for user ID: " + user.getId());
                 Patient newPatient = new Patient();
                 newPatient.setUser(user);
                 newPatient.setEmail(username);
-                newPatient.setName(username != null && username.contains("@") ? username.split("@")[0] : username);
+                newPatient.setName(username.contains("@") ? username.split("@")[0] : username);
                 newPatient.setAge(0);
                 newPatient.setBloodGroup("Unknown");
                 return patientRepository.save(newPatient);
             });
     }
 
+    @Transactional
     public Patient updateProfile(String overrideEmail, java.util.Map<String, Object> profileData) {
         String username = (overrideEmail != null) ? overrideEmail : (String) profileData.get("email");
         if (username == null) {
@@ -122,6 +128,7 @@ public class PatientService {
         return saved;
     }
 
+    @Transactional
     public void linkDoctor(String patientUsername, String doctorEmail) {
         Patient patient = getPatientProfile(patientUsername);
             
@@ -139,6 +146,7 @@ public class PatientService {
         return accessRequestRepository.findByPatientAndStatus(patient, "PENDING");
     }
 
+    @Transactional
     public void acceptRequest(String patientUsername, Long requestId) {
         Patient patient = getPatientProfile(patientUsername);
         AccessRequest request = accessRequestRepository.findById(requestId)
@@ -158,6 +166,7 @@ public class PatientService {
         }
     }
 
+    @Transactional
     public void rejectRequest(String patientUsername, Long requestId) {
         Patient patient = getPatientProfile(patientUsername);
         AccessRequest request = accessRequestRepository.findById(requestId)
@@ -176,6 +185,7 @@ public class PatientService {
         return List.copyOf(patient.getDoctors());
     }
 
+    @Transactional
     public void revokeDoctorAccess(String patientUsername, Long doctorId) {
         Patient patient = getPatientProfile(patientUsername);
         Doctor doctor = doctorRepository.findById(doctorId)
@@ -196,6 +206,7 @@ public class PatientService {
         }
     }
 
+    @Transactional
     public void inviteDoctor(String patientUsername, String doctorEmail) {
         Patient patient = getPatientProfile(patientUsername);
         String doctorEmailLower = doctorEmail.trim().toLowerCase();
@@ -228,6 +239,7 @@ public class PatientService {
         emailService.sendDoctorInvitationEmail(doctorEmailLower, patient.getName());
     }
 
+    @Transactional
     public void updateProfilePhoto(String email, MultipartFile file) {
         Patient patient = patientRepository.findByUserUsernameIgnoreCase(email)
             .orElseThrow(() -> new RuntimeException("Patient not found"));

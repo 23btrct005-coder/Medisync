@@ -3,6 +3,8 @@ package com.health.medisync;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import com.health.medisync.repository.UserRepository;
@@ -15,6 +17,8 @@ import java.util.Optional;
     "org.springframework.boot.autoconfigure.data.r2dbc.R2dbcDataAutoConfiguration"
 })
 @EnableScheduling
+@EnableAsync
+@EnableCaching
 public class MedisyncApplication {
 
     static {

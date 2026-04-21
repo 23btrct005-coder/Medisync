@@ -86,7 +86,7 @@ public class Patient {
     private Boolean appNotifications = true;
     private Boolean smsNotifications = false;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "patient_doctors",
         joinColumns = @JoinColumn(name = "patient_id"),

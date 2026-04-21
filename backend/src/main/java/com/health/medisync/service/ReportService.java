@@ -8,6 +8,8 @@ import com.health.medisync.repository.ReportRepository;
 import com.health.medisync.repository.UserRepository;
 import com.health.medisync.repository.DoctorRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 
@@ -54,12 +56,21 @@ public class ReportService {
         report.setFileData(file.getBytes());
         report.setUploadDate(LocalDate.now());
 
-        performClinicalAnalysis(report, patient);
+        // Immediate save to return ID to user
+        Report saved = reportRepository.save(report);
+        
+        // Trigger Analysis in background
+        performClinicalAnalysis(saved.getId(), patient);
 
-        return reportRepository.save(report);
+        return saved;
     }
 
-    public void performClinicalAnalysis(Report report, Patient patient) {
+    @Async
+    @Transactional
+    public void performClinicalAnalysis(Long reportId, Patient patient) {
+        Report report = reportRepository.findById(reportId).orElse(null);
+        if (report == null) return;
+        
         byte[] fileData = report.getFileData();
         String contentType = report.getFileType();
         String patientName = (patient != null && patient.getName() != null) ? patient.getName() : "Patient";
@@ -141,6 +152,9 @@ public class ReportService {
                 System.err.println("MONAI local failure: " + e.getMessage());
             }
         }
+        
+        // Final save in background thread
+        reportRepository.save(report);
     }
 
     public Report reanalyzeReport(Long reportId, String username) {
@@ -155,8 +169,8 @@ public class ReportService {
             throw new RuntimeException("Unauthorized: You cannot re-analyze this report.");
         }
 
-        performClinicalAnalysis(report, report.getPatient());
-        return reportRepository.save(report);
+        performClinicalAnalysis(report.getId(), report.getPatient());
+        return report;
     }
 
     public Report updateDoctorNotes(Long reportId, String notes, String username) {

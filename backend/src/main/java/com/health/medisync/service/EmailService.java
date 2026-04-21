@@ -5,6 +5,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -53,7 +54,8 @@ public class EmailService {
         }
     }
 
-    private String sendEmailInternal(String to, String subject, String body) {
+    @Async
+    protected String sendEmailInternal(String to, String subject, String body) {
         if (apiKey == null || apiKey.trim().isEmpty()) {
             String err = "ERROR: Brevo API Key is missing!";
             System.err.println(err);

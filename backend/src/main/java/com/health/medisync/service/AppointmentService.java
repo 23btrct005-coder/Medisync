@@ -334,9 +334,13 @@ public class AppointmentService {
             .orElseThrow(() -> new RuntimeException("Patient profile not found"));
         List<Appointment> appts = appointmentRepository.findByPatientId(patient.getId());
         
-        // Sync 'rated' status in real-time
-        for (Appointment a : appts) {
-            a.setRated(ratingRepository.findByAppointmentId(a.getId()).isPresent());
+        // 🚀 FIX N+1: Sync 'rated' status in a single batch
+        if (!appts.isEmpty()) {
+            List<Long> apptIds = appts.stream().map(Appointment::getId).collect(Collectors.toList());
+            Set<Long> ratedIds = new HashSet<>(ratingRepository.findRatedAppointmentIds(apptIds));
+            for (Appointment a : appts) {
+                a.setRated(ratedIds.contains(a.getId()));
+            }
         }
         return appts;
     }
@@ -348,21 +352,38 @@ public class AppointmentService {
             .orElseThrow(() -> new RuntimeException("Doctor profile not found"));
         List<Appointment> appts = appointmentRepository.findByDoctorIdAndStatus(doctor.getId(), Appointment.AppointmentStatus.BOOKED);
         
-        // Sync 'rated' status for doctor history too
-        for (Appointment a : appts) {
-            a.setRated(ratingRepository.findByAppointmentId(a.getId()).isPresent());
+        // 🚀 FIX N+1: Sync 'rated' status for doctor history in batch
+        if (!appts.isEmpty()) {
+            List<Long> apptIds = appts.stream().map(Appointment::getId).collect(Collectors.toList());
+            Set<Long> ratedIds = new HashSet<>(ratingRepository.findRatedAppointmentIds(apptIds));
+            for (Appointment a : appts) {
+                a.setRated(ratedIds.contains(a.getId()));
+            }
         }
         return appts;
     }
 
     public List<DoctorDTO> getAllApprovedDoctors() {
-        return doctorRepository.findByApprovedTrue().stream()
+        List<Doctor> doctors = doctorRepository.findByApprovedTrue();
+        if (doctors.isEmpty()) return Collections.emptyList();
+
+        // 🚀 FIX N+1: Fetch all ratings/counts in one go
+        List<Long> ids = doctors.stream().map(Doctor::getId).collect(Collectors.toList());
+        List<Object[]> aggregated = ratingRepository.getAggregatedRatings(ids);
+        
+        Map<Long, Double> avgRatings = new HashMap<>();
+        Map<Long, Long> counts = new HashMap<>();
+        for (Object[] row : aggregated) {
+            avgRatings.put((Long)row[0], (Double)row[1]);
+            counts.put((Long)row[0], (Long)row[2]);
+        }
+
+        return doctors.stream()
                 .map(d -> {
                     DoctorDTO dto = new DoctorDTO(d);
-                    // Inject Real-Time Metrics
-                    Double avg = ratingRepository.getAverageRatingByDoctorId(d.getId());
-                    dto.setAverageRating(avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0);
-                    dto.setRatingCount(ratingRepository.countByDoctorId(d.getId()));
+                    Double avg = avgRatings.getOrDefault(d.getId(), 0.0);
+                    dto.setAverageRating(Math.round(avg * 10.0) / 10.0);
+                    dto.setRatingCount(counts.getOrDefault(d.getId(), 0L).intValue());
                     return dto;
                 })
                 .collect(Collectors.toList());
