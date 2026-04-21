@@ -13,4 +13,4 @@ WORKDIR /app
 COPY --from=build /app/target/medisync-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080
 # Strict memory management for clinical stability
-ENTRYPOINT ["java", "-Xmx256m", "-Xms128m", "-Djava.net.preferIPv4Stack=true", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Xmx224m", "-Xms128m", "-Xss256k", "-XX:MaxMetaspaceSize=96m", "-XX:+UseSerialGC", "-XX:TieredStopAtLevel=1", "-XX:+ExitOnOutOfMemoryError", "-Djava.net.preferIPv4Stack=true", "-jar", "app.jar"]
