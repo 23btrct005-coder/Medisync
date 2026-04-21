@@ -1,203 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import api from '../api/axiosConfig';
-import { Calendar, Clock, ChevronRight, Video, MapPin, X, Loader2, History as HistoryIcon } from 'lucide-react';
+import { Calendar, Clock, ChevronRight, Video, MapPin, X, Loader2, AlertCircle, History as HistoryIcon } from 'lucide-react';
 import ClinicMap from '../components/ClinicMap';
-
-const Sessions = () => {
-    const location = useLocation();
-    const [appointments, setAppointments] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [selectedAppt, setSelectedAppt] = useState(null);
-    const [activeTab, setActiveTab] = useState('today');
-    const [showRatingModal, setShowRatingModal] = useState(null);
-
-    useEffect(() => {
-        fetchAppointments();
-    }, []);
-
-    const isCallActive = (apptDate, slot) => {
-        try {
-            const now = new Date();
-            const [time, period] = slot.split(' ');
-            let [hours, minutes] = time.split(':');
-            hours = parseInt(hours);
-            if (period === 'PM' && hours !== 12) hours += 12;
-            if (period === 'AM' && hours === 12) hours = 0;
-            
-            const sessionTime = new Date(apptDate);
-            sessionTime.setHours(hours, minutes, 0);
-            
-            const diffMinutes = (sessionTime - now) / (1000 * 60);
-            return diffMinutes <= 10 && diffMinutes >= -60; // Active 10 mins before and up to 1 hour after
-        } catch (e) {
-            return false;
-        }
-    };
-
-    const fetchAppointments = async () => {
-        setLoading(true);
-        try {
-            const res = await api.get('appointments/my-appointments');
-            const data = res.data || [];
-            setAppointments(data);
-            
-            if (location.state?.autoOpenApptId) {
-                const apptToOpen = data.find(a => a.id === location.state.autoOpenApptId);
-                if (apptToOpen) setSelectedAppt(apptToOpen);
-            }
-
-            const d = new Date();
-            const todayStr = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
-            const hasToday = (data || []).some(a => a.appointmentDate === todayStr);
-            if (!hasToday && (data || []).some(a => a.appointmentDate > todayStr)) {
-                setActiveTab('upcoming');
-            }
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const d = new Date();
-    const todayString = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
-    
-    // Status Segregation Tier 1: Split into active vs pending
-    const activeAppts = (appointments || []).filter(a => a.status === 'BOOKED');
-    const pendingAppointments = (appointments || []).filter(a => a.status === 'PENDING');
-    
-    const todaysAppointments = activeAppts.filter(a => a.appointmentDate === todayString);
-    const pastAppointments = activeAppts.filter(a => a.appointmentDate < todayString);
-    const upcomingAppointments = activeAppts.filter(a => a.appointmentDate > todayString);
-
-    const tabs = [
-        { id: 'today', label: 'Today', count: todaysAppointments.length, color: 'emerald' },
-        { id: 'pending', label: 'Pending', count: pendingAppointments.length, color: 'amber' },
-        { id: 'upcoming', label: 'Upcoming', count: upcomingAppointments.length, color: 'primary' },
-        { id: 'past', label: 'History', count: pastAppointments.length, color: 'slate' }
-    ];
-
-    return (
-        <div className="page-entry space-y-8 pb-12 animate-in fade-in duration-500">
-            {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div>
-                    <div className="flex items-center gap-2 text-primary-600 font-black text-xs uppercase tracking-[0.2em] mb-2">
-                        <Calendar size={14} /> Clinical Schedule
-                    </div>
-                    <h2 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                        My Appointments
-                    </h2>
-                    <p className="text-slate-500 font-medium mt-2 max-w-xl">
-                        Monitor and access your secure physician consultations across the clinical timeline.
-                    </p>
-                </div>
-            </div>
-
-            {/* Tab Navigation */}
-            <div className="flex p-1.5 bg-slate-100 rounded-[2rem] border border-slate-200 shadow-inner w-fit max-w-full overflow-x-auto scrollbar-hide">
-                {tabs.map(tab => (
-                    <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`px-8 py-3 rounded-[1.5rem] text-xs font-black uppercase tracking-widest transition-all flex items-center gap-3 ${
-                            activeTab === tab.id 
-                            ? 'bg-white text-slate-900 shadow-xl scale-105' 
-                            : 'text-slate-400 hover:text-slate-600'
-                        }`}
-                    >
-                        {tab.label}
-                        <span className={`px-2 py-0.5 rounded-lg text-[9px] ${
-                            activeTab === tab.id 
-                            ? `bg-${tab.color}-100 text-${tab.color}-600` 
-                            : 'bg-slate-200 text-slate-500'
-                        }`}>
-                            {tab.count}
-                        </span>
-                    </button>
-                ))}
-            </div>
-
-            {loading ? (
-                <div className="flex flex-col items-center justify-center py-32 bg-white rounded-[3rem] border border-slate-100 shadow-sm border-dashed">
-                    <Loader2 size={48} className="animate-spin text-primary-500 mb-4" />
-                    <p className="text-slate-400 font-bold uppercase tracking-[0.25em] text-[10px]">Synchronizing Protocol...</p>
-                </div>
-            ) : (
-                <div className="animate-in slide-in-from-bottom-4 duration-500">
-                    {activeTab === 'today' && (
-                        <div className="space-y-6">
-                            {todaysAppointments.length === 0 ? (
-                                <EmptyState icon={<Clock />} text="No consultations scheduled for today." />
-                            ) : (
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                    {todaysAppointments.map(appt => (
-                                        <SessionCard key={appt.id} appt={appt} onClick={() => setSelectedAppt(appt)} active canEnter={isCallActive(appt.appointmentDate, appt.timeSlot)} />
-                                    ))}
-                                </div>
-                             )}
-                        </div>
-                    )}
-
-                    {activeTab === 'pending' && (
-                        <div className="space-y-6">
-                            {pendingAppointments.length === 0 ? (
-                                <EmptyState icon={<Clock className="text-amber-400" />} text="No pending clinical sessions detected." />
-                            ) : (
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                    {pendingAppointments.map(appt => (
-                                        <SessionCard key={appt.id} appt={appt} onClick={() => setSelectedAppt(appt)} isPending />
-                                    ))}
-                                </div>
-                             )}
-                        </div>
-                    )}
-
-                    {activeTab === 'upcoming' && (
-                        <div className="space-y-6">
-                            {upcomingAppointments.length === 0 ? (
-                                <EmptyState icon={<Calendar />} text="No future clinical syncs detected." />
-                            ) : (
-                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                    {upcomingAppointments.map(appt => (
-                                        <SessionCard key={appt.id} appt={appt} onClick={() => setSelectedAppt(appt)} />
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {activeTab === 'past' && (
-                        <div className="space-y-6">
-                            {pastAppointments.length === 0 ? (
-                                <EmptyState icon={<HistoryIcon />} text="Clinical archive is currently empty." />
-                            ) : (
-                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 opacity-80 hover:opacity-100 transition-opacity">
-                                    {pastAppointments.map(appt => (
-                                        <SessionCard key={appt.id} appt={appt} onClick={() => setSelectedAppt(appt)} historical onRate={() => setShowRatingModal(appt)} />
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {selectedAppt && (
-                <SessionDetailModal 
-                    appt={selectedAppt} 
-                    onClose={() => setSelectedAppt(null)} 
-                    canEnter={isCallActive(selectedAppt.appointmentDate, selectedAppt.timeSlot)}
-                />
-            )}
-            
-            {showRatingModal && (
-                <RatingModal appt={showRatingModal} onClose={() => setShowRatingModal(null)} onRatingSubmitted={fetchAppointments} />
-            )}
-        </div>
-    );
-};
 
 /* --- SUBCOMPONENTS --- */
 
@@ -432,6 +237,201 @@ const SessionDetailModal = ({ appt, onClose, canEnter }) => {
                     </div>
                 </div>
             </div>
+        </div>
+    );
+};
+
+const Sessions = () => {
+    const location = useLocation();
+    const [appointments, setAppointments] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedAppt, setSelectedAppt] = useState(null);
+    const [activeTab, setActiveTab] = useState('today');
+    const [showRatingModal, setShowRatingModal] = useState(null);
+
+    useEffect(() => {
+        fetchAppointments();
+    }, []);
+
+    const isCallActive = (apptDate, slot) => {
+        try {
+            const now = new Date();
+            const [time, period] = slot.split(' ');
+            let [hours, minutes] = time.split(':');
+            hours = parseInt(hours);
+            if (period === 'PM' && hours !== 12) hours += 12;
+            if (period === 'AM' && hours === 12) hours = 0;
+            
+            const sessionTime = new Date(apptDate);
+            sessionTime.setHours(hours, minutes, 0);
+            
+            const diffMinutes = (sessionTime - now) / (1000 * 60);
+            return diffMinutes <= 10 && diffMinutes >= -60; // Active 10 mins before and up to 1 hour after
+        } catch (e) {
+            return false;
+        }
+    };
+
+    const fetchAppointments = async () => {
+        setLoading(true);
+        try {
+            const res = await api.get('appointments/my-appointments');
+            const data = res.data || [];
+            setAppointments(data);
+            
+            if (location.state?.autoOpenApptId) {
+                const apptToOpen = data.find(a => a.id === location.state.autoOpenApptId);
+                if (apptToOpen) setSelectedAppt(apptToOpen);
+            }
+
+            const d = new Date();
+            const todayStr = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
+            const hasToday = (data || []).some(a => a.appointmentDate === todayStr);
+            if (!hasToday && (data || []).some(a => a.appointmentDate > todayStr)) {
+                setActiveTab('upcoming');
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const d = new Date();
+    const todayString = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
+    
+    // Status Segregation Tier 1: Split into active vs pending
+    const activeAppts = (appointments || []).filter(a => a.status === 'BOOKED');
+    const pendingAppointments = (appointments || []).filter(a => a.status === 'PENDING');
+    
+    const todaysAppointments = activeAppts.filter(a => a.appointmentDate === todayString);
+    const pastAppointments = activeAppts.filter(a => a.appointmentDate < todayString);
+    const upcomingAppointments = activeAppts.filter(a => a.appointmentDate > todayString);
+
+    const tabs = [
+        { id: 'today', label: 'Today', count: todaysAppointments.length, color: 'emerald' },
+        { id: 'pending', label: 'Pending', count: pendingAppointments.length, color: 'amber' },
+        { id: 'upcoming', label: 'Upcoming', count: upcomingAppointments.length, color: 'primary' },
+        { id: 'past', label: 'History', count: pastAppointments.length, color: 'slate' }
+    ];
+
+    return (
+        <div className="page-entry space-y-8 pb-12 animate-in fade-in duration-500">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div>
+                    <div className="flex items-center gap-2 text-primary-600 font-black text-xs uppercase tracking-[0.2em] mb-2">
+                        <Calendar size={14} /> Clinical Schedule
+                    </div>
+                    <h2 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                        My Appointments
+                    </h2>
+                    <p className="text-slate-500 font-medium mt-2 max-w-xl">
+                        Monitor and access your secure physician consultations across the clinical timeline.
+                    </p>
+                </div>
+            </div>
+
+            {/* Tab Navigation */}
+            <div className="flex p-1.5 bg-slate-100 rounded-[2rem] border border-slate-200 shadow-inner w-fit max-w-full overflow-x-auto scrollbar-hide">
+                {tabs.map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`px-8 py-3 rounded-[1.5rem] text-xs font-black uppercase tracking-widest transition-all flex items-center gap-3 ${
+                            activeTab === tab.id 
+                            ? 'bg-white text-slate-900 shadow-xl scale-105' 
+                            : 'text-slate-400 hover:text-slate-600'
+                        }`}
+                    >
+                        {tab.label}
+                        <span className={`px-2 py-0.5 rounded-lg text-[9px] ${
+                            activeTab === tab.id 
+                            ? `bg-${tab.color}-100 text-${tab.color}-600` 
+                            : 'bg-slate-200 text-slate-500'
+                        }`}>
+                            {tab.count}
+                        </span>
+                    </button>
+                ))}
+            </div>
+
+            {loading ? (
+                <div className="flex flex-col items-center justify-center py-32 bg-white rounded-[3rem] border border-slate-100 shadow-sm border-dashed">
+                    <Loader2 size={48} className="animate-spin text-primary-500 mb-4" />
+                    <p className="text-slate-400 font-bold uppercase tracking-[0.25em] text-[10px]">Synchronizing Protocol...</p>
+                </div>
+            ) : (
+                <div className="animate-in slide-in-from-bottom-4 duration-500">
+                    {activeTab === 'today' && (
+                        <div className="space-y-6">
+                            {todaysAppointments.length === 0 ? (
+                                <EmptyState icon={<Clock />} text="No consultations scheduled for today." />
+                            ) : (
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    {todaysAppointments.map(appt => (
+                                        <SessionCard key={appt.id} appt={appt} onClick={() => setSelectedAppt(appt)} active canEnter={isCallActive(appt.appointmentDate, appt.timeSlot)} />
+                                    ))}
+                                </div>
+                             )}
+                        </div>
+                    )}
+
+                    {activeTab === 'pending' && (
+                        <div className="space-y-6">
+                            {pendingAppointments.length === 0 ? (
+                                <EmptyState icon={<Clock className="text-amber-400" />} text="No pending clinical sessions detected." />
+                            ) : (
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    {pendingAppointments.map(appt => (
+                                        <SessionCard key={appt.id} appt={appt} onClick={() => setSelectedAppt(appt)} />
+                                    ))}
+                                </div>
+                             )}
+                        </div>
+                    )}
+
+                    {activeTab === 'upcoming' && (
+                        <div className="space-y-6">
+                            {upcomingAppointments.length === 0 ? (
+                                <EmptyState icon={<Calendar />} text="No future clinical syncs detected." />
+                            ) : (
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                    {upcomingAppointments.map(appt => (
+                                        <SessionCard key={appt.id} appt={appt} onClick={() => setSelectedAppt(appt)} />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'past' && (
+                        <div className="space-y-6">
+                            {pastAppointments.length === 0 ? (
+                                <EmptyState icon={<HistoryIcon />} text="Clinical archive is currently empty." />
+                            ) : (
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 opacity-80 hover:opacity-100 transition-opacity">
+                                    {pastAppointments.map(appt => (
+                                        <SessionCard key={appt.id} appt={appt} onClick={() => setSelectedAppt(appt)} historical onRate={() => setShowRatingModal(appt)} />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {selectedAppt && (
+                <SessionDetailModal 
+                    appt={selectedAppt} 
+                    onClose={() => setSelectedAppt(null)} 
+                    canEnter={isCallActive(selectedAppt.appointmentDate, selectedAppt.timeSlot)}
+                />
+            )}
+            
+            {showRatingModal && (
+                <RatingModal appt={showRatingModal} onClose={() => setShowRatingModal(null)} onRatingSubmitted={fetchAppointments} />
+            )}
         </div>
     );
 };
