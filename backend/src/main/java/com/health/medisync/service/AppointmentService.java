@@ -346,7 +346,7 @@ public class AppointmentService {
             .orElseThrow(() -> new RuntimeException("User not found"));
         Doctor doctor = doctorRepository.findByUserId(user.getId())
             .orElseThrow(() -> new RuntimeException("Doctor profile not found"));
-        List<Appointment> appts = appointmentRepository.findById(doctor.getId());
+        List<Appointment> appts = appointmentRepository.findByDoctorId(doctor.getId());
         
         // Sync 'rated' status for doctor history too
         for (Appointment a : appts) {
