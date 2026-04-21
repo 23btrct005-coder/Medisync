@@ -7,8 +7,6 @@ import api, { loadingState } from '../api/axiosConfig';
 import OnboardingTour from '../components/OnboardingTour';
 import TopBarLoader from '../components/TopBarLoader';
 import BottomNav from '../components/BottomNav';
-import ThemeToggle from '../components/ThemeToggle';
-import LanguageSwitcher from '../components/LanguageSwitcher';
 import NotificationBell from '../components/NotificationBell';
 import toast from 'react-hot-toast';
 
@@ -60,10 +58,6 @@ const DashboardLayout = () => {
                             <span className="text-[10px] font-black uppercase tracking-widest">Secure session</span>
                         </div>
 
-                        <div className="hidden sm:block">
-                             <LanguageSwitcher />
-                        </div>
-                        <ThemeToggle />
 
                         <NotificationBell />
 

@@ -5,8 +5,6 @@ import { useState } from 'react';
 import api from '../api/axiosConfig';
 import { Activity, LogOut, UserCircle, Menu } from 'lucide-react';
 import BottomNav from '../components/BottomNav';
-import ThemeToggle from '../components/ThemeToggle';
-import LanguageSwitcher from '../components/LanguageSwitcher';
 import NotificationBell from '../components/NotificationBell';
 
 const DoctorLayout = () => {
@@ -53,8 +51,6 @@ const DoctorLayout = () => {
             </div>
           </div>
           
-          <LanguageSwitcher />
-          <ThemeToggle />
           <NotificationBell />
           
           <button onClick={handleLogout} className="p-2 text-slate-400 hover:text-red-500 transition-colors flex items-center">
