@@ -113,7 +113,7 @@ const Profile = () => {
               {user.age && (
                 <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">{user.age} yrs</span>
               )}
-              <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">Patient ID: #{user.id}</span>
+                <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">{user.patientId || `MS-${String(user.id || '').padStart(4, '0')}`}</span>
             </div>
           </div>
         </div>

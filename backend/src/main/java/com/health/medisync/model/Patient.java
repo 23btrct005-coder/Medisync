@@ -234,4 +234,12 @@ public class Patient {
 
     public String getPatientId() { return patientId; }
     public void setPatientId(String patientId) { this.patientId = patientId; }
+
+    @PrePersist
+    public void ensurePatientId() {
+        if (this.patientId == null || this.patientId.isEmpty()) {
+            // Initial placeholder to avoid nulls; will be refined to MS-XXXX in controller/migration
+            this.patientId = "MS-TEMP-" + java.util.UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+        }
+    }
 }

@@ -286,7 +286,13 @@ public class AuthController {
             if (photoUrl != null) patient.setProfilePictureUrl(photoUrl);
         }
 
-        patientRepository.save(patient);
+        patient = patientRepository.save(patient);
+        
+        // Post-save: Assign the official MS-XXXX ID based on database primary key
+        if (patient.getPatientId() == null || patient.getPatientId().startsWith("MS-TEMP")) {
+            patient.setPatientId("MS-" + String.format("%04d", patient.getId()));
+            patientRepository.save(patient);
+        }
 
         return ResponseEntity.ok(Map.of("message", "Patient registered and verified successfully!"));
     }
@@ -367,6 +373,24 @@ public class AuthController {
             return ResponseEntity.ok(Map.of("message", "All registered data has been removed successfully."));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("message", "Cleanup failed: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/admin/backfill-ids")
+    public ResponseEntity<?> backfillPatientIds() {
+        try {
+            List<Patient> patients = patientRepository.findAll();
+            int count = 0;
+            for (Patient p : patients) {
+                if (p.getPatientId() == null || p.getPatientId().startsWith("MS-TEMP")) {
+                    p.setPatientId("MS-" + String.format("%04d", p.getId()));
+                    patientRepository.save(p);
+                    count++;
+                }
+            }
+            return ResponseEntity.ok(Map.of("message", "Successfully backfilled " + count + " patient IDs."));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("message", "Backfill failed: " + e.getMessage()));
         }
     }
 

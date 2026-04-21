@@ -63,7 +63,7 @@ const DashboardLayout = () => {
 
                         <div className="flex items-center gap-3 md:pl-6 md:border-l md:border-slate-200">
                             <div className="hidden sm:block text-right min-w-0">
-                                <p className="text-xs font-black text-slate-400 uppercase tracking-tighter leading-none">Global ID: {String(user?.id || '').slice(0, 8)}</p>
+                                <p className="text-xs font-black text-slate-400 uppercase tracking-tighter leading-none">Patient ID: {user?.patientId || `MS-${String(user?.id || '').padStart(4, '0')}`}</p>
                                 <p className="text-sm font-extrabold text-slate-800 truncate">{user?.name || "Patient"}</p>
                             </div>
                             
