@@ -86,7 +86,7 @@ const Dashboard = () => {
     }
   };
 
-  const emergencyUrl = `${window.location.origin}/emergency/${user?.id}`;
+  const emergencyUrl = `${window.location.origin}/emergency/${patient?.patientId || user?.id}`;
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-8 selection:bg-emerald-100">
@@ -267,7 +267,11 @@ const Dashboard = () => {
 
       {/* Emergency Modal */}
       {showQRModal && (
-        <QRModal url={emergencyUrl} onClose={() => setShowQRModal(false)} />
+        <QRModal 
+          url={emergencyUrl} 
+          patientId={patient?.patientId || user?.id}
+          onClose={() => setShowQRModal(false)} 
+        />
       )}
     </div>
   );
@@ -275,7 +279,7 @@ const Dashboard = () => {
 
 /* --- SUBCOMPONENTS --- */
 
-const QRModal = ({ url, onClose }) => {
+const QRModal = ({ url, patientId, onClose }) => {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0A1A1A]/90 backdrop-blur-xl animate-in fade-in duration-300">
       <div className="bg-white rounded-[3rem] p-12 max-w-sm w-full shadow-2xl relative animate-in zoom-in-95">
@@ -301,6 +305,12 @@ const QRModal = ({ url, onClose }) => {
                 level="H"
               />
             </div>
+          </div>
+
+          <div className="mb-8 p-4 bg-emerald-50 border border-emerald-100 rounded-[2rem]">
+             <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1">Manual Patient ID</p>
+             <p className="text-2xl font-black text-[#0A1A1A] tracking-tighter">{patientId || "SYNCING..."}</p>
+             <p className="text-[9px] font-bold text-emerald-600/70 mt-1 uppercase tracking-tight leading-none px-4">Provide this code if the QR cannot be scanned</p>
           </div>
 
           <button onClick={() => window.print()} className="w-full py-4 bg-[#0A1A1A] text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl active:scale-95 transition-all">

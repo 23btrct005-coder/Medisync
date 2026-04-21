@@ -61,11 +61,16 @@ const EmergencyInfo = () => {
       try {
         setLoading(true);
         setError(null);
-        const res = await api.get(`auth/emergency/${patientId}`);
+        // 🚀 Support for both Numeric ID and MS-XXXX Short Code
+        const endpoint = (patientId && patientId.startsWith('MS-')) 
+          ? `auth/emergency/shortcode/${patientId}` 
+          : `auth/emergency/${patientId}`;
+          
+        const res = await api.get(endpoint);
         setPatient(res.data);
       } catch (err) {
         console.error("Critical patient data fetch failed", err);
-        setError('Critical patient data could not be retrieved. Ensure the QR code is valid.');
+        setError('Critical patient data could not be retrieved. Ensure the QR code or ID is valid.');
       } finally {
         setLoading(false);
       }

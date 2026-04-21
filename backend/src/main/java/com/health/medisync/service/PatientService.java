@@ -2,6 +2,7 @@ package com.health.medisync.service;
 
 import com.health.medisync.model.Patient;
 import com.health.medisync.model.User;
+import com.health.medisync.util.PatientIdGenerator;
 import com.health.medisync.model.Doctor;
 import com.health.medisync.model.AccessRequest;
 import com.health.medisync.repository.DoctorRepository;
@@ -62,8 +63,22 @@ public class PatientService {
                 newPatient.setName(username.contains("@") ? username.split("@")[0] : username);
                 newPatient.setAge(0);
                 newPatient.setBloodGroup("Unknown");
+                newPatient.setPatientId(generateUniquePatientId());
                 return patientRepository.save(newPatient);
             });
+    }
+
+    private String generateUniquePatientId() {
+        String code;
+        do {
+            code = PatientIdGenerator.generate();
+        } while (patientRepository.findByPatientId(code).isPresent());
+        return code;
+    }
+
+    public Patient getPatientByShortCode(String shortCode) {
+        return patientRepository.findByPatientId(shortCode.toUpperCase().trim())
+            .orElseThrow(() -> new RuntimeException("Patient with ID " + shortCode + " not found."));
     }
 
     @Transactional
@@ -74,6 +89,11 @@ public class PatientService {
         }
         System.out.println("DEBUG: Initiating profile sync for user: " + username);
         Patient patient = getPatientProfile(username);
+        
+        // 🚀 Migration Support: Assign ID if missing
+        if (patient.getPatientId() == null) {
+            patient.setPatientId(generateUniquePatientId());
+        }
         
         if (profileData.containsKey("name")) patient.setName((String) profileData.get("name"));
         if (profileData.containsKey("phone")) patient.setPhone((String) profileData.get("phone"));

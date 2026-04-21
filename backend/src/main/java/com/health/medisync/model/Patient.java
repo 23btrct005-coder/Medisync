@@ -14,6 +14,9 @@ public class Patient {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
+    private String patientId;
+
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
@@ -226,4 +229,7 @@ public class Patient {
 
     public String getDisabilityDetails() { return disabilityDetails; }
     public void setDisabilityDetails(String v) { this.disabilityDetails = v; }
+
+    public String getPatientId() { return patientId; }
+    public void setPatientId(String patientId) { this.patientId = patientId; }
 }

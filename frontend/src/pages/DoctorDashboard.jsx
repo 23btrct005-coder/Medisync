@@ -18,7 +18,10 @@ const DoctorDashboard = () => {
   const { user } = useAuth();
   const [patientEmail, setPatientEmail] = useState('');
   const [sending, setSending] = useState(false);
+  const [patientShortCode, setPatientShortCode] = useState('');
+  const [searching, setSearching] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
+  const [showManualModal, setShowManualModal] = useState(false);
   const [scanError, setScanError] = useState('');
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -93,6 +96,23 @@ const DoctorDashboard = () => {
     }
   };
 
+  const handleManualSearch = async () => {
+    if (!patientShortCode) return;
+    setSearching(true);
+    try {
+      const res = await api.get(`doctor/patient-by-code/${patientShortCode}`);
+      if (res.data?.id) {
+        navigate(`/patient/${res.data.id}`);
+      } else {
+        toast.error('Patient not found');
+      }
+    } catch (err) {
+      toast.error('Search failed');
+    } finally {
+      setSearching(false);
+    }
+  };
+
   const activePatients = (requests || []).filter(r => r.status === 'ACCEPTED').length;
   const pendingRequests = (requests || []).filter(r => r.status === 'PENDING').length;
 
@@ -131,8 +151,14 @@ const DoctorDashboard = () => {
                     <Camera size={18} /> Scan Patient QR
                   </button>
                   <button 
+                    onClick={() => setShowManualModal(true)}
+                    className="flex items-center gap-2 px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-95 text-white"
+                  >
+                    <Zap size={18} /> Patient ID
+                  </button>
+                  <button 
                     onClick={() => navigate('/doctor-dashboard/patients')}
-                    className="flex items-center gap-2 px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-95"
+                    className="flex items-center gap-2 px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-95 text-white/70"
                   >
                     <Users size={18} /> Directory
                   </button>
@@ -169,6 +195,12 @@ const DoctorDashboard = () => {
             trend="PENDING" 
             subtitle="Secure Signals"
           />
+          <StatCardPro 
+            title="Consultations" 
+            value="Live" 
+            icon={Calendar} 
+            color="blue" 
+            trend="ACTIVE" 
             subtitle="Consult Hub"
             onClick={() => navigate('/doctor-dashboard/appointments')}
           />
@@ -194,19 +226,19 @@ const DoctorDashboard = () => {
                      <UserPlus size={24} />
                   </div>
                   <div className="text-left">
-                     <h3 className="text-xl font-black text-slate-800 uppercase tracking-tighter leading-none">Expand Clinical Node</h3>
-                     <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-2">Request secure decryption signal via patient identifier.</p>
+                     <h3 className="text-xl font-black text-slate-800 uppercase tracking-tighter leading-none">Access Signal Requestor</h3>
+                     <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-2">Broadcast a secure decryption request to a patient's email node.</p>
                   </div>
                </div>
                <div className="flex flex-col md:flex-row gap-4">
                   <div className="relative flex-1 group/field">
-                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/field:text-emerald-500 transition-colors" size={18} />
+                     <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/field:text-emerald-500 transition-colors" size={18} />
                      <input 
                         type="email" 
                         placeholder="patient_node@medisync.io" 
                         value={patientEmail}
                         onChange={(e) => setPatientEmail(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-4 py-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all"
+                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-4 py-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all transition-all"
                      />
                   </div>
                   <button 
@@ -214,7 +246,7 @@ const DoctorDashboard = () => {
                      disabled={sending}
                      className="px-10 py-4 bg-[#0A1A1A] text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-emerald-600 transition-all shadow-xl active:scale-95 disabled:opacity-50 border-none"
                   >
-                     {sending ? 'Broadcasting...' : 'Initialize Signal'}
+                     {sending ? 'Broadcasting...' : 'Request Access'}
                   </button>
                </div>
             </div>
@@ -349,6 +381,57 @@ const DoctorDashboard = () => {
                   </div>
                 )}
              </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Manual ID Modal */}
+      <AnimatePresence>
+        {showManualModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-[#0A1A1A]/95 backdrop-blur-2xl"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              className="bg-white rounded-[3rem] p-10 max-w-sm w-full shadow-2xl relative border border-white/5"
+            >
+              <button onClick={() => setShowManualModal(false)} className="absolute top-8 right-8 p-3 text-slate-400 hover:text-black transition hover:bg-slate-50 rounded-full">
+                <X size={24} />
+              </button>
+
+              <div className="text-center">
+                <div className="w-20 h-20 bg-emerald-500 text-white rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-xl shadow-emerald-500/20">
+                  <Zap size={40} />
+                </div>
+                <h3 className="text-3xl font-black text-slate-900 leading-tight tracking-tighter uppercase mb-2">Manual Lookup</h3>
+                <p className="text-sm text-slate-500 mb-10 font-medium uppercase tracking-widest text-[10px]">Enter Patient Short Code</p>
+
+                <div className="relative group/field mb-10">
+                  <Zap className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-500/40 group-focus-within/field:text-emerald-500 transition-colors" size={20} />
+                  <input 
+                    type="text" 
+                    placeholder="MS-XXXX" 
+                    autoFocus
+                    value={patientShortCode}
+                    onChange={(e) => setPatientShortCode(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleManualSearch()}
+                    className="w-full bg-emerald-50/50 border-2 border-emerald-100 rounded-[2rem] pl-16 pr-6 py-5 text-xl font-black uppercase tracking-widest focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all text-emerald-900 placeholder:text-emerald-900/20"
+                  />
+                </div>
+
+                <button 
+                  onClick={handleManualSearch}
+                  disabled={searching || !patientShortCode}
+                  className="w-full py-5 bg-[#0A1A1A] text-white rounded-[2rem] font-black text-sm uppercase tracking-widest shadow-xl active:scale-95 transition-all disabled:opacity-30"
+                >
+                  {searching ? 'Linking Node...' : 'Access Profile'}
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -222,4 +222,9 @@ public class DoctorService {
             doctorRepository.save(doctor);
         }
     }
+
+    public Patient getPatientByShortCode(String shortCode) {
+        return patientRepository.findByPatientId(shortCode.toUpperCase().trim())
+            .orElseThrow(() -> new RuntimeException("Patient with ID " + shortCode + " not found."));
+    }
 }

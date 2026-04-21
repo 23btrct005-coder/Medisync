@@ -374,25 +374,35 @@ public class AuthController {
     @GetMapping("/emergency/{patientId}")
     public ResponseEntity<?> getEmergencyInfo(@PathVariable Long patientId) {
         return patientRepository.findById(patientId)
-            .map(patient -> {
-                Map<String, Object> info = new java.util.LinkedHashMap<>();
-                info.put("id", patient.getId());
-                info.put("name", patient.getName());
-                info.put("age", patient.getAge());
-                info.put("gender", patient.getGender());
-                info.put("bloodGroup", patient.getBloodGroup());
-                info.put("dateOfBirth", patient.getDateOfBirth());
-                info.put("emergencyContactName", patient.getEmergencyContactName());
-                info.put("emergencyContactRelationship", patient.getEmergencyContactRelationship());
-                info.put("emergencyContactPhone", patient.getEmergencyContactPhone());
-                info.put("allergies", patient.getAllergies());
-                info.put("existingDiseases", patient.getExistingDiseases());
-                info.put("currentMedications", patient.getCurrentMedications());
-                info.put("pastSurgeries", patient.getPastSurgeries());
-                info.put("medicalInfo", patient.getMedicalInfo());
-                return ResponseEntity.ok(info);
-            })
+            .map(this::buildEmergencyResponse)
             .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/emergency/shortcode/{code}")
+    public ResponseEntity<?> getEmergencyByShortCode(@PathVariable String code) {
+        return patientRepository.findByPatientId(code.toUpperCase().trim())
+            .map(this::buildEmergencyResponse)
+            .orElse(ResponseEntity.notFound().build());
+    }
+
+    private Map<String, Object> buildEmergencyResponse(Patient patient) {
+        Map<String, Object> info = new java.util.LinkedHashMap<>();
+        info.put("id", patient.getId());
+        info.put("patientId", patient.getPatientId()); // The MS-XXXX Short Code
+        info.put("name", patient.getName());
+        info.put("age", patient.getAge());
+        info.put("gender", patient.getGender());
+        info.put("bloodGroup", patient.getBloodGroup());
+        info.put("dateOfBirth", patient.getDateOfBirth());
+        info.put("emergencyContactName", patient.getEmergencyContactName());
+        info.put("emergencyContactRelationship", patient.getEmergencyContactRelationship());
+        info.put("emergencyContactPhone", patient.getEmergencyContactPhone());
+        info.put("allergies", patient.getAllergies());
+        info.put("existingDiseases", patient.getExistingDiseases());
+        info.put("currentMedications", patient.getCurrentMedications());
+        info.put("pastSurgeries", patient.getPastSurgeries());
+        info.put("medicalInfo", patient.getMedicalInfo());
+        return info;
     }
 
     // ── Profile Photo Serving Endpoints ──
