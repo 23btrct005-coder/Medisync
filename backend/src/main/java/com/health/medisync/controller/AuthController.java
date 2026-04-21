@@ -375,6 +375,7 @@ public class AuthController {
     public ResponseEntity<?> getEmergencyInfo(@PathVariable Long patientId) {
         return patientRepository.findById(patientId)
             .map(this::buildEmergencyResponse)
+            .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }
 
@@ -382,6 +383,7 @@ public class AuthController {
     public ResponseEntity<?> getEmergencyByShortCode(@PathVariable String code) {
         return patientRepository.findByPatientId(code.toUpperCase().trim())
             .map(this::buildEmergencyResponse)
+            .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }
 
