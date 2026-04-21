@@ -6,5 +6,4 @@ import java.util.List;
 
 public interface ReportRepository extends JpaRepository<Report, Long> {
     List<Report> findByPatientId(Long patientId);
-    java.util.Optional<Report> findTopByPatientIdOrderByDocumentDateDesc(Long patientId);
 }

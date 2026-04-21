@@ -63,8 +63,6 @@ public class SecurityConfig {
                 .requestMatchers("/api/health/**", "/health/**").permitAll()
                 .requestMatchers("/api/patient/profile/sync", "/patient/profile/sync").permitAll()
                 .requestMatchers("/api/admin/diagnose/**").permitAll()
-                .requestMatchers("/api/ussd/**").permitAll()
-                .requestMatchers("/api/twilio/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated()

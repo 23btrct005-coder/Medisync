@@ -15,7 +15,6 @@ import java.util.Optional;
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
     List<Appointment> findByDoctorIdAndAppointmentDate(Long doctorId, LocalDate date);
     List<Appointment> findByPatientId(Long patientId);
-    java.util.Optional<Appointment> findTopByPatientIdAndAppointmentDateGreaterThanEqualOrderByAppointmentDateAsc(Long patientId, java.time.LocalDate date);
     List<Appointment> findByDoctorId(Long doctorId);
     List<Appointment> findByDoctorIdAndStatus(Long doctorId, AppointmentStatus status);
     Optional<Appointment> findByRazorpayOrderId(String orderId);
