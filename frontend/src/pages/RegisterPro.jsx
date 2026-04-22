@@ -61,6 +61,7 @@ const RegisterPro = () => {
     alternatePhone: '',
     street: '',
     city: '',
+    district: '',
     state: '',
     pinCode: '',
     emergencyContactName: '',
@@ -254,6 +255,7 @@ const RegisterPro = () => {
                   <InputField label="Primary Mobile" name="phone" placeholder="10 Digits" />
                   <InputField label="Occupation" name="occupation" />
                   <InputField label="City" name="city" />
+                  <InputField label="District" name="district" />
                   <InputField label="State" name="state" />
                   <div className="md:col-span-2"><InputField label="Street / Residential Area" name="street" /></div>
                   <div className="md:col-span-2 pt-4 border-t border-slate-100 mt-2">

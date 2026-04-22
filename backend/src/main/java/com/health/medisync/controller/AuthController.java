@@ -23,6 +23,8 @@ import com.health.medisync.service.AuthService;
 import com.health.medisync.service.EmailService;
 import com.health.medisync.service.SupabaseStorageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.health.medisync.utils.GeographicalMappingUtils;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
 import java.util.Map;
@@ -272,6 +274,7 @@ public class AuthController {
             patient.setHasDisability(Boolean.parseBoolean(request.get("hasDisability")));
         }
         patient.setDisabilityDetails(request.get("disabilityDetails"));
+        patient.setDistrict(request.get("district"));
 
         // Auto-calculate age from DOB if age not directly provided
         if (request.containsKey("age") && request.get("age") != null && !request.get("age").isEmpty()) {
@@ -289,9 +292,11 @@ public class AuthController {
 
         patient = patientRepository.save(patient);
         
-        // Post-save: Assign the official MS-XXXX ID based on database primary key
+        // Post-save: Assign the official ST-DT-XXXX ID based on database primary key and geographical data
         if (patient.getPatientId() == null || patient.getPatientId().startsWith("MS-TEMP")) {
-            patient.setPatientId("MS-" + String.format("%04d", patient.getId()));
+            String st = GeographicalMappingUtils.getStateCode(patient.getState());
+            String dt = GeographicalMappingUtils.getDistrictCode(patient.getDistrict());
+            patient.setPatientId(st + "-" + dt + "-" + String.format("%04d", patient.getId()));
             patientRepository.save(patient);
         }
 
@@ -383,8 +388,10 @@ public class AuthController {
             List<Patient> patients = patientRepository.findAll();
             int count = 0;
             for (Patient p : patients) {
-                if (p.getPatientId() == null || p.getPatientId().startsWith("MS-TEMP")) {
-                    p.setPatientId("MS-" + String.format("%04d", p.getId()));
+                if (p.getPatientId() == null || p.getPatientId().startsWith("MS-TEMP") || p.getPatientId().startsWith("MS-")) {
+                    String st = GeographicalMappingUtils.getStateCode(p.getState());
+                    String dt = GeographicalMappingUtils.getDistrictCode(p.getDistrict());
+                    p.setPatientId(st + "-" + dt + "-" + String.format("%04d", p.getId()));
                     patientRepository.save(p);
                     count++;
                 }

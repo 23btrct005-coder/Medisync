@@ -16,8 +16,10 @@ public class Patient {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(name = "patient_id", unique = true)
     private String patientId;
+
+    private String district;
 
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
@@ -235,6 +237,9 @@ public class Patient {
 
     public String getPatientId() { return patientId; }
     public void setPatientId(String patientId) { this.patientId = patientId; }
+
+    public String getDistrict() { return district; }
+    public void setDistrict(String district) { this.district = district; }
 
     @PrePersist
     public void ensurePatientId() {

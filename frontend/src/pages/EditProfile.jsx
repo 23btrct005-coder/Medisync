@@ -24,6 +24,7 @@ const EditProfile = () => {
     alternatePhone: '',
     street: '',
     city: '',
+    district: '',
     state: '',
     pinCode: '',
     bloodGroup: '',
@@ -61,6 +62,7 @@ const EditProfile = () => {
         alternatePhone: user.alternatePhone || '',
         street: user.street || '',
         city: user.city || '',
+        district: user.district || '',
         state: user.state || '',
         pinCode: user.pinCode || '',
         bloodGroup: user.bloodGroup || '',
@@ -308,10 +310,16 @@ const EditProfile = () => {
                 <label className={labelClass}>Phone Number</label>
                 <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className={inputClass} maxLength="10" />
             </div>
-            <div>
-                <label className={labelClass}>City</label>
-                <input type="text" name="city" value={formData.city} onChange={handleChange} className={inputClass} />
-            </div>
+                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className={labelClass}>City</label>
+                        <input type="text" name="city" value={formData.city} onChange={handleChange} className={inputClass} />
+                    </div>
+                    <div>
+                        <label className={labelClass}>District</label>
+                        <input type="text" name="district" value={formData.district} onChange={handleChange} className={inputClass} />
+                    </div>
+                </div>
           </div>
         </div>
 

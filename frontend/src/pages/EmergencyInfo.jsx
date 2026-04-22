@@ -61,8 +61,9 @@ const EmergencyInfo = () => {
       try {
         setLoading(true);
         setError(null);
-        // 🚀 Support for both Numeric ID and MS-XXXX Short Code
-        const endpoint = (patientId && patientId.startsWith('MS-')) 
+        // 🚀 Support for Numeric ID or Short Codes (MS-XXXX or TN-29-XXXX)
+        const isShortCode = patientId && (isNaN(patientId) || patientId.includes('-'));
+        const endpoint = isShortCode 
           ? `auth/emergency/shortcode/${patientId}` 
           : `auth/emergency/${patientId}`;
           

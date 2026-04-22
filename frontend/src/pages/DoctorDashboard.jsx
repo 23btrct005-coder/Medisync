@@ -414,7 +414,7 @@ const DoctorDashboard = () => {
                   <Zap className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-500/40 group-focus-within/field:text-emerald-500 transition-colors" size={20} />
                   <input 
                     type="text" 
-                    placeholder="MS-XXXX" 
+                    placeholder="ST-DT-XXXX" 
                     autoFocus
                     value={patientShortCode}
                     onChange={(e) => setPatientShortCode(e.target.value)}

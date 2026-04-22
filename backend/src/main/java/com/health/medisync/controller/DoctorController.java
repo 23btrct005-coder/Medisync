@@ -108,9 +108,20 @@ public class DoctorController {
     @GetMapping("/patient-by-code/{code}")
     public ResponseEntity<?> getPatientByCode(@PathVariable String code, Authentication authentication) {
         try {
-            return ResponseEntity.ok(doctorService.getPatientByShortCode(code));
+            Patient p = doctorService.getPatientByShortCode(code);
+            // Return safe Map to avoid serialization loops or lazy loading outside transaction
+            java.util.Map<String, Object> response = new java.util.HashMap<>();
+            response.put("id", p.getId());
+            response.put("patientId", p.getPatientId());
+            response.put("name", p.getName());
+            response.put("email", p.getEmail());
+            response.put("phone", p.getPhone());
+            response.put("bloodGroup", p.getBloodGroup());
+            response.put("age", p.getAge());
+            response.put("gender", p.getGender());
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
         }
     }
 }
