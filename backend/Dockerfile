@@ -1,8 +1,8 @@
 # Build stage
 FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
-COPY backend/pom.xml .
-COPY backend/src ./src
+COPY pom.xml .
+COPY src ./src
 # Enforce low-memory build for free tier
 ENV MAVEN_OPTS="-Xmx256m"
 RUN mvn clean package -DskipTests
