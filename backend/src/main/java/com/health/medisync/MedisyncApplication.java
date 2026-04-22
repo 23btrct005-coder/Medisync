@@ -60,7 +60,7 @@ public class MedisyncApplication {
         return args -> {
             System.out.println("[BOOTSTRAP] Checking for Patient ID updates/migrations...");
             long count = patientRepository.findAll().stream()
-                .filter(p -> p.getPatientId() == null || p.getPatientId().startsWith("MS-") || p.getPatientId().startsWith("MS-TEMP"))
+                .filter(p -> p.getPatientId() == null || p.getPatientId().startsWith("MS-") || p.getPatientId().startsWith("MS-TEMP") || p.getPatientId().startsWith("XX-"))
                 .peek(p -> {
                     String stateCode = GeographicalMappingUtils.getStateCode(p.getState());
                     String districtCode = GeographicalMappingUtils.getDistrictCode(p.getDistrict());
