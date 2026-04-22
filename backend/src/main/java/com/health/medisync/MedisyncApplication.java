@@ -9,6 +9,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import com.health.medisync.repository.UserRepository;
 import com.health.medisync.model.User;
+import com.health.medisync.utils.GeographicalMappingUtils;
 import java.util.Optional;
 
 @SpringBootApplication(excludeName = {
@@ -57,17 +58,22 @@ public class MedisyncApplication {
     @Bean
     public CommandLineRunner patientIdBootstrap(com.health.medisync.repository.PatientRepository patientRepository) {
         return args -> {
-            System.out.println("[BOOTSTRAP] Checking for missing Patient IDs...");
+            System.out.println("[BOOTSTRAP] Checking for Patient ID updates/migrations...");
             long count = patientRepository.findAll().stream()
-                .filter(p -> p.getPatientId() == null || p.getPatientId().startsWith("MS-TEMP"))
-                .peek(p -> p.setPatientId("MS-" + String.format("%04d", p.getId())))
+                .filter(p -> p.getPatientId() == null || p.getPatientId().startsWith("MS-") || p.getPatientId().startsWith("MS-TEMP"))
+                .peek(p -> {
+                    String stateCode = GeographicalMappingUtils.getStateCode(p.getState());
+                    String districtCode = GeographicalMappingUtils.getDistrictCode(p.getDistrict());
+                    String sequence = String.format("%04d", p.getId());
+                    p.setPatientId(stateCode + "-" + districtCode + "-" + sequence);
+                })
                 .map(patientRepository::save)
                 .count();
             
             if (count > 0) {
-                System.out.println("[BOOTSTRAP] Successfully generated MS-XXXX IDs for " + count + " existing patients.");
+                System.out.println("[BOOTSTRAP] Successfully migrated/generated IDs for " + count + " patients to the regional format.");
             } else {
-                System.out.println("[BOOTSTRAP] All patients already have valid IDs.");
+                System.out.println("[BOOTSTRAP] All patients are already using the regional ID format.");
             }
         };
     }
