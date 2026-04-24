@@ -63,6 +63,11 @@ public class AuthController {
         this.passwordResetTokenRepository = passwordResetTokenRepository;
     }
     
+    @GetMapping("/geography")
+    public ResponseEntity<?> getGeography() {
+        return ResponseEntity.ok(GeographicalMappingUtils.getGeographyData());
+    }
+
     @GetMapping("/health")
     public ResponseEntity<String> healthCheck() {
         return ResponseEntity.ok("OK - Auth Controller is reachable");

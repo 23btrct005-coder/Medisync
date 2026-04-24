@@ -35,6 +35,13 @@ const RegisterPro = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [profilePicture, setProfilePicture] = useState(null);
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+
+  const [geographyData, setGeographyData] = useState({});
+  const [availableCities, setAvailableCities] = useState([]);
 
   const [formData, setFormData] = useState({
     // Step 1: Account
@@ -80,15 +87,32 @@ const RegisterPro = () => {
     organDonorStatus: 'Undecided'
   });
 
-  const [profilePicture, setProfilePicture] = useState(null);
-  const [emailVerified, setEmailVerified] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
-  const [verifying, setVerifying] = useState(false);
+  React.useEffect(() => {
+    const fetchGeo = async () => {
+      try {
+        const res = await api.get('auth/geography');
+        setGeographyData(res.data);
+      } catch (err) {
+        console.error('Failed to load geography data');
+      }
+    };
+    fetchGeo();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     
+    // Cascaded logic for State -> City/District
+    if (name === 'state') {
+      if (geographyData[value]) {
+        setAvailableCities(geographyData[value]);
+        setFormData(prev => ({ ...prev, district: '', city: '' }));
+      } else {
+        setAvailableCities([]);
+      }
+    }
+
     // Auto-age calculation
     if (name === 'dateOfBirth' && value) {
       const today = new Date();
@@ -151,7 +175,7 @@ const RegisterPro = () => {
     <div className="space-y-1.5">
       <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{label}</label>
       {options ? (
-        <select name={name} value={formData[name]} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none">
+        <select name={name} value={formData[name]} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none appearance-none cursor-pointer">
           <option value="">Select {label}</option>
           {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
         </select>
@@ -254,10 +278,10 @@ const RegisterPro = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <InputField label="Primary Mobile" name="phone" placeholder="10 Digits" />
                   <InputField label="Occupation" name="occupation" />
-                  <InputField label="City" name="city" />
-                  <InputField label="District" name="district" />
-                  <InputField label="State" name="state" />
+                  <InputField label="State" name="state" options={Object.keys(geographyData)} />
+                  <InputField label="City / District" name="district" options={availableCities} />
                   <div className="md:col-span-2"><InputField label="Street / Residential Area" name="street" /></div>
+                  <InputField label="PIN Code" name="pinCode" placeholder="6 Digits" />
                   <div className="md:col-span-2 pt-4 border-t border-slate-100 mt-2">
                     <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] mb-4">Emergency Contact</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

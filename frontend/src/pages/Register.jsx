@@ -53,9 +53,34 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [aiDisclaimerAccepted, setAiDisclaimerAccepted] = useState(false);
 
+  const [geographyData, setGeographyData] = useState({});
+  const [availableCities, setAvailableCities] = useState([]);
+
+  React.useEffect(() => {
+    const fetchGeo = async () => {
+      try {
+        const res = await api.get('auth/geography');
+        setGeographyData(res.data);
+      } catch (err) {
+        console.error('Failed to load geography data');
+      }
+    };
+    fetchGeo();
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     const updated = { ...formData, [name]: value };
+
+    // Cascaded logic for State -> City
+    if (name === 'state') {
+      if (geographyData[value]) {
+        setAvailableCities(geographyData[value]);
+        updated.city = '';
+      } else {
+        setAvailableCities([]);
+      }
+    }
 
     // Auto-calculate age from date of birth
     if (name === 'dateOfBirth' && value) {
@@ -276,12 +301,18 @@ const Register = () => {
                     <input type="tel" name="phone" required value={formData.phone} onChange={handleChange} className={inputClass} maxLength="10" />
                   </div>
                   <div>
-                    <label className={labelClass}>City <span className="text-red-500">*</span></label>
-                    <input type="text" name="city" required value={formData.city} onChange={handleChange} className={inputClass} />
+                    <label className={labelClass}>State <span className="text-red-500">*</span></label>
+                    <select name="state" required value={formData.state} onChange={handleChange} className={inputClass}>
+                      <option value="">Select State</option>
+                      {Object.keys(geographyData).map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
                   </div>
                   <div>
-                    <label className={labelClass}>State <span className="text-red-500">*</span></label>
-                    <input type="text" name="state" required value={formData.state} onChange={handleChange} className={inputClass} />
+                    <label className={labelClass}>City / District <span className="text-red-500">*</span></label>
+                    <select name="city" required value={formData.city} onChange={handleChange} className={inputClass}>
+                      <option value="">Select City / District</option>
+                      {availableCities.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
                   </div>
                   <div>
                     <label className={labelClass}>PIN Code <span className="text-red-500">*</span></label>

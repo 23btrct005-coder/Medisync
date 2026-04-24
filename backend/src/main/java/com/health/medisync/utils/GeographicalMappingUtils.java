@@ -8,47 +8,28 @@ import java.util.Map;
 
 public class GeographicalMappingUtils {
 
-    private static final Map<String, String> STATE_CODES = new HashMap<>();
-    private static Map<String, Map<String, String>> RTO_DATABASE = new HashMap<>();
+    private static Map<String, String> STATE_CODE_TO_NAME = new HashMap<>();
+    private static Map<String, String> STATE_NAME_TO_CODE = new HashMap<>();
+    private static Map<String, Map<String, String>> MAPPINGS = new HashMap<>();
+    private static Map<String, java.util.List<String>> DISPLAY_DATA = new HashMap<>();
 
     static {
-        // --- Full Indian State Mappings ---
-        STATE_CODES.put("TAMILNADU", "TN");
-        STATE_CODES.put("KARNATAKA", "KA");
-        STATE_CODES.put("KERALA", "KL");
-        STATE_CODES.put("ANDHRAPRADESH", "AP");
-        STATE_CODES.put("TELANGANA", "TS");
-        STATE_CODES.put("MAHARASHTRA", "MH");
-        STATE_CODES.put("GUJARAT", "GJ");
-        STATE_CODES.put("RAJASTHAN", "RJ");
-        STATE_CODES.put("MADHYAPRADESH", "MP");
-        STATE_CODES.put("UTTARPRADESH", "UP");
-        STATE_CODES.put("BIHAR", "BR");
-        STATE_CODES.put("WESTBENGAL", "WB");
-        STATE_CODES.put("ODISHA", "OR");
-        STATE_CODES.put("PUNJAB", "PB");
-        STATE_CODES.put("HARYANA", "HR");
-        STATE_CODES.put("HIMACHALPRADESH", "HP");
-        STATE_CODES.put("UTTARAKHAND", "UK");
-        STATE_CODES.put("DELHI", "DL");
-        STATE_CODES.put("ASSAM", "AS");
-        STATE_CODES.put("GOA", "GA");
-        STATE_CODES.put("CHHATTISGARH", "CG");
-        STATE_CODES.put("JHARKHAND", "JH");
-        STATE_CODES.put("MANIPUR", "MN");
-        STATE_CODES.put("MEGHALAYA", "ML");
-        STATE_CODES.put("MIZORAM", "MZ");
-        STATE_CODES.put("NAGALAND", "NL");
-        STATE_CODES.put("SIKKIM", "SK");
-        STATE_CODES.put("TRIPURA", "TR");
-        STATE_CODES.put("PUDUCHERRY", "PY");
-
         // Load RTO Database from JSON
         try (InputStream is = GeographicalMappingUtils.class.getResourceAsStream("/rto_codes.json")) {
             if (is != null) {
                 ObjectMapper mapper = new ObjectMapper();
-                RTO_DATABASE = mapper.readValue(is, Map.class);
-                System.out.println("[RTO] Successfully loaded RTO database with " + RTO_DATABASE.size() + " states.");
+                Map<String, Object> rawData = mapper.readValue(is, Map.class);
+                
+                STATE_CODE_TO_NAME = (Map<String, String>) rawData.get("states");
+                MAPPINGS = (Map<String, Map<String, String>>) rawData.get("mappings");
+                DISPLAY_DATA = (Map<String, java.util.List<String>>) rawData.get("display");
+                
+                // Build reverse state map for lookups
+                for (Map.Entry<String, String> entry : STATE_CODE_TO_NAME.entrySet()) {
+                    STATE_NAME_TO_CODE.put(entry.getValue().toUpperCase().replaceAll("[\\s.]", ""), entry.getKey());
+                }
+                
+                System.out.println("[RTO] Successfully loaded enriched RTO database.");
             } else {
                 System.err.println("[RTO] Error: rto_codes.json not found in classpath!");
             }
@@ -58,23 +39,23 @@ public class GeographicalMappingUtils {
         }
     }
 
+    public static Map<String, java.util.List<String>> getGeographyData() {
+        return DISPLAY_DATA;
+    }
+
     public static String getStateCode(String stateName) {
         if (stateName == null || stateName.trim().isEmpty()) return "XX";
         
-        // Normalize: Remove spaces, dots, and convert to uppercase
         String normalized = stateName.trim().toUpperCase().replaceAll("[\\s.]", "");
         
-        // Direct Map check
-        if (STATE_CODES.containsKey(normalized)) {
-            return STATE_CODES.get(normalized);
+        if (STATE_NAME_TO_CODE.containsKey(normalized)) {
+            return STATE_NAME_TO_CODE.get(normalized);
         }
         
-        // If it's already a 2-letter code, return it
         if (normalized.length() == 2 && normalized.matches("[A-Z]{2}")) {
             return normalized;
         }
 
-        // Fallback: Use first two letters of normalized string
         if (normalized.length() >= 2) return normalized.substring(0, 2);
         return "ZZ";
     }
@@ -87,16 +68,14 @@ public class GeographicalMappingUtils {
             
             String normalized = name.trim().toUpperCase().replaceAll("[^A-Z0-9]", "");
             
-            // Look up in RTO Database
-            if (RTO_DATABASE.containsKey(stateCode)) {
-                Map<String, String> stateDistricts = RTO_DATABASE.get(stateCode);
+            // Look up in Mappings
+            if (MAPPINGS.containsKey(stateCode)) {
+                Map<String, String> stateDistricts = MAPPINGS.get(stateCode);
                 
-                // Exact match on normalized name
                 if (stateDistricts.containsKey(normalized)) {
                     return stateDistricts.get(normalized);
                 }
                 
-                // Fuzzy match: check if any key is contained within the normalized input or vice versa
                 for (Map.Entry<String, String> entry : stateDistricts.entrySet()) {
                     String key = entry.getKey();
                     if (normalized.contains(key) || key.contains(normalized)) {
@@ -106,7 +85,6 @@ public class GeographicalMappingUtils {
             }
         }
 
-        // If no match found in any potential names, use hash of first non-empty name
         for (String name : potentialNames) {
             if (name != null && !name.trim().isEmpty()) {
                 String normalized = name.trim().toUpperCase().replaceAll("[^A-Z0-9]", "");
