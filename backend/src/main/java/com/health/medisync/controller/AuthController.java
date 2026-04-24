@@ -295,7 +295,7 @@ public class AuthController {
         // Post-save: Assign the official ST-DT-XXXX ID based on database primary key and geographical data
         if (patient.getPatientId() == null || patient.getPatientId().startsWith("MS-TEMP")) {
             String st = GeographicalMappingUtils.getStateCode(patient.getState());
-            String dt = GeographicalMappingUtils.getDistrictCode(patient.getDistrict());
+            String dt = GeographicalMappingUtils.getDistrictCode(patient.getState(), patient.getDistrict());
             patient.setPatientId(st + "-" + dt + "-" + String.format("%04d", patient.getId()));
             patientRepository.save(patient);
         }
@@ -390,7 +390,7 @@ public class AuthController {
             for (Patient p : patients) {
                 if (p.getPatientId() == null || p.getPatientId().startsWith("MS-TEMP") || p.getPatientId().startsWith("MS-")) {
                     String st = GeographicalMappingUtils.getStateCode(p.getState());
-                    String dt = GeographicalMappingUtils.getDistrictCode(p.getDistrict());
+                    String dt = GeographicalMappingUtils.getDistrictCode(p.getState(), p.getDistrict());
                     p.setPatientId(st + "-" + dt + "-" + String.format("%04d", p.getId()));
                     patientRepository.save(p);
                     count++;

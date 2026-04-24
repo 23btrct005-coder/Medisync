@@ -63,7 +63,7 @@ public class MedisyncApplication {
                 .filter(p -> p.getPatientId() == null || p.getPatientId().startsWith("MS-") || p.getPatientId().startsWith("MS-TEMP") || p.getPatientId().startsWith("XX-"))
                 .peek(p -> {
                     String stateCode = GeographicalMappingUtils.getStateCode(p.getState());
-                    String districtCode = GeographicalMappingUtils.getDistrictCode(p.getDistrict());
+                    String districtCode = GeographicalMappingUtils.getDistrictCode(p.getState(), p.getDistrict());
                     String sequence = String.format("%04d", p.getId());
                     p.setPatientId(stateCode + "-" + districtCode + "-" + sequence);
                 })
