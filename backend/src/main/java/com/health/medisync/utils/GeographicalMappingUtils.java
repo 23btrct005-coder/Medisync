@@ -79,32 +79,42 @@ public class GeographicalMappingUtils {
         return "ZZ";
     }
 
-    public static String getDistrictCode(String stateName, String districtName) {
-        if (districtName == null || districtName.trim().isEmpty()) return "00";
-        
+    public static String getDistrictCode(String stateName, String... potentialNames) {
         String stateCode = getStateCode(stateName);
-        String normalizedDistrict = districtName.trim().toUpperCase().replaceAll("[^A-Z0-9]", "");
         
-        // Look up in RTO Database
-        if (RTO_DATABASE.containsKey(stateCode)) {
-            Map<String, String> stateDistricts = RTO_DATABASE.get(stateCode);
+        for (String name : potentialNames) {
+            if (name == null || name.trim().isEmpty()) continue;
             
-            // Exact match on normalized name
-            if (stateDistricts.containsKey(normalizedDistrict)) {
-                return stateDistricts.get(normalizedDistrict);
-            }
+            String normalized = name.trim().toUpperCase().replaceAll("[^A-Z0-9]", "");
             
-            // Fuzzy match: check if any key is contained within the normalized input or vice versa
-            for (Map.Entry<String, String> entry : stateDistricts.entrySet()) {
-                String key = entry.getKey();
-                if (normalizedDistrict.contains(key) || key.contains(normalizedDistrict)) {
-                    return entry.getValue();
+            // Look up in RTO Database
+            if (RTO_DATABASE.containsKey(stateCode)) {
+                Map<String, String> stateDistricts = RTO_DATABASE.get(stateCode);
+                
+                // Exact match on normalized name
+                if (stateDistricts.containsKey(normalized)) {
+                    return stateDistricts.get(normalized);
+                }
+                
+                // Fuzzy match: check if any key is contained within the normalized input or vice versa
+                for (Map.Entry<String, String> entry : stateDistricts.entrySet()) {
+                    String key = entry.getKey();
+                    if (normalized.contains(key) || key.contains(normalized)) {
+                        return entry.getValue();
+                    }
                 }
             }
         }
 
-        // Fallback: Use a stable numeric code based on name hash
-        int hash = Math.abs(normalizedDistrict.hashCode() % 99);
-        return String.format("%02d", hash);
+        // If no match found in any potential names, use hash of first non-empty name
+        for (String name : potentialNames) {
+            if (name != null && !name.trim().isEmpty()) {
+                String normalized = name.trim().toUpperCase().replaceAll("[^A-Z0-9]", "");
+                int hash = Math.abs(normalized.hashCode() % 99);
+                return String.format("%02d", hash);
+            }
+        }
+
+        return "00";
     }
 }
