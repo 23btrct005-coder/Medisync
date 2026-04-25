@@ -441,6 +441,8 @@ public class AuthController {
         info.put("currentMedications", patient.getCurrentMedications());
         info.put("pastSurgeries", patient.getPastSurgeries());
         info.put("medicalInfo", patient.getMedicalInfo());
+        info.put("height", patient.getHeight());
+        info.put("weight", patient.getWeight());
         return info;
     }
 

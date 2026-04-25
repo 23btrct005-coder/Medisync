@@ -25,20 +25,21 @@ const Badge = ({ color, children }) => {
 };
 
 const CriticalSection = ({ icon: Icon, title, color, bgColor, borderColor, content, badges }) => {
-  if (!content && (!badges || badges.length === 0)) return null;
   const items = content ? content.split(/[,;\n]+/).map(s => s.trim()).filter(Boolean) : [];
 
   return (
     <div className={`rounded-2xl border-2 ${borderColor} ${bgColor} p-5`}>
-      <h3 className={`flex items-center gap-2 font-extrabold text-sm uppercase tracking-widest mb-3 ${color}`}>
-        <Icon size={18} /> {title}
+      <h3 className={`flex items-center gap-2 font-extrabold text-[10px] uppercase tracking-widest mb-3 ${color} opacity-80`}>
+        <Icon size={16} /> {title}
       </h3>
-      <div className="flex flex-wrap gap-1">
-        {items.map((item, i) => (
-          <span key={i} className={`inline-block px-3 py-1.5 rounded-xl text-sm font-semibold bg-white/70 border ${borderColor} ${color}`}>
+      <div className="flex flex-wrap gap-1.5">
+        {items.length > 0 ? items.map((item, i) => (
+          <span key={i} className={`inline-block px-3 py-1.5 rounded-xl text-sm font-bold bg-white/80 border ${borderColor} ${color} shadow-sm`}>
             {item}
           </span>
-        ))}
+        )) : (
+          <span className="text-slate-400 text-sm font-medium italic px-1">None Reported / Stable</span>
+        )}
       </div>
     </div>
   );
@@ -86,8 +87,8 @@ const EmergencyInfo = () => {
     setRequesting(true);
     setRequestError('');
     try {
-      console.log(`Requesting access for patient ID: ${patientId}`);
-      await api.post('doctor/request-access', { patientId: Number(patientId) });
+      console.log(`Requesting access for patient ID: ${patient.id}`);
+      await api.post('doctor/request-access', { patientId: patient.id });
       setRequestSuccess(true);
     } catch (err) {
       setRequestError(err.response?.data?.message || 'Failed to send request. You might already have access or a pending request.');
@@ -130,14 +131,25 @@ const EmergencyInfo = () => {
 
         {/* Identity Card */}
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-red-400">
-          <div className="bg-gradient-to-r from-red-700 to-red-500 px-6 py-5 text-white">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center text-2xl font-black backdrop-blur-sm">
-                {patient.name?.charAt(0) || 'P'}
+          <div className="bg-gradient-to-r from-red-700 to-red-500 px-6 py-6 text-white relative">
+            <div className="flex items-center gap-6">
+              <div className="w-20 h-20 rounded-2xl bg-white/20 flex overflow-hidden items-center justify-center text-3xl font-black backdrop-blur-sm border-2 border-white/30">
+                <img 
+                  src={`${api.defaults.baseURL}/auth/patient/photo/${patient.id}`}
+                  alt={patient.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+                <div className="hidden items-center justify-center w-full h-full text-3xl font-black uppercase bg-red-600/50">
+                   {(patient.name || 'P').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                </div>
               </div>
               <div>
-                <h2 className="text-2xl font-black">{patient.name || 'Unknown Patient'}</h2>
-                <p className="text-red-200 text-sm mt-0.5">Patient ID: #{patient.id}</p>
+                <h2 className="text-3xl font-black tracking-tight capitalize">{patient.name || 'Unknown Patient'}</h2>
+                <p className="text-red-200 text-[10px] font-black uppercase tracking-[0.2em] mt-1 opacity-80">Reference ID: {patient.patientId}</p>
               </div>
             </div>
           </div>
@@ -145,17 +157,35 @@ const EmergencyInfo = () => {
           {/* Critical Vitals Row */}
           <div className="grid grid-cols-3 divide-x divide-slate-100 border-b border-slate-100">
             <div className="p-4 text-center">
-              <p className="text-xs font-extrabold text-slate-400 uppercase tracking-wide">Blood Group</p>
-              <p className="text-2xl font-black text-red-600 mt-1">{patient.bloodGroup || 'N/A'}</p>
+              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Blood Group</p>
+              <p className="text-3xl font-black text-red-600 mt-1">{patient.bloodGroup || 'N/A'}</p>
             </div>
             <div className="p-4 text-center">
-              <p className="text-xs font-extrabold text-slate-400 uppercase tracking-wide">Age</p>
-              <p className="text-2xl font-black text-slate-800 mt-1">{patient.age || 'N/A'}</p>
+              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Age</p>
+              <p className="text-3xl font-black text-slate-800 mt-1">{patient.age || 'N/A'}</p>
             </div>
             <div className="p-4 text-center">
-              <p className="text-xs font-extrabold text-slate-400 uppercase tracking-wide">Gender</p>
-              <p className="text-xl font-black text-slate-800 mt-1">{patient.gender || 'N/A'}</p>
+              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Gender</p>
+              <p className="text-2xl font-black text-slate-800 mt-1">{patient.gender || 'N/A'}</p>
             </div>
+          </div>
+
+          {/* Physique Details */}
+          <div className="grid grid-cols-2 divide-x divide-slate-100 border-b border-slate-100 bg-slate-50/50">
+             <div className="px-6 py-4 flex items-center justify-center gap-3">
+               <Activity size={18} className="text-slate-400" />
+               <div className="text-left">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase">Height</p>
+                  <p className="text-sm font-black text-slate-700">{patient.height || 'N/A'}</p>
+               </div>
+             </div>
+             <div className="px-6 py-4 flex items-center justify-center gap-3">
+               <Droplet size={18} className="text-slate-400" />
+               <div className="text-left">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase">Weight</p>
+                  <p className="text-sm font-black text-slate-700">{patient.weight || 'N/A'}</p>
+               </div>
+             </div>
           </div>
 
           {/* DOB */}
@@ -269,30 +299,30 @@ const EmergencyInfo = () => {
                 <button 
                   onClick={handleRequestAccess}
                   disabled={requesting || requestSuccess}
-                  className={`w-full ${requestSuccess ? 'bg-green-500 text-white' : 'bg-white text-red-700'} font-black py-4 rounded-2xl flex items-center justify-center gap-3 shadow-xl transition-all duration-300 active:scale-95 disabled:opacity-80 disabled:active:scale-100`}
+                  className={`w-full ${requestSuccess ? 'bg-green-500 text-white shadow-green-200' : 'bg-red-600 hover:bg-red-700 text-white shadow-red-900/40'} font-black py-4 rounded-2xl flex items-center justify-center gap-3 shadow-xl transition-all duration-300 active:scale-95 disabled:opacity-80 disabled:active:scale-100`}
                 >
                   {requesting ? (
                     <>
-                      <div className="w-5 h-5 border-2 border-red-700/30 border-t-red-700 rounded-full animate-spin" />
-                      Processing Request...
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      SUBMITTING AUTH REQUEST...
                     </>
                   ) : requestSuccess ? (
                     <>
                       <CheckCircle size={22} className="animate-in zoom-in duration-300" />
-                      Request Sent to Patient
+                      REQUEST SENT
                     </>
                   ) : (
                     <>
-                      Request Full Access <ArrowRight size={20} />
+                      AUTHORIZE FULL CLINICAL ACCESS <ArrowRight size={20} />
                     </>
                   )}
                 </button>
               ) : (
                 <button 
-                  onClick={() => navigate('/doctor-login', { state: { from: location.pathname } })}
-                  className="w-full bg-red-600 border border-white/20 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-red-500 transition shadow-xl active:scale-95"
+                  onClick={() => navigate('/login', { state: { from: location.pathname } })}
+                  className="w-full bg-white text-red-800 font-black py-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-slate-50 transition shadow-xl active:scale-95"
                 >
-                  Physician Login <ArrowRight size={20} />
+                  PHYSICIAN GATEWAY <ArrowRight size={20} />
                 </button>
               )}
            </div>
