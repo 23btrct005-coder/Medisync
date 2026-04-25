@@ -104,7 +104,12 @@ const DoctorDashboard = () => {
       if (res.data?.id) {
         setShowManualModal(false);
         setTimeout(() => {
-          navigate(`/doctor-dashboard/patients/${res.data.id}`);
+          if (res.data.isLinked) {
+            navigate(`/doctor-dashboard/patients/${res.data.id}`);
+          } else {
+            // Authorized clinical node bypass: Redirect to Emergency Card for unlinked subjects
+            navigate(`/emergency/${patientShortCode.toUpperCase().trim()}`);
+          }
         }, 100);
       } else {
         toast.error('Patient not found');

@@ -109,7 +109,10 @@ public class DoctorController {
     public ResponseEntity<?> getPatientByCode(@PathVariable String code, Authentication authentication) {
         try {
             Patient p = doctorService.getPatientByShortCode(code);
-            // Return safe Map to avoid serialization loops or lazy loading outside transaction
+            String username = authentication.getName();
+            Doctor doctor = doctorService.getDoctorProfile(username);
+            boolean isLinked = p.getDoctors().stream().anyMatch(d -> d.getId().equals(doctor.getId()));
+            
             java.util.Map<String, Object> response = new java.util.HashMap<>();
             response.put("id", p.getId());
             response.put("patientId", p.getPatientId());
@@ -119,6 +122,7 @@ public class DoctorController {
             response.put("bloodGroup", p.getBloodGroup());
             response.put("age", p.getAge());
             response.put("gender", p.getGender());
+            response.put("isLinked", isLinked);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
