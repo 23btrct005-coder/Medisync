@@ -101,6 +101,7 @@ const DoctorDashboard = () => {
     setSearching(true);
     try {
       const res = await api.get(`doctor/patient-by-code/${patientShortCode}`);
+      console.log("DEBUG: Search Result Payload", res.data);
       if (res.data?.id) {
         setShowManualModal(false);
         setTimeout(() => {
