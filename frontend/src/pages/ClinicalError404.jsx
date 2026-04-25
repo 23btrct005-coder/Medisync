@@ -1,13 +1,30 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, Home, Activity } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
-const NotFound = () => {
+const ClinicalError404 = () => {
   const navigate = useNavigate();
+  const { user, userRole } = useAuth();
+
+  const handleDashboardRedirect = () => {
+    if (!user) {
+      navigate('/');
+      return;
+    }
+
+    if (userRole === 'ROLE_DOCTOR') {
+      navigate('/doctor-dashboard');
+    } else if (userRole === 'ROLE_ADMIN') {
+      navigate('/admin-dashboard');
+    } else {
+      navigate('/dashboard');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-[2.5rem] p-10 text-center shadow-2xl relative overflow-hidden">
+      <div className="max-w-md w-full bg-white rounded-[2.5rem] p-10 text-center shadow-2xl relative overflow-hidden ring-4 ring-primary/5">
         {/* Background Accent */}
         <div className="absolute top-0 right-0 w-full h-1/2 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
         
@@ -20,12 +37,16 @@ const NotFound = () => {
             System Error <span className="text-primary">404</span>
           </h1>
           
-          <p className="text-slate-500 font-medium leading-relaxed mb-10">
-            The clinical quadrant you are attempting to access does not exist or has been relocated.
+          <p className="text-slate-500 font-medium leading-relaxed mb-4">
+            The clinical quadrant has entered an unstable state or does not exist at this address.
           </p>
+          <div className="bg-slate-50 rounded-xl p-3 mb-10 border border-slate-100">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Fault Address</p>
+            <p className="text-xs font-mono text-slate-600 mt-2 break-all">{window.location.pathname}</p>
+          </div>
 
           <button 
-            onClick={() => navigate('/')}
+            onClick={handleDashboardRedirect}
             className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-black text-white px-8 py-4 rounded-xl font-bold transition-colors shadow-lg"
           >
             <Home size={18} />
@@ -37,4 +58,4 @@ const NotFound = () => {
   );
 };
 
-export default NotFound;
+export default ClinicalError404;

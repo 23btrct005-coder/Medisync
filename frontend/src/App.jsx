@@ -1,4 +1,4 @@
-/* DEPLOY_SYNC_STAMP: 2026-04-17-20:40 */
+/* DEPLOY_SYNC_STAMP: 2026-04-25-15:22 */
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
@@ -35,7 +35,7 @@ import TermsOfService from './pages/TermsOfService';
 import AIDisclaimer from './pages/AIDisclaimer';
 import Settings from './pages/Settings';
 import Support from './pages/Support';
-import NotFound from './pages/NotFound';
+import ClinicalError404 from './pages/ClinicalError404';
 import ErrorBoundary from './components/ErrorBoundary';
 
 const ProtectedRoute = ({ children, allowedRole }) => {
@@ -133,8 +133,8 @@ function App() {
                 }>
                   <Route index element={<DoctorDashboard />} />
                   <Route path="appointments" element={<DoctorAppointments />} />
-                  <Route path="patients" element={<PatientDirectory />} />
                   <Route path="patients/:id" element={<PatientManager />} />
+                  <Route path="patients" element={<PatientDirectory />} />
                   <Route path="profile" element={<DoctorProfile />} />
                   <Route path="profile/edit" element={<EditDoctorProfile />} />
                   <Route path="settings" element={<Settings />} />
@@ -151,7 +151,7 @@ function App() {
                 </Route>
 
                 {/* Catch-all Not Found Route */}
-                <Route path="*" element={<NotFound />} />
+                <Route path="*" element={<ClinicalError404 />} />
               </Routes>
             </NotificationProvider>
           </AuthProvider>

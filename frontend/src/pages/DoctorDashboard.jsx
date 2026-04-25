@@ -102,7 +102,10 @@ const DoctorDashboard = () => {
     try {
       const res = await api.get(`doctor/patient-by-code/${patientShortCode}`);
       if (res.data?.id) {
-        navigate(`/patient/${res.data.id}`);
+        setShowManualModal(false);
+        setTimeout(() => {
+          navigate(`/doctor-dashboard/patients/${res.data.id}`);
+        }, 100);
       } else {
         toast.error('Patient not found');
       }
@@ -414,7 +417,7 @@ const DoctorDashboard = () => {
                   <Zap className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-500/40 group-focus-within/field:text-emerald-500 transition-colors" size={20} />
                   <input 
                     type="text" 
-                    placeholder="ST-DT-XXXX" 
+                    placeholder="TN-29-0008" 
                     autoFocus
                     value={patientShortCode}
                     onChange={(e) => setPatientShortCode(e.target.value)}
