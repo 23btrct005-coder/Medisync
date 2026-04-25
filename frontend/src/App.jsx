@@ -1,4 +1,4 @@
-/* DEPLOY_SYNC_STAMP: 2026-04-25-15:22 */
+/* DEPLOY_SYNC_STAMP: 2026-04-25-16:00 */
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
@@ -6,12 +6,12 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { ThemeProvider } from './context/ThemeContext';
 import DashboardLayout from './layouts/DashboardLayout';
-import DoctorLayout from './layouts/DoctorLayout';
+import ClinicalInfrastructureLayout from './layouts/ClinicalInfrastructureLayout';
 import AdminLayout from './layouts/AdminLayout';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Landing from './pages/Landing';
-import DoctorLogin from './pages/DoctorLogin';
+import ClinicalDoctorLogin from './pages/ClinicalDoctorLogin';
 import Dashboard from './pages/Dashboard';
 import DoctorsList from './pages/DoctorsList';
 import MedicalHistory from './pages/MedicalHistory';
@@ -19,16 +19,16 @@ import Reports from './pages/Reports';
 import Sessions from './pages/Sessions';
 import Booking from './pages/Booking';
 import Profile from './pages/Profile';
-import DoctorDashboard from './pages/DoctorDashboard';
-import PatientDirectory from './pages/PatientDirectory';
-import PatientManager from './pages/PatientManager';
-import DoctorProfile from './pages/DoctorProfile';
-import DoctorAppointments from './pages/DoctorAppointments';
+import ClinicalExecutiveConsul from './pages/ClinicalExecutiveConsul';
+import ClinicalCensusRegistry from './pages/ClinicalCensusRegistry';
+import ClinicalPatientDossier from './pages/ClinicalPatientDossier';
+import ClinicalDoctorProfile from './pages/ClinicalDoctorProfile';
+import ClinicalScheduleManager from './pages/ClinicalScheduleManager';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import EmergencyInfo from './pages/EmergencyInfo';
 import EditProfile from './pages/EditProfile';
-import EditDoctorProfile from './pages/EditDoctorProfile';
+import ClinicalProfileEditor from './pages/ClinicalProfileEditor';
 import AdminDashboard from './pages/AdminDashboard';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
@@ -80,7 +80,7 @@ function App() {
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
-                <Route path="/doctor-login" element={<DoctorLogin />} />
+                <Route path="/doctor-login" element={<ClinicalDoctorLogin />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/emergency/:patientId" element={<EmergencyInfo />} />
@@ -128,15 +128,15 @@ function App() {
                 {/* Doctor Routes */}
                 <Route path="/doctor-dashboard" element={
                   <ProtectedRoute allowedRole="ROLE_DOCTOR">
-                    <DoctorLayout />
+                    <ClinicalInfrastructureLayout />
                   </ProtectedRoute>
                 }>
-                  <Route index element={<DoctorDashboard />} />
-                  <Route path="appointments" element={<DoctorAppointments />} />
-                  <Route path="patients/:id" element={<PatientManager />} />
-                  <Route path="patients" element={<PatientDirectory />} />
-                  <Route path="profile" element={<DoctorProfile />} />
-                  <Route path="profile/edit" element={<EditDoctorProfile />} />
+                  <Route index element={<ClinicalExecutiveConsul />} />
+                  <Route path="appointments" element={<ClinicalScheduleManager />} />
+                  <Route path="patients/:id" element={<ClinicalPatientDossier />} />
+                  <Route path="patients" element={<ClinicalCensusRegistry />} />
+                  <Route path="profile" element={<ClinicalDoctorProfile />} />
+                  <Route path="profile/edit" element={<ClinicalProfileEditor />} />
                   <Route path="settings" element={<Settings />} />
                   <Route path="support" element={<Support />} />
                 </Route>

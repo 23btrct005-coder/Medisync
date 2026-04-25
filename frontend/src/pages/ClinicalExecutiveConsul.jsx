@@ -431,7 +431,7 @@ const DoctorDashboard = () => {
                   disabled={searching || !patientShortCode}
                   className="w-full py-5 bg-[#0A1A1A] text-white rounded-[2rem] font-black text-sm uppercase tracking-widest shadow-xl active:scale-95 transition-all disabled:opacity-30"
                 >
-                  {searching ? 'Linking Node...' : 'Access Profile'}
+                  {searching ? 'Linking Node...' : 'AUTHORIZE CLINICAL ACCESS'}
                 </button>
               </div>
             </motion.div>

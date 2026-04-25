@@ -1,6 +1,6 @@
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import DoctorSidebar from '../components/DoctorSidebar';
+import ClinicalSovereignSidebar from '../components/ClinicalSovereignSidebar';
 import { useState } from 'react';
 import api from '../api/axiosConfig';
 import { Activity, LogOut, UserCircle, Menu } from 'lucide-react';
@@ -9,6 +9,7 @@ import NotificationBell from '../components/NotificationBell';
 
 const DoctorLayout = () => {
   const { user, logout } = useAuth();
+  // AUTHORIZE CLINICAL ACCESS
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -21,7 +22,7 @@ const DoctorLayout = () => {
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
-      <DoctorSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <ClinicalSovereignSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-8 z-10 shadow-sm shrink-0">
         <div className="flex items-center">
