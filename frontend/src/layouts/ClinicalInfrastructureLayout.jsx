@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import ClinicalSovereignSidebar from '../components/ClinicalSovereignSidebar';
 import { useState } from 'react';
 import api from '../api/axiosConfig';
+import { toast } from 'react-hot-toast';
 import { Activity, LogOut, UserCircle, Menu } from 'lucide-react';
 import BottomNav from '../components/BottomNav';
 import NotificationBell from '../components/NotificationBell';
@@ -15,6 +16,7 @@ const DoctorLayout = () => {
 
   const handleLogout = () => {
     logout();
+    toast.success('Session terminated. Security node isolated.');
     navigate('/login');
   };
 
