@@ -1,7 +1,7 @@
 package com.health.medisync.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "notifications")
@@ -27,11 +27,11 @@ public class Notification {
 
     private boolean isRead = false;
 
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     public Notification() {}
 
-    public Notification(Long id, Long userId, String type, String title, String description, String actionLink, String actionText, boolean isRead, LocalDateTime createdAt) {
+    public Notification(Long id, Long userId, String type, String title, String description, String actionLink, String actionText, boolean isRead, Instant createdAt) {
         this.id = id;
         this.userId = userId;
         this.type = type;
@@ -45,7 +45,7 @@ public class Notification {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        createdAt = Instant.now();
     }
 
     // Getters
@@ -57,7 +57,7 @@ public class Notification {
     public String getActionLink() { return actionLink; }
     public String getActionText() { return actionText; }
     public boolean isRead() { return isRead; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
+    public Instant getCreatedAt() { return createdAt; }
 
     // Setters
     public void setId(Long id) { this.id = id; }
@@ -68,5 +68,5 @@ public class Notification {
     public void setActionLink(String actionLink) { this.actionLink = actionLink; }
     public void setActionText(String actionText) { this.actionText = actionText; }
     public void setRead(boolean read) { isRead = read; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 }
