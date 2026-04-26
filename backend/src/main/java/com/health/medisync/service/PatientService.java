@@ -24,16 +24,19 @@ public class PatientService {
     private final AccessRequestRepository accessRequestRepository;
     private final EmailService emailService;
     private final SupabaseStorageService supabaseStorageService;
+    private final NotificationService notificationService;
 
     public PatientService(PatientRepository patientRepository, UserRepository userRepository, 
                           DoctorRepository doctorRepository, AccessRequestRepository accessRequestRepository,
-                          EmailService emailService, SupabaseStorageService supabaseStorageService) {
+                          EmailService emailService, SupabaseStorageService supabaseStorageService,
+                          NotificationService notificationService) {
         this.patientRepository = patientRepository;
         this.userRepository = userRepository;
         this.doctorRepository = doctorRepository;
         this.accessRequestRepository = accessRequestRepository;
         this.emailService = emailService;
         this.supabaseStorageService = supabaseStorageService;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -184,6 +187,16 @@ public class PatientService {
             patient.getDoctors().add(request.getDoctor());
             patientRepository.save(patient);
         }
+
+        // Notify Doctor
+        notificationService.sendNotification(
+            request.getDoctor().getUser().getId(),
+            "SECURITY",
+            "Access Authorization Granted",
+            patient.getName() + " has approved your clinical access request.",
+            "/doctor-dashboard/patients",
+            "View Profile"
+        );
     }
 
     @Transactional
@@ -198,6 +211,16 @@ public class PatientService {
 
         request.setStatus("REJECTED");
         accessRequestRepository.save(request);
+
+        // Notify Doctor
+        notificationService.sendNotification(
+            request.getDoctor().getUser().getId(),
+            "SECURITY",
+            "Access Request Rejected",
+            patient.getName() + " has declined your clinical access request.",
+            "/doctor-dashboard",
+            "OK"
+        );
     }
 
     public List<Doctor> getLinkedDoctors(String username) {
@@ -224,6 +247,16 @@ public class PatientService {
                 }
             }
         }
+
+        // Notify Doctor
+        notificationService.sendNotification(
+            doctor.getUser().getId(),
+            "SECURITY",
+            "Access Revoked",
+            patient.getName() + " has withdrawn your clinical access privileges.",
+            "/doctor-dashboard",
+            "OK"
+        );
     }
 
     @Transactional
@@ -252,6 +285,16 @@ public class PatientService {
                 request.setStatus("PENDING");
                 request.setPatientMessage("Patient-initiated invitation");
                 accessRequestRepository.save(request);
+
+                // Notify Doctor (In-App)
+                notificationService.sendNotification(
+                    doctor.getUser().getId(),
+                    "SECURITY",
+                    "New Patient Invitation",
+                    patient.getName() + " has invited you to oversee their clinical profile.",
+                    "/doctor-dashboard",
+                    "Manage Requests"
+                );
             }
         }
 

@@ -35,7 +35,7 @@ const DashboardLayout = () => {
             
             <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
                 {/* Premium Header */}
-                <header className="h-16 md:h-20 bg-white/80 backdrop-blur-md border-b border-slate-200/60 flex items-center justify-between px-4 md:px-10 z-[40] shrink-0">
+                <header className="relative h-16 md:h-20 bg-white/80 backdrop-blur-md border-b border-slate-200/60 flex items-center justify-between px-4 md:px-10 z-[300] shrink-0">
                     <div className="flex items-center gap-4">
                         <div className="md:hidden flex items-center gap-2 px-1 text-primary-600">
                              <Activity size={20} />

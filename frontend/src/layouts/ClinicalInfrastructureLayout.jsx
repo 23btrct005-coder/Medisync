@@ -26,7 +26,7 @@ const DoctorLayout = () => {
     <div className="flex h-screen bg-slate-50 overflow-hidden">
       <ClinicalSovereignSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-8 z-10 shadow-sm shrink-0">
+        <header className="relative h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-8 z-[300] shadow-sm shrink-0">
         <div className="flex items-center">
             <div className="md:hidden flex items-center gap-2 px-2 text-primary-600">
                 <Activity size={24} />

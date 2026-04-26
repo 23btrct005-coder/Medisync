@@ -60,7 +60,7 @@ const NotificationBell = () => {
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="absolute right-0 mt-4 w-80 sm:w-96 bg-white/90 backdrop-blur-xl border border-white/20 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] rounded-[2rem] z-50 overflow-hidden"
+              className="absolute right-0 mt-4 w-80 sm:w-96 bg-white/90 backdrop-blur-xl border border-white/20 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] rounded-[2rem] z-[400] overflow-hidden"
             >
               <div className="p-6 border-b border-slate-100 flex items-center justify-between">
                 <div>

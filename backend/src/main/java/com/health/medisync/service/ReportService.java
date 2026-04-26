@@ -154,7 +154,17 @@ public class ReportService {
         }
         
         // Final save in background thread
-        reportRepository.save(report);
+        Report finalSaved = reportRepository.save(report);
+
+        // Notify Patient
+        notificationService.sendNotification(
+            patient.getUser().getId(),
+            "AI_ANALYSIS",
+            "Clinical Intelligence Ready",
+            "AI analysis of your latest report (" + report.getFileName() + ") has been synchronized.",
+            "/dashboard/reports",
+            "Review Analysis"
+        );
     }
 
     public Report reanalyzeReport(Long reportId, String username) {

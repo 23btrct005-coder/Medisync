@@ -27,11 +27,13 @@ public class DoctorService {
     private final ReportRepository reportRepository;
     private final AccessRequestRepository accessRequestRepository;
     private final SupabaseStorageService supabaseStorageService;
+    private final NotificationService notificationService;
 
     public DoctorService(DoctorRepository doctorRepository, UserRepository userRepository,
                          PatientRepository patientRepository, MedicalRecordRepository recordRepository,
                          ReportRepository reportRepository, AccessRequestRepository accessRequestRepository,
-                         SupabaseStorageService supabaseStorageService) {
+                         SupabaseStorageService supabaseStorageService,
+                         NotificationService notificationService) {
         this.doctorRepository = doctorRepository;
         this.userRepository = userRepository;
         this.patientRepository = patientRepository;
@@ -39,6 +41,7 @@ public class DoctorService {
         this.reportRepository = reportRepository;
         this.accessRequestRepository = accessRequestRepository;
         this.supabaseStorageService = supabaseStorageService;
+        this.notificationService = notificationService;
     }
 
     public Doctor getDoctorProfile(String username) {
@@ -72,9 +75,19 @@ public class DoctorService {
 
     private void createAccessRequest(Doctor doctor, Patient patient) {
         accessRequestRepository.findByDoctorAndPatient(doctor, patient).ifPresent(existing -> {
-            if ("REJECTED".equals(existing.getStatus())) {
+            if ("REJECTED".equals(existing.getStatus()) || "REVOKED".equals(existing.getStatus())) {
                 existing.setStatus("PENDING");
                 accessRequestRepository.save(existing);
+                
+                // Notify Patient (Re-request)
+                notificationService.sendNotification(
+                    patient.getUser().getId(),
+                    "SECURITY",
+                    "Access Re-authentication Requested",
+                    "Dr. " + doctor.getName() + " has requested to re-link with your clinical profile.",
+                    "/dashboard",
+                    "Review Request"
+                );
                 return;
             }
             throw new RuntimeException("A link request already exists between you and this patient (Status: " + existing.getStatus() + ")");
@@ -86,6 +99,16 @@ public class DoctorService {
             req.setPatient(patient);
             req.setStatus("PENDING");
             accessRequestRepository.save(req);
+
+            // Notify Patient
+            notificationService.sendNotification(
+                patient.getUser().getId(),
+                "SECURITY",
+                "New Access Request",
+                "Dr. " + doctor.getName() + " has requested access to your clinical profile.",
+                "/dashboard",
+                "Respond Now"
+            );
         }
     }
 
@@ -133,7 +156,19 @@ public class DoctorService {
         record.setDate(request.getDate() != null ? request.getDate() : java.time.LocalDate.now());
         record.setDoctorName(doctor.getName());
 
-        return recordRepository.save(record);
+        MedicalRecord saved = recordRepository.save(record);
+
+        // Notify Patient
+        notificationService.sendNotification(
+            patient.getUser().getId(),
+            "APPOINTMENT",
+            "Medical Record Added",
+            "A new clinical diagnosis has been logged by Dr. " + doctor.getName() + ".",
+            "/dashboard/records",
+            "View Records"
+        );
+
+        return saved;
     }
 
     public Doctor updateProfile(String doctorUsername, Map<String, Object> updates) {
