@@ -35,7 +35,7 @@ export const NotificationProvider = ({ children }) => {
   }, [user]);
 
   const connectWebSocket = () => {
-    // Ensure we use wss:// if the base URL is secure, otherwise SockJS might struggle on some proxies
+    const token = localStorage.getItem('token');
     const wsUrl = rawBaseURL.startsWith('https') 
       ? `${rawBaseURL}/ws` 
       : `${rawBaseURL}/ws`;
@@ -43,37 +43,53 @@ export const NotificationProvider = ({ children }) => {
     const socket = new SockJS(wsUrl);
     const client = Stomp.over(socket);
     
-    // Disable logging for cleaner console
     client.debug = (msg) => {
       if (process.env.NODE_ENV === 'development') console.log(msg);
     };
 
-    client.connect({}, () => {
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    client.connect(headers, () => {
       setStompClient(client);
       
-      // Subscribe to user-specific notification queue
-      client.subscribe(`/user/${user.username}/queue/notifications`, (message) => {
+      // Standard Spring User Destination subscription
+      // Spring automatically maps /user/queue/notifications to the authenticated user's private queue
+      client.subscribe(`/user/queue/notifications`, (message) => {
         const newNotification = JSON.parse(message.body);
         setNotifications(prev => [newNotification, ...prev]);
         setUnreadCount(prev => prev + 1);
         
-        // Push a toast for the new notification
+        // Instant visual feedback for incoming signals
         toast.custom((t) => (
-          <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-white shadow-2xl rounded-2xl pointer-events-auto flex ring-1 ring-black ring-opacity-5 border-l-4 border-primary`}>
+          <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-white/90 backdrop-blur-xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] rounded-2xl pointer-events-auto flex ring-1 ring-black ring-opacity-5 border-l-4 border-primary overflow-hidden`}>
             <div className="flex-1 w-0 p-4">
               <div className="flex items-start">
                 <div className="ml-3 flex-1">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Incoming Signal</p>
                   <p className="text-sm font-bold text-slate-900">{newNotification.title}</p>
-                  <p className="mt-1 text-xs text-slate-500 line-clamp-2">{newNotification.description}</p>
+                  <p className="mt-1 text-xs text-slate-500 line-clamp-2 leading-relaxed">{newNotification.description}</p>
                 </div>
               </div>
             </div>
+            <div className="flex border-l border-slate-100">
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-xs font-bold text-slate-400 hover:text-slate-600 focus:outline-none"
+              >
+                Dismiss
+              </button>
+            </div>
           </div>
-        ));
+        ), { duration: 6000 });
       });
     }, (error) => {
-      console.error("WebSocket connection failed, retrying in 5s...", error);
-      setTimeout(connectWebSocket, 5000);
+      if (user) {
+        console.error("WebSocket connection failed, retrying in 5s...", error);
+        setTimeout(connectWebSocket, 5000);
+      }
     });
   };
 
