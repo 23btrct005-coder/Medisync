@@ -103,6 +103,7 @@ const DoctorDashboard = () => {
       const res = await api.get(`doctor/patient-by-code/${patientShortCode}`);
       console.log("DEBUG: Search Result Payload", res.data);
       if (res.data?.id) {
+        toast.success(`Patient ${res.data.name} located`);
         setShowManualModal(false);
         setTimeout(() => {
           if (res.data.isLinked) {

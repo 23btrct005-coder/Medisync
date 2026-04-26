@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
+import { toast } from 'react-hot-toast';
 import {
   AlertTriangle, Droplet, User, Phone, Heart,
   Pill, Stethoscope, Scissors, Activity, Shield, Calendar, Users,
@@ -90,8 +91,11 @@ const EmergencyInfo = () => {
       console.log(`Requesting access for patient ID: ${patient.id}`);
       await api.post('doctor/request-access', { patientId: patient.id });
       setRequestSuccess(true);
+      toast.success('Clinical access request submitted successfully');
     } catch (err) {
-      setRequestError(err.response?.data?.message || 'Failed to send request. You might already have access or a pending request.');
+      const msg = err.response?.data?.message || 'Failed to send request. You might already have access or a pending request.';
+      setRequestError(msg);
+      toast.error(msg);
     } finally {
       setRequesting(false);
     }
