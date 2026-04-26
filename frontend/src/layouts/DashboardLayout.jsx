@@ -8,12 +8,15 @@ import OnboardingTour from '../components/OnboardingTour';
 import TopBarLoader from '../components/TopBarLoader';
 import BottomNav from '../components/BottomNav';
 import NotificationBell from '../components/NotificationBell';
+import { SearchResultsDropdown } from '../components/UniversalSearch';
 import toast from 'react-hot-toast';
 
 const DashboardLayout = () => {
     const { user } = useAuth();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [globalLoading, setGlobalLoading] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isSearchFocused, setIsSearchFocused] = useState(false);
     
     useEffect(() => {
         // Register the global loading listener
@@ -42,13 +45,26 @@ const DashboardLayout = () => {
                              <span className="text-lg font-bold tracking-tight text-slate-800">MEDISYNC</span>
                         </div>
                         
-                        <div className="hidden lg:flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 rounded-2xl group transition-all focus-within:ring-4 focus-within:ring-primary/5 focus-within:border-primary/40">
+                        <div className="hidden lg:flex relative group items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 rounded-2xl transition-all focus-within:ring-4 focus-within:ring-primary/5 focus-within:border-primary/40">
                             <Search size={18} className="text-slate-400 group-focus-within:text-primary transition-colors" />
                             <input 
                                 type="text" 
                                 placeholder="Universal Search..." 
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onFocus={() => setIsSearchFocused(true)}
+                                onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
                                 className="bg-transparent border-none outline-none text-sm font-medium w-48 xl:w-64"
                             />
+                            {isSearchFocused && searchQuery && (
+                                <SearchResultsDropdown 
+                                    query={searchQuery} 
+                                    onClose={() => {
+                                        setSearchQuery('');
+                                        setIsSearchFocused(false);
+                                    }} 
+                                />
+                            )}
                         </div>
                     </div>
 

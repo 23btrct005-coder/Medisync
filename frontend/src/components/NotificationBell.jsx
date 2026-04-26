@@ -103,7 +103,9 @@ const NotificationBell = () => {
                         <div className="flex items-center justify-between gap-2 mb-1">
                           <p className={`text-xs font-black truncate ${!n.read ? 'text-slate-900' : 'text-slate-500'}`}>{n.title}</p>
                           <span className="text-[9px] font-bold text-slate-400 whitespace-nowrap">
-                            {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {new Date(n.createdAt).toLocaleDateString() === new Date().toLocaleDateString()
+                              ? new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                              : new Date(n.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: new Date(n.createdAt).getFullYear() !== new Date().getFullYear() ? '2-digit' : undefined })}
                           </span>
                         </div>
                         <p className="text-[11px] text-slate-500 leading-relaxed line-clamp-2 mb-2">{n.description}</p>
