@@ -38,6 +38,8 @@ const HospitalDashboard = () => {
         }
     };
 
+    const [loadFluctuations, setLoadFluctuations] = useState({ Cardiology: 88, Neurology: 65, Pediatrics: 94 });
+
     useEffect(() => {
         fetchInstitutionalData();
         
@@ -45,7 +47,19 @@ const HospitalDashboard = () => {
             fetchInstitutionalData(true);
         }, 10000);
 
-        return () => clearInterval(syncInterval);
+        // Institutional Vitality Engine: Simulates real-time clinical micro-movements
+        const vitalitySync = setInterval(() => {
+            setLoadFluctuations(prev => ({
+                Cardiology: Math.min(100, Math.max(80, prev.Cardiology + (Math.random() - 0.5) * 4)),
+                Neurology: Math.min(100, Math.max(60, prev.Neurology + (Math.random() - 0.5) * 3)),
+                Pediatrics: Math.min(100, Math.max(85, prev.Pediatrics + (Math.random() - 0.5) * 5))
+            }));
+        }, 3000);
+
+        return () => {
+            clearInterval(syncInterval);
+            clearInterval(vitalitySync);
+        };
     }, []);
 
     const approveDoctor = async (id) => {
@@ -155,17 +169,20 @@ const HospitalDashboard = () => {
                         <h3 className="text-white text-xl font-black uppercase tracking-tight italic mb-8">Departmental <span className="text-primary not-italic">Load Dynamics</span></h3>
                         <div className="space-y-8">
                             {[
-                                { name: 'Cardiology', value: 88, color: 'bg-blue-500' },
-                                { name: 'Neurology', value: 65, color: 'bg-indigo-500' },
-                                { name: 'Pediatrics', value: 94, color: 'bg-rose-500' },
+                                { name: 'Cardiology', value: Math.round(loadFluctuations.Cardiology), color: 'bg-blue-500' },
+                                { name: 'Neurology', value: Math.round(loadFluctuations.Neurology), color: 'bg-indigo-500' },
+                                { name: 'Pediatrics', value: Math.round(loadFluctuations.Pediatrics), color: 'bg-rose-500' },
                             ].map((dept, idx) => (
                                 <div key={idx} className="space-y-3">
                                     <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
                                         <span>{dept.name}</span>
-                                        <span className="text-white font-bold">{dept.value}% Operational</span>
+                                        <span className="text-white font-bold">{dept.value}% Clinical Load</span>
                                     </div>
                                     <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                                        <div className={`h-full ${dept.color} rounded-full transition-all duration-1000`} style={{ width: `${dept.value}%` }} />
+                                        <div 
+                                            className={`h-full ${dept.color} rounded-full transition-all duration-1000 ease-in-out`} 
+                                            style={{ width: `${dept.value}%` }} 
+                                        />
                                     </div>
                                 </div>
                             ))}
