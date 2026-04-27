@@ -45,13 +45,17 @@ public class AuthController {
     private final AuthService authService;
     private final SupabaseStorageService supabaseStorageService;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final com.health.medisync.repository.HospitalRepository hospitalRepository;
+    private final com.health.medisync.repository.HospitalAdminRepository hospitalAdminRepository;
 
     public AuthController(AuthenticationManager authenticationManager, JwtUtils jwtUtils,
                           UserRepository userRepository, DoctorRepository doctorRepository,
                           PatientRepository patientRepository,
                           PasswordEncoder passwordEncoder, AuthService authService,
                           SupabaseStorageService supabaseStorageService,
-                          PasswordResetTokenRepository passwordResetTokenRepository) {
+                          PasswordResetTokenRepository passwordResetTokenRepository,
+                          com.health.medisync.repository.HospitalRepository hospitalRepository,
+                          com.health.medisync.repository.HospitalAdminRepository hospitalAdminRepository) {
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
         this.userRepository = userRepository;
@@ -61,6 +65,8 @@ public class AuthController {
         this.authService = authService;
         this.supabaseStorageService = supabaseStorageService;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
+        this.hospitalRepository = hospitalRepository;
+        this.hospitalAdminRepository = hospitalAdminRepository;
     }
     
     @GetMapping("/geography")
@@ -306,6 +312,48 @@ public class AuthController {
         }
 
         return ResponseEntity.ok(Map.of("message", "Patient registered and verified successfully!"));
+    }
+
+    @PostMapping(value = "/register/hospital-admin", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Transactional
+    public ResponseEntity<?> registerHospitalAdmin(
+            @RequestPart("userData") String userDataJson,
+            @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture) throws IOException {
+
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, String> request = mapper.readValue(userDataJson, Map.class);
+        String username = request.get("username") != null ? request.get("username").toLowerCase() : request.get("email").toLowerCase();
+
+        // 1. Create User
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(passwordEncoder.encode(request.get("password")));
+        user.setRole("ROLE_HOSPITAL_ADMIN");
+        user.setEnabled(true); // Assuming email pre-verified
+        userRepository.save(user);
+
+        // 2. Create or Find Hospital
+        String hospitalName = request.get("hospitalName");
+        String licenseCode = request.get("licenseCode");
+        
+        com.health.medisync.model.Hospital hospital = hospitalRepository.findByLicenseCode(licenseCode)
+            .orElseGet(() -> {
+                com.health.medisync.model.Hospital h = new com.health.medisync.model.Hospital();
+                h.setName(hospitalName);
+                h.setLicenseCode(licenseCode);
+                h.setLocation(request.get("city") + ", " + request.get("state"));
+                h.setContactEmail(request.get("email"));
+                return hospitalRepository.save(h);
+            });
+
+        // 3. Create Admin Profile
+        com.health.medisync.model.HospitalAdmin admin = new com.health.medisync.model.HospitalAdmin();
+        admin.setUser(user);
+        admin.setHospital(hospital);
+        admin.setPosition(request.get("position") != null ? request.get("position") : "Administrator");
+        hospitalAdminRepository.save(admin);
+
+        return ResponseEntity.ok(Map.of("message", "Hospital Administration registered successfully!"));
     }
 
     @PostMapping("/verify-otp")

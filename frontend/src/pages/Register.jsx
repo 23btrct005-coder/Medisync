@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   UserPlus, ArrowLeft,
   CheckCircle, Mail, ShieldCheck, Eye, EyeOff, Phone,
-  AlertCircle, User, Heart, Bot
+  AlertCircle, User, Heart, Bot, Building2, Briefcase
 } from 'lucide-react';
 import api from '../api/axiosConfig';
 import ProfilePhotoUpload from '../components/ProfilePhotoUpload';
@@ -11,11 +11,16 @@ import LegalFooter from '../components/LegalFooter';
 
 const Register = () => {
   const navigate = useNavigate();
+  const [role, setRole] = useState('ROLE_PATIENT'); // ROLE_PATIENT or ROLE_HOSPITAL_ADMIN
+  
   const [formData, setFormData] = useState({
     // Identity
     email: '',
-    // Personal
+    // Personal / Institutional
     name: '',
+    hospitalName: '',
+    licenseCode: '',
+    position: 'Chief Administrator',
     dateOfBirth: '',
     age: '',
     gender: '',
@@ -28,7 +33,7 @@ const Register = () => {
     city: '',
     state: '',
     pinCode: '',
-    // Emergency
+    // Emergency (Patient only)
     emergencyContactName: '',
     emergencyContactRelationship: '',
     emergencyContactPhone: '',
@@ -56,7 +61,7 @@ const Register = () => {
   const [geographyData, setGeographyData] = useState({});
   const [availableCities, setAvailableCities] = useState([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchGeo = async () => {
       try {
         const res = await api.get('auth/geography');
@@ -72,7 +77,6 @@ const Register = () => {
     const { name, value } = e.target;
     const updated = { ...formData, [name]: value };
 
-    // Cascaded logic for State -> City
     if (name === 'state') {
       if (geographyData[value]) {
         setAvailableCities(geographyData[value]);
@@ -82,8 +86,7 @@ const Register = () => {
       }
     }
 
-    // Auto-calculate age from date of birth
-    if (name === 'dateOfBirth' && value) {
+    if (name === 'dateOfBirth' && value && role === 'ROLE_PATIENT') {
       const today = new Date();
       const dob = new Date(value);
       let calculatedAge = today.getFullYear() - dob.getFullYear();
@@ -133,7 +136,7 @@ const Register = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     if (!emailVerified) { setError('Please verify your email first.'); return; }
-    if (!aiDisclaimerAccepted) { setError('Please accept the AI Clinical Disclaimer.'); return; }
+    if (role === 'ROLE_PATIENT' && !aiDisclaimerAccepted) { setError('Please accept the AI Clinical Disclaimer.'); return; }
     if (formData.password !== formData.confirmPassword) { setError('Passwords do not match.'); return; }
     if (formData.password.length < 8) { setError('Password must be at least 8 characters.'); return; }
 
@@ -141,35 +144,22 @@ const Register = () => {
     setError('');
     try {
       const formDataToSend = new FormData();
-      const userData = {
+      const endpoint = role === 'ROLE_PATIENT' ? 'auth/register/patient' : 'auth/register/hospital-admin';
+      
+      formDataToSend.append('userData', JSON.stringify({
+        ...formData,
         username: formData.email,
-        email: formData.email,
-        name: formData.name,
-        dateOfBirth: formData.dateOfBirth,
-        age: formData.age,
-        gender: formData.gender,
-        bloodGroup: formData.bloodGroup,
-        phone: formData.phone,
-        alternatePhone: formData.alternatePhone,
-        street: formData.street,
-        city: formData.city,
-        state: formData.state,
-        pinCode: formData.pinCode,
-        emergencyContactName: formData.emergencyContactName,
-        emergencyContactRelationship: formData.emergencyContactRelationship,
-        emergencyContactPhone: formData.emergencyContactPhone,
-        password: formData.password,
-      };
-
-      formDataToSend.append('userData', JSON.stringify(userData));
+        role: role
+      }));
+      
       if (profilePicture) {
         formDataToSend.append('profilePicture', profilePicture);
       }
 
-      await api.post('auth/register/patient', formDataToSend, {
+      await api.post(endpoint, formDataToSend, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      setSuccess('Registration successful! Redirecting...');
+      setSuccess('Registration successful! Redirecting to login...');
       setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
       setError(err.response?.data?.message || 'Error occurred during registration.');
@@ -183,7 +173,7 @@ const Register = () => {
   const sectionHeadClass = "flex items-center gap-2 text-sm font-bold text-primary-700 uppercase tracking-widest mb-4 pb-2 border-b border-primary-100";
 
   return (
-    <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 bg-slate-50 relative overflow-hidden">
+    <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 bg-slate-50 relative overflow-hidden text-left">
       <div className="absolute top-0 left-0 w-full h-80 bg-primary-600 rounded-b-[3rem] shadow-lg -z-10" />
 
       <div className="max-w-3xl mx-auto">
@@ -193,25 +183,43 @@ const Register = () => {
 
         <div className="bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden">
           <div className="bg-primary-600 px-8 py-8 text-white">
-            <div className="flex items-center gap-4">
-              <div className="h-14 w-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-                <UserPlus size={30} />
-              </div>
-              <div>
-                <h2 className="text-2xl font-extrabold tracking-tight">Patient Registration</h2>
-                <p className="text-primary-100 text-sm mt-0.5">Securely join the MEDISYNC portal</p>
-              </div>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="flex items-center gap-4">
+                  <div className="h-14 w-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                    {role === 'ROLE_PATIENT' ? <UserPlus size={30} /> : <Building2 size={30} />}
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-extrabold tracking-tight">
+                        {role === 'ROLE_PATIENT' ? 'Patient Registration' : 'Institutional Onboarding'}
+                    </h2>
+                    <p className="text-primary-100 text-sm mt-0.5">Securely join the MEDISYNC Healthcare Network</p>
+                  </div>
+                </div>
+                <div className="flex bg-white/10 p-1 rounded-xl backdrop-blur-md">
+                    <button 
+                        onClick={() => setRole('ROLE_PATIENT')}
+                        className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${role === 'ROLE_PATIENT' ? 'bg-white text-primary-600 shadow-lg' : 'text-white/60 hover:text-white'}`}
+                    >
+                        Patient
+                    </button>
+                    <button 
+                        onClick={() => setRole('ROLE_HOSPITAL_ADMIN')}
+                        className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${role === 'ROLE_HOSPITAL_ADMIN' ? 'bg-white text-primary-600 shadow-lg' : 'text-white/60 hover:text-white'}`}
+                    >
+                        Institutional
+                    </button>
+                </div>
             </div>
           </div>
 
           <div className="p-8 space-y-8">
             {error && (
-              <div className="bg-red-50 text-red-700 p-4 rounded-xl text-sm font-medium border border-red-200 flex items-start gap-2 animate-in fade-in slide-in-from-top-2">
+              <div className="bg-red-50 text-red-700 p-4 rounded-xl text-sm font-medium border border-red-200 flex items-start gap-2">
                 <AlertCircle size={18} className="shrink-0 mt-0.5" /> {error}
               </div>
             )}
             {success && (
-              <div className="bg-green-50 text-green-700 p-4 rounded-xl text-sm font-medium border border-green-200 flex items-start gap-2 animate-in fade-in slide-in-from-top-2">
+              <div className="bg-green-50 text-green-700 p-4 rounded-xl text-sm font-medium border border-green-200 flex items-start gap-2">
                 <CheckCircle size={18} className="shrink-0 mt-0.5" /> {success}
               </div>
             )}
@@ -222,15 +230,15 @@ const Register = () => {
               <div className="bg-slate-50 rounded-2xl p-6 space-y-4 border border-slate-200 shadow-sm">
                 <h3 className={sectionHeadClass}><Mail size={16} />1. Identity Verification</h3>
                 <div className="relative">
-                  <label className={labelClass}>Email Address <span className="text-red-500">*</span></label>
+                  <label className={labelClass}>Work / Personal Email <span className="text-red-500">*</span></label>
                   <div className="flex gap-2">
                     <input type="email" name="email" required disabled={emailVerified}
                       value={formData.email} onChange={handleChange}
                       className={`${inputClass} ${emailVerified ? 'bg-green-50 border-green-300' : ''} flex-1`}
-                      placeholder="e.g. john@example.com" />
+                      placeholder="e.g. admin@narayanahealth.com" />
                     {!emailVerified && (
                       <button type="button" onClick={handleSendOtp} disabled={verifying}
-                        className="whitespace-nowrap bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-primary-700 disabled:opacity-50 transition-all shadow-sm">
+                        className="whitespace-nowrap bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-primary-700 disabled:opacity-50 transition-all">
                         {verifying ? '...' : otpSent ? 'Resend' : 'Verify'}
                       </button>
                     )}
@@ -243,61 +251,96 @@ const Register = () => {
                     <div className="flex gap-3">
                       <input type="text" maxLength="6" value={otpCode}
                         onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                        className="block w-full text-center text-xl font-bold tracking-[0.3em] rounded-xl border-slate-200 px-3 py-3 border focus:ring-primary-500 focus:border-primary-500"
+                        className="block w-full text-center text-xl font-bold tracking-[0.3em] rounded-xl border-slate-200 px-3 py-3 border focus:ring-primary-500"
                         placeholder="000000" />
                       <button type="button" onClick={handleVerifyOtp} disabled={verifying || otpCode.length < 6}
                         className="bg-primary-600 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-primary-700 shadow-md">
-                        Verify
+                        Confirm
                       </button>
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* 2. Personal Details */}
+              {/* 2. Professional / Personal Details */}
               <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
-                <h3 className={sectionHeadClass}><User size={16} />2. Personal Details</h3>
-                <div className="flex justify-center mb-8">
-                  <ProfilePhotoUpload onFileSelect={setProfilePicture} />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div className="md:col-span-2">
-                    <label className={labelClass}>Full Name <span className="text-red-500">*</span></label>
-                    <input type="text" name="name" required value={formData.name} onChange={handleChange}
-                      className={inputClass} placeholder="Full Name" />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Date of Birth <span className="text-red-500">*</span></label>
-                    <input type="date" name="dateOfBirth" required value={formData.dateOfBirth} onChange={handleChange} className={inputClass} />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Gender <span className="text-red-500">*</span></label>
-                    <select name="gender" required value={formData.gender} onChange={handleChange} className={inputClass}>
-                      <option value="">Select Gender</option>
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className={labelClass}>Blood Group <span className="text-red-500">*</span></label>
-                    <select name="bloodGroup" required value={formData.bloodGroup} onChange={handleChange} className={inputClass}>
-                      <option value="">Select Blood Group</option>
-                      <option value="A+">A+</option><option value="A-">A-</option>
-                      <option value="B+">B+</option><option value="B-">B-</option>
-                      <option value="O+">O+</option><option value="O-">O-</option>
-                      <option value="AB+">AB+</option><option value="AB-">AB-</option>
-                    </select>
-                  </div>
-                </div>
+                <h3 className={sectionHeadClass}>
+                    {role === 'ROLE_PATIENT' ? <User size={16} /> : <Building2 size={16} />}
+                    {role === 'ROLE_PATIENT' ? '2. Personal Details' : '2. Institutional Details'}
+                </h3>
+                
+                {role === 'ROLE_HOSPITAL_ADMIN' ? (
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="md:col-span-2">
+                             <label className={labelClass}>Hospital Name <span className="text-red-500">*</span></label>
+                             <input type="text" name="hospitalName" required value={formData.hospitalName} onChange={handleChange}
+                               className={inputClass} placeholder="e.g. Narayana Health" />
+                        </div>
+                        <div>
+                             <label className={labelClass}>Institutional License <span className="text-red-500">*</span></label>
+                             <input type="text" name="licenseCode" required value={formData.licenseCode} onChange={handleChange}
+                               className={inputClass} placeholder="HL-XXXX-XXXX" />
+                        </div>
+                        <div>
+                             <label className={labelClass}>Your Position <span className="text-red-500">*</span></label>
+                             <select name="position" required value={formData.position} onChange={handleChange} className={inputClass}>
+                                <option value="Chief Administrator">Chief Administrator</option>
+                                <option value="IT Operations">IT Operations</option>
+                                <option value="Medical Director">Medical Director</option>
+                                <option value="Department Head">Department Head</option>
+                             </select>
+                        </div>
+                        <div className="md:col-span-2">
+                             <label className={labelClass}>Administrator Full Name <span className="text-red-500">*</span></label>
+                             <input type="text" name="name" required value={formData.name} onChange={handleChange}
+                               className={inputClass} placeholder="Your Legal Name" />
+                        </div>
+                   </div>
+                ) : (
+                    <>
+                        <div className="flex justify-center mb-8">
+                          <ProfilePhotoUpload onFileSelect={setProfilePicture} />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                          <div className="md:col-span-2">
+                            <label className={labelClass}>Full Name <span className="text-red-500">*</span></label>
+                            <input type="text" name="name" required value={formData.name} onChange={handleChange}
+                              className={inputClass} placeholder="Full Name" />
+                          </div>
+                          <div>
+                            <label className={labelClass}>Date of Birth <span className="text-red-500">*</span></label>
+                            <input type="date" name="dateOfBirth" required value={formData.dateOfBirth} onChange={handleChange} className={inputClass} />
+                          </div>
+                          <div>
+                            <label className={labelClass}>Gender <span className="text-red-500">*</span></label>
+                            <select name="gender" required value={formData.gender} onChange={handleChange} className={inputClass}>
+                              <option value="">Select Gender</option>
+                              <option value="Male">Male</option>
+                              <option value="Female">Female</option>
+                              <option value="Other">Other</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className={labelClass}>Blood Group <span className="text-red-500">*</span></label>
+                            <select name="bloodGroup" required value={formData.bloodGroup} onChange={handleChange} className={inputClass}>
+                              <option value="">Select Blood Group</option>
+                              <option value="A+">A+</option><option value="A-">A-</option>
+                              <option value="B+">B+</option><option value="B-">B-</option>
+                              <option value="O+">O+</option><option value="O-">O-</option>
+                              <option value="AB+">AB+</option><option value="AB-">AB-</option>
+                            </select>
+                          </div>
+                        </div>
+                    </>
+                )}
               </div>
 
-              {/* 3. Contact & Address */}
+              {/* 3. Location Information */}
               <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
-                <h3 className={sectionHeadClass}><Phone size={16} />3. Contact Information</h3>
+                <h3 className={sectionHeadClass}><Phone size={16} />3. {role === 'ROLE_PATIENT' ? 'Contact Information' : 'Facility Location'}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div>
-                    <label className={labelClass}>Mobile Number <span className="text-red-500">*</span></label>
+                    <label className={labelClass}>{role === 'ROLE_PATIENT' ? 'Mobile Number' : 'Institutional Phone'} <span className="text-red-500">*</span></label>
                     <input type="tel" name="phone" required value={formData.phone} onChange={handleChange} className={inputClass} maxLength="10" />
                   </div>
                   <div>
@@ -318,42 +361,40 @@ const Register = () => {
                     <label className={labelClass}>PIN Code <span className="text-red-500">*</span></label>
                     <input type="text" name="pinCode" required value={formData.pinCode} onChange={handleChange} className={inputClass} maxLength="6" />
                   </div>
-                  <div className="md:col-span-2">
-                    <label className={labelClass}>Street Address</label>
-                    <input type="text" name="street" value={formData.street} onChange={handleChange} className={inputClass} />
-                  </div>
                 </div>
               </div>
 
-              {/* 4. Emergency Contact */}
-              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
-                <h3 className={sectionHeadClass}><Heart size={16} />4. Emergency Contact</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div>
-                    <label className={labelClass}>Contact Name <span className="text-red-500">*</span></label>
-                    <input type="text" name="emergencyContactName" required value={formData.emergencyContactName} onChange={handleChange} className={inputClass} />
+              {/* 4. Emergency Contact (Patient Only) */}
+              {role === 'ROLE_PATIENT' && (
+                  <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
+                    <h3 className={sectionHeadClass}><Heart size={16} />4. Emergency Contact</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div>
+                        <label className={labelClass}>Contact Name <span className="text-red-500">*</span></label>
+                        <input type="text" name="emergencyContactName" required value={formData.emergencyContactName} onChange={handleChange} className={inputClass} />
+                      </div>
+                      <div>
+                        <label className={labelClass}>Relationship <span className="text-red-500">*</span></label>
+                        <select name="emergencyContactRelationship" required value={formData.emergencyContactRelationship} onChange={handleChange} className={inputClass}>
+                          <option value="">Select Relationship</option>
+                          <option value="Spouse">Spouse</option>
+                          <option value="Parent">Parent</option>
+                          <option value="Sibling">Sibling</option>
+                          <option value="Guardian">Guardian</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className={labelClass}>Emergency Phone</label>
+                        <input type="tel" name="emergencyContactPhone" value={formData.emergencyContactPhone} onChange={handleChange} className={inputClass} maxLength="10" />
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <label className={labelClass}>Relationship <span className="text-red-500">*</span></label>
-                    <select name="emergencyContactRelationship" required value={formData.emergencyContactRelationship} onChange={handleChange} className={inputClass}>
-                      <option value="">Select Relationship</option>
-                      <option value="Spouse">Spouse</option>
-                      <option value="Parent">Parent</option>
-                      <option value="Sibling">Sibling</option>
-                      <option value="Guardian">Guardian</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className={labelClass}>Emergency Phone</label>
-                    <input type="tel" name="emergencyContactPhone" value={formData.emergencyContactPhone} onChange={handleChange} className={inputClass} maxLength="10" />
-                  </div>
-                </div>
-              </div>
+              )}
 
               {/* 5. Account Security */}
               <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
-                <h3 className={sectionHeadClass}><ShieldCheck size={16} />5. Account Security</h3>
+                <h3 className={sectionHeadClass}><ShieldCheck size={16} /> {role === 'ROLE_PATIENT' ? '5. Account Security' : '4. Admin Security'}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="relative">
                     <label className={labelClass}>Password <span className="text-red-500">*</span></label>
@@ -372,25 +413,21 @@ const Register = () => {
                 </div>
               </div>
 
-              {/* 6. Legal & Ethics */}
-              <div className="bg-blue-50/50 border border-blue-100 p-6 rounded-2xl flex items-start gap-3 shadow-sm">
-                <input type="checkbox" id="aiDisclaimer" checked={aiDisclaimerAccepted} onChange={(e) => setAiDisclaimerAccepted(e.target.checked)} className="mt-1 h-4 w-4 text-primary-600 rounded cursor-pointer" />
-                <label htmlFor="aiDisclaimer" className="text-xs text-slate-600 leading-relaxed cursor-pointer">
-                  <span className="flex items-center gap-1 font-bold text-primary-700 uppercase tracking-tighter mb-0.5">
-                    <Bot size={14} /> AI Clinical Disclaimer
-                  </span>
-                  I acknowledge that Medisync uses AI for clinical analysis. I have read the AI Disclaimer and understand that all AI results must be verified by a physician.
-                </label>
-              </div>
+              {/* 6. AI & Legal */}
+              {role === 'ROLE_PATIENT' && (
+                  <div className="bg-blue-50/50 border border-blue-100 p-6 rounded-2xl flex items-start gap-3">
+                    <input type="checkbox" id="aiDisclaimer" checked={aiDisclaimerAccepted} onChange={(e) => setAiDisclaimerAccepted(e.target.checked)} className="mt-1 h-4 w-4 text-primary-600 rounded cursor-pointer" />
+                    <label htmlFor="aiDisclaimer" className="text-xs text-slate-600 leading-relaxed cursor-pointer font-bold">
+                        AI Clinical Disclaimer: I acknowledge that Medisync uses AI for clinical analysis.
+                    </label>
+                  </div>
+              )}
 
               <div className="pt-2">
-                <button type="submit" disabled={loading || !emailVerified || !aiDisclaimerAccepted}
-                  className={`w-full flex justify-center items-center gap-2 py-4 px-4 rounded-2xl shadow-xl text-md font-extrabold text-white bg-primary-600 hover:bg-primary-700 transition-all ${loading || !emailVerified || !aiDisclaimerAccepted ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01] active:scale-[0.99] hover:shadow-2xl'}`}>
-                  {!emailVerified ? 'Please Verify Email First' : loading ? 'Processing...' : 'Complete Registration'}
+                <button type="submit" disabled={loading || !emailVerified || (role === 'ROLE_PATIENT' && !aiDisclaimerAccepted)}
+                  className={`w-full flex justify-center items-center gap-2 py-4 px-4 rounded-2xl shadow-xl text-md font-extrabold text-white bg-primary-600 hover:bg-primary-700 transition-all ${loading || !emailVerified ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01]'}`}>
+                  {loading ? 'Onboarding Institution...' : 'Complete Registration'}
                 </button>
-                <p className="mt-4 text-center text-xs text-slate-400 uppercase tracking-wider font-medium">
-                  By registering, you agree to our Terms of Service & Privacy Policy
-                </p>
                 <div className="mt-8 opacity-60">
                    <LegalFooter />
                 </div>
