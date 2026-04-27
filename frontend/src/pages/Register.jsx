@@ -303,7 +303,7 @@ const Register = () => {
                 </h3>
                 
                 <div className="flex flex-col items-center gap-6 mb-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+                    <div className={`grid grid-cols-1 ${role === 'ROLE_HOSPITAL_ADMIN' ? 'md:grid-cols-2' : ''} gap-8 w-full`}>
                         <div className="flex flex-col items-center gap-2">
                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
                                 {role === 'ROLE_PATIENT' ? 'Profile Photo' : 'Professional Identity'}
