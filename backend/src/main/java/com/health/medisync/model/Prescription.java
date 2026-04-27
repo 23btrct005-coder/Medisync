@@ -14,6 +14,10 @@ public class Prescription {
     @JoinColumn(name = "patient_id")
     private Patient patient;
 
+    @ManyToOne
+    @JoinColumn(name = "doctor_id")
+    private Doctor doctor;
+
     @Column(nullable = false)
     private String medicineName;
 
@@ -26,6 +30,8 @@ public class Prescription {
     private String duration; // e.g., 5 days
 
     private String instructions;
+
+    private String followUpDate;
 
     private boolean isActive = true;
 
@@ -51,6 +57,10 @@ public class Prescription {
     public void setDuration(String duration) { this.duration = duration; }
     public String getInstructions() { return instructions; }
     public void setInstructions(String instructions) { this.instructions = instructions; }
+    public String getFollowUpDate() { return followUpDate; }
+    public void setFollowUpDate(String followUpDate) { this.followUpDate = followUpDate; }
+    public Doctor getDoctor() { return doctor; }
+    public void setDoctor(Doctor doctor) { this.doctor = doctor; }
     public boolean isActive() { return isActive; }
     public void setActive(boolean active) { isActive = active; }
     public Instant getCreatedAt() { return createdAt; }
