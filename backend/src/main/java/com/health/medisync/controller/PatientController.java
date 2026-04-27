@@ -19,10 +19,14 @@ public class PatientController {
 
     private final PatientService patientService;
     private final com.health.medisync.service.AuditLogService auditLogService;
+    private final com.health.medisync.service.TelemetryService telemetryService;
 
-    public PatientController(PatientService patientService, com.health.medisync.service.AuditLogService auditLogService) {
+    public PatientController(PatientService patientService, 
+                             com.health.medisync.service.AuditLogService auditLogService,
+                             com.health.medisync.service.TelemetryService telemetryService) {
         this.patientService = patientService;
         this.auditLogService = auditLogService;
+        this.telemetryService = telemetryService;
     }
 
     @GetMapping("/profile")
@@ -123,5 +127,12 @@ public class PatientController {
     public ResponseEntity<List<com.health.medisync.model.AuditLog>> getMyAuditLogs(Authentication authentication) {
         com.health.medisync.model.Patient patient = patientService.getPatientProfile(authentication.getName());
         return ResponseEntity.ok(auditLogService.getPatientAuditLogs(patient.getId()));
+    }
+
+    @GetMapping("/vitals")
+    public ResponseEntity<List<com.health.medisync.model.Telemetry>> getMyVitals(Authentication authentication) {
+        com.health.medisync.model.Patient patient = patientService.getPatientProfile(authentication.getName());
+        if (patient == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(telemetryService.getPatientTelemetry(patient.getId()));
     }
 }
