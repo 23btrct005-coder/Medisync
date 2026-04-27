@@ -7,6 +7,7 @@ import com.health.medisync.model.User;
 import com.health.medisync.repository.DoctorRepository;
 import com.health.medisync.repository.HospitalAdminRepository;
 import com.health.medisync.repository.HospitalRepository;
+import com.health.medisync.repository.AppointmentRepository;
 import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
@@ -18,13 +19,16 @@ public class HospitalService {
     private final HospitalRepository hospitalRepository;
     private final HospitalAdminRepository hospitalAdminRepository;
     private final DoctorRepository doctorRepository;
+    private final AppointmentRepository appointmentRepository;
 
     public HospitalService(HospitalRepository hospitalRepository, 
                            HospitalAdminRepository hospitalAdminRepository, 
-                           DoctorRepository doctorRepository) {
+                           DoctorRepository doctorRepository,
+                           AppointmentRepository appointmentRepository) {
         this.hospitalRepository = hospitalRepository;
         this.hospitalAdminRepository = hospitalAdminRepository;
         this.doctorRepository = doctorRepository;
+        this.appointmentRepository = appointmentRepository;
     }
 
     public HospitalAdmin getAdminByUser(User user) {
@@ -39,6 +43,7 @@ public class HospitalService {
         long totalDoctors = doctors.size();
         long pendingDoctors = doctors.stream().filter(d -> !d.isApproved()).count();
         
+        stats.put("hospitalId", hospital.getId());
         stats.put("hospitalName", hospital.getName());
         stats.put("totalDoctors", totalDoctors);
         stats.put("pendingDoctors", pendingDoctors);
@@ -62,5 +67,22 @@ public class HospitalService {
         
         doctor.setApproved(true);
         doctorRepository.save(doctor);
+    }
+
+    public List<?> getHospitalAppointments(Hospital hospital) {
+        // Fetch all appointments for all doctors in this hospital
+        return doctorRepository.findByHospitalEntity(hospital).stream()
+                .flatMap(d -> appointmentRepository.findByDoctorId(d.getId()).stream())
+                .sorted((a, b) -> b.getId().compareTo(a.getId())) // Newest first
+                .toList();
+    }
+
+    public List<?> getHospitalPatients(Hospital hospital) {
+        // Fetch unique patients across all doctors in the hospital
+        return doctorRepository.findByHospitalEntity(hospital).stream()
+                .flatMap(d -> appointmentRepository.findByDoctorId(d.getId()).stream())
+                .map(a -> a.getPatient())
+                .distinct()
+                .toList();
     }
 }

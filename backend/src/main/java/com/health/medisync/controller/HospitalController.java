@@ -49,4 +49,20 @@ public class HospitalController {
         hospitalService.approveDoctor(id, admin.getHospital());
         return ResponseEntity.ok(Map.of("message", "Physician approved successfully"));
     }
+
+    @GetMapping("/appointments")
+    public ResponseEntity<?> getAppointments(@AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        HospitalAdmin admin = hospitalService.getAdminByUser(user);
+        return ResponseEntity.ok(hospitalService.getHospitalAppointments(admin.getHospital()));
+    }
+
+    @GetMapping("/patients")
+    public ResponseEntity<?> getPatients(@AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        HospitalAdmin admin = hospitalService.getAdminByUser(user);
+        return ResponseEntity.ok(hospitalService.getHospitalPatients(admin.getHospital()));
+    }
 }

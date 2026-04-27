@@ -14,13 +14,28 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
     navigate('/login');
   };
 
+  const isAdmin = user?.role === 'ROLE_HOSPITAL_ADMIN';
+  const prefix = isAdmin ? '/hospital-dashboard' : '/doctor-dashboard';
+
   const navItems = [
-    { name: 'Dashboard', path: '/doctor-dashboard', icon: <LayoutDashboard size={20} /> },
-    { name: 'My Appointments', path: '/doctor-dashboard/appointments', icon: <Calendar size={20} /> },
-    { name: 'Patient Directory', path: '/doctor-dashboard/patients', icon: <Users size={20} /> },
+    { 
+      name: 'Dashboard', 
+      path: prefix, 
+      icon: <LayoutDashboard size={20} /> 
+    },
+    { 
+      name: isAdmin ? 'Hospital Ledger' : 'My Appointments', 
+      path: `${prefix}/appointments`, 
+      icon: <Calendar size={20} /> 
+    },
+    { 
+      name: isAdmin ? 'Staff Physician Roster' : 'Patient Directory', 
+      path: isAdmin ? prefix : `${prefix}/patients`, 
+      icon: <Users size={20} /> 
+    },
     { 
       name: 'My Profile', 
-      path: '/doctor-dashboard/profile', 
+      path: `${prefix}/profile`, 
       icon: (
         <div className="h-5 w-5 rounded-full overflow-hidden border border-slate-700 bg-slate-800 flex items-center justify-center -ml-1 mr-1">
           {photoUrl ? (
