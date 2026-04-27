@@ -134,6 +134,8 @@ const DoctorRegisterForm = ({ onBack }) => {
   const labelCls = "block text-xs font-bold text-slate-500 uppercase mb-1 ml-1 tracking-wide";
   const sectionCls = "flex items-center gap-2 text-sm font-bold text-primary-700 uppercase tracking-widest mb-4 pb-2 border-b border-primary-100";
 
+  const [enrollmentRole, setEnrollmentRole] = useState('DOCTOR'); // DOCTOR or HOSPITAL
+
   return (
     <div className="min-h-screen py-10 px-4 bg-slate-50 relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-72 bg-gradient-to-br from-blue-800 to-blue-600 rounded-b-[3rem] -z-10" />
@@ -145,14 +147,34 @@ const DoctorRegisterForm = ({ onBack }) => {
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100">
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-800 to-blue-600 px-8 py-8 text-white">
-            <div className="flex items-center gap-4">
-              <div className="h-14 w-14 bg-white/20 rounded-2xl flex items-center justify-center">
-                <Stethoscope size={30} />
-              </div>
-              <div>
-                <h2 className="text-2xl font-extrabold">Physician Enrollment</h2>
-                <p className="text-blue-200 text-sm mt-0.5">Join the MEDISYNC Physician Network</p>
-              </div>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="flex items-center gap-4">
+                  <div className="h-14 w-14 bg-white/20 rounded-2xl flex items-center justify-center">
+                    {enrollmentRole === 'DOCTOR' ? <Stethoscope size={30} /> : <Building2 size={30} />}
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-extrabold">{enrollmentRole === 'DOCTOR' ? 'Physician Enrollment' : 'Institutional Onboarding'}</h2>
+                    <p className="text-blue-200 text-sm mt-0.5">Join the MEDISYNC Healthcare Network</p>
+                  </div>
+                </div>
+                <div className="flex bg-white/10 p-1 rounded-xl backdrop-blur-md self-start md:self-auto">
+                    <button 
+                        onClick={() => setEnrollmentRole('DOCTOR')}
+                        className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${enrollmentRole === 'DOCTOR' ? 'bg-white text-blue-700 shadow-lg' : 'text-white/60 hover:text-white'}`}
+                    >
+                        Physician
+                    </button>
+                    <button 
+                        onClick={() => {
+                            if (enrollmentRole !== 'HOSPITAL') {
+                                navigate('/register'); // Redirect to main institutional register which is already battle-hardened
+                            }
+                        }}
+                        className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${enrollmentRole === 'HOSPITAL' ? 'bg-white text-blue-700 shadow-lg' : 'text-white/60 hover:text-white'}`}
+                    >
+                        Institutional
+                    </button>
+                </div>
             </div>
           </div>
 
@@ -554,20 +576,16 @@ const DoctorLogin = () => {
               className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition block w-full">
               New physician? Request Access →
             </button>
-            <div className="pt-4 border-t border-slate-100 flex flex-col gap-3">
-                <button 
-                  type="button" 
-                  onClick={() => navigate('/register')}
-                  className="w-full flex justify-center items-center gap-2 py-3 rounded-xl shadow-md font-black text-[10px] uppercase tracking-widest text-white bg-gradient-to-r from-emerald-600 to-teal-500 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                >
-                  <Building2 size={14} /> New Institution? Register Hospital
-                </button>
-                
-                <button type="button" onClick={() => navigate('/login')}
-                  className="text-xs text-slate-400 hover:text-slate-600 underline text-center">
-                  Return to Patient Portal
+            <div className="pt-2 border-t border-slate-50">
+                <button type="button" onClick={() => navigate('/register')}
+                  className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 hover:text-blue-600 transition flex items-center justify-center gap-1.5 w-full">
+                  <Building2 size={12} /> Institutional Hospital Onboarding →
                 </button>
             </div>
+            <button type="button" onClick={() => navigate('/login')}
+              className="text-xs text-slate-400 hover:text-slate-600 underline">
+              Return to Patient Portal
+            </button>
           </div>
         </form>
         <LegalFooter className="pb-8" />
