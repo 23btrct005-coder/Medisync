@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { 
     LayoutDashboard, FileText, ClipboardList, User, Users, 
     LogOut, CalendarPlus, Calendar, UserCheck, Grid, X,
-    ExternalLink, Shield, Settings, HelpCircle, Bell
+    ExternalLink, Shield, Settings, HelpCircle, Bell, Activity, Pill, ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
@@ -34,11 +34,12 @@ const BottomNav = () => {
 
     // Secondary Application Hub (Inside 'Apps' Menu)
     const secondaryNav = isDoctor ? [] : [
-        { name: 'Book Doctor', path: '/dashboard/booking', icon: <CalendarPlus size={20} />, description: 'Schedule new sessions' },
-        { name: 'My sessions', path: '/dashboard/sessions', icon: <Calendar size={20} />, description: 'Upcoming appointments' },
-        { name: 'Clinical Partners', path: '/dashboard/doctors', icon: <UserCheck size={20} />, description: 'Linked physicians' },
-        { name: 'Privacy Center', path: '/dashboard/profile', icon: <Shield size={20} />, description: 'Security & RLS' },
-        { name: 'Notifications', path: '/dashboard', icon: <Bell size={20} />, description: 'System alerts' },
+        { name: 'Vitals', path: '/dashboard/vitals', icon: <Activity size={20} />, description: 'Telemetry charts' },
+        { name: 'Medications', path: '/dashboard/medications', icon: <Pill size={20} />, description: 'Smart adherence' },
+        { name: 'Security', path: '/dashboard/security', icon: <ShieldCheck size={20} />, description: 'Access ledger' },
+        { name: 'Book Doctor', path: '/dashboard/booking', icon: <CalendarPlus size={20} />, description: 'Schedule visit' },
+        { name: 'My sessions', path: '/dashboard/sessions', icon: <Calendar size={20} />, description: 'Timeline' },
+        { name: 'Physicians', path: '/dashboard/doctors', icon: <UserCheck size={20} />, description: 'Linked team' },
         { name: 'Help Hub', path: '/dashboard', icon: <HelpCircle size={20} />, description: 'Documentation' }
     ];
 

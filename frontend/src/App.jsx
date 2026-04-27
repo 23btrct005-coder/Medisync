@@ -19,6 +19,10 @@ import Reports from './pages/Reports';
 import Sessions from './pages/Sessions';
 import Booking from './pages/Booking';
 import Profile from './pages/Profile';
+import ClinicalVitals from './pages/ClinicalVitals';
+import MedicationAdherence from './pages/MedicationAdherence';
+import SecurityLogs from './pages/SecurityLogs';
+import HealthWallet from './pages/HealthWallet';
 import ClinicalExecutiveConsul from './pages/ClinicalExecutiveConsul';
 import ClinicalCensusRegistry from './pages/ClinicalCensusRegistry';
 import ClinicalPatientDossier from './pages/ClinicalPatientDossier';
@@ -114,8 +118,12 @@ function App() {
                   </ProtectedRoute>
                 }>
                   <Route index element={<Dashboard />} />
+                  <Route path="wallet" element={<HealthWallet />} />
                   <Route path="records" element={<MedicalHistory />} />
                   <Route path="reports" element={<Reports />} />
+                  <Route path="vitals" element={<ClinicalVitals />} />
+                  <Route path="medications" element={<MedicationAdherence />} />
+                  <Route path="security" element={<SecurityLogs />} />
                   <Route path="sessions" element={<Sessions />} />
                   <Route path="booking" element={<Booking />} />
                   <Route path="doctors" element={<DoctorsList />} />
