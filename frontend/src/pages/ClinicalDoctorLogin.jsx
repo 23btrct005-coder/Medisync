@@ -1,5 +1,4 @@
-// Doctor Portal — Login + Full Registration Form
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
