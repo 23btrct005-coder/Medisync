@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, UserPlus, Building2, Mail, Lock, User, Phone, MapPin, Camera, AlertCircle, CheckCircle, GraduationCap, Briefcase } from 'lucide-react';
+import { ArrowLeft, UserPlus, Building2, Mail, Lock, User, Phone, MapPin, Camera, AlertCircle, CheckCircle, GraduationCap, Briefcase, ShieldCheck } from 'lucide-react';
 import api from '../api/axiosConfig';
 import ProfilePhotoUpload from '../components/ProfilePhotoUpload';
 import LegalFooter from '../components/LegalFooter';
