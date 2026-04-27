@@ -29,10 +29,15 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
       icon: <Calendar size={20} /> 
     },
     { 
-      name: isAdmin ? 'Staff Physician Roster' : 'Patient Directory', 
+      name: isAdmin ? 'Staff Roster' : 'Patient Directory', 
       path: isAdmin ? prefix : `${prefix}/patients`, 
       icon: <Users size={20} /> 
     },
+    ...(isAdmin ? [{
+      name: 'Patient Registry',
+      path: `${prefix}/patients`,
+      icon: <Activity size={20} />
+    }] : []),
     { 
       name: 'My Profile', 
       path: `${prefix}/profile`, 

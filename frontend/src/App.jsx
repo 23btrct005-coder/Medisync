@@ -40,6 +40,9 @@ import AIDisclaimer from './pages/AIDisclaimer';
 import Settings from './pages/Settings';
 import Support from './pages/Support';
 import HospitalDashboard from './pages/HospitalDashboard';
+import HospitalAppointments from './pages/HospitalAppointments';
+import HospitalPatients from './pages/HospitalPatients';
+import HospitalProfile from './pages/HospitalProfile';
 import ClinicalError404 from './pages/ClinicalError404';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -167,7 +170,10 @@ function App() {
                   </ProtectedRoute>
                 }>
                   <Route index element={<HospitalDashboard />} />
-                  <Route path="staff" element={<HospitalDashboard />} /> {/* Using same component for staff management list */}
+                  <Route path="appointments" element={<HospitalAppointments />} />
+                  <Route path="patients" element={<HospitalPatients />} />
+                  <Route path="profile" element={<HospitalProfile />} />
+                  <Route path="staff" element={<HospitalDashboard />} />
                   <Route path="settings" element={<Settings />} />
                   <Route path="support" element={<Support />} />
                 </Route>
