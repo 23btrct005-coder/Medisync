@@ -1,41 +1,49 @@
 package com.health.medisync.controller;
 
 import com.health.medisync.model.Doctor;
+import com.health.medisync.model.HospitalAdmin;
+import com.health.medisync.model.User;
 import com.health.medisync.service.HospitalService;
+import com.health.medisync.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/hospital")
-@CrossOrigin(origins = "*", maxAge = 3600)
+@RequiredArgsConstructor
 public class HospitalController {
-    
-    private final HospitalService hospitalService;
 
-    public HospitalController(HospitalService hospitalService) {
-        this.hospitalService = hospitalService;
-    }
+    private final HospitalService hospitalService;
+    private final UserRepository userRepository;
 
     @GetMapping("/stats")
-    public ResponseEntity<Map<String, Object>> getStats(Authentication authentication) {
-        return ResponseEntity.ok(hospitalService.getHospitalStats(authentication.getName()));
+    public ResponseEntity<?> getStats(@AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        HospitalAdmin admin = hospitalService.getAdminByUser(user);
+        return ResponseEntity.ok(hospitalService.getHospitalStats(admin.getHospital()));
     }
 
     @GetMapping("/doctors")
-    public ResponseEntity<List<Doctor>> getDoctors(Authentication authentication) {
-        return ResponseEntity.ok(hospitalService.getHospitalDoctors(authentication.getName()));
+    public ResponseEntity<List<Doctor>> getDoctors(@AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        HospitalAdmin admin = hospitalService.getAdminByUser(user);
+        return ResponseEntity.ok(hospitalService.getHospitalDoctors(admin.getHospital()));
     }
 
     @PostMapping("/approve-doctor/{id}")
-    public ResponseEntity<?> approveDoctor(@PathVariable Long id, Authentication authentication) {
-        try {
-            hospitalService.approveDoctor(authentication.getName(), id);
-            return ResponseEntity.ok(Map.of("message", "Staff physician approved successfully"));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
-        }
+    public ResponseEntity<?> approveDoctor(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        HospitalAdmin admin = hospitalService.getAdminByUser(user);
+        hospitalService.approveDoctor(id, admin.getHospital());
+        return ResponseEntity.ok(Map.of("message", "Physician approved successfully"));
     }
 }

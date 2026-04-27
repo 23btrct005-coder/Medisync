@@ -63,6 +63,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/health/**", "/health/**").permitAll()
                 .requestMatchers("/api/patient/profile/sync", "/patient/profile/sync").permitAll()
                 .requestMatchers("/api/admin/diagnose/**").permitAll()
+                .requestMatchers("/api/hospital/**").hasRole("HOSPITAL_ADMIN")
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated()
