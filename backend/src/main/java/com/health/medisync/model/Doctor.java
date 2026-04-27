@@ -37,7 +37,12 @@ public class Doctor {
     private String medicalLicenseNumber;
 
     // Work Details
-    private String hospital;
+    private String hospital; // Keep for legacy/external compatibility
+
+    @ManyToOne
+    @JoinColumn(name = "hospital_id")
+    private Hospital hospitalEntity;
+
     private Integer yearsOfExperience;
     private String consultationFee;
     private Double onlineConsultationFee;
@@ -139,4 +144,7 @@ public class Doctor {
 
     public String getProfilePictureUrl() { return profilePictureUrl; }
     public void setProfilePictureUrl(String profilePictureUrl) { this.profilePictureUrl = profilePictureUrl; }
+
+    public Hospital getHospitalEntity() { return hospitalEntity; }
+    public void setHospitalEntity(Hospital hospitalEntity) { this.hospitalEntity = hospitalEntity; }
 }

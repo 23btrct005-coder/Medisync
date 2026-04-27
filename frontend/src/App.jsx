@@ -39,6 +39,7 @@ import TermsOfService from './pages/TermsOfService';
 import AIDisclaimer from './pages/AIDisclaimer';
 import Settings from './pages/Settings';
 import Support from './pages/Support';
+import HospitalDashboard from './pages/HospitalDashboard';
 import ClinicalError404 from './pages/ClinicalError404';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -51,6 +52,7 @@ const ProtectedRoute = ({ children, allowedRole }) => {
   }
   if (allowedRole && userRole !== allowedRole) {
     if (userRole === 'ROLE_ADMIN') return <Navigate to="/admin-dashboard" />;
+    if (userRole === 'ROLE_HOSPITAL_ADMIN') return <Navigate to="/hospital-dashboard" />;
     return <Navigate to={userRole === 'ROLE_DOCTOR' ? '/doctor-dashboard' : '/'} />;
   }
   return children;
@@ -156,6 +158,18 @@ function App() {
                   </ProtectedRoute>
                 }>
                   <Route index element={<AdminDashboard />} />
+                </Route>
+
+                {/* Hospital Admin Routes */}
+                <Route path="/hospital-dashboard" element={
+                  <ProtectedRoute allowedRole="ROLE_HOSPITAL_ADMIN">
+                    <ClinicalInfrastructureLayout />
+                  </ProtectedRoute>
+                }>
+                  <Route index element={<HospitalDashboard />} />
+                  <Route path="staff" element={<HospitalDashboard />} /> {/* Using same component for staff management list */}
+                  <Route path="settings" element={<Settings />} />
+                  <Route path="support" element={<Support />} />
                 </Route>
 
                 {/* Catch-all Not Found Route */}

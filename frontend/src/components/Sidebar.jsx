@@ -63,6 +63,15 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     },
   ];
 
+  const hospitalItems = [
+    { name: 'Command Center', path: '/hospital-dashboard', icon: <LayoutDashboard size={20} /> },
+    { name: 'Staff Physician Manager', path: '/hospital-dashboard/staff', icon: <UserCheck size={20} /> },
+    { name: 'Institutional Wallet', path: '/dashboard/wallet', icon: <Wallet size={20} /> },
+    { name: 'Compliance LEDGER', path: '/dashboard/security', icon: <ShieldCheck size={20} /> },
+  ];
+
+  const currentItems = user?.role === 'ROLE_HOSPITAL_ADMIN' ? hospitalItems : navItems;
+
   return (
     <>
       <div className={`hidden md:flex flex-col border-r border-slate-200 bg-white shadow-xl z-30 w-64 h-screen shrink-0`}>
@@ -72,11 +81,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       </div>
 
       <nav className="flex-1 py-6 px-4 space-y-2">
-        {navItems.map((item) => (
+        {currentItems.map((item) => (
           <NavLink
             key={item.name}
             to={item.path}
-            end={item.path === '/dashboard'}
+            end={item.path === '/dashboard' || item.path === '/hospital-dashboard'}
             onMouseEnter={() => prefetchData(item.path)}
             className={({ isActive }) =>
               `flex items-center px-4 py-3 rounded-lg transition-all duration-200 ${
