@@ -22,17 +22,20 @@ public class HospitalService {
     private final DoctorRepository doctorRepository;
     private final AppointmentRepository appointmentRepository;
     private final DepartmentRepository departmentRepository;
+    private final UserRepository userRepository;
 
     public HospitalService(HospitalRepository hospitalRepository, 
                            HospitalAdminRepository hospitalAdminRepository, 
                            DoctorRepository doctorRepository,
                            AppointmentRepository appointmentRepository,
-                           DepartmentRepository departmentRepository) {
+                           DepartmentRepository departmentRepository,
+                           UserRepository userRepository) {
         this.hospitalRepository = hospitalRepository;
         this.hospitalAdminRepository = hospitalAdminRepository;
         this.doctorRepository = doctorRepository;
         this.appointmentRepository = appointmentRepository;
         this.departmentRepository = departmentRepository;
+        this.userRepository = userRepository;
     }
 
     public HospitalAdmin getAdminByUser(User user) {
@@ -82,6 +85,10 @@ public class HospitalService {
         }
         
         doctor.setApproved(true);
+        if (doctor.getUser() != null) {
+            doctor.getUser().setEnabled(true);
+            userRepository.save(doctor.getUser());
+        }
         doctorRepository.save(doctor);
     }
 
