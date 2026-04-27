@@ -554,6 +554,12 @@ const DoctorLogin = () => {
               className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition block w-full">
               New physician? Request Access →
             </button>
+            <div className="pt-2 border-t border-slate-50">
+                <button type="button" onClick={() => navigate('/register')}
+                  className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 hover:text-blue-600 transition flex items-center justify-center gap-1.5 w-full">
+                  <Building2 size={12} /> Institutional Hospital Onboarding →
+                </button>
+            </div>
             <button type="button" onClick={() => navigate('/login')}
               className="text-xs text-slate-400 hover:text-slate-600 underline">
               Return to Patient Portal
