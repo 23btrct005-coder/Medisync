@@ -365,7 +365,7 @@ public class AuthController {
                     try {
                         String logoUrl = supabaseStorageService.uploadFile(hospitalLogo);
                         if (logoUrl != null) h.setLogoUrl(logoUrl);
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         System.err.println("Failed to upload hospital logo: " + e.getMessage());
                     }
                 }
