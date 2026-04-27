@@ -18,6 +18,7 @@ public class HospitalAdmin {
     private Hospital hospital;
 
     private String position;
+    private String profilePictureUrl;
 
     // Getters & Setters
     public Long getId() { return id; }
@@ -31,4 +32,7 @@ public class HospitalAdmin {
 
     public String getPosition() { return position; }
     public void setPosition(String position) { this.position = position; }
+
+    public String getProfilePictureUrl() { return profilePictureUrl; }
+    public void setProfilePictureUrl(String profilePictureUrl) { this.profilePictureUrl = profilePictureUrl; }
 }

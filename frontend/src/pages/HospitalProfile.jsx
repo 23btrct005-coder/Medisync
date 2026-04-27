@@ -1,9 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Building2, Mail, Phone, MapPin, Shield, UserCircle, Activity } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/axiosConfig';
 
 const HospitalProfile = () => {
     const { user } = useAuth();
+    const [profile, setProfile] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const res = await api.get('/hospital/profile');
+                setProfile(res.data);
+            } catch (err) {
+                console.error("Institutional profile sync failed", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProfile();
+    }, []);
 
     return (
         <div className="p-8">
@@ -16,7 +33,11 @@ const HospitalProfile = () => {
                 <div className="lg:col-span-1 space-y-8">
                     <div className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-xl flex flex-col items-center text-center">
                         <div className="w-32 h-32 rounded-[2.5rem] bg-primary/10 border-4 border-white shadow-lg flex items-center justify-center mb-6 overflow-hidden">
-                            <Building2 size={64} className="text-primary" />
+                            {profile?.profilePictureUrl ? (
+                                <img src={profile.profilePictureUrl} alt="Admin" className="w-full h-full object-cover" />
+                            ) : (
+                                <Building2 size={64} className="text-primary" />
+                            )}
                         </div>
                         <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight italic">{user?.name}</h2>
                         <p className="px-4 py-1 bg-amber-50 text-amber-600 rounded-full text-[10px] font-black uppercase tracking-widest mt-2 border border-amber-100">

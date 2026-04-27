@@ -65,4 +65,12 @@ public class HospitalController {
         HospitalAdmin admin = hospitalService.getAdminByUser(user);
         return ResponseEntity.ok(hospitalService.getHospitalPatients(admin.getHospital()));
     }
+
+    @GetMapping("/profile")
+    public ResponseEntity<?> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        HospitalAdmin admin = hospitalService.getAdminByUser(user);
+        return ResponseEntity.ok(admin);
+    }
 }
