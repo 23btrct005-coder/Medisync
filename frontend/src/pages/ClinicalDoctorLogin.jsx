@@ -554,16 +554,20 @@ const DoctorLogin = () => {
               className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition block w-full">
               New physician? Request Access →
             </button>
-            <div className="pt-2 border-t border-slate-50">
-                <button type="button" onClick={() => navigate('/register')}
-                  className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 hover:text-blue-600 transition flex items-center justify-center gap-1.5 w-full">
-                  <Building2 size={12} /> Institutional Hospital Onboarding →
+            <div className="pt-4 border-t border-slate-100 flex flex-col gap-3">
+                <button 
+                  type="button" 
+                  onClick={() => navigate('/register')}
+                  className="w-full flex justify-center items-center gap-2 py-3 rounded-xl shadow-md font-black text-[10px] uppercase tracking-widest text-white bg-gradient-to-r from-emerald-600 to-teal-500 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                >
+                  <Building2 size={14} /> New Institution? Register Hospital
+                </button>
+                
+                <button type="button" onClick={() => navigate('/login')}
+                  className="text-xs text-slate-400 hover:text-slate-600 underline text-center">
+                  Return to Patient Portal
                 </button>
             </div>
-            <button type="button" onClick={() => navigate('/login')}
-              className="text-xs text-slate-400 hover:text-slate-600 underline">
-              Return to Patient Portal
-            </button>
           </div>
         </form>
         <LegalFooter className="pb-8" />
