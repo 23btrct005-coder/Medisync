@@ -31,20 +31,26 @@ public class MedisyncApplication {
     public static void main(String[] args) {
         // [STARTUP DIAGNOSTIC] - Check Environment BEFORE Spring context starts
         String springUrl = System.getenv("SPRING_DATASOURCE_URL");
-        String legacyUrl = System.getenv("DB_URL");
+        
+        // [DATABASE SELF-HEALING] - Resolve Supabase Pooler Timeouts
+        if (springUrl != null && (springUrl.contains(".pooler.supabase.com") || springUrl.contains(".supabase.co")) && springUrl.contains(":5432")) {
+            System.out.println("[SELF-HEALING] Detected direct port 5432 on pooled instance. Re-routing to Session Pooler (6543) for stability.");
+            springUrl = springUrl.replace(":5432", ":6543");
+            System.setProperty("spring.datasource.url", springUrl);
+        }
+
         String dbUser = System.getenv("SPRING_DATASOURCE_USERNAME");
-        String dbPass = System.getenv("SPRING_DATASOURCE_PASSWORD");
         String port = System.getenv("PORT");
 
         System.out.println("=================================================");
         System.out.println("[DIAGNOSTIC] JVM Started");
-        System.out.println("[DIAGNOSTIC] FINAL MATCH: Mumbai aws-1 (3.111.225.200)");
+        System.out.println("[DIAGNOSTIC] DB_HEALTH: Attempting connection to Session Pooler (6543)");
         System.out.println("[DIAGNOSTIC] PROJECT: bwjmzottkkxrdztqqeju");
         System.out.println("[DIAGNOSTIC] SPRING_DATASOURCE_URL: " + maskPassword(springUrl));
         System.out.println("[DIAGNOSTIC] DB_USER env: " + dbUser);
         System.out.println("[DIAGNOSTIC] Port (env): " + port);
         System.out.println("=================================================");
-        System.out.flush(); // Force Render to show logs immediately
+        System.out.flush();
 
         try {
             SpringApplication.run(MedisyncApplication.class, args);
