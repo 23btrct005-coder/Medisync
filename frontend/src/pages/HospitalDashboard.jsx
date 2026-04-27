@@ -137,93 +137,62 @@ const HospitalDashboard = () => {
 
             {/* Main Content Sections */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
-                {/* Staff Roster */}
-                <div className="lg:col-span-2">
-                    <div className="bg-white border border-slate-100 rounded-[2.5rem] p-10">
-                        <div className="flex items-center justify-between mb-10">
-                            <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight flex items-center gap-3">
-                                <ClipboardCheck className="text-primary" /> Staff Physician Roster
-                            </h2>
-                            <div className="relative">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                                <input 
-                                    type="text" 
-                                    placeholder="Search staff..." 
-                                    className="pl-12 pr-6 py-3 bg-slate-50 border-none rounded-xl text-xs font-bold w-64 focus:ring-2 ring-primary/20"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            {doctors.map(doctor => (
-                                <div key={doctor.id} className="flex items-center gap-6 p-6 bg-slate-50 border border-slate-100 rounded-3xl group hover:border-primary/20 transition-all">
-                                    <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200 overflow-hidden shrink-0">
-                                        <img 
-                                            src={doctor.profilePictureUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${doctor.id}`} 
-                                            alt={doctor.name}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <h4 className="text-sm font-black text-slate-800 uppercase tracking-tight truncate">Dr. {doctor.name}</h4>
-                                        <p className="text-[10px] font-black text-primary uppercase tracking-widest">{doctor.specialization}</p>
-                                        <div className="flex items-center gap-3 mt-2 h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
-                                            <div className="bg-emerald-500 h-full w-[85%]" />
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        {doctor.approved ? (
-                                            <span className="px-4 py-2 bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest rounded-xl">Verified Access</span>
-                                        ) : (
-                                            <button 
-                                                onClick={() => approveDoctor(doctor.id)}
-                                                className="px-4 py-2 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-primary transition-all"
-                                            >
-                                                Approve Staff
-                                            </button>
-                                        )}
-                                        <button className="p-3 bg-white border border-slate-200 text-slate-400 rounded-xl hover:text-primary transition-all">
-                                            <ChevronRight size={18} />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Side Panel: Departments */}
-                <div className="space-y-8">
-                    <div className="bg-slate-900 rounded-[2.5rem] p-10 text-white">
-                        <h3 className="text-xl font-black mb-8 uppercase tracking-tight italic">Dept <span className="not-italic text-primary">Velocity</span></h3>
-                        <div className="space-y-6">
+            {/* Institutional High-Fidelity Overview */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                <div className="bg-slate-900 p-10 rounded-[3.5rem] shadow-2xl relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 -mr-32 -mt-32 rounded-full blur-3xl group-hover:bg-primary/20 transition-all" />
+                    <div className="relative z-10">
+                        <h3 className="text-white text-xl font-black uppercase tracking-tight italic mb-8">Departmental <span className="text-primary not-italic">Load Dynamics</span></h3>
+                        <div className="space-y-8">
                             {[
-                                { name: 'Cardiology', load: '88%', trend: 'up' },
-                                { name: 'Neurology', load: '65%', trend: 'stable' },
-                                { name: 'Pediatrics', load: '94%', trend: 'up' },
+                                { name: 'Cardiology', value: 88, color: 'bg-blue-500' },
+                                { name: 'Neurology', value: 65, color: 'bg-indigo-500' },
+                                { name: 'Pediatrics', value: 94, color: 'bg-rose-500' },
                             ].map((dept, idx) => (
-                                <div key={idx}>
-                                    <div className="flex justify-between items-center mb-2">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{dept.name}</span>
-                                        <span className="text-[10px] font-black text-white">{dept.load}</span>
+                                <div key={idx} className="space-y-3">
+                                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                        <span>{dept.name}</span>
+                                        <span className="text-white font-bold">{dept.value}% Operational</span>
                                     </div>
-                                    <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-                                        <div className={`h-full ${idx === 2 ? 'bg-rose-500' : 'bg-primary'} rounded-full`} style={{ width: dept.load }} />
+                                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                                        <div className={`h-full ${dept.color} rounded-full transition-all duration-1000`} style={{ width: `${dept.value}%` }} />
                                     </div>
                                 </div>
                             ))}
                         </div>
-                    </div>
-
-                    <div className="bg-primary/5 border border-primary/10 rounded-[2.5rem] p-8">
-                        <h4 className="text-xs font-black uppercase tracking-widest text-primary mb-4 flex items-center gap-2">
-                            <ShieldAlert size={14} /> Security Alert
-                        </h4>
-                        <p className="text-[11px] font-bold text-slate-600 leading-relaxed uppercase tracking-tight">
-                            Institutional audit detected 3 unverified access attempts in the Orthopedics department. Review Security Ledger immediately.
-                        </p>
+                        <button className="mt-10 w-full py-4 bg-white/5 border border-white/10 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-white hover:text-slate-900 transition-all flex items-center justify-center gap-2">
+                            Manage Departments <ChevronRight size={16} />
+                        </button>
                     </div>
                 </div>
+
+                <div className="space-y-8">
+                    <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-xl relative overflow-hidden group">
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600">
+                                <ShieldAlert size={24} />
+                            </div>
+                            <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Security <span className="not-italic text-amber-600">Sentinel</span></h3>
+                        </div>
+                        <p className="text-slate-400 text-xs font-bold leading-relaxed mb-8">
+                            CROSS-INSTITUTIONAL AUDIT DETECTED 3 UNVERIFIED ACCESS ATTEMPTS IN THE LAST 24 HOURS. REVIEW SECURITY LEDGER IMMEDIATELY.
+                        </p>
+                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 group-hover:border-amber-200 transition-all">
+                            <div className="flex items-center gap-3">
+                                <div className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-700">Audit Status: WARNING</span>
+                            </div>
+                            <ChevronRight size={16} className="text-slate-300" />
+                        </div>
+                    </div>
+
+                    <div className="bg-primary p-10 rounded-[3.5rem] shadow-xl shadow-primary/20 relative overflow-hidden group hover:scale-[1.02] transition-all cursor-pointer">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 -mr-16 -mt-16 rounded-full blur-2xl group-hover:bg-white/20 transition-all" />
+                        <h3 className="text-white text-xl font-black uppercase tracking-tight italic mb-2">Clinical <span className="not-italic text-slate-900">Reach</span></h3>
+                        <p className="text-white/80 text-[10px] font-black uppercase tracking-widest">{stats?.totalPatientsInstitutional} Active Registrations</p>
+                    </div>
+                </div>
+            </div>
             </div>
             
             {/* Onboard Staff Modal */}

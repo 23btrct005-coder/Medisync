@@ -30,7 +30,7 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
     },
     { 
       name: isAdmin ? 'Staff Roster' : 'Patient Directory', 
-      path: isAdmin ? prefix : `${prefix}/patients`, 
+      path: isAdmin ? `${prefix}/staff` : `${prefix}/patients`, 
       icon: <Users size={20} /> 
     },
     ...(isAdmin ? [{

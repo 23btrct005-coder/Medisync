@@ -40,6 +40,7 @@ import AIDisclaimer from './pages/AIDisclaimer';
 import Settings from './pages/Settings';
 import Support from './pages/Support';
 import HospitalDashboard from './pages/HospitalDashboard';
+import HospitalDoctorRoster from './pages/HospitalDoctorRoster';
 import HospitalAppointments from './pages/HospitalAppointments';
 import HospitalPatients from './pages/HospitalPatients';
 import HospitalProfile from './pages/HospitalProfile';
@@ -173,7 +174,7 @@ function App() {
                   <Route path="appointments" element={<HospitalAppointments />} />
                   <Route path="patients" element={<HospitalPatients />} />
                   <Route path="profile" element={<HospitalProfile />} />
-                  <Route path="staff" element={<HospitalDashboard />} />
+                  <Route path="staff" element={<HospitalDoctorRoster />} />
                   <Route path="settings" element={<Settings />} />
                   <Route path="support" element={<Support />} />
                 </Route>
