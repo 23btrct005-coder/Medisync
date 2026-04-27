@@ -118,6 +118,19 @@ const DoctorRegisterForm = ({ onBack }) => {
     } finally { setLoading(false); }
   };
 
+  const [hospitals, setHospitals] = useState([]);
+  React.useEffect(() => {
+    const fetchHospitals = async () => {
+        try {
+            const res = await api.get('/auth/hospitals');
+            setHospitals(res.data);
+        } catch (err) {
+            console.error("Failed to fetch institutional directory");
+        }
+    };
+    fetchHospitals();
+  }, []);
+
   const inputCls = "block w-full rounded-xl border-slate-200 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm px-4 py-3 border transition-all bg-white";
   const labelCls = "block text-xs font-bold text-slate-500 uppercase mb-1 ml-1 tracking-wide";
   const sectionCls = "flex items-center gap-2 text-sm font-bold text-primary-700 uppercase tracking-widest mb-4 pb-2 border-b border-primary-100";
@@ -329,9 +342,14 @@ const DoctorRegisterForm = ({ onBack }) => {
                 <h3 className={sectionCls}><Building2 size={16} />6. Work Details</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div>
-                    <label className={labelCls}>Hospital / Clinic Name</label>
-                    <input type="text" name="hospital" value={formData.hospital} onChange={handleChange}
-                      className={inputCls} placeholder="e.g. Apollo Hospital" />
+                    <label className={labelCls}>Affiliated Hospital / Clinic <span className="text-red-500">*</span></label>
+                    <select name="hospital" required value={formData.hospital} onChange={handleChange} className={inputCls}>
+                        <option value="">Select Institution</option>
+                        {hospitals.map(h => (
+                            <option key={h.id} value={h.id}>{h.name} ({h.location})</option>
+                        ))}
+                        <option value="other">Other / Private Clinic</option>
+                    </select>
                   </div>
                   <div>
                     <label className={labelCls}>Years of Experience</label>

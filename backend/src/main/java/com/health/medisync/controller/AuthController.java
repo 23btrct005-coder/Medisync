@@ -74,6 +74,11 @@ public class AuthController {
         return ResponseEntity.ok(GeographicalMappingUtils.getGeographyData());
     }
 
+    @GetMapping("/hospitals")
+    public ResponseEntity<?> getHospitals() {
+        return ResponseEntity.ok(hospitalRepository.findAll());
+    }
+
     @GetMapping("/health")
     public ResponseEntity<String> healthCheck() {
         return ResponseEntity.ok("OK - Auth Controller is reachable");
@@ -178,7 +183,17 @@ public class AuthController {
         doctor.setAdditionalCertifications(request.get("additionalCertifications"));
         doctor.setCollege(request.get("college"));
         doctor.setMedicalLicenseNumber(request.get("medicalLicenseNumber"));
-        doctor.setHospital(request.get("hospital"));
+        
+        // Institutional Linkage
+        String hospitalIdStr = request.get("hospital");
+        if (hospitalIdStr != null && !hospitalIdStr.isEmpty() && !hospitalIdStr.equals("other")) {
+            try {
+                Long hospitalId = Long.parseLong(hospitalIdStr);
+                hospitalRepository.findById(hospitalId).ifPresent(doctor::setHospitalEntity);
+            } catch (NumberFormatException ignored) {}
+        }
+        doctor.setHospital(request.get("hospitalName") != null ? request.get("hospitalName") : request.get("hospital"));
+        
         doctor.setConsultationFee(request.get("consultationFee"));
         doctor.setWorkingDays(request.get("workingDays"));
         doctor.setConsultationTimings(request.get("consultationTimings"));
