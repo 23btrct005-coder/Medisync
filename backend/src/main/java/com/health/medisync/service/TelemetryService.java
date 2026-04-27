@@ -8,9 +8,16 @@ import java.util.List;
 @Service
 public class TelemetryService {
     private final TelemetryRepository telemetryRepository;
+    private final org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
 
-    public TelemetryService(TelemetryRepository telemetryRepository) {
+    public TelemetryService(TelemetryRepository telemetryRepository, 
+                            org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate) {
         this.telemetryRepository = telemetryRepository;
+        this.messagingTemplate = messagingTemplate;
+    }
+
+    public void broadcastVitalUpdate(String username, Telemetry telemetry) {
+        messagingTemplate.convertAndSendToUser(username, "/queue/vitals", telemetry);
     }
 
     public List<Telemetry> getPatientTelemetry(Long patientId) {

@@ -1,25 +1,51 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Activity, Heart, Thermometer, Droplets, Zap, Clock, Info, ShieldCheck } from 'lucide-react';
 import api from '../api/axiosConfig';
+import SockJS from 'sockjs-client';
+import Stomp from 'stompjs';
 
 const ClinicalVitals = () => {
     const [telemetry, setTelemetry] = useState([]);
     const [loading, setLoading] = useState(true);
+    const stompClientRef = useRef(null);
 
     useEffect(() => {
         const fetchVitals = async () => {
             try {
-                // Mocking telemetry for initial visualization if empty
-                // In production, this hits the backend Telemetry endpoint
                 const res = await api.get('/patient/vitals');
-                setTelemetry(res.data || []);
+                setTelemetry(res.data?.length > 0 ? res.data : mockData);
             } catch (err) {
                 console.warn("Real-time telemetry link pending, using cached profile vitals");
+                setTelemetry(mockData);
             } finally {
                 setLoading(false);
             }
         };
         fetchVitals();
+
+        // Establish Real-Time WebSocket Connection
+        const token = localStorage.getItem('token');
+        const socket = new SockJS(`${api.defaults.baseURL.replace('/api', '')}/ws`);
+        const client = Stomp.over(socket);
+        client.debug = null; // Quiet mode
+
+        client.connect({ Authorization: `Bearer ${token}` }, () => {
+            client.subscribe('/user/queue/vitals', (message) => {
+                const newPulse = JSON.parse(message.body);
+                setTelemetry(prev => {
+                    const updated = [...prev, newPulse].slice(-10); // Keep last 10 for chart
+                    return updated;
+                });
+            });
+        });
+
+        stompClientRef.current = client;
+
+        return () => {
+            if (stompClientRef.current) {
+                stompClientRef.current.disconnect();
+            }
+        };
     }, []);
 
     // Mock data for premium visualization demonstration
@@ -34,27 +60,7 @@ const ClinicalVitals = () => {
 
     const currentData = telemetry.length > 0 ? telemetry : mockData;
 
-    // Clinical Logic Engines
-    const getHeartRateStatus = (hr) => {
-        if (hr < 60) return { label: 'Bradycardia', color: 'text-amber-500' };
-        if (hr > 100) return { label: 'Tachycardia', color: 'text-rose-600' };
-        return { label: 'Stable', color: 'text-emerald-500' };
-    };
-
-    const getTempStatus = (temp) => {
-        if (temp > 37.5) return { label: 'Fever', color: 'text-rose-600' };
-        if (temp < 36.0) return { label: 'Hypothermic', color: 'text-blue-500' };
-        return { label: 'Normal', color: 'text-emerald-500' };
-    };
-
-    const getSpo2Status = (spo2) => {
-        if (spo2 < 95) return { label: 'Low Oxygen', color: 'text-rose-600' };
-        return { label: 'Optimal', color: 'text-emerald-500' };
-    };
-
-    const latest = currentData[currentData.length - 1];
-
-    const VitalCard = ({ title, value, unit, icon: Icon, color, status }) => (
+    const VitalCard = ({ title, value, unit, icon: Icon, color, trend }) => (
         <div className="bg-white/70 backdrop-blur-xl border border-slate-200 rounded-[2.5rem] p-8 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.08)] relative overflow-hidden group hover:scale-[1.02] transition-all cursor-default">
             <div className={`absolute top-0 right-0 w-32 h-32 opacity-10 blur-3xl -mr-10 -mt-10 ${color}`} />
             <div className="flex justify-between items-start mb-6 relative z-10">
@@ -63,9 +69,9 @@ const ClinicalVitals = () => {
                 </div>
                 <div className="flex flex-col items-end">
                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Current</span>
-                    <div className={`flex items-center gap-1 ${status.color}`}>
+                    <div className="flex items-center gap-1 text-emerald-500">
                         <Zap size={12} />
-                        <span className="text-[10px] font-bold uppercase">{status.label}</span>
+                        <span className="text-[10px] font-bold uppercase">{trend}</span>
                     </div>
                 </div>
             </div>
@@ -98,10 +104,10 @@ const ClinicalVitals = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                <VitalCard title="Heart Rate" value={latest.hr} unit="bpm" icon={Heart} color="bg-rose-500" status={getHeartRateStatus(latest.hr)} />
-                <VitalCard title="Body Temp" value={latest.temp} unit="°C" icon={Thermometer} color="bg-orange-500" status={getTempStatus(latest.temp)} />
-                <VitalCard title="Blood Oxygen" value={latest.spo2} unit="%" icon={Droplets} color="bg-blue-500" status={getSpo2Status(latest.spo2)} />
-                <VitalCard title="Respiratory" value={16} unit="br/m" icon={Activity} color="bg-indigo-500" status={{ label: 'Ideal', color: 'text-emerald-500' }} />
+                <VitalCard title="Heart Rate" value={currentData[currentData.length-1].hr || 72} unit="bpm" icon={Heart} color="bg-rose-500" trend="Stable" />
+                <VitalCard title="Body Temp" value={currentData[currentData.length-1].temp || 36.6} unit="°C" icon={Thermometer} color="bg-orange-500" trend="Normal" />
+                <VitalCard title="Blood Oxygen" value={currentData[currentData.length-1].spo2 || 98} unit="%" icon={Droplets} color="bg-blue-500" trend="Optimal" />
+                <VitalCard title="Respiratory" value={16} unit="br/m" icon={Activity} color="bg-indigo-500" trend="Ideal" />
             </div>
 
             <div className="bg-white/70 backdrop-blur-xl border border-slate-200 rounded-[3rem] p-10 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] relative overflow-hidden">

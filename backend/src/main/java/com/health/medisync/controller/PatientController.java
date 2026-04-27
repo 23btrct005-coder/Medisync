@@ -135,4 +135,10 @@ public class PatientController {
         if (patient == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(telemetryService.getPatientTelemetry(patient.getId()));
     }
+
+    @PostMapping("/vitals/pulse")
+    public ResponseEntity<?> sendTestPulse(@RequestBody com.health.medisync.model.Telemetry pulse, Authentication authentication) {
+        telemetryService.broadcastVitalUpdate(authentication.getName(), pulse);
+        return ResponseEntity.ok(Map.of("message", "Pulse broadcasted live"));
+    }
 }

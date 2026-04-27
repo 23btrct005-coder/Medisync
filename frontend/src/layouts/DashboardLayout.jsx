@@ -31,12 +31,12 @@ const DashboardLayout = () => {
     const photoUrl = user?.id ? `${api.defaults.baseURL}/auth/patient/photo/${user.id}` : null;
 
     return (
-        <div className="flex h-screen bg-slate-50 font-inter overflow-hidden">
+        <div className="flex h-screen bg-slate-50 overflow-hidden font-inter">
             <TopBarLoader isLoading={globalLoading} />
             <OnboardingTour />
             <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
             
-            <div className="flex-1 flex flex-col min-w-0 h-screen">
+            <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
                 {/* Premium Header */}
                 <header className="relative h-16 md:h-20 bg-white/80 backdrop-blur-md border-b border-slate-200/60 flex items-center justify-between px-4 md:px-10 z-[300] shrink-0">
                     <div className="flex items-center gap-4">
