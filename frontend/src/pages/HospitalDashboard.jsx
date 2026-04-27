@@ -135,10 +135,8 @@ const HospitalDashboard = () => {
                 ))}
             </div>
 
-            {/* Main Content Sections */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
             {/* Institutional High-Fidelity Overview */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12 text-left">
                 <div className="bg-slate-900 p-10 rounded-[3.5rem] shadow-2xl relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 -mr-32 -mt-32 rounded-full blur-3xl group-hover:bg-primary/20 transition-all" />
                     <div className="relative z-10">
@@ -192,7 +190,6 @@ const HospitalDashboard = () => {
                         <p className="text-white/80 text-[10px] font-black uppercase tracking-widest">{stats?.totalPatientsInstitutional} Active Registrations</p>
                     </div>
                 </div>
-            </div>
             </div>
             
             {/* Onboard Staff Modal */}
