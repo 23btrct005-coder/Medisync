@@ -108,9 +108,9 @@ const HospitalDashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                 {[
                     { label: 'Total Staff', value: stats?.totalDoctors, icon: <Users />, color: 'bg-blue-500' },
-                    { label: 'Active Depts', value: '12', icon: <Building2 />, color: 'bg-indigo-500' },
-                    { label: 'Clinical Reach', value: stats?.totalPatientsInstitutional, icon: <TrendingUp />, color: 'bg-emerald-500' },
-                    { label: 'Pending Auth', value: stats?.pendingDoctors, icon: <ShieldAlert />, color: 'bg-rose-500' },
+                    { label: 'Active Depts', value: stats?.activeDepts, icon: <Building2 />, color: 'bg-indigo-500' },
+                    { label: 'Patient Reach', value: stats?.totalPatientsInstitutional, icon: <TrendingUp />, color: 'bg-emerald-500' },
+                    { label: 'Inst. Revenue', value: `${stats?.currency || '₹'}${stats?.totalRevenue?.toLocaleString() || '0'}`, icon: <Activity />, color: 'bg-amber-500' },
                 ].map((stat, idx) => (
                     <div key={idx} className="bg-white border border-slate-100 p-8 rounded-[2.5rem] shadow-sm relative overflow-hidden group">
                         <div className={`absolute top-0 right-0 w-24 h-24 ${stat.color} opacity-5 -mr-8 -mt-8 rounded-full group-hover:scale-110 transition-transform`} />

@@ -147,4 +147,11 @@ public class Doctor {
 
     public Hospital getHospitalEntity() { return hospitalEntity; }
     public void setHospitalEntity(Hospital hospitalEntity) { this.hospitalEntity = hospitalEntity; }
+
+    @ManyToOne
+    @JoinColumn(name = "department_id")
+    private Department department;
+
+    public Department getDepartment() { return department; }
+    public void setDepartment(Department department) { this.department = department; }
 }

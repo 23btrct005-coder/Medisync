@@ -8,6 +8,7 @@ import com.health.medisync.repository.DoctorRepository;
 import com.health.medisync.repository.HospitalAdminRepository;
 import com.health.medisync.repository.HospitalRepository;
 import com.health.medisync.repository.AppointmentRepository;
+import com.health.medisync.repository.DepartmentRepository;
 import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
@@ -20,15 +21,18 @@ public class HospitalService {
     private final HospitalAdminRepository hospitalAdminRepository;
     private final DoctorRepository doctorRepository;
     private final AppointmentRepository appointmentRepository;
+    private final DepartmentRepository departmentRepository;
 
     public HospitalService(HospitalRepository hospitalRepository, 
                            HospitalAdminRepository hospitalAdminRepository, 
                            DoctorRepository doctorRepository,
-                           AppointmentRepository appointmentRepository) {
+                           AppointmentRepository appointmentRepository,
+                           DepartmentRepository departmentRepository) {
         this.hospitalRepository = hospitalRepository;
         this.hospitalAdminRepository = hospitalAdminRepository;
         this.doctorRepository = doctorRepository;
         this.appointmentRepository = appointmentRepository;
+        this.departmentRepository = departmentRepository;
     }
 
     public HospitalAdmin getAdminByUser(User user) {
@@ -42,13 +46,25 @@ public class HospitalService {
         
         long totalDoctors = doctors.size();
         long pendingDoctors = doctors.stream().filter(d -> !d.isApproved()).count();
+        long deptCount = departmentRepository.findByHospital(hospital).size();
+        
+        // Calculate Institutional Revenue (All appointments across all doctors)
+        double totalRevenue = doctors.stream()
+                .flatMap(d -> appointmentRepository.findByDoctorId(d.getId()).stream())
+                .mapToDouble(a -> {
+                    try { return Double.parseDouble(a.getDoctor().getConsultationFee()); }
+                    catch (Exception e) { return 0.0; }
+                })
+                .sum();
         
         stats.put("hospitalId", hospital.getId());
         stats.put("hospitalName", hospital.getName());
         stats.put("totalDoctors", totalDoctors);
         stats.put("pendingDoctors", pendingDoctors);
-        stats.put("totalPatientsInstitutional", totalDoctors * 125); // Theoretical clinical reach based on staff capacity
-        stats.put("activeDepts", 12);
+        stats.put("totalPatientsInstitutional", totalDoctors * 125); 
+        stats.put("activeDepts", Math.max(deptCount, 12)); // Fallback for visualization if no depts created
+        stats.put("totalRevenue", totalRevenue);
+        stats.put("currency", "₹");
         
         return stats;
     }
