@@ -174,12 +174,18 @@ export const SearchResultsDropdown = ({ query, onClose }) => {
                                             onClick={() => { navigate('/dashboard/doctors'); onClose(); }}
                                             className="w-full flex items-center gap-4 p-4 hover:bg-slate-50 rounded-2xl transition-all group"
                                         >
-                                            <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
-                                                <GraduationCap size={18} />
+                                            <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center overflow-hidden border border-blue-100">
+                                                {doctor.hospitalEntity?.logoUrl ? (
+                                                    <img src={doctor.hospitalEntity.logoUrl} alt="Logo" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <GraduationCap size={18} />
+                                                )}
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-sm font-black text-slate-800 truncate uppercase tracking-tighter">Dr. {doctor.name}</p>
-                                                <p className="text-[10px] text-slate-400 font-bold uppercase">{doctor.specialization || 'Clinical Expert'}</p>
+                                                <p className="text-[10px] text-slate-400 font-bold uppercase truncate">
+                                                    {doctor.specialization || 'Clinical Expert'} • {doctor.hospitalEntity?.name || doctor.hospital || 'Private Clinic'}
+                                                </p>
                                             </div>
                                             <ChevronRight size={16} className="text-slate-300 group-hover:text-primary transition-colors" />
                                         </button>
