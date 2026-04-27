@@ -261,7 +261,9 @@ const Register = () => {
               <div className="bg-slate-50 rounded-2xl p-6 space-y-4 border border-slate-200 shadow-sm">
                 <h3 className={sectionHeadClass}><Mail size={16} />1. Identity Verification</h3>
                 <div className="relative">
-                  <label className={labelClass}>Work / Personal Email <span className="text-red-500">*</span></label>
+                  <label className={labelClass}>
+                    {role === 'ROLE_HOSPITAL_ADMIN' ? 'Hospital Official Email' : 'Work / Personal Email'} <span className="text-red-500">*</span>
+                  </label>
                   <div className="flex gap-2">
                     <input type="email" name="email" required disabled={emailVerified}
                       value={formData.email} onChange={handleChange}
