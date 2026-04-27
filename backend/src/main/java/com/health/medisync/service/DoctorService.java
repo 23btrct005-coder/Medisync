@@ -289,6 +289,6 @@ public class DoctorService {
         if (query == null || query.trim().isEmpty()) {
             return doctorRepository.findByApprovedTrue();
         }
-        return doctorRepository.findByApprovedTrueAndNameContainingIgnoreCaseOrApprovedTrueAndSpecializationContainingIgnoreCase(query, query);
+        return doctorRepository.searchDoctors(query);
     }
 }
