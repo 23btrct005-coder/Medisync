@@ -70,8 +70,8 @@ const HospitalDoctorRoster = () => {
                         <thead>
                             <tr className="bg-slate-50/50">
                                 <th className="px-8 py-6 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Physician Identity</th>
+                                <th className="px-8 py-6 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Contact & Verification</th>
                                 <th className="px-8 py-6 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Clinical Data</th>
-                                <th className="px-8 py-6 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">License Status</th>
                                 <th className="px-8 py-6 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Authorization</th>
                                 <th className="px-8 py-6 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest">Action</th>
                             </tr>
@@ -97,12 +97,17 @@ const HospitalDoctorRoster = () => {
                                         </td>
                                         <td className="px-8 py-6">
                                             <div className="space-y-1">
-                                                <p className="text-xs font-bold text-slate-600">{doctor.medicalDegree}</p>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase">{doctor.yearsOfExperience} Exp • ₹{doctor.consultationFee}</p>
+                                                <p className="text-xs font-bold text-slate-600 truncate max-w-[180px]">{doctor.email}</p>
+                                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full text-[8px] font-black uppercase tracking-widest border border-slate-200">
+                                                    Institutional Verified
+                                                </span>
                                             </div>
                                         </td>
-                                        <td className="px-8 py-6 text-xs font-bold text-slate-800">
-                                            {doctor.medicalLicenseNumber}
+                                        <td className="px-8 py-6">
+                                            <div className="space-y-1">
+                                                <p className="text-xs font-bold text-slate-600">{doctor.medicalDegree}</p>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">License: {doctor.medicalLicenseNumber}</p>
+                                            </div>
                                         </td>
                                         <td className="px-8 py-6">
                                             {doctor.approved ? (
@@ -111,7 +116,7 @@ const HospitalDoctorRoster = () => {
                                                 </span>
                                             ) : (
                                                 <span className="flex items-center gap-2 text-amber-600 text-[10px] font-black uppercase tracking-widest">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500" /> Pending Review
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500" /> Registry Pending
                                                 </span>
                                             )}
                                         </td>
