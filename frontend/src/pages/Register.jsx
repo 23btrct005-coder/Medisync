@@ -348,9 +348,6 @@ const Register = () => {
                    </div>
                 ) : (
                     <>
-                        <div className="flex justify-center mb-8">
-                          <ProfilePhotoUpload onFileSelect={setProfilePicture} />
-                        </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                           <div className="md:col-span-2">
                             <label className={labelClass}>Full Name <span className="text-red-500">*</span></label>
