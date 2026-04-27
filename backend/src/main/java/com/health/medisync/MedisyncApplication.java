@@ -32,11 +32,23 @@ public class MedisyncApplication {
         // [STARTUP DIAGNOSTIC] - Check Environment BEFORE Spring context starts
         String springUrl = System.getenv("SPRING_DATASOURCE_URL");
         
-        // [DATABASE SELF-HEALING] - Resolve Supabase Pooler Timeouts
-        if (springUrl != null && (springUrl.contains(".pooler.supabase.com") || springUrl.contains(".supabase.co")) && springUrl.contains(":5432")) {
-            System.out.println("[SELF-HEALING] Detected direct port 5432 on pooled instance. Re-routing to Session Pooler (6543) for stability.");
-            springUrl = springUrl.replace(":5432", ":6543");
-            System.setProperty("spring.datasource.url", springUrl);
+        // [DATABASE SELF-HEALING] - Resolve Supabase Pooler Timeouts & Statement Conflicts
+        if (springUrl != null && (springUrl.contains(".pooler.supabase.com") || springUrl.contains(".supabase.co"))) {
+            boolean updated = false;
+            if (springUrl.contains(":5432")) {
+                System.out.println("[SELF-HEALING] Detected direct port 5432. Re-routing to Session Pooler (6543).");
+                springUrl = springUrl.replace(":5432", ":6543");
+                updated = true;
+            }
+            if (!springUrl.contains("prepareThreshold=0")) {
+                System.out.println("[SELF-HEALING] Suppressing prepared statements for Transaction Mode compatibility.");
+                String separator = springUrl.contains("?") ? "&" : "?";
+                springUrl += separator + "prepareThreshold=0";
+                updated = true;
+            }
+            if (updated) {
+                System.setProperty("spring.datasource.url", springUrl);
+            }
         }
 
         String dbUser = System.getenv("SPRING_DATASOURCE_USERNAME");
