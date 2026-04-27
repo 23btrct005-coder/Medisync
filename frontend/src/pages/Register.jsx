@@ -42,10 +42,11 @@ const Register = () => {
     confirmPassword: '',
   });
 
-  const [profilePicture, setProfilePicture] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [profilePicture, setProfilePicture] = useState(null);
+  const [hospitalLogo, setHospitalLogo] = useState(null);
 
   // Verification states
   const [otpSent, setOtpSent] = useState(false);
@@ -155,6 +156,10 @@ const Register = () => {
       if (profilePicture) {
         formDataToSend.append('profilePicture', profilePicture);
       }
+      
+      if (hospitalLogo && role === 'ROLE_HOSPITAL_ADMIN') {
+        formDataToSend.append('hospitalLogo', hospitalLogo);
+      }
 
       await api.post(endpoint, formDataToSend, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -263,12 +268,29 @@ const Register = () => {
               </div>
 
               {/* 2. Professional / Personal Details */}
-              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
+              <div className="bg-slate-50 rounded-2xl p-6 space-y-6 border border-slate-200 shadow-sm">
                 <h3 className={sectionHeadClass}>
                     {role === 'ROLE_PATIENT' ? <User size={16} /> : <Building2 size={16} />}
-                    {role === 'ROLE_PATIENT' ? '2. Personal Details' : '2. Institutional Details'}
+                    2. {role === 'ROLE_PATIENT' ? 'Personal Details' : 'Institutional Credentials'}
                 </h3>
                 
+                <div className="flex flex-col items-center gap-6 mb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+                        <div className="flex flex-col items-center gap-2">
+                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                                {role === 'ROLE_PATIENT' ? 'Profile Photo' : 'Admin Identity'}
+                             </p>
+                             <ProfilePhotoUpload onFileSelect={setProfilePicture} />
+                        </div>
+                        {role === 'ROLE_HOSPITAL_ADMIN' && (
+                            <div className="flex flex-col items-center gap-2">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Hospital Logo</p>
+                                <ProfilePhotoUpload onFileSelect={setHospitalLogo} />
+                            </div>
+                        )}
+                    </div>
+                </div>
+
                 {role === 'ROLE_HOSPITAL_ADMIN' ? (
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div className="md:col-span-2">

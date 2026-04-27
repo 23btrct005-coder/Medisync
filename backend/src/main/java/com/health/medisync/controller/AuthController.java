@@ -333,7 +333,8 @@ public class AuthController {
     @Transactional
     public ResponseEntity<?> registerHospitalAdmin(
             @RequestPart("userData") String userDataJson,
-            @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture) throws IOException {
+            @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture,
+            @RequestPart(value = "hospitalLogo", required = false) MultipartFile hospitalLogo) throws IOException {
 
         ObjectMapper mapper = new ObjectMapper();
         Map<String, String> request = mapper.readValue(userDataJson, Map.class);
@@ -358,6 +359,17 @@ public class AuthController {
                 h.setLicenseCode(licenseCode);
                 h.setLocation(request.get("city") + ", " + request.get("state"));
                 h.setContactEmail(request.get("email"));
+                
+                // Handle Logo
+                if (hospitalLogo != null && !hospitalLogo.isEmpty()) {
+                    try {
+                        String logoUrl = supabaseStorageService.uploadFile(hospitalLogo);
+                        if (logoUrl != null) h.setLogoUrl(logoUrl);
+                    } catch (IOException e) {
+                        System.err.println("Failed to upload hospital logo: " + e.getMessage());
+                    }
+                }
+                
                 return hospitalRepository.save(h);
             });
 
