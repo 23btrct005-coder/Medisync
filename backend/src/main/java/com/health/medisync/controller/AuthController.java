@@ -108,18 +108,24 @@ public class AuthController {
             }
         });
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(normalizedUsername, loginRequest.getPassword()));
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(normalizedUsername, loginRequest.getPassword()));
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        
-        User user = userRepository.findByUsernameIgnoreCase(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Error: User not found."));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            
+            User user = userRepository.findByUsernameIgnoreCase(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("Error: User not found."));
 
-        String jwt = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole());
-        String role = user.getRole();
-        
-        return ResponseEntity.ok(new AuthResponse(jwt, role));
+            String jwt = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole());
+            String role = user.getRole();
+            
+            return ResponseEntity.ok(new AuthResponse(jwt, role));
+        } catch (org.springframework.security.authentication.DisabledException e) {
+            return ResponseEntity.status(403).body(Map.of("message", "Your account is pending institutional approval. Please contact your hospital administrator."));
+        } catch (org.springframework.security.core.AuthenticationException e) {
+            return ResponseEntity.status(401).body(Map.of("message", "Invalid credentials."));
+        }
     }
 
     @PostMapping(value = "/register/doctor", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
