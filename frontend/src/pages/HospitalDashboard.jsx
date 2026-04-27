@@ -19,6 +19,7 @@ const HospitalDashboard = () => {
         password: 'Password@123' 
     });
     const [submitting, setSubmitting] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
 
     const fetchInstitutionalData = async () => {
         setLoading(true);
@@ -63,10 +64,19 @@ const HospitalDashboard = () => {
             };
             formDataToSend.append('userData', JSON.stringify(userData));
             
+            if (selectedFile) {
+                formDataToSend.append('profilePicture', selectedFile);
+            }
+            
             await api.post('/auth/register/doctor', formDataToSend);
             toast.success("Staff member onboarded successfully!");
             setShowOnboardModal(false);
-            setOnboardData({ name: '', email: '', specialization: '', licenseNumber: '', password: 'Password@123' });
+            setOnboardData({ 
+                name: '', email: '', specialization: '', licenseNumber: '', 
+                medicalDegree: '', yearsOfExperience: '', consultationFee: '',
+                password: 'Password@123' 
+            });
+            setSelectedFile(null);
             fetchInstitutionalData();
         } catch (err) {
             toast.error(err.response?.data?.message || "Failed to onboard staff");
@@ -220,9 +230,38 @@ const HospitalDashboard = () => {
             {showOnboardModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
                     <div className="bg-white rounded-[3rem] w-full max-w-lg shadow-2xl overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-300">
-                        <div className="bg-slate-900 p-8 text-white">
-                            <h3 className="text-2xl font-black uppercase tracking-tight italic">Onboard <span className="not-italic text-primary">New Staff</span></h3>
-                            <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1">Register a new physician to your institution</p>
+                        <div className="p-10 border-b border-slate-50 bg-slate-900 text-white rounded-t-[3.5rem] relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-48 h-48 bg-primary/20 -mr-16 -mt-16 rounded-full blur-3xl" />
+                            <h3 className="text-2xl font-black uppercase tracking-tight italic relative z-10">Onboard <span className="not-italic text-primary">New Staff</span></h3>
+                            <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1 relative z-10">Register a new physician to your institution</p>
+                            
+                            {/* Profile Photo Upload */}
+                            <div className="mt-8 flex items-center gap-6 relative z-10">
+                                <div className="w-20 h-20 rounded-[2rem] bg-white/5 border-2 border-dashed border-white/10 flex items-center justify-center overflow-hidden group hover:border-primary/50 transition-all">
+                                    {selectedFile ? (
+                                        <img src={URL.createObjectURL(selectedFile)} alt="Preview" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <UserPlus className="text-white/20 group-hover:text-primary/50 transition-colors" size={32} />
+                                    )}
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Identity Portrait</label>
+                                    <input 
+                                        type="file" 
+                                        id="staff-photo"
+                                        className="hidden" 
+                                        accept="image/*"
+                                        onChange={(e) => setSelectedFile(e.target.files[0])}
+                                    />
+                                    <button 
+                                        type="button"
+                                        onClick={() => document.getElementById('staff-photo').click()}
+                                        className="px-4 py-2 bg-white/10 hover:bg-primary text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all"
+                                    >
+                                        {selectedFile ? 'Change Photo' : 'Upload Portrait'}
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                         <form onSubmit={handleOnboardStaff} className="p-8 space-y-6 overflow-y-auto max-h-[70vh]">
                             <div className="space-y-4">
