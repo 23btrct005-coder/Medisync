@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Pill, Clock, Calendar, CheckCircle2, AlertCircle, Plus, Info, Zap } from 'lucide-react';
+import { Pill, Clock, Calendar, CheckCircle2, AlertCircle, Plus, Info, Zap, Activity } from 'lucide-react';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
 
@@ -8,9 +8,9 @@ const MedicationAdherence = () => {
     const [loading, setLoading] = useState(true);
 
     const mockMeds = [
-        { id: 1, name: 'Metformin', dosage: '500mg', frequency: 'Twice daily', time: '08:00 AM', taken: true },
-        { id: 2, name: 'Amlodipine', dosage: '5mg', frequency: 'Once daily', time: '10:00 PM', taken: false },
-        { id: 3, name: 'Vitamin D3', dosage: '2000IU', frequency: 'Once daily', time: '09:00 AM', taken: true },
+        { id: 1, medicineName: 'Metformin', dosage: '500mg', frequency: 'Twice daily', time: '08:00 AM', taken: true },
+        { id: 2, medicineName: 'Amlodipine', dosage: '5mg', frequency: 'Once daily', time: '10:00 PM', taken: false },
+        { id: 3, medicineName: 'Vitamin D3', dosage: '2000IU', frequency: 'Once daily', time: '09:00 AM', taken: true },
     ];
 
     useEffect(() => {
@@ -77,7 +77,7 @@ const MedicationAdherence = () => {
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
                                             <h4 className={`text-lg font-black tracking-tight leading-none uppercase ${med.taken ? 'text-slate-500 line-through' : 'text-slate-800'}`}>
-                                                {med.name}
+                                                {med.medicineName || med.name}
                                             </h4>
                                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{med.dosage}</span>
                                         </div>
