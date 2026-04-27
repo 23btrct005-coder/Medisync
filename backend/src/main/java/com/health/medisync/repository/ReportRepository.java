@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface ReportRepository extends JpaRepository<Report, Long> {
     List<Report> findByPatientId(Long patientId);
+    List<Report> findByPatientIdAndFileNameContainingIgnoreCase(Long patientId, String fileName);
 }

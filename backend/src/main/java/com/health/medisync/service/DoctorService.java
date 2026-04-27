@@ -284,4 +284,11 @@ public class DoctorService {
         return patientRepository.findByPatientId(shortCode.toUpperCase().trim())
             .orElseThrow(() -> new RuntimeException("Patient with ID " + shortCode + " not found."));
     }
+
+    public List<Doctor> searchDoctors(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return doctorRepository.findByApprovedTrue();
+        }
+        return doctorRepository.findByApprovedTrueAndNameContainingIgnoreCaseOrApprovedTrueAndSpecializationContainingIgnoreCase(query, query);
+    }
 }

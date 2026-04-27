@@ -128,4 +128,9 @@ public class DoctorController {
             return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
         }
     }
+
+    @GetMapping("/list")
+    public ResponseEntity<List<com.health.medisync.model.Doctor>> getDoctorList(@RequestParam(required = false) String search) {
+        return ResponseEntity.ok(doctorService.searchDoctors(search));
+    }
 }

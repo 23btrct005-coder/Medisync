@@ -215,6 +215,14 @@ public class ReportService {
         return reportRepository.findByPatientId(patient.getId());
     }
 
+    public List<Report> searchMyReports(String username, String query) {
+        Patient patient = patientService.getPatientProfile(username);
+        if (query == null || query.trim().isEmpty()) {
+            return reportRepository.findByPatientId(patient.getId());
+        }
+        return reportRepository.findByPatientIdAndFileNameContainingIgnoreCase(patient.getId(), query);
+    }
+
     public Report getReportForDownload(String username, Long id) {
         User user = userRepository.findByUsernameIgnoreCase(username)
             .orElseThrow(() -> new RuntimeException("User not found"));

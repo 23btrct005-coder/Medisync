@@ -27,8 +27,21 @@ public class ReportController {
     }
 
     @GetMapping("")
-    public ResponseEntity<List<Report>> getMyReportsGeneric(Authentication authentication) {
+    public ResponseEntity<List<Report>> getMyReportsGeneric(@RequestParam(required = false) String search, Authentication authentication) {
+        if (search != null && !search.trim().isEmpty()) {
+            return ResponseEntity.ok(reportService.searchMyReports(authentication.getName(), search));
+        }
         return getMyReports(authentication);
+    }
+
+    @GetMapping("/my-reports")
+    public ResponseEntity<List<Report>> getMyReportsAlias(@RequestParam(required = false) String search, Authentication authentication) {
+        return getMyReportsGeneric(search, authentication);
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<List<Report>> getReportList(@RequestParam(required = false) String search, Authentication authentication) {
+        return getMyReportsGeneric(search, authentication);
     }
 
     @PostMapping("/upload")
