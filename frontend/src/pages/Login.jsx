@@ -132,7 +132,7 @@ const Login = () => {
             <p className="text-sm text-slate-600 mb-4">Don't have an account?</p>
             <button
               type="button"
-              onClick={() => navigate('/register')}
+              onClick={() => navigate('/register?context=patient')}
               className="w-full flex justify-center py-3 px-4 border shadow-sm text-sm font-medium rounded-xl text-primary-600 bg-white hover:bg-slate-50 border-primary-200 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
             >
               Register here

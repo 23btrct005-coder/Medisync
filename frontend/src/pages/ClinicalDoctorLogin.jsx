@@ -167,7 +167,7 @@ const DoctorRegisterForm = ({ onBack }) => {
                     <button 
                         onClick={() => {
                             if (enrollmentRole !== 'HOSPITAL') {
-                                navigate('/register'); // Redirect to main institutional register which is already battle-hardened
+                                navigate('/register?context=professional'); 
                             }
                         }}
                         className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${enrollmentRole === 'HOSPITAL' ? 'bg-white text-blue-700 shadow-lg' : 'text-white/60 hover:text-white'}`}
@@ -577,7 +577,7 @@ const DoctorLogin = () => {
               New physician? Request Access →
             </button>
             <div className="pt-2 border-t border-slate-50 space-y-2">
-                <button type="button" onClick={() => navigate('/register')}
+                <button type="button" onClick={() => navigate('/register?context=professional')}
                   className="w-full flex justify-center items-center gap-2 py-2.5 rounded-xl border border-blue-200 text-[10px] font-black uppercase tracking-[0.1em] text-blue-700 bg-blue-50/50 hover:bg-blue-100 transition shadow-sm">
                   <Building2 size={14} /> Institutional Hospital Onboarding
                 </button>

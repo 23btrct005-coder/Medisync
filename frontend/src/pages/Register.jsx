@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   UserPlus, ArrowLeft,
   CheckCircle, Mail, ShieldCheck, Eye, EyeOff, Phone,
-  AlertCircle, User, Heart, Bot, Building2, Briefcase
+  AlertCircle, User, Heart, Bot, Building2, Briefcase, Stethoscope, GraduationCap
 } from 'lucide-react';
 import api from '../api/axiosConfig';
 import ProfilePhotoUpload from '../components/ProfilePhotoUpload';
@@ -11,7 +11,10 @@ import LegalFooter from '../components/LegalFooter';
 
 const Register = () => {
   const navigate = useNavigate();
-  const [role, setRole] = useState('ROLE_PATIENT'); // ROLE_PATIENT or ROLE_HOSPITAL_ADMIN
+  const [searchParams] = useSearchParams();
+  const context = searchParams.get('context') || 'patient'; // patient or professional
+  
+  const [role, setRole] = useState(context === 'professional' ? 'ROLE_DOCTOR' : 'ROLE_PATIENT');
   
   const [formData, setFormData] = useState({
     // Identity
@@ -40,8 +43,13 @@ const Register = () => {
     // Security
     password: '',
     confirmPassword: '',
+    // Doctor Specific
+    specialization: '',
+    medicalLicenseNumber: '',
+    medicalDegree: '',
+    experience: '',
   });
-
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -145,7 +153,12 @@ const Register = () => {
     setError('');
     try {
       const formDataToSend = new FormData();
-      const endpoint = role === 'ROLE_PATIENT' ? 'auth/register/patient' : 'auth/register/hospital-admin';
+      const endpointMap = {
+        'ROLE_PATIENT': 'auth/register/patient',
+        'ROLE_HOSPITAL_ADMIN': 'auth/register/hospital-admin',
+        'ROLE_DOCTOR': 'auth/register/doctor'
+      };
+      const endpoint = endpointMap[role];
       
       formDataToSend.append('userData', JSON.stringify({
         ...formData,
@@ -195,24 +208,34 @@ const Register = () => {
                   </div>
                   <div>
                     <h2 className="text-2xl font-extrabold tracking-tight">
-                        {role === 'ROLE_PATIENT' ? 'Patient Registration' : 'Institutional Onboarding'}
+                        {role === 'ROLE_PATIENT' ? 'Patient Registration' : role === 'ROLE_DOCTOR' ? 'Physician Enrollment' : 'Institutional Onboarding'}
                     </h2>
                     <p className="text-primary-100 text-sm mt-0.5">Securely join the MEDISYNC Healthcare Network</p>
                   </div>
                 </div>
                 <div className="flex bg-white/10 p-1 rounded-xl backdrop-blur-md">
-                    <button 
-                        onClick={() => setRole('ROLE_PATIENT')}
-                        className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${role === 'ROLE_PATIENT' ? 'bg-white text-primary-600 shadow-lg' : 'text-white/60 hover:text-white'}`}
-                    >
-                        Patient
-                    </button>
-                    <button 
-                        onClick={() => setRole('ROLE_HOSPITAL_ADMIN')}
-                        className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${role === 'ROLE_HOSPITAL_ADMIN' ? 'bg-white text-primary-600 shadow-lg' : 'text-white/60 hover:text-white'}`}
-                    >
-                        Institutional
-                    </button>
+                    {context === 'patient' ? (
+                        <button 
+                            className="px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-white text-primary-600 shadow-lg"
+                        >
+                            Patient
+                        </button>
+                    ) : (
+                        <>
+                            <button 
+                                onClick={() => setRole('ROLE_DOCTOR')}
+                                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${role === 'ROLE_DOCTOR' ? 'bg-white text-primary-600 shadow-lg' : 'text-white/60 hover:text-white'}`}
+                            >
+                                Physician
+                            </button>
+                            <button 
+                                onClick={() => setRole('ROLE_HOSPITAL_ADMIN')}
+                                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${role === 'ROLE_HOSPITAL_ADMIN' ? 'bg-white text-primary-600 shadow-lg' : 'text-white/60 hover:text-white'}`}
+                            >
+                                Institutional
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
           </div>
@@ -270,15 +293,15 @@ const Register = () => {
               {/* 2. Professional / Personal Details */}
               <div className="bg-slate-50 rounded-2xl p-6 space-y-6 border border-slate-200 shadow-sm">
                 <h3 className={sectionHeadClass}>
-                    {role === 'ROLE_PATIENT' ? <User size={16} /> : <Building2 size={16} />}
-                    2. {role === 'ROLE_PATIENT' ? 'Personal Details' : 'Institutional Credentials'}
+                    {role === 'ROLE_PATIENT' ? <User size={16} /> : role === 'ROLE_DOCTOR' ? <Stethoscope size={16} /> : <Building2 size={16} />}
+                    2. {role === 'ROLE_PATIENT' ? 'Personal Details' : role === 'ROLE_DOCTOR' ? 'Clinical Credentials' : 'Institutional Credentials'}
                 </h3>
                 
                 <div className="flex flex-col items-center gap-6 mb-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
                         <div className="flex flex-col items-center gap-2">
                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
-                                {role === 'ROLE_PATIENT' ? 'Profile Photo' : 'Admin Identity'}
+                                {role === 'ROLE_PATIENT' ? 'Profile Photo' : 'Professional Identity'}
                              </p>
                              <ProfilePhotoUpload onFileSelect={setProfilePicture} />
                         </div>
@@ -414,9 +437,35 @@ const Register = () => {
                   </div>
               )}
 
-              {/* 5. Account Security */}
+              {role === 'ROLE_DOCTOR' && (
+                <div className="bg-white rounded-2xl p-6 space-y-6 border border-blue-100 shadow-sm mb-6 animate-in slide-in-from-bottom-2">
+                  <h3 className={`${sectionHeadClass} text-blue-700`}><Stethoscope size={16} /> 3. Clinical Credentials</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="relative">
+                      <label className={labelClass}>Medical Specialization</label>
+                      <input type="text" name="specialization" value={formData.specialization} onChange={handleChange} required className={inputClass} placeholder="e.g. Cardiology" />
+                    </div>
+                    <div className="relative">
+                      <label className={labelClass}>Medical License Number</label>
+                      <input type="text" name="medicalLicenseNumber" value={formData.medicalLicenseNumber} onChange={handleChange} required className={inputClass} placeholder="e.g. MC123456" />
+                    </div>
+                    <div className="relative">
+                      <label className={labelClass}>Medical Degree</label>
+                      <input type="text" name="medicalDegree" value={formData.medicalDegree} onChange={handleChange} required className={inputClass} placeholder="e.g. MBBS, MD" />
+                    </div>
+                    <div className="relative">
+                      <label className={labelClass}>Years of Experience</label>
+                      <input type="number" name="experience" value={formData.experience} onChange={handleChange} required className={inputClass} placeholder="e.g. 10" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
-                <h3 className={sectionHeadClass}><ShieldCheck size={16} /> {role === 'ROLE_PATIENT' ? '5. Account Security' : '4. Admin Security'}</h3>
+                <h3 className={sectionHeadClass}>
+                    <ShieldCheck size={16} /> 
+                    {role === 'ROLE_PATIENT' ? '5. Account Security' : role === 'ROLE_DOCTOR' ? '4. Physician Security' : '4. Admin Security'}
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="relative">
                     <label className={labelClass}>Password <span className="text-red-500">*</span></label>
