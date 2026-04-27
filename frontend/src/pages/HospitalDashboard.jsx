@@ -4,6 +4,9 @@ import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
 
 const HospitalDashboard = () => {
+    const [stats, setStats] = useState(null);
+    const [doctors, setDoctors] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [showOnboardModal, setShowOnboardModal] = useState(false);
     const [onboardData, setOnboardData] = useState({ name: '', email: '', specialization: '', licenseNumber: '', password: 'Password@123' });
     const [submitting, setSubmitting] = useState(false);
