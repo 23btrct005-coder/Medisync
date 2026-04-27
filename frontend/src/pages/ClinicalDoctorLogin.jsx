@@ -576,10 +576,10 @@ const DoctorLogin = () => {
               className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition block w-full">
               New physician? Request Access →
             </button>
-            <div className="pt-2 border-t border-slate-50">
+            <div className="pt-2 border-t border-slate-50 space-y-2">
                 <button type="button" onClick={() => navigate('/register')}
-                  className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 hover:text-blue-600 transition flex items-center justify-center gap-1.5 w-full">
-                  <Building2 size={12} /> Institutional Hospital Onboarding →
+                  className="w-full flex justify-center items-center gap-2 py-2.5 rounded-xl border border-blue-200 text-[10px] font-black uppercase tracking-[0.1em] text-blue-700 bg-blue-50/50 hover:bg-blue-100 transition shadow-sm">
+                  <Building2 size={14} /> Institutional Hospital Onboarding
                 </button>
             </div>
             <button type="button" onClick={() => navigate('/login')}

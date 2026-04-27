@@ -139,13 +139,6 @@ const Login = () => {
             </button>
             <button
               type="button"
-              onClick={() => navigate('/register')}
-              className="mt-3 w-full flex justify-center py-2 px-4 shadow-sm text-sm font-medium rounded-xl text-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition-all focus:outline-none"
-            >
-              Institutional Onboarding
-            </button>
-            <button
-              type="button"
               onClick={() => navigate('/doctor-login')}
               className="mt-3 w-full flex justify-center py-2 px-4 shadow-sm text-sm font-medium rounded-xl text-blue-600 bg-blue-50 hover:bg-blue-100 transition-all focus:outline-none"
             >
