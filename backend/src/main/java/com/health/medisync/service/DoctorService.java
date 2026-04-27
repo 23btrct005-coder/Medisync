@@ -28,12 +28,14 @@ public class DoctorService {
     private final AccessRequestRepository accessRequestRepository;
     private final SupabaseStorageService supabaseStorageService;
     private final NotificationService notificationService;
+    private final AuditLogService auditLogService;
 
     public DoctorService(DoctorRepository doctorRepository, UserRepository userRepository,
                          PatientRepository patientRepository, MedicalRecordRepository recordRepository,
                          ReportRepository reportRepository, AccessRequestRepository accessRequestRepository,
                          SupabaseStorageService supabaseStorageService,
-                         NotificationService notificationService) {
+                         NotificationService notificationService,
+                         AuditLogService auditLogService) {
         this.doctorRepository = doctorRepository;
         this.userRepository = userRepository;
         this.patientRepository = patientRepository;
@@ -42,6 +44,7 @@ public class DoctorService {
         this.accessRequestRepository = accessRequestRepository;
         this.supabaseStorageService = supabaseStorageService;
         this.notificationService = notificationService;
+        this.auditLogService = auditLogService;
     }
 
     public Doctor getDoctorProfile(String username) {
@@ -120,6 +123,15 @@ public class DoctorService {
         if (!isLinked) {
             throw new RuntimeException("Unauthorized Access: You are not authorized to view this patient's clinical telemetry.");
         }
+        
+        // Security Logging
+        auditLogService.log(
+            doctor.getUser().getId(),
+            doctor.getName(),
+            "ACCESS_VIEW",
+            patientId,
+            "Doctor accessed full patient clinical dossier"
+        );
     }
 
     public Patient getPatientById(String doctorUsername, Long id) {
@@ -157,6 +169,15 @@ public class DoctorService {
         record.setDoctorName(doctor.getName());
 
         MedicalRecord saved = recordRepository.save(record);
+
+        // Security Logging
+        auditLogService.log(
+            doctor.getUser().getId(),
+            doctor.getName(),
+            "RECORD_CREATE",
+            patientId,
+            "Logged new clinical diagnosis"
+        );
 
         // Notify Patient
         notificationService.sendNotification(

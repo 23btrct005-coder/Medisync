@@ -1,10 +1,7 @@
 package com.health.medisync.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "prescriptions")
@@ -14,49 +11,48 @@ public class Prescription {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "doctor_id", nullable = false)
-    @JsonIgnoreProperties({"user", "patients", "appointments"})
-    private Doctor doctor;
-
-    @ManyToOne
-    @JoinColumn(name = "patient_id", nullable = false)
-    @JsonIgnore
+    @JoinColumn(name = "patient_id")
     private Patient patient;
 
-    private String diagnosis;
+    @Column(nullable = false)
+    private String medicineName;
 
-    @Column(columnDefinition = "TEXT")
-    private String medications; // JSON string: [{"name": "...", "dosage": "...", "duration": "...", "instructions": "..."}]
+    @Column(nullable = false)
+    private String dosage; // e.g., 500mg
 
-    @Column(columnDefinition = "TEXT")
-    private String clinicalNotes;
+    @Column(nullable = false)
+    private String frequency; // e.g., Twice a day
 
-    private LocalDate followUpDate;
+    private String duration; // e.g., 5 days
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private String instructions;
 
-    // Getters & Setters
+    private boolean isActive = true;
+
+    private Instant createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = Instant.now();
+    }
+
+    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-
-    public Doctor getDoctor() { return doctor; }
-    public void setDoctor(Doctor doctor) { this.doctor = doctor; }
-
     public Patient getPatient() { return patient; }
     public void setPatient(Patient patient) { this.patient = patient; }
-
-    public String getDiagnosis() { return diagnosis; }
-    public void setDiagnosis(String diagnosis) { this.diagnosis = diagnosis; }
-
-    public String getMedications() { return medications; }
-    public void setMedications(String medications) { this.medications = medications; }
-
-    public String getClinicalNotes() { return clinicalNotes; }
-    public void setClinicalNotes(String clinicalNotes) { this.clinicalNotes = clinicalNotes; }
-
-    public LocalDate getFollowUpDate() { return followUpDate; }
-    public void setFollowUpDate(LocalDate followUpDate) { this.followUpDate = followUpDate; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public String getMedicineName() { return medicineName; }
+    public void setMedicineName(String medicineName) { this.medicineName = medicineName; }
+    public String getDosage() { return dosage; }
+    public void setDosage(String dosage) { this.dosage = dosage; }
+    public String getFrequency() { return frequency; }
+    public void setFrequency(String frequency) { this.frequency = frequency; }
+    public String getDuration() { return duration; }
+    public void setDuration(String duration) { this.duration = duration; }
+    public String getInstructions() { return instructions; }
+    public void setInstructions(String instructions) { this.instructions = instructions; }
+    public boolean isActive() { return isActive; }
+    public void setActive(boolean active) { isActive = active; }
+    public Instant getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 }

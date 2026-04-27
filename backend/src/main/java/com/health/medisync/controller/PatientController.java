@@ -18,9 +18,11 @@ import java.util.Map;
 public class PatientController {
 
     private final PatientService patientService;
+    private final com.health.medisync.service.AuditLogService auditLogService;
 
-    public PatientController(PatientService patientService) {
+    public PatientController(PatientService patientService, com.health.medisync.service.AuditLogService auditLogService) {
         this.patientService = patientService;
+        this.auditLogService = auditLogService;
     }
 
     @GetMapping("/profile")
@@ -115,5 +117,11 @@ public class PatientController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
+    }
+
+    @GetMapping("/audit-logs")
+    public ResponseEntity<List<com.health.medisync.model.AuditLog>> getMyAuditLogs(Authentication authentication) {
+        com.health.medisync.model.Patient patient = patientService.getPatientProfile(authentication.getName());
+        return ResponseEntity.ok(auditLogService.getPatientAuditLogs(patient.getId()));
     }
 }
