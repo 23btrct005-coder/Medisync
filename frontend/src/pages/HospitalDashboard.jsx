@@ -21,8 +21,8 @@ const HospitalDashboard = () => {
     const [submitting, setSubmitting] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
 
-    const fetchInstitutionalData = async () => {
-        setLoading(true);
+    const fetchInstitutionalData = async (silent = false) => {
+        if (!silent) setLoading(true);
         try {
             const [statsRes, doctorsRes] = await Promise.all([
                 api.get('/hospital/stats'),
@@ -32,14 +32,20 @@ const HospitalDashboard = () => {
             setDoctors(doctorsRes.data);
         } catch (err) {
             console.error("Institutional sync failed", err);
-            toast.error("Failed to synchronize hospital data");
+            if (!silent) toast.error("Failed to synchronize hospital data");
         } finally {
-            setLoading(false);
+            if (!silent) setLoading(false);
         }
     };
 
     useEffect(() => {
         fetchInstitutionalData();
+        
+        const syncInterval = setInterval(() => {
+            fetchInstitutionalData(true);
+        }, 10000);
+
+        return () => clearInterval(syncInterval);
     }, []);
 
     const approveDoctor = async (id) => {
@@ -102,7 +108,13 @@ const HospitalDashboard = () => {
                     <h1 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-4 uppercase italic">
                         Institutional <span className="not-italic text-primary">Command</span>
                     </h1>
-                    <p className="text-slate-400 font-bold text-xs uppercase tracking-[0.2em] mt-1">Hospital Management Suite • {stats?.hospitalName}</p>
+                    <div className="flex items-center gap-3 mt-2 ml-1">
+                        <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600">Live Sync Active</span>
+                        </div>
+                        <span className="text-slate-400 font-bold text-xs uppercase tracking-[0.2em]">Hospital Management Suite • {stats?.hospitalName}</span>
+                    </div>
                 </div>
                 <div className="flex items-center gap-4">
                     <button 
