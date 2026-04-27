@@ -5,7 +5,6 @@ import com.health.medisync.model.HospitalAdmin;
 import com.health.medisync.model.User;
 import com.health.medisync.service.HospitalService;
 import com.health.medisync.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,11 +15,15 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/hospital")
-@RequiredArgsConstructor
 public class HospitalController {
 
     private final HospitalService hospitalService;
     private final UserRepository userRepository;
+
+    public HospitalController(HospitalService hospitalService, UserRepository userRepository) {
+        this.hospitalService = hospitalService;
+        this.userRepository = userRepository;
+    }
 
     @GetMapping("/stats")
     public ResponseEntity<?> getStats(@AuthenticationPrincipal UserDetails userDetails) {

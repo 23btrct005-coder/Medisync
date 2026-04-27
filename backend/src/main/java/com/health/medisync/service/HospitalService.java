@@ -8,19 +8,24 @@ import com.health.medisync.repository.DoctorRepository;
 import com.health.medisync.repository.HospitalAdminRepository;
 import com.health.medisync.repository.HospitalRepository;
 import org.springframework.stereotype.Service;
-import lombok.RequiredArgsConstructor;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 public class HospitalService {
 
     private final HospitalRepository hospitalRepository;
     private final HospitalAdminRepository hospitalAdminRepository;
     private final DoctorRepository doctorRepository;
+
+    public HospitalService(HospitalRepository hospitalRepository, 
+                           HospitalAdminRepository hospitalAdminRepository, 
+                           DoctorRepository doctorRepository) {
+        this.hospitalRepository = hospitalRepository;
+        this.hospitalAdminRepository = hospitalAdminRepository;
+        this.doctorRepository = doctorRepository;
+    }
 
     public HospitalAdmin getAdminByUser(User user) {
         return hospitalAdminRepository.findByUserId(user.getId())
