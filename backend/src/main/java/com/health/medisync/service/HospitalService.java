@@ -23,7 +23,7 @@ public class HospitalService {
     private final DoctorRepository doctorRepository;
 
     public HospitalAdmin getAdminByUser(User user) {
-        return hospitalAdminRepository.findByUser(user)
+        return hospitalAdminRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new RuntimeException("Hospital Administrator profile not found"));
     }
 
