@@ -17,6 +17,7 @@ import java.util.Map;
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class PatientController {
 
+    private final PatientService patientService;
     private final com.health.medisync.service.AuditLogService auditLogService;
     private final com.health.medisync.service.TelemetryService telemetryService;
     private final com.health.medisync.service.PrescriptionService prescriptionService;
