@@ -9,6 +9,7 @@ import com.health.medisync.repository.HospitalAdminRepository;
 import com.health.medisync.repository.HospitalRepository;
 import com.health.medisync.repository.AppointmentRepository;
 import com.health.medisync.repository.DepartmentRepository;
+import com.health.medisync.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
