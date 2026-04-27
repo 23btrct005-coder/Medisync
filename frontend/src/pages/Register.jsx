@@ -195,8 +195,11 @@ const Register = () => {
       <div className="absolute top-0 left-0 w-full h-80 bg-primary-600 rounded-b-[3rem] shadow-lg -z-10" />
 
       <div className="max-w-3xl mx-auto">
-        <button onClick={() => navigate('/login')} className="mb-6 flex items-center text-sm font-medium text-white/80 hover:text-white transition">
-          <ArrowLeft size={16} className="mr-1" /> Back to Login
+        <button 
+          onClick={() => navigate(context === 'professional' ? '/doctor-login' : '/login')} 
+          className="mb-6 flex items-center text-sm font-medium text-white/80 hover:text-white transition"
+        >
+          <ArrowLeft size={16} className="mr-1" /> Back to {context === 'professional' ? 'Professional Portal' : 'Login'}
         </button>
 
         <div className="bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden">
