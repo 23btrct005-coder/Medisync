@@ -499,8 +499,10 @@ const DoctorLogin = () => {
         } else if (result.role === 'ROLE_DOCTOR') {
           const from = location.state?.from || '/doctor-dashboard';
           navigate(from);
+        } else if (result.role === 'ROLE_HOSPITAL_ADMIN') {
+          navigate('/hospital-dashboard');
         } else {
-          setError('Unauthorized. Only registered physicians can access this portal.');
+          setError('Unauthorized. Only registered clinical staff and institutional administrators can access this portal.');
         }
       } else {
         setError(result.message || 'Login failed. Please try again.');
