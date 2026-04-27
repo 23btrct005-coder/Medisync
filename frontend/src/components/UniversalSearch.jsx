@@ -1,18 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, FileText, Clipboard, GraduationCap, ChevronRight, Loader2, Target } from 'lucide-react';
+import { Search, FileText, Clipboard, GraduationCap, ChevronRight, Loader2, Target, LayoutDashboard, Activity, Pill, Wallet, ShieldCheck, User, Calendar, CalendarPlus, ClipboardList, UserCheck } from 'lucide-react';
 import api from '../api/axiosConfig';
 import { useNavigate } from 'react-router-dom';
 
 export const SearchResultsDropdown = ({ query, onClose }) => {
-    const [results, setResults] = useState({ records: [], reports: [], doctors: [] });
+    const [results, setResults] = useState({ records: [], reports: [], doctors: [], navigation: [] });
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+
+    const navItems = [
+        { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={18} /> },
+        { name: 'Clinical Vitals', path: '/dashboard/vitals', icon: <Activity size={18} /> },
+        { name: 'Medications', path: '/dashboard/medications', icon: <Pill size={18} /> },
+        { name: 'Medical History', path: '/dashboard/records', icon: <ClipboardList size={18} /> },
+        { name: 'Reports & Briefs', path: '/dashboard/reports', icon: <FileText size={18} /> },
+        { name: 'My Appointments', path: '/dashboard/sessions', icon: <Calendar size={18} /> },
+        { name: 'Book Doctor', path: '/dashboard/booking', icon: <CalendarPlus size={18} /> },
+        { name: 'My Doctors', path: '/dashboard/doctors', icon: <UserCheck size={18} /> },
+        { name: 'Health Wallet', path: '/dashboard/wallet', icon: <Wallet size={18} /> },
+        { name: 'Security Ledger', path: '/dashboard/security', icon: <ShieldCheck size={18} /> },
+        { name: 'My Profile', path: '/dashboard/profile', icon: <User size={18} /> }
+    ];
 
     useEffect(() => {
         const fetchResults = async () => {
             if (!query || query.length < 2) return;
             setLoading(true);
+            
+            // Client-side Navigation Filter
+            const matchedNav = navItems.filter(item => 
+                item.name.toLowerCase().includes(query.toLowerCase())
+            );
+
             try {
                 // Parallel search across clinical nodes
                 const [recordsRes, reportsRes, doctorsRes] = await Promise.all([
@@ -24,10 +44,12 @@ export const SearchResultsDropdown = ({ query, onClose }) => {
                 setResults({
                     records: (recordsRes.data || []).slice(0, 3),
                     reports: (reportsRes.data || []).slice(0, 3),
-                    doctors: (doctorsRes.data || []).slice(0, 3)
+                    doctors: (doctorsRes.data || []).slice(0, 3),
+                    navigation: matchedNav.slice(0, 3)
                 });
             } catch (err) {
                 console.error("Search sync failed", err);
+                setResults(prev => ({ ...prev, navigation: matchedNav }));
             } finally {
                 setLoading(false);
             }
@@ -37,7 +59,7 @@ export const SearchResultsDropdown = ({ query, onClose }) => {
         return () => clearTimeout(timer);
     }, [query]);
 
-    const hasResults = results.records.length > 0 || results.reports.length > 0 || results.doctors.length > 0;
+    const hasResults = results.records.length > 0 || results.reports.length > 0 || results.doctors.length > 0 || results.navigation.length > 0;
 
     return (
         <motion.div 
@@ -59,6 +81,32 @@ export const SearchResultsDropdown = ({ query, onClose }) => {
                     </div>
                 ) : (
                     <div className="space-y-8 text-left">
+                        {/* Navigation Section */}
+                        {results.navigation.length > 0 && (
+                            <div>
+                                <h4 className="px-4 mb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                    <LayoutDashboard size={12} /> App Nodes
+                                </h4>
+                                <div className="space-y-1">
+                                    {results.navigation.map(item => (
+                                        <button 
+                                            key={item.path}
+                                            onClick={() => { navigate(item.path); onClose(); }}
+                                            className="w-full flex items-center gap-4 p-4 bg-slate-900/5 hover:bg-primary/10 rounded-2xl transition-all group border border-transparent hover:border-primary/20"
+                                        >
+                                            <div className="w-10 h-10 bg-white text-primary rounded-xl flex items-center justify-center shadow-sm">
+                                                {item.icon}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-black text-slate-800 truncate uppercase tracking-tighter">{item.name}</p>
+                                                <p className="text-[10px] text-slate-400 font-bold uppercase">Navigate to node</p>
+                                            </div>
+                                            <ChevronRight size={16} className="text-slate-300 group-hover:text-primary transition-colors" />
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                         {/* Medical Records Section */}
                         {results.records.length > 0 && (
                             <div>
