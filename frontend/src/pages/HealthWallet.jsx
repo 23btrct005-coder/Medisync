@@ -1,15 +1,50 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Wallet, QrCode, Shield, Download, Smartphone, Info, User, Activity, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import QRCode from "react-qr-code";
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import toast from 'react-hot-toast';
 
 const HealthWallet = () => {
     const { user } = useAuth();
     const [isDownloading, setIsDownloading] = useState(false);
 
-    const handleDownload = () => {
+    const handleDownload = async () => {
+        const walletCard = document.getElementById('clinical-identity-node');
+        if (!walletCard) {
+            toast.error("Identity node not found for export");
+            return;
+        }
+
         setIsDownloading(true);
-        setTimeout(() => setIsDownloading(false), 2000);
+        const loadToast = toast.loading("Generating Secure PDF...");
+        
+        try {
+            const canvas = await html2canvas(walletCard, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#0f172a', // Match card background
+                borderRadius: 48
+            });
+            
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF({
+                orientation: 'landscape',
+                unit: 'px',
+                format: [canvas.width, canvas.height]
+            });
+            
+            pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+            pdf.save(`MediSync_Wallet_${user?.name?.replace(/\s+/g, '_')}.pdf`);
+            
+            toast.success("Identity Card exported successfully", { id: loadToast });
+        } catch (error) {
+            console.error("PDF Export Error:", error);
+            toast.error("Failed to generate secure PDF", { id: loadToast });
+        } finally {
+            setIsDownloading(false);
+        }
     };
 
     return (
@@ -25,7 +60,7 @@ const HealthWallet = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* WALLET CARD */}
-                <div className="bg-slate-900 rounded-[3rem] p-10 text-white relative overflow-hidden group">
+                <div id="clinical-identity-node" className="bg-slate-900 rounded-[3rem] p-10 text-white relative overflow-hidden group border border-white/5">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 blur-[100px] -mr-32 -mt-32 transition-all group-hover:scale-125" />
                     
                     <div className="relative z-10 h-full flex flex-col justify-between">
