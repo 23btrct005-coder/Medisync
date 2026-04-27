@@ -313,14 +313,32 @@ const HospitalDashboard = () => {
                                 </div>
 
                                 <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Standard Consultation Fee (₹)</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Standard Consultation Fee (₹)</label>
                                     <input 
-                                        type="text" required
+                                        type="number" 
+                                        required 
+                                        className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-4 ring-primary/5 transition-all"
+                                        placeholder="1500"
                                         value={onboardData.consultationFee}
                                         onChange={(e) => setOnboardData({...onboardData, consultationFee: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                        placeholder="1500"
                                     />
+                                </div>
+                            </div>
+
+                            <div className="p-6 bg-blue-50/50 rounded-[2rem] border border-blue-100/50">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <Shield size={16} className="text-blue-600" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-blue-600">Initial Access Keys</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase">Default Password</p>
+                                        <p className="text-sm font-black text-slate-800 tracking-tight">Password@123</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase">Login Via</p>
+                                        <p className="text-sm font-black text-slate-800 tracking-tight">Work Email</p>
+                                    </div>
                                 </div>
                             </div>
                             
