@@ -17,16 +17,18 @@ import java.util.Map;
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class PatientController {
 
-    private final PatientService patientService;
     private final com.health.medisync.service.AuditLogService auditLogService;
     private final com.health.medisync.service.TelemetryService telemetryService;
+    private final com.health.medisync.service.PrescriptionService prescriptionService;
 
     public PatientController(PatientService patientService, 
                              com.health.medisync.service.AuditLogService auditLogService,
-                             com.health.medisync.service.TelemetryService telemetryService) {
+                             com.health.medisync.service.TelemetryService telemetryService,
+                             com.health.medisync.service.PrescriptionService prescriptionService) {
         this.patientService = patientService;
         this.auditLogService = auditLogService;
         this.telemetryService = telemetryService;
+        this.prescriptionService = prescriptionService;
     }
 
     @GetMapping("/profile")
@@ -140,5 +142,10 @@ public class PatientController {
     public ResponseEntity<?> sendTestPulse(@RequestBody com.health.medisync.model.Telemetry pulse, Authentication authentication) {
         telemetryService.broadcastVitalUpdate(authentication.getName(), pulse);
         return ResponseEntity.ok(Map.of("message", "Pulse broadcasted live"));
+    }
+
+    @GetMapping("/medications")
+    public ResponseEntity<List<com.health.medisync.model.Prescription>> getMyMedications(Authentication authentication) {
+        return ResponseEntity.ok(prescriptionService.getMyPrescriptions(authentication.getName()));
     }
 }

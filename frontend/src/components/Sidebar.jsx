@@ -32,15 +32,15 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
-    { name: 'Health Wallet', path: '/dashboard/wallet', icon: <Wallet size={20} /> },
-    { name: 'Medical History', path: '/dashboard/records', icon: <ClipboardList size={20} /> },
-    { name: 'Reports', path: '/dashboard/reports', icon: <FileText size={20} /> },
-    { name: 'Vitals', path: '/dashboard/vitals', icon: <Activity size={20} /> },
+    { name: 'Clinical Vitals', path: '/dashboard/vitals', icon: <Activity size={20} /> },
     { name: 'Medications', path: '/dashboard/medications', icon: <Pill size={20} /> },
-    { name: 'Security Ledger', path: '/dashboard/security', icon: <ShieldCheck size={20} /> },
-    { name: 'Book Doctor', path: '/dashboard/booking', icon: <CalendarPlus size={20} /> },
+    { name: 'Medical History', path: '/dashboard/records', icon: <ClipboardList size={20} /> },
+    { name: 'Reports & Briefs', path: '/dashboard/reports', icon: <FileText size={20} /> },
     { name: 'My Appointments', path: '/dashboard/sessions', icon: <Calendar size={20} /> },
+    { name: 'Book Doctor', path: '/dashboard/booking', icon: <CalendarPlus size={20} /> },
     { name: 'My Doctors', path: '/dashboard/doctors', icon: <UserCheck size={20} /> },
+    { name: 'Health Wallet', path: '/dashboard/wallet', icon: <Wallet size={20} /> },
+    { name: 'Security Ledger', path: '/dashboard/security', icon: <ShieldCheck size={20} /> },
     { 
       name: 'My Profile', 
       path: '/dashboard/profile', 
