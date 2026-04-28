@@ -12,7 +12,7 @@ const HospitalDashboard = () => {
         name: '', 
         email: '', 
         specialization: '', 
-        licenseNumber: '', 
+        medicalLicenseNumber: '', 
         medicalDegree: '',
         yearsOfExperience: '',
         consultationFee: '',
@@ -80,7 +80,7 @@ const HospitalDashboard = () => {
             const userData = {
                 ...onboardData,
                 username: onboardData.email.split('@')[0] + Math.floor(Math.random() * 1000),
-                hospital: stats?.hospitalId
+                hospital: stats?.hospitalId != null ? String(stats.hospitalId) : ''
             };
             formDataToSend.append('userData', JSON.stringify(userData));
             
@@ -92,7 +92,7 @@ const HospitalDashboard = () => {
             toast.success("Staff member onboarded successfully!");
             setShowOnboardModal(false);
             setOnboardData({ 
-                name: '', email: '', specialization: '', licenseNumber: '', 
+                name: '', email: '', specialization: '', medicalLicenseNumber: '', 
                 medicalDegree: '', yearsOfExperience: '', consultationFee: '',
                 password: 'Password@123' 
             });
@@ -311,8 +311,8 @@ const HospitalDashboard = () => {
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">License Number</label>
                                         <input 
                                             type="text" required
-                                            value={onboardData.licenseNumber}
-                                            onChange={(e) => setOnboardData({...onboardData, licenseNumber: e.target.value})}
+                                            value={onboardData.medicalLicenseNumber}
+                                            onChange={(e) => setOnboardData({...onboardData, medicalLicenseNumber: e.target.value})}
                                             className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
                                             placeholder="MC-99281-Z"
                                         />

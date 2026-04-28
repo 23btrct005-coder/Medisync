@@ -143,16 +143,20 @@ public class AuthController {
         // Use email as username if none provided
         final String finalUsername = (username == null || username.isEmpty()) ? email : username;
 
-        userRepository.findByUsernameIgnoreCase(finalUsername).ifPresent(existing -> {
-            boolean hasProfile = doctorRepository.findByUserId(existing.getId()).isPresent();
-            if (existing.isEnabled() && hasProfile) {
-                throw new RuntimeException("Error: This account is already registered and verified. Please log in.");
-            }
-            // Delete incomplete/unverified user and linked data so registration can proceed
-            passwordResetTokenRepository.deleteByUserId(existing.getId());
-            doctorRepository.findByUserId(existing.getId()).ifPresent(doctorRepository::delete);
-            userRepository.delete(existing);
-        });
+        try {
+            userRepository.findByUsernameIgnoreCase(finalUsername).ifPresent(existing -> {
+                boolean hasProfile = doctorRepository.findByUserId(existing.getId()).isPresent();
+                if (existing.isEnabled() && hasProfile) {
+                    throw new RuntimeException("Error: This account is already registered and verified. Please log in.");
+                }
+                // Delete incomplete/unverified user and linked data so registration can proceed
+                passwordResetTokenRepository.deleteByUserId(existing.getId());
+                doctorRepository.findByUserId(existing.getId()).ifPresent(doctorRepository::delete);
+                userRepository.delete(existing);
+            });
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
 
         User user = new User();
         user.setUsername(finalUsername);
