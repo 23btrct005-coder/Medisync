@@ -92,9 +92,11 @@ const Landing = () => {
                 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
               </button>
               <button 
-                className="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl font-black text-lg transition-all active:scale-95"
+                onClick={() => navigate('/doctor-login')}
+                className="flex items-center justify-center gap-3 px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 rounded-2xl font-black text-lg transition-all shadow-2xl shadow-blue-500/20 active:scale-95"
               >
-                Request Demo
+                <Stethoscope size={20} />
+                I'm a Physician
               </button>
             </div>
 

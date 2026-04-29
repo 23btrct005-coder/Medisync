@@ -87,11 +87,14 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody AuthRequest loginRequest) {
         String normalizedUsername = loginRequest.getUsername() != null ? loginRequest.getUsername().toLowerCase() : null;
+        System.out.println("DEBUG: Login attempt for " + normalizedUsername);
         
         // PRE-AUTH SELF-HEALING: Proactively enable and promote physicians and administrators
         userRepository.findByUsernameIgnoreCase(normalizedUsername).ifPresent(user -> {
             boolean isDoctor = doctorRepository.findByUserId(user.getId()).isPresent();
             boolean isAdmin = hospitalAdminRepository.findByUserId(user.getId()).isPresent();
+            
+            System.out.println("DEBUG: Self-healing check for " + normalizedUsername + ". isDoctor=" + isDoctor + ", isAdmin=" + isAdmin);
             
             if (isDoctor || isAdmin) {
                 boolean needsUpdate = false;
@@ -141,10 +144,10 @@ public class AuthController {
             @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture) throws IOException {
         
         ObjectMapper mapper = new ObjectMapper();
-        Map<String, String> request = mapper.readValue(userDataJson, Map.class);
+        Map<String, Object> request = mapper.readValue(userDataJson, Map.class);
 
-        String username = request.get("username") != null ? request.get("username").toLowerCase() : null;
-        String email = request.get("email") != null ? request.get("email").toLowerCase() : null;
+        String username = request.get("username") != null ? String.valueOf(request.get("username")).toLowerCase() : null;
+        String email = request.get("email") != null ? String.valueOf(request.get("email")).toLowerCase() : null;
         
         // Use email as username if none provided
         final String finalUsername = (username == null || username.isEmpty()) ? email : username;
@@ -175,14 +178,14 @@ public class AuthController {
 
         User user = new User();
         user.setUsername(finalUsername);
-        user.setPassword(passwordEncoder.encode(request.get("password")));
+        user.setPassword(passwordEncoder.encode(String.valueOf(request.get("password"))));
         user.setRole("ROLE_DOCTOR");
         
         // In the new flow, email is pre-verified via /verify-otp before registration
         boolean verified = true; // Default to enabled since email was pre-verified
         if (request.containsKey("otp")) {
             try {
-                authService.verifyOtpStandalone(request.get("email"), request.get("otp"));
+                authService.verifyOtpStandalone(String.valueOf(request.get("email")), String.valueOf(request.get("otp")));
                 verified = true;
             } catch (Exception e) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Invalid or expired verification code."));
@@ -192,45 +195,46 @@ public class AuthController {
         // Professional accounts are enabled by default since email is verified via OTP
         // Their 'approved' status in the Doctor entity controls institutional access
         user.setEnabled(true); 
-        userRepository.save(user);
+        user = userRepository.save(user);
 
         Doctor doctor = new Doctor();
         doctor.setUser(user);
         doctor.setApproved(false); // Must be approved by admin
-        doctor.setName(request.get("name"));
+        doctor.setName(request.get("name") != null ? String.valueOf(request.get("name")) : null);
         doctor.setEmail(email);
-        doctor.setGender(request.get("gender"));
-        doctor.setDateOfBirth(request.get("dateOfBirth"));
-        doctor.setPhone(request.get("phone"));
-        doctor.setAlternatePhone(request.get("alternatePhone"));
-        doctor.setSpecialization(request.get("specialization"));
-        doctor.setMedicalDegree(request.get("medicalDegree"));
-        doctor.setAdditionalCertifications(request.get("additionalCertifications"));
-        doctor.setCollege(request.get("college"));
-        doctor.setMedicalLicenseNumber(request.get("medicalLicenseNumber"));
+        doctor.setGender(request.get("gender") != null ? String.valueOf(request.get("gender")) : null);
+        doctor.setDateOfBirth(request.get("dateOfBirth") != null ? String.valueOf(request.get("dateOfBirth")) : null);
+        doctor.setPhone(request.get("phone") != null ? String.valueOf(request.get("phone")) : null);
+        doctor.setAlternatePhone(request.get("alternatePhone") != null ? String.valueOf(request.get("alternatePhone")) : null);
+        doctor.setSpecialization(request.get("specialization") != null ? String.valueOf(request.get("specialization")) : null);
+        doctor.setMedicalDegree(request.get("medicalDegree") != null ? String.valueOf(request.get("medicalDegree")) : null);
+        doctor.setAdditionalCertifications(request.get("additionalCertifications") != null ? String.valueOf(request.get("additionalCertifications")) : null);
+        doctor.setCollege(request.get("college") != null ? String.valueOf(request.get("college")) : null);
+        doctor.setMedicalLicenseNumber(request.get("medicalLicenseNumber") != null ? String.valueOf(request.get("medicalLicenseNumber")) : null);
         
         // Institutional Linkage
-        String hospitalIdStr = request.get("hospital");
+        String hospitalIdStr = request.get("hospital") != null ? String.valueOf(request.get("hospital")) : null;
         if (hospitalIdStr != null && !hospitalIdStr.isEmpty() && !hospitalIdStr.equals("other")) {
             try {
                 Long hospitalId = Long.parseLong(hospitalIdStr);
                 hospitalRepository.findById(hospitalId).ifPresent(doctor::setHospitalEntity);
             } catch (NumberFormatException ignored) {}
         }
-        doctor.setHospital(request.get("hospitalName") != null ? request.get("hospitalName") : request.get("hospital"));
+        doctor.setHospital(request.get("hospitalName") != null ? String.valueOf(request.get("hospitalName")) : hospitalIdStr);
         
-        doctor.setConsultationFee(request.get("consultationFee"));
-        doctor.setWorkingDays(request.get("workingDays"));
-        doctor.setConsultationTimings(request.get("consultationTimings"));
-        if (request.get("yearsOfExperience") != null && !request.get("yearsOfExperience").isEmpty()) {
-            try { doctor.setYearsOfExperience(Integer.parseInt(request.get("yearsOfExperience"))); }
+        doctor.setConsultationFee(request.get("consultationFee") != null ? String.valueOf(request.get("consultationFee")) : null);
+        doctor.setWorkingDays(request.get("workingDays") != null ? String.valueOf(request.get("workingDays")) : null);
+        doctor.setConsultationTimings(request.get("consultationTimings") != null ? String.valueOf(request.get("consultationTimings")) : null);
+        
+        if (request.get("yearsOfExperience") != null && !String.valueOf(request.get("yearsOfExperience")).isEmpty()) {
+            try { doctor.setYearsOfExperience(Integer.parseInt(String.valueOf(request.get("yearsOfExperience")))); }
             catch (NumberFormatException ignored) {}
         }
         if (request.get("onlineConsultation") != null) {
-            doctor.setOnlineConsultation(Boolean.parseBoolean(request.get("onlineConsultation")));
+            doctor.setOnlineConsultation(Boolean.parseBoolean(String.valueOf(request.get("onlineConsultation"))));
         }
-        if (request.get("age") != null && !request.get("age").isEmpty()) {
-            try { doctor.setAge(Integer.parseInt(request.get("age"))); }
+        if (request.get("age") != null && !String.valueOf(request.get("age")).isEmpty()) {
+            try { doctor.setAge(Integer.parseInt(String.valueOf(request.get("age")))); }
             catch (NumberFormatException ignored) {}
         }
 
@@ -239,7 +243,9 @@ public class AuthController {
             if (photoUrl != null) doctor.setProfilePictureUrl(photoUrl);
         }
 
+        System.out.println("DEBUG: Saving doctor profile for user " + finalUsername + " linked to hospital " + (doctor.getHospitalEntity() != null ? doctor.getHospitalEntity().getName() : "NONE"));
         doctorRepository.save(doctor);
+        System.out.println("DEBUG: Doctor profile saved successfully for " + finalUsername);
 
         return ResponseEntity.ok(Map.of("message", "Doctor registered and verified successfully!"));
     }
@@ -251,10 +257,10 @@ public class AuthController {
             @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture) throws IOException {
 
         ObjectMapper mapper = new ObjectMapper();
-        Map<String, String> request = mapper.readValue(userDataJson, Map.class);
+        Map<String, Object> request = mapper.readValue(userDataJson, Map.class);
 
-        String username = request.get("username") != null ? request.get("username").toLowerCase() : null;
-        String email = request.get("email") != null ? request.get("email").toLowerCase() : null;
+        String username = request.get("username") != null ? String.valueOf(request.get("username")).toLowerCase() : null;
+        String email = request.get("email") != null ? String.valueOf(request.get("email")).toLowerCase() : null;
         
         // Use email as username if none provided
         final String finalUsername = (username == null || username.isEmpty()) ? email : username;
@@ -286,7 +292,7 @@ public class AuthController {
 
         User user = new User();
         user.setUsername(finalUsername);
-        user.setPassword(passwordEncoder.encode(request.get("password")));
+        user.setPassword(passwordEncoder.encode(String.valueOf(request.get("password"))));
         user.setRole("ROLE_PATIENT");
         
         // Check if OTP is provided for inline verification (legacy flow)
@@ -294,7 +300,7 @@ public class AuthController {
         boolean verified = true; // Default to enabled since email was pre-verified
         if (request.containsKey("otp")) {
             try {
-                authService.verifyOtpStandalone(request.get("email"), request.get("otp"));
+                authService.verifyOtpStandalone(String.valueOf(request.get("email")), String.valueOf(request.get("otp")));
                 verified = true;
             } catch (Exception e) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Invalid or expired verification code."));
@@ -302,46 +308,46 @@ public class AuthController {
         }
         
         user.setEnabled(verified);
-        userRepository.save(user);
+        user = userRepository.save(user);
 
         Patient patient = new Patient();
         patient.setUser(user);
-        patient.setName(request.get("name"));
+        patient.setName(request.get("name") != null ? String.valueOf(request.get("name")) : null);
         patient.setEmail(email);
-        patient.setGender(request.get("gender"));
-        patient.setDateOfBirth(request.get("dateOfBirth"));
-        patient.setPhone(request.get("phone"));
-        patient.setAlternatePhone(request.get("alternatePhone"));
-        patient.setStreet(request.get("street"));
-        patient.setCity(request.get("city"));
-        patient.setState(request.get("state"));
-        patient.setPinCode(request.get("pinCode"));
-        patient.setEmergencyContactName(request.get("emergencyContactName"));
-        patient.setEmergencyContactRelationship(request.get("emergencyContactRelationship"));
-        patient.setEmergencyContactPhone(request.get("emergencyContactPhone"));
-        patient.setBloodGroup(request.get("bloodGroup"));
-        patient.setAllergies(request.get("allergies"));
-        patient.setExistingDiseases(request.get("existingDiseases"));
-        patient.setCurrentMedications(request.get("currentMedications"));
-        patient.setPastSurgeries(request.get("pastSurgeries"));
+        patient.setGender(request.get("gender") != null ? String.valueOf(request.get("gender")) : null);
+        patient.setDateOfBirth(request.get("dateOfBirth") != null ? String.valueOf(request.get("dateOfBirth")) : null);
+        patient.setPhone(request.get("phone") != null ? String.valueOf(request.get("phone")) : null);
+        patient.setAlternatePhone(request.get("alternatePhone") != null ? String.valueOf(request.get("alternatePhone")) : null);
+        patient.setStreet(request.get("street") != null ? String.valueOf(request.get("street")) : null);
+        patient.setCity(request.get("city") != null ? String.valueOf(request.get("city")) : null);
+        patient.setState(request.get("state") != null ? String.valueOf(request.get("state")) : null);
+        patient.setPinCode(request.get("pinCode") != null ? String.valueOf(request.get("pinCode")) : null);
+        patient.setEmergencyContactName(request.get("emergencyContactName") != null ? String.valueOf(request.get("emergencyContactName")) : null);
+        patient.setEmergencyContactRelationship(request.get("emergencyContactRelationship") != null ? String.valueOf(request.get("emergencyContactRelationship")) : null);
+        patient.setEmergencyContactPhone(request.get("emergencyContactPhone") != null ? String.valueOf(request.get("emergencyContactPhone")) : null);
+        patient.setBloodGroup(request.get("bloodGroup") != null ? String.valueOf(request.get("bloodGroup")) : null);
+        patient.setAllergies(request.get("allergies") != null ? String.valueOf(request.get("allergies")) : null);
+        patient.setExistingDiseases(request.get("existingDiseases") != null ? String.valueOf(request.get("existingDiseases")) : null);
+        patient.setCurrentMedications(request.get("currentMedications") != null ? String.valueOf(request.get("currentMedications")) : null);
+        patient.setPastSurgeries(request.get("pastSurgeries") != null ? String.valueOf(request.get("pastSurgeries")) : null);
         
         // New Antigravity Pro Fields
-        patient.setNationalId(request.get("nationalId"));
-        patient.setMaritalStatus(request.get("maritalStatus"));
-        patient.setOccupation(request.get("occupation"));
-        patient.setAltEmergencyPhone(request.get("altEmergencyPhone"));
-        patient.setHeight(request.get("height"));
-        patient.setWeight(request.get("weight"));
+        patient.setNationalId(request.get("nationalId") != null ? String.valueOf(request.get("nationalId")) : null);
+        patient.setMaritalStatus(request.get("maritalStatus") != null ? String.valueOf(request.get("maritalStatus")) : null);
+        patient.setOccupation(request.get("occupation") != null ? String.valueOf(request.get("occupation")) : null);
+        patient.setAltEmergencyPhone(request.get("altEmergencyPhone") != null ? String.valueOf(request.get("altEmergencyPhone")) : null);
+        patient.setHeight(request.get("height") != null ? String.valueOf(request.get("height")) : null);
+        patient.setWeight(request.get("weight") != null ? String.valueOf(request.get("weight")) : null);
         if (request.containsKey("hasDisability")) {
-            patient.setHasDisability(Boolean.parseBoolean(request.get("hasDisability")));
+            patient.setHasDisability(Boolean.parseBoolean(String.valueOf(request.get("hasDisability"))));
         }
-        patient.setDisabilityDetails(request.get("disabilityDetails"));
-        patient.setDistrict(request.get("district"));
+        patient.setDisabilityDetails(request.get("disabilityDetails") != null ? String.valueOf(request.get("disabilityDetails")) : null);
+        patient.setDistrict(request.get("district") != null ? String.valueOf(request.get("district")) : null);
 
         // Auto-calculate age from DOB if age not directly provided
-        if (request.containsKey("age") && request.get("age") != null && !request.get("age").isEmpty()) {
+        if (request.containsKey("age") && request.get("age") != null && !String.valueOf(request.get("age")).isEmpty()) {
             try {
-                patient.setAge(Integer.parseInt(request.get("age")));
+                patient.setAge(Integer.parseInt(String.valueOf(request.get("age"))));
             } catch (NumberFormatException e) {
                 System.err.println("Invalid age format: " + request.get("age"));
             }
@@ -373,8 +379,8 @@ public class AuthController {
             @RequestPart(value = "hospitalLogo", required = false) MultipartFile hospitalLogo) throws IOException {
 
         ObjectMapper mapper = new ObjectMapper();
-        Map<String, String> request = mapper.readValue(userDataJson, Map.class);
-        String username = request.get("username") != null ? request.get("username").toLowerCase() : request.get("email").toLowerCase();
+        Map<String, Object> request = mapper.readValue(userDataJson, Map.class);
+        String username = request.get("username") != null ? String.valueOf(request.get("username")).toLowerCase() : String.valueOf(request.get("email")).toLowerCase();
         
         // Cleanup existing ghost account if any
         try {
@@ -405,7 +411,7 @@ public class AuthController {
         user.setPassword(passwordEncoder.encode(request.get("password")));
         user.setRole("ROLE_HOSPITAL_ADMIN");
         user.setEnabled(true); // Assuming email pre-verified
-        userRepository.save(user);
+        user = userRepository.save(user);
 
         // 2. Create or Find Hospital
         String hospitalName = request.get("hospitalName");
@@ -436,7 +442,7 @@ public class AuthController {
         com.health.medisync.model.HospitalAdmin admin = new com.health.medisync.model.HospitalAdmin();
         admin.setUser(user);
         admin.setHospital(hospital);
-        admin.setPosition(request.get("position") != null ? request.get("position") : "Administrator");
+        admin.setPosition(request.get("position") != null ? String.valueOf(request.get("position")) : "Administrator");
         hospitalAdminRepository.save(admin);
 
         return ResponseEntity.ok(Map.of("message", "Hospital Administration registered successfully!"));
