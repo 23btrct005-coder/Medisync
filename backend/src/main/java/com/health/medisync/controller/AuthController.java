@@ -96,7 +96,7 @@ public class AuthController {
             if (isDoctor || isAdmin) {
                 boolean needsUpdate = false;
                 if (!user.isEnabled()) {
-                    System.out.println("SELF-HEALING (PRE-AUTH): Activating account for " + normalizedUsername);
+                    System.out.println("SELF-HEALING (PRE-AUTH): Activating professional account for " + normalizedUsername);
                     user.setEnabled(true);
                     needsUpdate = true;
                 }
@@ -109,7 +109,7 @@ public class AuthController {
                 }
                 
                 if (needsUpdate) {
-                    userRepository.save(user);
+                    userRepository.saveAndFlush(user);
                 }
             }
         });
@@ -189,9 +189,9 @@ public class AuthController {
             }
         }
         
-        // Manual verification flow: Doctor counts as 'email verified' but not 'admin approved'
-        // We set enabled to false so they cannot login until the admin approves them
-        user.setEnabled(false); 
+        // Professional accounts are enabled by default since email is verified via OTP
+        // Their 'approved' status in the Doctor entity controls institutional access
+        user.setEnabled(true); 
         userRepository.save(user);
 
         Doctor doctor = new Doctor();

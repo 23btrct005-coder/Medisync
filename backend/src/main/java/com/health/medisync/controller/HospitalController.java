@@ -38,7 +38,9 @@ public class HospitalController {
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         HospitalAdmin admin = hospitalService.getAdminByUser(user);
-        return ResponseEntity.ok(hospitalService.getHospitalDoctors(admin.getHospital()));
+        List<Doctor> doctors = hospitalService.getHospitalDoctors(admin.getHospital());
+        System.out.println("DEBUG: Fetching doctors for hospital " + admin.getHospital().getName() + " (ID: " + admin.getHospital().getId() + "). Found: " + doctors.size());
+        return ResponseEntity.ok(doctors);
     }
 
     @PostMapping("/approve-doctor/{id}")

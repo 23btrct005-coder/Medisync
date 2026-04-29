@@ -33,10 +33,12 @@ const HospitalDoctorRoster = () => {
         }
     };
 
-    const filteredDoctors = (Array.isArray(doctors) ? doctors : []).filter(doc => 
-        doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        doc.specialization.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredDoctors = (Array.isArray(doctors) ? doctors : []).filter(doc => {
+        const name = doc?.name?.toLowerCase() || '';
+        const specialty = doc?.specialization?.toLowerCase() || '';
+        const search = searchTerm.toLowerCase();
+        return name.includes(search) || specialty.includes(search);
+    });
 
     if (loading) return (
         <div className="flex items-center justify-center h-[60vh]">
