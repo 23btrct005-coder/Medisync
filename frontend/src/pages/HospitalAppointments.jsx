@@ -22,7 +22,7 @@ const HospitalAppointments = () => {
         fetchAppointments();
     }, []);
 
-    const filteredAppointments = appointments.filter(app => 
+    const filteredAppointments = (Array.isArray(appointments) ? appointments : []).filter(app => 
         app.patient?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         app.doctor?.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );

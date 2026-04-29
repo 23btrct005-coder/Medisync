@@ -17,8 +17,9 @@ export const NotificationProvider = ({ children }) => {
     if (!user) return;
     try {
       const res = await api.get('/notifications');
-      setNotifications(res.data || []);
-      setUnreadCount(res.data?.filter(n => !n.read).length || 0);
+      const data = Array.isArray(res.data) ? res.data : [];
+      setNotifications(data);
+      setUnreadCount(data.filter(n => !n.read).length);
     } catch (e) {
       console.error("Failed to fetch notification history");
     }

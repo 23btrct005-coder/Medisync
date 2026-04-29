@@ -152,9 +152,10 @@ const Booking = () => {
     }
   };
 
-  const specialties = ['All', ...new Set(doctors.map(d => d.specialization).filter(Boolean))];
+  const safeDoctors = Array.isArray(doctors) ? doctors : [];
+  const specialties = ['All', ...new Set(safeDoctors.map(d => d.specialization).filter(Boolean))];
   
-  const filteredDoctors = doctors.filter(d => {
+  const filteredDoctors = safeDoctors.filter(d => {
     const searchLow = searchTerm.toLowerCase();
     const matchesSearch = d.name.toLowerCase().includes(searchLow) || 
                          d.specialization?.toLowerCase().includes(searchLow) ||

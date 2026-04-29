@@ -25,7 +25,7 @@ const PatientDirectory = () => {
     }
   };
 
-  const filteredPatients = patients.filter(p => 
+  const filteredPatients = (Array.isArray(patients) ? patients : []).filter(p => 
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     (p.email && p.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );

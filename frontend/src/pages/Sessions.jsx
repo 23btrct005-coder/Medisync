@@ -300,9 +300,11 @@ const Sessions = () => {
     const d = new Date();
     const todayString = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
     
+    const safeAppointments = Array.isArray(appointments) ? appointments : [];
+    
     // Status Segregation Tier 1: Split into active vs pending
-    const activeAppts = (appointments || []).filter(a => a.status === 'BOOKED');
-    const pendingAppointments = (appointments || []).filter(a => a.status === 'PENDING');
+    const activeAppts = safeAppointments.filter(a => a.status === 'BOOKED');
+    const pendingAppointments = safeAppointments.filter(a => a.status === 'PENDING');
     
     const todaysAppointments = activeAppts.filter(a => a.appointmentDate === todayString);
     const pastAppointments = activeAppts.filter(a => a.appointmentDate < todayString);

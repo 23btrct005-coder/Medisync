@@ -33,7 +33,7 @@ const HospitalDoctorRoster = () => {
         }
     };
 
-    const filteredDoctors = doctors.filter(doc => 
+    const filteredDoctors = (Array.isArray(doctors) ? doctors : []).filter(doc => 
         doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         doc.specialization.toLowerCase().includes(searchTerm.toLowerCase())
     );

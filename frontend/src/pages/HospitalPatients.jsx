@@ -22,7 +22,7 @@ const HospitalPatients = () => {
         fetchPatients();
     }, []);
 
-    const filteredPatients = patients.filter(p => 
+    const filteredPatients = (Array.isArray(patients) ? patients : []).filter(p => 
         p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.patientId?.toLowerCase().includes(searchTerm.toLowerCase())
     );
