@@ -88,20 +88,26 @@ public class AuthController {
     public ResponseEntity<?> authenticateUser(@RequestBody AuthRequest loginRequest) {
         String normalizedUsername = loginRequest.getUsername() != null ? loginRequest.getUsername().toLowerCase() : null;
         
-        // PRE-AUTH SELF-HEALING: Proactively enable and promote physicians
+        // PRE-AUTH SELF-HEALING: Proactively enable and promote physicians and administrators
         userRepository.findByUsernameIgnoreCase(normalizedUsername).ifPresent(user -> {
-            if (doctorRepository.findByUserId(user.getId()).isPresent()) {
+            boolean isDoctor = doctorRepository.findByUserId(user.getId()).isPresent();
+            boolean isAdmin = hospitalAdminRepository.findByUserId(user.getId()).isPresent();
+            
+            if (isDoctor || isAdmin) {
                 boolean needsUpdate = false;
                 if (!user.isEnabled()) {
-                    System.out.println("SELF-HEALING (PRE-AUTH): Activating doctor account " + normalizedUsername);
+                    System.out.println("SELF-HEALING (PRE-AUTH): Activating account for " + normalizedUsername);
                     user.setEnabled(true);
                     needsUpdate = true;
                 }
-                if (!"ROLE_DOCTOR".equals(user.getRole())) {
-                    System.out.println("SELF-HEALING (PRE-AUTH): Promoting " + normalizedUsername + " to ROLE_DOCTOR.");
-                    user.setRole("ROLE_DOCTOR");
+                
+                String expectedRole = isDoctor ? "ROLE_DOCTOR" : "ROLE_HOSPITAL_ADMIN";
+                if (!expectedRole.equals(user.getRole())) {
+                    System.out.println("SELF-HEALING (PRE-AUTH): Correcting role for " + normalizedUsername + " to " + expectedRole);
+                    user.setRole(expectedRole);
                     needsUpdate = true;
                 }
+                
                 if (needsUpdate) {
                     userRepository.save(user);
                 }
@@ -145,13 +151,22 @@ public class AuthController {
 
         try {
             userRepository.findByUsernameIgnoreCase(finalUsername).ifPresent(existing -> {
-                boolean hasProfile = doctorRepository.findByUserId(existing.getId()).isPresent();
-                if (existing.isEnabled() && hasProfile) {
+                if (existing.isEnabled()) {
                     throw new RuntimeException("Error: This account is already registered and verified. Please log in.");
                 }
-                // Delete incomplete/unverified user and linked data so registration can proceed
+                
+                // Protection: Don't allow overwriting a pending doctor/admin with a different role
+                // But since we ARE in registerDoctor, we can overwrite a pending doctor or a ghost patient
+                boolean hasAdminProfile = hospitalAdminRepository.findByUserId(existing.getId()).isPresent();
+                if (hasAdminProfile) {
+                    throw new RuntimeException("Error: This email is already associated with a hospital administrator account.");
+                }
+
+                // Delete unverified user and ALL linked data so registration can proceed cleanly
                 passwordResetTokenRepository.deleteByUserId(existing.getId());
                 doctorRepository.findByUserId(existing.getId()).ifPresent(doctorRepository::delete);
+                patientRepository.findByUserId(existing.getId()).ifPresent(patientRepository::delete);
+                hospitalAdminRepository.findByUserId(existing.getId()).ifPresent(hospitalAdminRepository::delete);
                 userRepository.delete(existing);
             });
         } catch (RuntimeException e) {
@@ -249,9 +264,20 @@ public class AuthController {
                 if (existing.isEnabled()) {
                     throw new RuntimeException("Error: This account is already registered and verified. Please log in.");
                 }
-                // Delete ghost/unverified user and linked data so registration can proceed
+
+                // Protection: Critical. Do NOT delete pending doctors or admins during patient registration
+                boolean hasDoctorProfile = doctorRepository.findByUserId(existing.getId()).isPresent();
+                boolean hasAdminProfile = hospitalAdminRepository.findByUserId(existing.getId()).isPresent();
+                
+                if (hasDoctorProfile || hasAdminProfile) {
+                    throw new RuntimeException("Error: This email is registered for a professional account awaiting verification. Please use a different email or log in as a professional.");
+                }
+
+                // Delete ghost/unverified patient and linked data
                 passwordResetTokenRepository.deleteByUserId(existing.getId());
+                doctorRepository.findByUserId(existing.getId()).ifPresent(doctorRepository::delete);
                 patientRepository.findByUserId(existing.getId()).ifPresent(patientRepository::delete);
+                hospitalAdminRepository.findByUserId(existing.getId()).ifPresent(hospitalAdminRepository::delete);
                 userRepository.delete(existing);
             });
         } catch (RuntimeException e) {
@@ -349,6 +375,29 @@ public class AuthController {
         ObjectMapper mapper = new ObjectMapper();
         Map<String, String> request = mapper.readValue(userDataJson, Map.class);
         String username = request.get("username") != null ? request.get("username").toLowerCase() : request.get("email").toLowerCase();
+        
+        // Cleanup existing ghost account if any
+        try {
+            userRepository.findByUsernameIgnoreCase(username).ifPresent(existing -> {
+                if (existing.isEnabled()) {
+                    throw new RuntimeException("Error: This account is already registered. Please log in.");
+                }
+                
+                // Protection: Don't overwrite pending doctors
+                boolean hasDoctorProfile = doctorRepository.findByUserId(existing.getId()).isPresent();
+                if (hasDoctorProfile) {
+                    throw new RuntimeException("Error: This email is reserved for a physician account awaiting approval.");
+                }
+
+                passwordResetTokenRepository.deleteByUserId(existing.getId());
+                doctorRepository.findByUserId(existing.getId()).ifPresent(doctorRepository::delete);
+                patientRepository.findByUserId(existing.getId()).ifPresent(patientRepository::delete);
+                hospitalAdminRepository.findByUserId(existing.getId()).ifPresent(hospitalAdminRepository::delete);
+                userRepository.delete(existing);
+            });
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
 
         // 1. Create User
         User user = new User();
