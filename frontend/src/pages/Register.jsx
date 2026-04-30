@@ -323,53 +323,25 @@ const Register = () => {
                     </div>
                   </div>
 
-                  {/* 2b. Facility Location */}
+                  {/* 2b. Administrator + Location (combined) */}
                   <div className="bg-slate-50 rounded-2xl p-6 space-y-5 border border-slate-200 shadow-sm">
-                    <h3 className={sectionHeadClass}><MapPin size={16} />3. Facility Location & Contact</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      <div>
-                        <label className={labelClass}>Institutional Phone <span className="text-red-500">*</span></label>
-                        <input type="tel" name="phone" required value={formData.phone} onChange={handleChange} className={inputClass} maxLength="10" placeholder="10-digit number" />
-                      </div>
-                      <div>
-                        <label className={labelClass}>State <span className="text-red-500">*</span></label>
-                        <select name="state" required value={formData.state} onChange={handleChange} className={inputClass}>
-                          <option value="">Select State</option>
-                          {Object.keys(geographyData).map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
-                      </div>
-                      <div>
-                        <label className={labelClass}>City / District <span className="text-red-500">*</span></label>
-                        <select name="city" required value={formData.city} onChange={handleChange} className={inputClass}>
-                          <option value="">Select City / District</option>
-                          {availableCities.map(c => <option key={c} value={c}>{c}</option>)}
-                        </select>
-                      </div>
-                      <div>
-                        <label className={labelClass}>PIN Code <span className="text-red-500">*</span></label>
-                        <input type="text" name="pinCode" required value={formData.pinCode} onChange={handleChange} className={inputClass} maxLength="6" placeholder="6-digit PIN" />
-                      </div>
-                      <div className="md:col-span-2">
-                        <label className={labelClass}>Street Address / Locality <span className="text-red-500">*</span></label>
-                        <input type="text" name="street" required value={formData.street} onChange={handleChange}
-                          className={inputClass} placeholder="e.g. 258/A, Hosur Road, Bommasandra" />
-                      </div>
-                    </div>
-                  </div>
+                    <h3 className={sectionHeadClass}><User size={16} />3. Administrator Identity &amp; Location</h3>
 
-                  {/* 2c. Administrator Details */}
-                  <div className="bg-slate-50 rounded-2xl p-6 space-y-5 border border-slate-200 shadow-sm">
-                    <h3 className={sectionHeadClass}><User size={16} />4. Administrator Identity</h3>
+                    {/* Admin photo */}
                     <div className="flex flex-col items-center gap-2 pb-2">
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Admin Photo</p>
                       <ProfilePhotoUpload onFileSelect={setProfilePicture} />
                     </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      {/* Admin name */}
                       <div className="md:col-span-2">
                         <label className={labelClass}>Administrator Full Name <span className="text-red-500">*</span></label>
                         <input type="text" name="name" required value={formData.name} onChange={handleChange}
                           className={inputClass} placeholder="Your Legal Name" />
                       </div>
+
+                      {/* Position */}
                       <div className="md:col-span-2">
                         <label className={labelClass}>Your Position <span className="text-red-500">*</span></label>
                         <select name="position" required value={formData.position} onChange={handleChange} className={inputClass}>
@@ -381,6 +353,50 @@ const Register = () => {
                           <option value="HR Manager">HR Manager</option>
                           <option value="Finance Head">Finance Head</option>
                         </select>
+                      </div>
+
+                      {/* Divider label */}
+                      <div className="md:col-span-2 pt-2 border-t border-slate-200">
+                        <p className="text-[10px] font-black text-primary-600 uppercase tracking-[0.2em]">Facility Location &amp; Contact</p>
+                      </div>
+
+                      {/* Phone */}
+                      <div>
+                        <label className={labelClass}>Institutional Phone <span className="text-red-500">*</span></label>
+                        <input type="tel" name="phone" required value={formData.phone} onChange={handleChange}
+                          className={inputClass} maxLength="10" placeholder="10-digit number" />
+                      </div>
+
+                      {/* State */}
+                      <div>
+                        <label className={labelClass}>State <span className="text-red-500">*</span></label>
+                        <select name="state" required value={formData.state} onChange={handleChange} className={inputClass}>
+                          <option value="">Select State</option>
+                          {Object.keys(geographyData).map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                      </div>
+
+                      {/* City */}
+                      <div>
+                        <label className={labelClass}>City / District <span className="text-red-500">*</span></label>
+                        <select name="city" required value={formData.city} onChange={handleChange} className={inputClass}>
+                          <option value="">Select City / District</option>
+                          {availableCities.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
+
+                      {/* PIN */}
+                      <div>
+                        <label className={labelClass}>PIN Code <span className="text-red-500">*</span></label>
+                        <input type="text" name="pinCode" required value={formData.pinCode} onChange={handleChange}
+                          className={inputClass} maxLength="6" placeholder="6-digit PIN" />
+                      </div>
+
+                      {/* Street */}
+                      <div className="md:col-span-2">
+                        <label className={labelClass}>Street Address / Locality <span className="text-red-500">*</span></label>
+                        <input type="text" name="street" required value={formData.street} onChange={handleChange}
+                          className={inputClass} placeholder="e.g. 258/A, Hosur Road, Bommasandra" />
                       </div>
                     </div>
                   </div>
