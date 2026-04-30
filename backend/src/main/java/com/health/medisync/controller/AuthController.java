@@ -210,6 +210,27 @@ public class AuthController {
                     }
                 });
             }
+
+            // Check for existing doctor by Medical License Number
+            String medicalLicenseNumber = request.get("medicalLicenseNumber") != null ? String.valueOf(request.get("medicalLicenseNumber")).trim() : null;
+            if (medicalLicenseNumber != null && !medicalLicenseNumber.isEmpty()) {
+                doctorRepository.findFirstByMedicalLicenseNumber(medicalLicenseNumber).ifPresent(existingDoctor -> {
+                    User u = existingDoctor.getUser();
+                    if (u != null && u.isEnabled()) {
+                        throw new RuntimeException("Error: A physician with this medical license number is already registered.");
+                    }
+                    // Clean up if unverified
+                    if (u != null) {
+                        passwordResetTokenRepository.deleteByUserId(u.getId());
+                        doctorRepository.delete(existingDoctor);
+                        patientRepository.findByUserId(u.getId()).ifPresent(patientRepository::delete);
+                        hospitalAdminRepository.findByUserId(u.getId()).ifPresent(hospitalAdminRepository::delete);
+                        userRepository.delete(u);
+                    } else {
+                        doctorRepository.delete(existingDoctor);
+                    }
+                });
+            }
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }

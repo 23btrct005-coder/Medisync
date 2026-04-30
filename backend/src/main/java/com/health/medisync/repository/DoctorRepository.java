@@ -9,6 +9,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     Optional<Doctor> findByUserId(Long userId);
     Optional<Doctor> findFirstByEmail(String email);
     Optional<Doctor> findByEmail(String email);
+    Optional<Doctor> findFirstByMedicalLicenseNumber(String medicalLicenseNumber);
     java.util.List<Doctor> findByApprovedFalse();
 
     @org.springframework.data.jpa.repository.Query(value = "SELECT * FROM doctors WHERE approved = false", nativeQuery = true)
