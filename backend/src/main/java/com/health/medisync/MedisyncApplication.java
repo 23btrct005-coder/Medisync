@@ -97,28 +97,28 @@ public class MedisyncApplication {
     }
 
     @Bean
-    public CommandLineRunner adminBootstrap(UserRepository userRepository) {
+    public CommandLineRunner adminBootstrap(UserRepository userRepository, org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         return args -> {
-            System.out.println("[BOOTSTRAP] Checking for admin promotion...");
+            System.out.println("[BOOTSTRAP] Checking for global admin account...");
             
-            // Fix for 'admin' (Global ID 3 in screenshot)
-            Optional<User> adminUser = userRepository.findAll().stream()
-                .filter(u -> u.getUsername().equalsIgnoreCase("admin") || u.getUsername().equalsIgnoreCase("admin@medisync.com"))
-                .findFirst();
+            Optional<User> adminUser = userRepository.findByUsernameIgnoreCase("admin");
 
             if (adminUser.isPresent()) {
                 User user = adminUser.get();
-                if (!"ROLE_ADMIN".equals(user.getRole())) {
-                    System.out.println("[BOOTSTRAP] Promoting user '" + user.getUsername() + "' to ROLE_ADMIN");
-                    user.setRole("ROLE_ADMIN");
-                    user.setEnabled(true);
-                    userRepository.save(user);
-                    System.out.println("[BOOTSTRAP] Promotion successful!");
-                } else {
-                    System.out.println("[BOOTSTRAP] User '" + user.getUsername() + "' is already ROLE_ADMIN");
-                }
+                System.out.println("[BOOTSTRAP] Admin user found. Resetting password to 'admin123' and ensuring ROLE_ADMIN.");
+                user.setPassword(passwordEncoder.encode("admin123"));
+                user.setRole("ROLE_ADMIN");
+                user.setEnabled(true);
+                userRepository.save(user);
             } else {
-                System.out.println("[BOOTSTRAP] No user named 'admin' found for promotion.");
+                System.out.println("[BOOTSTRAP] No admin user found. Creating global 'admin' account...");
+                User newAdmin = new User();
+                newAdmin.setUsername("admin");
+                newAdmin.setPassword(passwordEncoder.encode("admin123"));
+                newAdmin.setRole("ROLE_ADMIN");
+                newAdmin.setEnabled(true);
+                userRepository.save(newAdmin);
+                System.out.println("[BOOTSTRAP] Global admin created successfully.");
             }
         };
     }
