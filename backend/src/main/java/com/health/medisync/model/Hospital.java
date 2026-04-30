@@ -18,12 +18,15 @@ public class Hospital {
     private String licenseCode;
 
     private String location;
+    private String street;
     private String state;
     private String city;
     private String pinCode;
     private String phone;
     private String contactEmail;
     private String logoUrl;
+    private String hospitalType;   // Government / Private / Trust / Charitable
+    private String website;
     
     @OneToMany(mappedBy = "hospitalEntity", cascade = CascadeType.ALL)
     private List<Doctor> doctors = new ArrayList<>();
@@ -61,4 +64,13 @@ public class Hospital {
 
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
+
+    public String getStreet() { return street; }
+    public void setStreet(String street) { this.street = street; }
+
+    public String getHospitalType() { return hospitalType; }
+    public void setHospitalType(String hospitalType) { this.hospitalType = hospitalType; }
+
+    public String getWebsite() { return website; }
+    public void setWebsite(String website) { this.website = website; }
 }

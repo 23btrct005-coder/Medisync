@@ -19,6 +19,8 @@ const Register = () => {
     name: '',
     hospitalName: '',
     licenseCode: '',
+    hospitalType: '',
+    website: '',
     position: 'Chief Administrator',
     dateOfBirth: '',
     age: '',
@@ -276,124 +278,187 @@ const Register = () => {
                 )}
               </div>
 
-              {/* 2. Professional / Personal Details */}
-              <div className="bg-slate-50 rounded-2xl p-6 space-y-6 border border-slate-200 shadow-sm">
-                <h3 className={sectionHeadClass}>
-                    {role === 'ROLE_PATIENT' ? <User size={16} /> : <Building2 size={16} />}
-                    2. {role === 'ROLE_PATIENT' ? 'Personal Details' : 'Institutional Credentials'}
-                </h3>
-                
-                <div className="flex flex-col items-center gap-6 mb-4">
-                    <div className={`grid grid-cols-1 ${role === 'ROLE_HOSPITAL_ADMIN' ? 'md:grid-cols-2' : ''} gap-8 w-full`}>
-                        <div className="flex flex-col items-center gap-2">
-                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
-                                {role === 'ROLE_PATIENT' ? 'Profile Photo' : 'Admin Identity'}
-                             </p>
-                             <ProfilePhotoUpload onFileSelect={setProfilePicture} />
-                        </div>
-                        {role === 'ROLE_HOSPITAL_ADMIN' && (
-                            <div className="flex flex-col items-center gap-2">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Hospital Logo</p>
-                                <ProfilePhotoUpload onFileSelect={setHospitalLogo} />
-                            </div>
-                        )}
+              {/* === HOSPITAL ADMIN SECTIONS === */}
+              {role === 'ROLE_HOSPITAL_ADMIN' && (
+                <>
+                  {/* 2a. Hospital Identity */}
+                  <div className="bg-slate-50 rounded-2xl p-6 space-y-5 border border-slate-200 shadow-sm">
+                    <h3 className={sectionHeadClass}><Building2 size={16} />2. Hospital Identity</h3>
+
+                    {/* Logo upload centred at top */}
+                    <div className="flex flex-col items-center gap-2 pb-2">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hospital Logo</p>
+                      <ProfilePhotoUpload onFileSelect={setHospitalLogo} />
                     </div>
-                </div>
 
-                {role === 'ROLE_HOSPITAL_ADMIN' ? (
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div className="md:col-span-2">
-                             <label className={labelClass}>Hospital Name <span className="text-red-500">*</span></label>
-                             <input type="text" name="hospitalName" required value={formData.hospitalName} onChange={handleChange}
-                               className={inputClass} placeholder="e.g. Narayana Health" />
-                        </div>
-                        <div>
-                             <label className={labelClass}>Institutional License <span className="text-red-500">*</span></label>
-                             <input type="text" name="licenseCode" required value={formData.licenseCode} onChange={handleChange}
-                               className={inputClass} placeholder="HL-XXXX-XXXX" />
-                        </div>
-                        <div>
-                             <label className={labelClass}>Your Position <span className="text-red-500">*</span></label>
-                             <select name="position" required value={formData.position} onChange={handleChange} className={inputClass}>
-                                <option value="Chief Administrator">Chief Administrator</option>
-                                <option value="IT Operations">IT Operations</option>
-                                <option value="Medical Director">Medical Director</option>
-                                <option value="Department Head">Department Head</option>
-                             </select>
-                        </div>
-                        <div className="md:col-span-2">
-                             <label className={labelClass}>Administrator Full Name <span className="text-red-500">*</span></label>
-                             <input type="text" name="name" required value={formData.name} onChange={handleChange}
-                               className={inputClass} placeholder="Your Legal Name" />
-                        </div>
-                   </div>
-                ) : (
-                    <>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                          <div className="md:col-span-2">
-                            <label className={labelClass}>Full Name <span className="text-red-500">*</span></label>
-                            <input type="text" name="name" required value={formData.name} onChange={handleChange}
-                              className={inputClass} placeholder="Full Name" />
-                          </div>
-                          <div>
-                            <label className={labelClass}>Date of Birth <span className="text-red-500">*</span></label>
-                            <input type="date" name="dateOfBirth" required value={formData.dateOfBirth} onChange={handleChange} className={inputClass} />
-                          </div>
-                          <div>
-                            <label className={labelClass}>Gender <span className="text-red-500">*</span></label>
-                            <select name="gender" required value={formData.gender} onChange={handleChange} className={inputClass}>
-                              <option value="">Select Gender</option>
-                              <option value="Male">Male</option>
-                              <option value="Female">Female</option>
-                              <option value="Other">Other</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className={labelClass}>Blood Group <span className="text-red-500">*</span></label>
-                            <select name="bloodGroup" required value={formData.bloodGroup} onChange={handleChange} className={inputClass}>
-                              <option value="">Select Blood Group</option>
-                              <option value="A+">A+</option><option value="A-">A-</option>
-                              <option value="B+">B+</option><option value="B-">B-</option>
-                              <option value="O+">O+</option><option value="O-">O-</option>
-                              <option value="AB+">AB+</option><option value="AB-">AB-</option>
-                            </select>
-                          </div>
-                        </div>
-                    </>
-                )}
-              </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div className="md:col-span-2">
+                        <label className={labelClass}>Hospital / Institution Name <span className="text-red-500">*</span></label>
+                        <input type="text" name="hospitalName" required value={formData.hospitalName} onChange={handleChange}
+                          className={inputClass} placeholder="e.g. Narayana Health City" />
+                      </div>
+                      <div>
+                        <label className={labelClass}>Hospital Type <span className="text-red-500">*</span></label>
+                        <select name="hospitalType" required value={formData.hospitalType} onChange={handleChange} className={inputClass}>
+                          <option value="">Select Type</option>
+                          <option value="Government">Government</option>
+                          <option value="Private">Private</option>
+                          <option value="Trust / NGO">Trust / NGO</option>
+                          <option value="Charitable">Charitable</option>
+                          <option value="Multi-Specialty">Multi-Specialty</option>
+                          <option value="Clinic">Clinic / Polyclinic</option>
+                          <option value="Diagnostic Centre">Diagnostic Centre</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className={labelClass}>Institutional License Code <span className="text-red-500">*</span></label>
+                        <input type="text" name="licenseCode" required value={formData.licenseCode} onChange={handleChange}
+                          className={inputClass} placeholder="HL-XXXX-XXXX" />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className={labelClass}>Official Website</label>
+                        <input type="url" name="website" value={formData.website} onChange={handleChange}
+                          className={inputClass} placeholder="https://www.yourhospital.com" />
+                      </div>
+                    </div>
+                  </div>
 
-              {/* 3. Location Information */}
-              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
-                <h3 className={sectionHeadClass}><Phone size={16} />3. {role === 'ROLE_PATIENT' ? 'Contact Information' : 'Facility Location'}</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div>
-                    <label className={labelClass}>{role === 'ROLE_PATIENT' ? 'Mobile Number' : 'Institutional Phone'} <span className="text-red-500">*</span></label>
-                    <input type="tel" name="phone" required value={formData.phone} onChange={handleChange} className={inputClass} maxLength="10" />
+                  {/* 2b. Facility Location */}
+                  <div className="bg-slate-50 rounded-2xl p-6 space-y-5 border border-slate-200 shadow-sm">
+                    <h3 className={sectionHeadClass}><MapPin size={16} />3. Facility Location & Contact</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div>
+                        <label className={labelClass}>Institutional Phone <span className="text-red-500">*</span></label>
+                        <input type="tel" name="phone" required value={formData.phone} onChange={handleChange} className={inputClass} maxLength="10" placeholder="10-digit number" />
+                      </div>
+                      <div>
+                        <label className={labelClass}>State <span className="text-red-500">*</span></label>
+                        <select name="state" required value={formData.state} onChange={handleChange} className={inputClass}>
+                          <option value="">Select State</option>
+                          {Object.keys(geographyData).map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className={labelClass}>City / District <span className="text-red-500">*</span></label>
+                        <select name="city" required value={formData.city} onChange={handleChange} className={inputClass}>
+                          <option value="">Select City / District</option>
+                          {availableCities.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className={labelClass}>PIN Code <span className="text-red-500">*</span></label>
+                        <input type="text" name="pinCode" required value={formData.pinCode} onChange={handleChange} className={inputClass} maxLength="6" placeholder="6-digit PIN" />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className={labelClass}>Street Address / Locality <span className="text-red-500">*</span></label>
+                        <input type="text" name="street" required value={formData.street} onChange={handleChange}
+                          className={inputClass} placeholder="e.g. 258/A, Hosur Road, Bommasandra" />
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <label className={labelClass}>State <span className="text-red-500">*</span></label>
-                    <select name="state" required value={formData.state} onChange={handleChange} className={inputClass}>
-                      <option value="">Select State</option>
-                      {Object.keys(geographyData).map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className={labelClass}>City / District <span className="text-red-500">*</span></label>
-                    <select name="city" required value={formData.city} onChange={handleChange} className={inputClass}>
-                      <option value="">Select City / District</option>
-                      {availableCities.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className={labelClass}>PIN Code <span className="text-red-500">*</span></label>
-                    <input type="text" name="pinCode" required value={formData.pinCode} onChange={handleChange} className={inputClass} maxLength="6" />
-                  </div>
-                </div>
-              </div>
 
-              {/* 4. Emergency Contact (Patient Only) */}
+                  {/* 2c. Administrator Details */}
+                  <div className="bg-slate-50 rounded-2xl p-6 space-y-5 border border-slate-200 shadow-sm">
+                    <h3 className={sectionHeadClass}><User size={16} />4. Administrator Identity</h3>
+                    <div className="flex flex-col items-center gap-2 pb-2">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Admin Photo</p>
+                      <ProfilePhotoUpload onFileSelect={setProfilePicture} />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div className="md:col-span-2">
+                        <label className={labelClass}>Administrator Full Name <span className="text-red-500">*</span></label>
+                        <input type="text" name="name" required value={formData.name} onChange={handleChange}
+                          className={inputClass} placeholder="Your Legal Name" />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className={labelClass}>Your Position <span className="text-red-500">*</span></label>
+                        <select name="position" required value={formData.position} onChange={handleChange} className={inputClass}>
+                          <option value="Chief Administrator">Chief Administrator</option>
+                          <option value="Medical Director">Medical Director</option>
+                          <option value="CEO / Director">CEO / Director</option>
+                          <option value="Department Head">Department Head</option>
+                          <option value="IT Operations">IT Operations</option>
+                          <option value="HR Manager">HR Manager</option>
+                          <option value="Finance Head">Finance Head</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* === PATIENT SECTIONS === */}
               {role === 'ROLE_PATIENT' && (
+                <>
+                  {/* 2. Personal Details */}
+                  <div className="bg-slate-50 rounded-2xl p-6 space-y-6 border border-slate-200 shadow-sm">
+                    <h3 className={sectionHeadClass}><User size={16} />2. Personal Details</h3>
+                    <div className="flex flex-col items-center gap-2 mb-4">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Profile Photo</p>
+                      <ProfilePhotoUpload onFileSelect={setProfilePicture} />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div className="md:col-span-2">
+                        <label className={labelClass}>Full Name <span className="text-red-500">*</span></label>
+                        <input type="text" name="name" required value={formData.name} onChange={handleChange}
+                          className={inputClass} placeholder="Full Name" />
+                      </div>
+                      <div>
+                        <label className={labelClass}>Date of Birth <span className="text-red-500">*</span></label>
+                        <input type="date" name="dateOfBirth" required value={formData.dateOfBirth} onChange={handleChange} className={inputClass} />
+                      </div>
+                      <div>
+                        <label className={labelClass}>Gender <span className="text-red-500">*</span></label>
+                        <select name="gender" required value={formData.gender} onChange={handleChange} className={inputClass}>
+                          <option value="">Select Gender</option>
+                          <option value="Male">Male</option>
+                          <option value="Female">Female</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className={labelClass}>Blood Group <span className="text-red-500">*</span></label>
+                        <select name="bloodGroup" required value={formData.bloodGroup} onChange={handleChange} className={inputClass}>
+                          <option value="">Select Blood Group</option>
+                          <option value="A+">A+</option><option value="A-">A-</option>
+                          <option value="B+">B+</option><option value="B-">B-</option>
+                          <option value="O+">O+</option><option value="O-">O-</option>
+                          <option value="AB+">AB+</option><option value="AB-">AB-</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. Contact Information */}
+                  <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
+                    <h3 className={sectionHeadClass}><Phone size={16} />3. Contact Information</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div>
+                        <label className={labelClass}>Mobile Number <span className="text-red-500">*</span></label>
+                        <input type="tel" name="phone" required value={formData.phone} onChange={handleChange} className={inputClass} maxLength="10" />
+                      </div>
+                      <div>
+                        <label className={labelClass}>State <span className="text-red-500">*</span></label>
+                        <select name="state" required value={formData.state} onChange={handleChange} className={inputClass}>
+                          <option value="">Select State</option>
+                          {Object.keys(geographyData).map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className={labelClass}>City / District <span className="text-red-500">*</span></label>
+                        <select name="city" required value={formData.city} onChange={handleChange} className={inputClass}>
+                          <option value="">Select City / District</option>
+                          {availableCities.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className={labelClass}>PIN Code <span className="text-red-500">*</span></label>
+                        <input type="text" name="pinCode" required value={formData.pinCode} onChange={handleChange} className={inputClass} maxLength="6" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 4. Emergency Contact */}
                   <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
                     <h3 className={sectionHeadClass}><Heart size={16} />4. Emergency Contact</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -418,6 +483,7 @@ const Register = () => {
                       </div>
                     </div>
                   </div>
+                </>
               )}
 
 

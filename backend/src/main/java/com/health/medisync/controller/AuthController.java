@@ -484,12 +484,18 @@ public class AuthController {
 
         hospital.setName(hospitalName);
         hospital.setLicenseCode(licenseCode);
-        hospital.setLocation(String.valueOf(request.get("city")) + ", " + String.valueOf(request.get("state")));
-        hospital.setState(String.valueOf(request.get("state")));
-        hospital.setCity(String.valueOf(request.get("city")));
-        hospital.setPinCode(String.valueOf(request.get("pinCode")));
-        hospital.setPhone(String.valueOf(request.get("phone")));
-        hospital.setContactEmail(String.valueOf(request.get("email")));
+        hospital.setState(request.get("state") != null ? String.valueOf(request.get("state")) : null);
+        hospital.setCity(request.get("city") != null ? String.valueOf(request.get("city")) : null);
+        hospital.setStreet(request.get("street") != null ? String.valueOf(request.get("street")) : null);
+        hospital.setPinCode(request.get("pinCode") != null ? String.valueOf(request.get("pinCode")) : null);
+        hospital.setPhone(request.get("phone") != null ? String.valueOf(request.get("phone")) : null);
+        hospital.setContactEmail(request.get("email") != null ? String.valueOf(request.get("email")) : null);
+        hospital.setHospitalType(request.get("hospitalType") != null ? String.valueOf(request.get("hospitalType")) : null);
+        hospital.setWebsite(request.get("website") != null ? String.valueOf(request.get("website")) : null);
+        // Compose a human-readable location string
+        String city = request.get("city") != null ? String.valueOf(request.get("city")) : "";
+        String state = request.get("state") != null ? String.valueOf(request.get("state")) : "";
+        hospital.setLocation((city + ", " + state).trim().replaceAll("^,|,$", "").trim());
         
         // Handle Logo
         if (hospitalLogo != null && !hospitalLogo.isEmpty()) {
