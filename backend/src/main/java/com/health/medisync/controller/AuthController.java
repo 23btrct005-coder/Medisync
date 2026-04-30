@@ -94,7 +94,7 @@ public class AuthController {
             final String effectiveUsername;
             if (normalizedUsername != null && normalizedUsername.contains("@") && userRepository.findByUsernameIgnoreCase(normalizedUsername).isEmpty()) {
                 System.out.println("DEBUG: Username not found, attempting email lookup for " + normalizedUsername);
-                effectiveUsername = doctorRepository.findByEmail(normalizedUsername)
+                effectiveUsername = doctorRepository.findFirstByEmail(normalizedUsername)
                     .map(d -> d.getUser() != null ? d.getUser().getUsername() : normalizedUsername)
                     .orElseGet(() -> patientRepository.findByEmail(normalizedUsername)
                         .map(p -> p.getUser() != null ? p.getUser().getUsername() : normalizedUsername)
@@ -185,7 +185,7 @@ public class AuthController {
 
             // Check for existing doctor by email directly (if username was different)
             if (email != null) {
-                doctorRepository.findByEmail(email).ifPresent(existingDoctor -> {
+                doctorRepository.findFirstByEmail(email).ifPresent(existingDoctor -> {
                     User u = existingDoctor.getUser();
                     if (u != null && u.isEnabled()) {
                         throw new RuntimeException("Error: A physician with this email is already registered.");

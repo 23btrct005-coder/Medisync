@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     Optional<Doctor> findByUserId(Long userId);
+    Optional<Doctor> findFirstByEmail(String email);
     Optional<Doctor> findByEmail(String email);
     java.util.List<Doctor> findByApprovedFalse();
 

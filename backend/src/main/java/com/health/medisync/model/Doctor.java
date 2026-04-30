@@ -23,6 +23,7 @@ public class Doctor {
     private Integer age;
 
     // Contact
+    @Column(unique = true)
     private String email;
     private String phone;
     private String alternatePhone;

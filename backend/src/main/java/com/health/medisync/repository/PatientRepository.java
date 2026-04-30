@@ -10,5 +10,10 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     Optional<Patient> findByPatientId(String patientId);
 
     @org.springframework.data.jpa.repository.Query("SELECT p FROM Patient p WHERE LOWER(p.user.username) = LOWER(:email)")
-    Optional<Patient> findByEmail(@org.springframework.data.repository.query.Param("email") String email);
+    java.util.List<Patient> findAllByEmail(@org.springframework.data.repository.query.Param("email") String email);
+
+    default Optional<Patient> findByEmail(String email) {
+        java.util.List<Patient> list = findAllByEmail(email);
+        return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
+    }
 }
