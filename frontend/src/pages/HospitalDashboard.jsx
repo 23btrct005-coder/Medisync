@@ -126,7 +126,7 @@ const HospitalDashboard = () => {
             <div className="mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
                     <h1 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-4 uppercase italic">
-                        Institutional <span className="not-italic text-primary">Command</span>
+                        Hospital <span className="not-italic text-primary">Portal</span>
                     </h1>
                     <div className="flex items-center gap-3 mt-2 ml-1">
                         <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full">
