@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Building2, Mail, Phone, MapPin, Shield, Edit3, Save, X,
-  Globe, Hash, Briefcase, CheckCircle, AlertCircle, Camera, Loader2
+  Globe, Hash, Briefcase, CheckCircle, AlertCircle, Camera, Loader2, Navigation
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
@@ -46,6 +46,7 @@ export default function HospitalProfile() {
   const [notice, setNotice] = useState(null); // { type: 'success'|'error', msg }
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
+  const [locating, setLocating] = useState(false);
 
   const [form, setForm] = useState({
     hospitalName: '', hospitalType: '', licenseCode: '', website: '',
@@ -83,6 +84,48 @@ export default function HospitalProfile() {
   }, []);
 
   const handleChange = e => setForm(p => ({ ...p, [e.target.name]: e.target.value }));
+
+  const handleGetCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setNotice({ type: 'error', msg: "Geolocation is not supported by your browser" });
+      return;
+    }
+
+    setLocating(true);
+    setNotice(null);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+          );
+          const data = await response.json();
+          const address = data.address;
+
+          setForm(prev => ({
+            ...prev,
+            state: address.state || prev.state,
+            city: address.city || address.town || address.village || address.district || prev.city,
+            pinCode: address.postcode || prev.pinCode,
+            street: data.display_name || prev.street,
+          }));
+
+          setNotice({ type: 'success', msg: "Location detected successfully!" });
+          setTimeout(() => setNotice(null), 3000);
+        } catch (err) {
+          setNotice({ type: 'error', msg: "Failed to fetch address details" });
+        } finally {
+          setLocating(false);
+        }
+      },
+      (err) => {
+        setNotice({ type: 'error', msg: "Unable to retrieve your location. Please ensure location access is granted." });
+        setLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+    );
+  };
 
   const handleLogo = e => {
     const file = e.target.files?.[0];
@@ -274,7 +317,21 @@ export default function HospitalProfile() {
           </Section>
 
           {/* Location & Contact */}
-          <Section title="Location & Contact" icon={MapPin}>
+          <Section 
+            title="Location & Contact" 
+            icon={MapPin}
+            action={editing && (
+              <button
+                type="button"
+                onClick={handleGetCurrentLocation}
+                disabled={locating}
+                className="flex items-center gap-1.5 text-[10px] font-bold text-primary-600 hover:text-primary-700 transition-colors bg-primary-50 px-3 py-1.5 rounded-lg border border-primary-100 shadow-sm"
+              >
+                <Navigation size={12} className={locating ? 'animate-pulse' : ''} />
+                {locating ? 'Detecting...' : 'Use Current Location'}
+              </button>
+            )}
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <Field label="Institutional Phone" icon={Phone}>
                 {editing
@@ -339,14 +396,17 @@ export default function HospitalProfile() {
   );
 }
 
-function Section({ title, icon: Icon, children }) {
+function Section({ title, icon: Icon, action, children }) {
   return (
     <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl p-8 space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-2xl bg-primary-50 flex items-center justify-center text-primary-600">
-          <Icon size={20} />
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-primary-50 flex items-center justify-center text-primary-600">
+            <Icon size={20} />
+          </div>
+          <h3 className="text-base font-black uppercase tracking-tight">{title}</h3>
         </div>
-        <h3 className="text-base font-black uppercase tracking-tight">{title}</h3>
+        {action}
       </div>
       {children}
     </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, UserPlus, Building2, Mail, Lock, User, Phone, MapPin, Camera, AlertCircle, CheckCircle, GraduationCap, Briefcase, ShieldCheck, Heart, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, UserPlus, Building2, Mail, Lock, User, Phone, MapPin, Camera, AlertCircle, CheckCircle, GraduationCap, Briefcase, ShieldCheck, Heart, Eye, EyeOff, Navigation } from 'lucide-react';
 import api from '../api/axiosConfig';
 import ProfilePhotoUpload from '../components/ProfilePhotoUpload';
 import LegalFooter from '../components/LegalFooter';
@@ -59,6 +59,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [aiDisclaimerAccepted, setAiDisclaimerAccepted] = useState(false);
+  const [locating, setLocating] = useState(false);
 
   const [geographyData, setGeographyData] = useState({});
   const [availableCities, setAvailableCities] = useState([]);
@@ -98,6 +99,62 @@ const Register = () => {
     }
 
     setFormData(updated);
+  };
+
+  const handleGetCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setError("Geolocation is not supported by your browser");
+      return;
+    }
+
+    setLocating(true);
+    setError("");
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+          );
+          const data = await response.json();
+          const address = data.address;
+
+          // Attempt to match state
+          let detectedState = address.state || '';
+          // Simple normalization: if "Telangana" comes as "Telangana", it matches. 
+          // If Nominatim returns "State of Telangana", we might need more logic, but Nominatim usually returns the name.
+          
+          const detectedCity = address.city || address.town || address.village || address.district || '';
+          const detectedPin = address.postcode || '';
+          const detectedStreet = data.display_name || '';
+
+          const updated = {
+            ...formData,
+            state: detectedState,
+            city: detectedCity,
+            pinCode: detectedPin,
+            street: detectedStreet,
+          };
+
+          if (detectedState && geographyData[detectedState]) {
+            setAvailableCities(geographyData[detectedState]);
+          }
+
+          setFormData(updated);
+          setSuccess("Location detected successfully!");
+          setTimeout(() => setSuccess(""), 3000);
+        } catch (err) {
+          setError("Failed to fetch address details");
+        } finally {
+          setLocating(false);
+        }
+      },
+      (err) => {
+        setError("Unable to retrieve your location. Please ensure location access is granted.");
+        setLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+    );
   };
 
   const handleSendOtp = async () => {
@@ -356,8 +413,17 @@ const Register = () => {
                       </div>
 
                       {/* Divider label */}
-                      <div className="md:col-span-2 pt-2 border-t border-slate-200">
+                      <div className="md:col-span-2 pt-2 border-t border-slate-200 flex justify-between items-center">
                         <p className="text-[10px] font-black text-primary-600 uppercase tracking-[0.2em]">Facility Location &amp; Contact</p>
+                        <button
+                          type="button"
+                          onClick={handleGetCurrentLocation}
+                          disabled={locating}
+                          className="flex items-center gap-1.5 text-[10px] font-bold text-primary-600 hover:text-primary-700 transition-colors bg-primary-50 px-3 py-1.5 rounded-lg border border-primary-100"
+                        >
+                          <Navigation size={12} className={locating ? 'animate-pulse' : ''} />
+                          {locating ? 'Locating...' : 'Get Current Location'}
+                        </button>
                       </div>
 
                       {/* Phone */}
