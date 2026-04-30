@@ -66,7 +66,11 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
         return;
       }
-      const endpoint = role === 'ROLE_DOCTOR' ? 'doctor/profile' : 'patient/profile';
+      let endpoint;
+      if (role === 'ROLE_DOCTOR') endpoint = 'doctor/profile';
+      else if (role === 'ROLE_HOSPITAL_ADMIN') endpoint = 'hospital/profile';
+      else endpoint = 'patient/profile';
+
       const response = await api.get(endpoint);
       const profileData = { ...response.data, role };
       setUser(profileData);
@@ -104,7 +108,11 @@ export const AuthProvider = ({ children }) => {
 
   const fallbackFetchUserProfile = async (role) => {
     try {
-      const endpoint = role === 'ROLE_DOCTOR' ? '/doctor/profile' : '/patient/profile';
+      let endpoint;
+      if (role === 'ROLE_DOCTOR') endpoint = 'doctor/profile';
+      else if (role === 'ROLE_HOSPITAL_ADMIN') endpoint = 'hospital/profile';
+      else endpoint = 'patient/profile';
+      
       const response = await api.get(endpoint);
       setUser({ ...response.data, role });
     } catch (err) {

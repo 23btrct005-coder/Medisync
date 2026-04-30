@@ -9,7 +9,7 @@ import BottomNav from '../components/BottomNav';
 import NotificationBell from '../components/NotificationBell';
 
 const DoctorLayout = () => {
-  const { user, logout } = useAuth();
+  const { user, userRole, logout } = useAuth();
   // AUTHORIZE CLINICAL ACCESS
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
@@ -36,7 +36,7 @@ const DoctorLayout = () => {
             <span className="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight hidden md:block">
               MEDISYNC 
               <span className="hidden sm:inline-block text-sm font-medium text-primary-600 ml-2 border border-primary-200 bg-primary-50 px-2 py-1 rounded-full">
-                {user?.role === 'ROLE_HOSPITAL_ADMIN' ? 'Hospital Portal' : 'Doctor Portal'}
+                {userRole === 'ROLE_HOSPITAL_ADMIN' ? 'Hospital Portal' : 'Doctor Portal'}
               </span>
             </span>
         </div>
