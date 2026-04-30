@@ -91,11 +91,11 @@ public class AuthController {
 
         // SMART RESOLVER: If username doesn't exist, check if it's an email
         final String effectiveUsername;
-        if (userRepository.findByUsernameIgnoreCase(normalizedUsername).isEmpty() && normalizedUsername != null && normalizedUsername.contains("@")) {
+        if (normalizedUsername != null && normalizedUsername.contains("@") && userRepository.findByUsernameIgnoreCase(normalizedUsername).isEmpty()) {
             System.out.println("DEBUG: Username not found, attempting email lookup for " + normalizedUsername);
             effectiveUsername = doctorRepository.findByEmail(normalizedUsername)
                 .map(d -> d.getUser() != null ? d.getUser().getUsername() : normalizedUsername)
-                .orElse(patientRepository.findByEmail(normalizedUsername)
+                .orElseGet(() -> patientRepository.findByEmail(normalizedUsername)
                     .map(p -> p.getUser() != null ? p.getUser().getUsername() : normalizedUsername)
                     .orElse(normalizedUsername));
             System.out.println("DEBUG: Resolved effective username: " + effectiveUsername);
@@ -442,22 +442,22 @@ public class AuthController {
         // 1. Create User
         User user = new User();
         user.setUsername(username);
-        user.setPassword(passwordEncoder.encode(request.get("password")));
+        user.setPassword(passwordEncoder.encode(String.valueOf(request.get("password"))));
         user.setRole("ROLE_HOSPITAL_ADMIN");
         user.setEnabled(true); // Assuming email pre-verified
         user = userRepository.save(user);
 
         // 2. Create or Find Hospital
-        String hospitalName = request.get("hospitalName");
-        String licenseCode = request.get("licenseCode");
+        String hospitalName = request.get("hospitalName") != null ? String.valueOf(request.get("hospitalName")) : null;
+        String licenseCode = request.get("licenseCode") != null ? String.valueOf(request.get("licenseCode")) : null;
         
         com.health.medisync.model.Hospital hospital = hospitalRepository.findByLicenseCode(licenseCode)
             .orElseGet(() -> {
                 com.health.medisync.model.Hospital h = new com.health.medisync.model.Hospital();
                 h.setName(hospitalName);
                 h.setLicenseCode(licenseCode);
-                h.setLocation(request.get("city") + ", " + request.get("state"));
-                h.setContactEmail(request.get("email"));
+                h.setLocation(String.valueOf(request.get("city")) + ", " + String.valueOf(request.get("state")));
+                h.setContactEmail(String.valueOf(request.get("email")));
                 
                 // Handle Logo
                 if (hospitalLogo != null && !hospitalLogo.isEmpty()) {
