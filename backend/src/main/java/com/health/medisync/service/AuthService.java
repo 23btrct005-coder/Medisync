@@ -1,22 +1,11 @@
 package com.health.medisync.service;
 
 import com.health.medisync.model.EmailVerificationOtp;
-import com.health.medisync.repository.EmailVerificationOtpRepository;
 import com.health.medisync.model.Patient;
 import com.health.medisync.model.Doctor;
 import com.health.medisync.model.PasswordResetToken;
 import com.health.medisync.model.User;
-import com.health.medisync.repository.PasswordResetTokenRepository;
-import com.health.medisync.repository.UserRepository;
-import com.health.medisync.repository.PatientRepository;
-import com.health.medisync.repository.DoctorRepository;
-import com.health.medisync.repository.MedicalRecordRepository;
-import com.health.medisync.repository.ReportRepository;
-import com.health.medisync.repository.AccessRequestRepository;
-import com.health.medisync.repository.HospitalAdminRepository;
-import com.health.medisync.repository.HospitalRepository;
-import com.health.medisync.repository.AppointmentRepository;
-import com.health.medisync.repository.RatingRepository;
+import com.health.medisync.repository.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +31,11 @@ public class AuthService {
     private final HospitalRepository hospitalRepository;
     private final AppointmentRepository appointmentRepository;
     private final RatingRepository ratingRepository;
+    private final PrescriptionRepository prescriptionRepository;
+    private final NotificationRepository notificationRepository;
+    private final AuditLogRepository auditLogRepository;
+    private final TelemetryRepository telemetryRepository;
+    private final DepartmentRepository departmentRepository;
 
     public AuthService(UserRepository userRepository,
                        PasswordResetTokenRepository tokenRepository,
@@ -56,7 +50,12 @@ public class AuthService {
                        HospitalAdminRepository hospitalAdminRepository,
                        HospitalRepository hospitalRepository,
                        AppointmentRepository appointmentRepository,
-                       RatingRepository ratingRepository) {
+                       RatingRepository ratingRepository,
+                       PrescriptionRepository prescriptionRepository,
+                       NotificationRepository notificationRepository,
+                       AuditLogRepository auditLogRepository,
+                       TelemetryRepository telemetryRepository,
+                       DepartmentRepository departmentRepository) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.passwordEncoder = passwordEncoder;
@@ -71,6 +70,11 @@ public class AuthService {
         this.hospitalRepository = hospitalRepository;
         this.appointmentRepository = appointmentRepository;
         this.ratingRepository = ratingRepository;
+        this.prescriptionRepository = prescriptionRepository;
+        this.notificationRepository = notificationRepository;
+        this.auditLogRepository = auditLogRepository;
+        this.telemetryRepository = telemetryRepository;
+        this.departmentRepository = departmentRepository;
     }
 
     @Transactional
@@ -79,7 +83,6 @@ public class AuthService {
         User user = userRepository.findByUsername(normalizedInput).orElse(null);
 
         if (user == null && normalizedInput != null && normalizedInput.contains("@")) {
-            // Try searching by email in Patient and Doctor repositories
             user = patientRepository.findByUserUsernameIgnoreCase(normalizedInput)
                     .map(Patient::getUser)
                     .orElseGet(() -> doctorRepository.findByEmail(normalizedInput)
@@ -91,15 +94,13 @@ public class AuthService {
             throw new RuntimeException("No account found with username or email: " + input);
         }
 
-        // Cleanly delete any existing tokens for this user before creating a new one
         tokenRepository.deleteByUserId(user.getId());
-        tokenRepository.flush(); // Force immediate deletion to prevent @OneToOne conflicts
+        tokenRepository.flush();
 
         String token = UUID.randomUUID().toString();
-        PasswordResetToken resetToken = new PasswordResetToken(token, user, 30); // 30 mins expiry
+        PasswordResetToken resetToken = new PasswordResetToken(token, user, 30);
         tokenRepository.save(resetToken);
 
-        // Fetch the user's email based on their role to send a real link
         String userEmail = null;
         if ("ROLE_PATIENT".equals(user.getRole())) {
             userEmail = patientRepository.findByUserId(user.getId())
@@ -112,13 +113,10 @@ public class AuthService {
         }
 
         if (userEmail != null) {
-            System.out.println("DEBUG: Attempting to send real password reset email to: " + userEmail);
             try {
                 emailService.sendPasswordResetEmail(userEmail, token);
             } catch (Exception e) {
-                System.err.println("CRITICAL: Failed to send email to " + userEmail + ". Message: " + e.getMessage());
-                // Rethrow as a runtime exception so the Controller catches it and reports it to the UI
-                throw new RuntimeException("Email delivery failed: " + e.getMessage() + ". Please check your Render SMTP settings.");
+                throw new RuntimeException("Email delivery failed: " + e.getMessage());
             }
         } else {
             throw new RuntimeException("No email address found associated with input: " + input);
@@ -140,8 +138,6 @@ public class AuthService {
         User user = resetToken.getUser();
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
-
-        // Success, delete the token
         tokenRepository.delete(resetToken);
     }
 
@@ -152,17 +148,12 @@ public class AuthService {
     @Transactional
     public void generateAndSendOtp(String email) {
         String normalizedEmail = email != null ? email.toLowerCase() : null;
-        // Delete any existing OTPs for this email
         emailVerificationOtpRepository.deleteByEmail(normalizedEmail);
         emailVerificationOtpRepository.flush();
 
-        // Generate 6-digit OTP
         String otp = String.format("%06d", new Random().nextInt(1000000));
-        
-        EmailVerificationOtp verificationOtp = new EmailVerificationOtp(normalizedEmail, otp, 5); // 5 mins expiry
+        EmailVerificationOtp verificationOtp = new EmailVerificationOtp(normalizedEmail, otp, 5);
         emailVerificationOtpRepository.save(verificationOtp);
-
-        System.out.println("DEBUG: Sending OTP " + otp + " to " + normalizedEmail);
         emailService.sendOtpEmail(normalizedEmail, otp);
     }
 
@@ -171,10 +162,8 @@ public class AuthService {
         String normalizedEmail = email != null ? email.toLowerCase() : null;
         verifyOtpStandalone(normalizedEmail, otp);
         
-        // After standalone verification, we find the user and enable them
         User user = userRepository.findByUsername(normalizedEmail).orElse(null);
         if (user == null) {
-            // If username isn't email, try finding by role link
             user = patientRepository.findByUserUsernameIgnoreCase(normalizedEmail)
                     .map(Patient::getUser)
                     .orElseGet(() -> doctorRepository.findByEmail(normalizedEmail)
@@ -185,10 +174,6 @@ public class AuthService {
         if (user != null) {
             user.setEnabled(true);
             userRepository.save(user);
-            System.out.println("SUCCESS: User " + email + " has been verified and enabled.");
-        } else {
-            // In the NEW inline flow, this is normal if they haven't registered yet
-            System.out.println("INFO: Email " + email + " verified, but no user account exists yet to enable.");
         }
     }
 
@@ -207,26 +192,48 @@ public class AuthService {
             throw new RuntimeException("Invalid verification code.");
         }
 
-        // Success, delete the OTP
         emailVerificationOtpRepository.delete(verificationOtp);
     }
 
+    /**
+     * CRITICAL: Clears all institutional, professional, and patient data.
+     * Deletes in reverse order of dependencies to avoid FK constraints.
+     */
     @Transactional
     public void clearAllData() {
-        System.out.println("CRITICAL: Clearing all registered data from the database...");
+        System.out.println("CRITICAL: Initiating full database wipe...");
+        
+        // 1. Delete most downstream child records
         ratingRepository.deleteAll();
-        // Delete child records first to satisfy foreign-key constraints
+        prescriptionRepository.deleteAll();
+        notificationRepository.deleteAll();
+        auditLogRepository.deleteAll();
+        telemetryRepository.deleteAll();
+        
+        // 2. Delete medical interactions
         accessRequestRepository.deleteAll();
         reportRepository.deleteAll();
         medicalRecordRepository.deleteAll();
         appointmentRepository.deleteAll();
+        
+        // 3. Delete organizational structure
+        departmentRepository.deleteAll();
+        
+        // 4. Delete auth tokens
         tokenRepository.deleteAll();
         emailVerificationOtpRepository.deleteAll();
+        
+        // 5. Delete specific profiles (linked to users and hospitals)
         patientRepository.deleteAll();
         doctorRepository.deleteAll();
         hospitalAdminRepository.deleteAll();
+        
+        // 6. Delete core users
         userRepository.deleteAll();
+        
+        // 7. Finally delete hospitals
         hospitalRepository.deleteAll();
-        System.out.println("SUCCESS: Database has been fully wiped including hospitals.");
+        
+        System.out.println("SUCCESS: Database has been completely reset.");
     }
 }
