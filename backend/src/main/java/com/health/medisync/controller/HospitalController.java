@@ -91,4 +91,13 @@ public class HospitalController {
         hospitalService.bookAppointment(patientId, doctorId, date, slot, type, admin.getHospital());
         return ResponseEntity.ok(Map.of("message", "Appointment synchronized successfully"));
     }
+
+    @PostMapping("/update-doctor/{id}")
+    public ResponseEntity<?> updateDoctor(@PathVariable Long id, @RequestBody Map<String, Object> updates, @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        HospitalAdmin admin = hospitalService.getAdminByUser(user);
+        hospitalService.updateDoctorProfile(id, updates, admin.getHospital());
+        return ResponseEntity.ok(Map.of("message", "Physician profile updated successfully"));
+    }
 }

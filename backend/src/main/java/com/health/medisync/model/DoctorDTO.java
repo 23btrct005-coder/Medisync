@@ -33,7 +33,7 @@ public class DoctorDTO {
         this.specialization = d.getSpecialization();
         this.medicalDegree = d.getMedicalDegree();
         this.medicalLicenseNumber = d.getMedicalLicenseNumber();
-        this.hospital = d.getHospital();
+        this.hospital = d.getHospitalEntity() != null ? d.getHospitalEntity().getName() : d.getHospital();
         this.yearsOfExperience = d.getYearsOfExperience();
         this.profilePictureUrl = d.getProfilePictureUrl();
         this.approved = d.isApproved();

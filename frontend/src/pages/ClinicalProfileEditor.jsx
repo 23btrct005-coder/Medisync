@@ -41,6 +41,11 @@ const EditDoctorProfile = () => {
 
   useEffect(() => {
     if (user) {
+      if (user.hospitalEntity) {
+          toast.error("Institutional profile: Your credentials are managed by your hospital administrator.");
+          navigate('/doctor-dashboard/profile');
+          return;
+      }
       setFormData({
         name: user.name || '',
         phone: user.phone || '',
