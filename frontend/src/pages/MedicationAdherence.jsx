@@ -1,31 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { Pill, Clock, Calendar, CheckCircle2, AlertCircle, Plus, Info, Zap, Activity } from 'lucide-react';
+import { Pill, Clock, Calendar, CheckCircle2, AlertCircle, Plus, Info, Zap, Activity, X } from 'lucide-react';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
 
 const MedicationAdherence = () => {
     const [medications, setMedications] = useState([]);
     const [loading, setLoading] = useState(true);
-
-    const mockMeds = [
-        { id: 1, medicineName: 'Metformin', dosage: '500mg', frequency: 'Twice daily', time: '08:00 AM', taken: true },
-        { id: 2, medicineName: 'Amlodipine', dosage: '5mg', frequency: 'Once daily', time: '10:00 PM', taken: false },
-        { id: 3, medicineName: 'Vitamin D3', dosage: '2000IU', frequency: 'Once daily', time: '09:00 AM', taken: true },
-    ];
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         const fetchMeds = async () => {
             try {
                 const res = await api.get('/patient/medications');
-                setMedications(res.data?.length > 0 ? res.data : mockMeds);
+                setMedications(res.data || []);
             } catch (err) {
-                setMedications(mockMeds);
+                setMedications([]);
             } finally {
                 setLoading(false);
             }
         };
         fetchMeds();
     }, []);
+
+    const handleAddMed = async (data) => {
+        try {
+            await api.post('/prescriptions/patient/add', data);
+            const res = await api.get('/patient/medications');
+            setMedications(res.data || []);
+            setIsModalOpen(false);
+            toast.success("Medication added to schedule");
+        } catch (err) {
+            toast.error("Failed to add medication");
+        }
+    };
 
     const toggleMed = (id) => {
         setMedications(prev => prev.map(m => m.id === id ? { ...m, taken: !m.taken } : m));
@@ -41,10 +48,63 @@ const MedicationAdherence = () => {
                     </h1>
                     <p className="text-slate-400 font-bold text-xs uppercase tracking-[0.2em] mt-1">Automatic medication synchronization hub</p>
                 </div>
-                <button className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:shadow-primary/20 hover:bg-slate-800 transition-all">
+                <button 
+                    onClick={() => setIsModalOpen(true)}
+                    className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:shadow-primary/20 hover:bg-slate-800 transition-all"
+                >
                     <Plus size={16} /> Log Manual Intake
                 </button>
             </div>
+
+            {isModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+                    <div className="bg-white rounded-[3rem] w-full max-w-lg p-10 shadow-2xl relative">
+                        <button 
+                            onClick={() => setIsModalOpen(false)}
+                            className="absolute top-8 right-8 text-slate-400 hover:text-slate-600 transition-colors"
+                        >
+                            <X size={24} />
+                        </button>
+                        
+                        <h2 className="text-2xl font-black text-slate-900 mb-2 uppercase tracking-tight italic">Record <span className="text-primary not-italic">Medication</span></h2>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-8">Add to your automatic synchronization hub</p>
+                        
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            const fd = new FormData(e.target);
+                            handleAddMed({
+                                medicineName: fd.get('medicineName'),
+                                dosage: fd.get('dosage'),
+                                frequency: fd.get('frequency'),
+                                instructions: fd.get('instructions')
+                            });
+                        }} className="space-y-5">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Medicine Name</label>
+                                <input name="medicineName" required className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary outline-none transition-all" placeholder="e.g. Paracetamol" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Dosage</label>
+                                    <input name="dosage" required className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary outline-none transition-all" placeholder="e.g. 500mg" />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Frequency</label>
+                                    <input name="frequency" required className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary outline-none transition-all" placeholder="e.g. Twice daily" />
+                                </div>
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Instructions (Optional)</label>
+                                <input name="instructions" className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary outline-none transition-all" placeholder="e.g. After meals" />
+                            </div>
+                            
+                            <button type="submit" className="w-full py-5 bg-primary text-white rounded-3xl text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all mt-4">
+                                Synchronize Medication
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-6">
