@@ -7,9 +7,12 @@ import com.health.medisync.model.User;
 import com.health.medisync.repository.DoctorRepository;
 import com.health.medisync.repository.HospitalAdminRepository;
 import com.health.medisync.repository.HospitalRepository;
-import com.health.medisync.model.Patient;
-import com.health.medisync.repository.PatientRepository;
+import com.health.medisync.repository.AppointmentRepository;
+import com.health.medisync.repository.DepartmentRepository;
 import com.health.medisync.repository.UserRepository;
+import com.health.medisync.repository.PatientRepository;
+import com.health.medisync.model.Appointment;
+import com.health.medisync.model.Patient;
 import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
@@ -23,23 +26,23 @@ public class HospitalService {
     private final DoctorRepository doctorRepository;
     private final AppointmentRepository appointmentRepository;
     private final DepartmentRepository departmentRepository;
-    private final PatientRepository patientRepository;
     private final UserRepository userRepository;
+    private final PatientRepository patientRepository;
 
     public HospitalService(HospitalRepository hospitalRepository, 
                            HospitalAdminRepository hospitalAdminRepository, 
                            DoctorRepository doctorRepository,
                            AppointmentRepository appointmentRepository,
                            DepartmentRepository departmentRepository,
-                           PatientRepository patientRepository,
-                           UserRepository userRepository) {
+                           UserRepository userRepository,
+                           PatientRepository patientRepository) {
         this.hospitalRepository = hospitalRepository;
         this.hospitalAdminRepository = hospitalAdminRepository;
         this.doctorRepository = doctorRepository;
         this.appointmentRepository = appointmentRepository;
         this.departmentRepository = departmentRepository;
-        this.patientRepository = patientRepository;
         this.userRepository = userRepository;
+        this.patientRepository = patientRepository;
     }
 
     public HospitalAdmin getAdminByUser(User user) {
@@ -52,15 +55,17 @@ public class HospitalService {
         List<Doctor> doctors = doctorRepository.findByHospitalEntity(hospital);
         
         long totalDoctors = doctors.size();
-        long pendingDoctors = doctors.stream().filter(d -> !d.isApproved()).count();
+        long pendingDoctors = doctors.stream().filter(d -> d.isApproved() == false).count();
         long deptCount = departmentRepository.findByHospital(hospital).size();
         
         // Calculate Institutional Revenue (All appointments across all doctors)
         double totalRevenue = doctors.stream()
                 .flatMap(d -> appointmentRepository.findByDoctorId(d.getId()).stream())
-                .mapToDouble(a -> {
-                    try { return Double.parseDouble(a.getDoctor().getConsultationFee()); }
-                    catch (Exception e) { return 0.0; }
+                .mapToDouble((Appointment a) -> {
+                    try { 
+                        String fee = a.getDoctor().getConsultationFee();
+                        return fee != null ? Double.parseDouble(fee) : 0.0;
+                    } catch (Exception e) { return 0.0; }
                 })
                 .sum();
         
@@ -98,19 +103,19 @@ public class HospitalService {
         doctorRepository.save(doctor);
     }
 
-    public List<?> getHospitalAppointments(Hospital hospital) {
+    public List<Appointment> getHospitalAppointments(Hospital hospital) {
         // Fetch all appointments for all doctors in this hospital
         return doctorRepository.findByHospitalEntity(hospital).stream()
                 .flatMap(d -> appointmentRepository.findByDoctorId(d.getId()).stream())
-                .sorted((a, b) -> b.getId().compareTo(a.getId())) // Newest first
+                .sorted((Appointment a, Appointment b) -> b.getId().compareTo(a.getId())) // Newest first
                 .toList();
     }
 
-    public List<?> getHospitalPatients(Hospital hospital) {
+    public List<Patient> getHospitalPatients(Hospital hospital) {
         // Fetch unique patients across all doctors in the hospital
         return doctorRepository.findByHospitalEntity(hospital).stream()
                 .flatMap(d -> appointmentRepository.findByDoctorId(d.getId()).stream())
-                .map(a -> a.getPatient())
+                .map((Appointment a) -> a.getPatient())
                 .distinct()
                 .toList();
     }
@@ -133,32 +138,31 @@ public class HospitalService {
         appointment.setTimeSlot(slot);
         appointment.setStatus(com.health.medisync.model.Appointment.AppointmentStatus.BOOKED);
         appointment.setConsultationType(com.health.medisync.model.Appointment.ConsultationType.valueOf(type));
-        // Note: Institutional bookings are pre-paid/authorized
+        appointment.setRazorpayPaymentId("INSTITUTIONAL"); // Hospital-booked appointments are pre-authorized/paid internally
         
         appointmentRepository.save(appointment);
     }
 
-    @org.springframework.transaction.annotation.Transactional
-    public void updateDoctorProfile(Long id, Map<String, Object> updates, Hospital hospital) {
-        Doctor doctor = doctorRepository.findById(id)
+    public void updateDoctorProfile(Long doctorId, Map<String, Object> updates, Hospital hospital) {
+        Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new RuntimeException("Doctor not found"));
-
+        
         if (doctor.getHospitalEntity() == null || !doctor.getHospitalEntity().getId().equals(hospital.getId())) {
             throw new RuntimeException("Unauthorized: Physician not affiliated with your institution");
         }
-
-        if (updates.containsKey("name")) doctor.setName((String) updates.get("name"));
-        if (updates.containsKey("specialization")) doctor.setSpecialization((String) updates.get("specialization"));
-        if (updates.containsKey("medicalLicenseNumber")) doctor.setMedicalLicenseNumber((String) updates.get("medicalLicenseNumber"));
-        if (updates.containsKey("medicalDegree")) doctor.setMedicalDegree((String) updates.get("medicalDegree"));
-        if (updates.containsKey("yearsOfExperience")) doctor.setYearsOfExperience(Integer.valueOf(updates.get("yearsOfExperience").toString()));
+        
+        if (updates.containsKey("name")) doctor.setName(updates.get("name").toString());
+        if (updates.containsKey("specialization")) doctor.setSpecialization(updates.get("specialization").toString());
+        if (updates.containsKey("medicalDegree")) doctor.setMedicalDegree(updates.get("medicalDegree").toString());
+        if (updates.containsKey("medicalLicenseNumber")) doctor.setMedicalLicenseNumber(updates.get("medicalLicenseNumber").toString());
+        if (updates.containsKey("yearsOfExperience") && updates.get("yearsOfExperience") != null) {
+            doctor.setYearsOfExperience(Integer.valueOf(updates.get("yearsOfExperience").toString()));
+        }
         if (updates.containsKey("consultationFee")) doctor.setConsultationFee(updates.get("consultationFee").toString());
-        if (updates.containsKey("phone")) doctor.setPhone((String) updates.get("phone"));
-        if (updates.containsKey("gender")) doctor.setGender((String) updates.get("gender"));
-        if (updates.containsKey("workingDays")) doctor.setWorkingDays((String) updates.get("workingDays"));
-        if (updates.containsKey("consultationTimings")) doctor.setConsultationTimings((String) updates.get("consultationTimings"));
-        if (updates.containsKey("clinicAddress")) doctor.setClinicAddress((String) updates.get("clinicAddress"));
-
+        if (updates.containsKey("phone")) doctor.setPhone(updates.get("phone").toString());
+        if (updates.containsKey("workingDays")) doctor.setWorkingDays(updates.get("workingDays").toString());
+        if (updates.containsKey("consultationTimings")) doctor.setConsultationTimings(updates.get("consultationTimings").toString());
+        
         doctorRepository.save(doctor);
     }
 }
