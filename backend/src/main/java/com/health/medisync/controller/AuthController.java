@@ -636,9 +636,7 @@ public class AuthController {
             .filter(d -> d.getProfilePictureUrl() != null && !d.getProfilePictureUrl().isEmpty())
             .orElseGet(() -> doctorRepository.findByUserId(id).orElseGet(() -> doctorRepository.findById(id).orElse(null)));
 
-        if (doctor == null) return ResponseEntity.notFound().build();
-
-        if (doctor.getProfilePictureUrl() != null && !doctor.getProfilePictureUrl().isEmpty()) {
+        if (doctor != null && doctor.getProfilePictureUrl() != null && !doctor.getProfilePictureUrl().isEmpty()) {
             return ResponseEntity.status(org.springframework.http.HttpStatus.FOUND)
                                  .location(java.net.URI.create(doctor.getProfilePictureUrl()))
                                  .build();
@@ -646,7 +644,7 @@ public class AuthController {
 
         // Fallback to DiceBear
         String diceBearUrl = "https://api.dicebear.com/7.x/avataaars/svg?seed=" + 
-                           (doctor.getUser() != null ? doctor.getUser().getUsername() : id.toString());
+                           (doctor != null && doctor.getUser() != null ? doctor.getUser().getUsername() : id.toString());
         return ResponseEntity.status(org.springframework.http.HttpStatus.FOUND)
                              .location(java.net.URI.create(diceBearUrl))
                              .build();
@@ -659,9 +657,7 @@ public class AuthController {
             .filter(p -> p.getProfilePictureUrl() != null && !p.getProfilePictureUrl().isEmpty())
             .orElseGet(() -> patientRepository.findByUserId(id).orElseGet(() -> patientRepository.findById(id).orElse(null)));
 
-        if (patient == null) return ResponseEntity.notFound().build();
-
-        if (patient.getProfilePictureUrl() != null && !patient.getProfilePictureUrl().isEmpty()) {
+        if (patient != null && patient.getProfilePictureUrl() != null && !patient.getProfilePictureUrl().isEmpty()) {
             return ResponseEntity.status(org.springframework.http.HttpStatus.FOUND)
                                  .location(java.net.URI.create(patient.getProfilePictureUrl()))
                                  .build();
@@ -669,7 +665,7 @@ public class AuthController {
  
         // Fallback to DiceBear if missing
         String diceBearUrl = "https://api.dicebear.com/7.x/avataaars/svg?seed=" + 
-                           (patient.getUser() != null ? patient.getUser().getUsername() : id.toString());
+                           (patient != null && patient.getUser() != null ? patient.getUser().getUsername() : id.toString());
         return ResponseEntity.status(org.springframework.http.HttpStatus.FOUND)
                              .location(java.net.URI.create(diceBearUrl))
                              .build();
