@@ -13,12 +13,15 @@ public class DoctorDTO {
     private String profilePictureUrl;
     private boolean approved;
 
-    // Hardened Sync Fields
+    // Institutional Sync Fields
+    private String consultationFee;
+    private String workingDays;
+    private String college;
+    private String consultationTimings;
     private Double onlineConsultationFee;
     private Double offlineConsultationFee;
     private Boolean onlineConsultation;
     private String clinicAddress;
-    private String consultationTimings;
     private Double averageRating;
     private Long ratingCount;
 
@@ -38,12 +41,15 @@ public class DoctorDTO {
         this.profilePictureUrl = d.getProfilePictureUrl();
         this.approved = d.isApproved();
         
-        // Populate Hardened Sync Fields
+        // Populate Institutional Sync Fields
+        this.consultationFee = d.getConsultationFee();
+        this.workingDays = d.getWorkingDays();
+        this.consultationTimings = d.getConsultationTimings();
+        this.college = d.getCollege();
         this.onlineConsultationFee = d.getOnlineConsultationFee();
         this.offlineConsultationFee = d.getOfflineConsultationFee();
         this.onlineConsultation = d.getOnlineConsultation();
         this.clinicAddress = d.getClinicAddress();
-        this.consultationTimings = d.getConsultationTimings();
     }
 
     // Getters and Setters
@@ -80,6 +86,18 @@ public class DoctorDTO {
     public boolean isApproved() { return approved; }
     public void setApproved(boolean approved) { this.approved = approved; }
 
+    public String getConsultationFee() { return consultationFee; }
+    public void setConsultationFee(String consultationFee) { this.consultationFee = consultationFee; }
+
+    public String getWorkingDays() { return workingDays; }
+    public void setWorkingDays(String workingDays) { this.workingDays = workingDays; }
+
+    public String getCollege() { return college; }
+    public void setCollege(String college) { this.college = college; }
+
+    public String getConsultationTimings() { return consultationTimings; }
+    public void setConsultationTimings(String consultationTimings) { this.consultationTimings = consultationTimings; }
+
     public Double getOnlineConsultationFee() { return onlineConsultationFee; }
     public void setOnlineConsultationFee(Double onlineConsultationFee) { this.onlineConsultationFee = onlineConsultationFee; }
 
@@ -91,9 +109,6 @@ public class DoctorDTO {
 
     public String getClinicAddress() { return clinicAddress; }
     public void setClinicAddress(String clinicAddress) { this.clinicAddress = clinicAddress; }
-
-    public String getConsultationTimings() { return consultationTimings; }
-    public void setConsultationTimings(String consultationTimings) { this.consultationTimings = consultationTimings; }
 
     public Double getAverageRating() { return averageRating; }
     public void setAverageRating(Double averageRating) { this.averageRating = averageRating; }
