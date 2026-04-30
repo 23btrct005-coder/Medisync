@@ -134,7 +134,11 @@ public class Doctor {
     public Double getOfflineConsultationFee() { return offlineConsultationFee; }
     public void setOfflineConsultationFee(Double offlineConsultationFee) { this.offlineConsultationFee = offlineConsultationFee; }
 
-    public String getClinicAddress() { return clinicAddress; }
+    public String getClinicAddress() { 
+        if (clinicAddress != null && !clinicAddress.isEmpty()) return clinicAddress;
+        if (hospitalEntity != null && hospitalEntity.getLocation() != null && !hospitalEntity.getLocation().isEmpty()) return hospitalEntity.getLocation();
+        return clinicAddress;
+    }
     public void setClinicAddress(String clinicAddress) { this.clinicAddress = clinicAddress; }
 
     public String getRazorpayAccountId() { return razorpayAccountId; }
