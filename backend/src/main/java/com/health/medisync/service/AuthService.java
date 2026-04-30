@@ -13,6 +13,9 @@ import com.health.medisync.repository.DoctorRepository;
 import com.health.medisync.repository.MedicalRecordRepository;
 import com.health.medisync.repository.ReportRepository;
 import com.health.medisync.repository.AccessRequestRepository;
+import com.health.medisync.repository.HospitalAdminRepository;
+import com.health.medisync.repository.HospitalRepository;
+import com.health.medisync.repository.AppointmentRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +37,9 @@ public class AuthService {
     private final MedicalRecordRepository medicalRecordRepository;
     private final ReportRepository reportRepository;
     private final AccessRequestRepository accessRequestRepository;
+    private final HospitalAdminRepository hospitalAdminRepository;
+    private final HospitalRepository hospitalRepository;
+    private final AppointmentRepository appointmentRepository;
 
     public AuthService(UserRepository userRepository,
                        PasswordResetTokenRepository tokenRepository,
@@ -44,7 +50,10 @@ public class AuthService {
                        EmailVerificationOtpRepository emailVerificationOtpRepository,
                        MedicalRecordRepository medicalRecordRepository,
                        ReportRepository reportRepository,
-                       AccessRequestRepository accessRequestRepository) {
+                       AccessRequestRepository accessRequestRepository,
+                       HospitalAdminRepository hospitalAdminRepository,
+                       HospitalRepository hospitalRepository,
+                       AppointmentRepository appointmentRepository) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.passwordEncoder = passwordEncoder;
@@ -55,6 +64,9 @@ public class AuthService {
         this.medicalRecordRepository = medicalRecordRepository;
         this.reportRepository = reportRepository;
         this.accessRequestRepository = accessRequestRepository;
+        this.hospitalAdminRepository = hospitalAdminRepository;
+        this.hospitalRepository = hospitalRepository;
+        this.appointmentRepository = appointmentRepository;
     }
 
     @Transactional
@@ -202,11 +214,14 @@ public class AuthService {
         accessRequestRepository.deleteAll();
         reportRepository.deleteAll();
         medicalRecordRepository.deleteAll();
+        appointmentRepository.deleteAll();
         tokenRepository.deleteAll();
         emailVerificationOtpRepository.deleteAll();
         patientRepository.deleteAll();
         doctorRepository.deleteAll();
+        hospitalAdminRepository.deleteAll();
         userRepository.deleteAll();
-        System.out.println("SUCCESS: Database has been wiped.");
+        hospitalRepository.deleteAll();
+        System.out.println("SUCCESS: Database has been fully wiped including hospitals.");
     }
 }

@@ -1,14 +1,21 @@
 package com.health.medisync.controller;
 
 import com.health.medisync.model.Doctor;
+import com.health.medisync.model.Hospital;
 import com.health.medisync.model.HospitalAdmin;
 import com.health.medisync.model.User;
 import com.health.medisync.service.HospitalService;
+import com.health.medisync.service.SupabaseStorageService;
 import com.health.medisync.repository.UserRepository;
+import com.health.medisync.repository.HospitalRepository;
+import com.health.medisync.repository.HospitalAdminRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -19,10 +26,20 @@ public class HospitalController {
 
     private final HospitalService hospitalService;
     private final UserRepository userRepository;
+    private final HospitalRepository hospitalRepository;
+    private final HospitalAdminRepository hospitalAdminRepository;
+    private final SupabaseStorageService supabaseStorageService;
 
-    public HospitalController(HospitalService hospitalService, UserRepository userRepository) {
+    public HospitalController(HospitalService hospitalService,
+                              UserRepository userRepository,
+                              HospitalRepository hospitalRepository,
+                              HospitalAdminRepository hospitalAdminRepository,
+                              SupabaseStorageService supabaseStorageService) {
         this.hospitalService = hospitalService;
         this.userRepository = userRepository;
+        this.hospitalRepository = hospitalRepository;
+        this.hospitalAdminRepository = hospitalAdminRepository;
+        this.supabaseStorageService = supabaseStorageService;
     }
 
     @GetMapping("/stats")
@@ -39,11 +56,9 @@ public class HospitalController {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         HospitalAdmin admin = hospitalService.getAdminByUser(user);
         List<Doctor> doctors = hospitalService.getHospitalDoctors(admin.getHospital());
-        
         List<com.health.medisync.model.DoctorDTO> dtos = doctors.stream()
                 .map(com.health.medisync.model.DoctorDTO::new)
                 .toList();
-                
         return ResponseEntity.ok(dtos);
     }
 
@@ -80,24 +95,72 @@ public class HospitalController {
         return ResponseEntity.ok(admin);
     }
 
+    /** Update hospital profile & admin identity from the dashboard */
+    @PostMapping(value = "/update-profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateProfile(
+            @RequestPart("data") String dataJson,
+            @RequestPart(value = "logo", required = false) MultipartFile logo,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            User user = userRepository.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            HospitalAdmin admin = hospitalService.getAdminByUser(user);
+            Hospital hospital = admin.getHospital();
+
+            ObjectMapper mapper = new ObjectMapper();
+            @SuppressWarnings("unchecked")
+            Map<String, Object> data = mapper.readValue(dataJson, Map.class);
+
+            if (data.get("hospitalName") != null)  hospital.setName(String.valueOf(data.get("hospitalName")));
+            if (data.get("hospitalType") != null)  hospital.setHospitalType(String.valueOf(data.get("hospitalType")));
+            if (data.get("licenseCode")  != null)  hospital.setLicenseCode(String.valueOf(data.get("licenseCode")));
+            if (data.get("website")      != null)  hospital.setWebsite(String.valueOf(data.get("website")));
+            if (data.get("phone")        != null)  hospital.setPhone(String.valueOf(data.get("phone")));
+            if (data.get("contactEmail") != null)  hospital.setContactEmail(String.valueOf(data.get("contactEmail")));
+            if (data.get("state")        != null)  hospital.setState(String.valueOf(data.get("state")));
+            if (data.get("city")         != null)  hospital.setCity(String.valueOf(data.get("city")));
+            if (data.get("pinCode")      != null)  hospital.setPinCode(String.valueOf(data.get("pinCode")));
+            if (data.get("street")       != null)  hospital.setStreet(String.valueOf(data.get("street")));
+
+            String city  = hospital.getCity()  != null ? hospital.getCity()  : "";
+            String state = hospital.getState() != null ? hospital.getState() : "";
+            hospital.setLocation((city + ", " + state).trim().replaceAll("^,\\s*|,\\s*$", "").trim());
+
+            if (logo != null && !logo.isEmpty()) {
+                String logoUrl = supabaseStorageService.uploadFile(logo);
+                if (logoUrl != null) hospital.setLogoUrl(logoUrl);
+            }
+
+            if (data.get("adminName") != null) admin.setName(String.valueOf(data.get("adminName")));
+            if (data.get("position")  != null) admin.setPosition(String.valueOf(data.get("position")));
+
+            hospitalRepository.save(hospital);
+            hospitalAdminRepository.save(admin);
+            return ResponseEntity.ok(Map.of("message", "Institutional profile updated successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("message", "Update failed: " + e.getMessage()));
+        }
+    }
+
     @PostMapping("/book-appointment")
-    public ResponseEntity<?> bookAppointment(@RequestBody Map<String, Object> request, @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<?> bookAppointment(@RequestBody Map<String, Object> request,
+                                             @AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         HospitalAdmin admin = hospitalService.getAdminByUser(user);
-        
         Long patientId = Long.valueOf(request.get("patientId").toString());
-        Long doctorId = Long.valueOf(request.get("doctorId").toString());
+        Long doctorId  = Long.valueOf(request.get("doctorId").toString());
         java.time.LocalDate date = java.time.LocalDate.parse(request.get("date").toString());
         String slot = request.get("slot").toString();
         String type = request.get("type").toString();
-        
         hospitalService.bookAppointment(patientId, doctorId, date, slot, type, admin.getHospital());
         return ResponseEntity.ok(Map.of("message", "Appointment synchronized successfully"));
     }
 
     @PostMapping("/update-doctor/{id}")
-    public ResponseEntity<?> updateDoctor(@PathVariable Long id, @RequestBody Map<String, Object> updates, @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<?> updateDoctor(@PathVariable Long id,
+                                          @RequestBody Map<String, Object> updates,
+                                          @AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         HospitalAdmin admin = hospitalService.getAdminByUser(user);
