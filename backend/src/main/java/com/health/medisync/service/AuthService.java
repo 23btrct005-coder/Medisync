@@ -16,6 +16,7 @@ import com.health.medisync.repository.AccessRequestRepository;
 import com.health.medisync.repository.HospitalAdminRepository;
 import com.health.medisync.repository.HospitalRepository;
 import com.health.medisync.repository.AppointmentRepository;
+import com.health.medisync.repository.RatingRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +41,7 @@ public class AuthService {
     private final HospitalAdminRepository hospitalAdminRepository;
     private final HospitalRepository hospitalRepository;
     private final AppointmentRepository appointmentRepository;
+    private final RatingRepository ratingRepository;
 
     public AuthService(UserRepository userRepository,
                        PasswordResetTokenRepository tokenRepository,
@@ -53,7 +55,8 @@ public class AuthService {
                        AccessRequestRepository accessRequestRepository,
                        HospitalAdminRepository hospitalAdminRepository,
                        HospitalRepository hospitalRepository,
-                       AppointmentRepository appointmentRepository) {
+                       AppointmentRepository appointmentRepository,
+                       RatingRepository ratingRepository) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.passwordEncoder = passwordEncoder;
@@ -67,6 +70,7 @@ public class AuthService {
         this.hospitalAdminRepository = hospitalAdminRepository;
         this.hospitalRepository = hospitalRepository;
         this.appointmentRepository = appointmentRepository;
+        this.ratingRepository = ratingRepository;
     }
 
     @Transactional
@@ -210,6 +214,7 @@ public class AuthService {
     @Transactional
     public void clearAllData() {
         System.out.println("CRITICAL: Clearing all registered data from the database...");
+        ratingRepository.deleteAll();
         // Delete child records first to satisfy foreign-key constraints
         accessRequestRepository.deleteAll();
         reportRepository.deleteAll();
