@@ -71,6 +71,7 @@ public class HospitalService {
         
         stats.put("hospitalId", hospital.getId());
         stats.put("hospitalName", hospital.getName());
+        stats.put("location", hospital.getLocation());
         stats.put("totalDoctors", totalDoctors);
         stats.put("pendingDoctors", pendingDoctors);
         stats.put("totalPatientsInstitutional", totalDoctors * 125); 
