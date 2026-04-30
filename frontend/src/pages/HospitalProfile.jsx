@@ -175,10 +175,10 @@ export default function HospitalProfile() {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-3xl font-black uppercase tracking-tight italic">
-            Institutional <span className="not-italic text-primary-600">Identity</span>
+            Hospital <span className="not-italic text-primary-600">Portal</span>
           </h1>
           <p className="text-slate-400 text-xs font-black uppercase tracking-widest mt-1">
-            Administrative credentials &amp; facility profile
+            Institutional credentials &amp; facility profile
           </p>
         </div>
         {!editing ? (

@@ -54,7 +54,9 @@ const DoctorProfile = () => {
     <div className="max-w-4xl mx-auto space-y-6 pb-12">
       <div className="mb-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Physician Profile</h2>
+          <h2 className="text-2xl font-bold text-slate-800">
+            {user.role === 'ROLE_HOSPITAL_ADMIN' ? 'Administrative Profile' : 'Physician Profile'}
+          </h2>
           <p className="text-slate-500 text-sm mt-1">Your professional profile on MEDISYNC</p>
         </div>
         {!user.hospitalEntity ? (
