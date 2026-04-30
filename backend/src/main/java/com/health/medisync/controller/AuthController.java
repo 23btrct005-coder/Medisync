@@ -480,31 +480,45 @@ public class AuthController {
         String licenseCode = request.get("licenseCode") != null ? String.valueOf(request.get("licenseCode")) : null;
         
         com.health.medisync.model.Hospital hospital = hospitalRepository.findByLicenseCode(licenseCode)
-            .orElseGet(() -> {
-                com.health.medisync.model.Hospital h = new com.health.medisync.model.Hospital();
-                h.setName(hospitalName);
-                h.setLicenseCode(licenseCode);
-                h.setLocation(String.valueOf(request.get("city")) + ", " + String.valueOf(request.get("state")));
-                h.setContactEmail(String.valueOf(request.get("email")));
-                
-                // Handle Logo
-                if (hospitalLogo != null && !hospitalLogo.isEmpty()) {
-                    try {
-                        String logoUrl = supabaseStorageService.uploadFile(hospitalLogo);
-                        if (logoUrl != null) h.setLogoUrl(logoUrl);
-                    } catch (Exception e) {
-                        System.err.println("Failed to upload hospital logo: " + e.getMessage());
-                    }
-                }
-                
-                return hospitalRepository.save(h);
-            });
+            .orElseGet(() -> new com.health.medisync.model.Hospital());
+
+        hospital.setName(hospitalName);
+        hospital.setLicenseCode(licenseCode);
+        hospital.setLocation(String.valueOf(request.get("city")) + ", " + String.valueOf(request.get("state")));
+        hospital.setState(String.valueOf(request.get("state")));
+        hospital.setCity(String.valueOf(request.get("city")));
+        hospital.setPinCode(String.valueOf(request.get("pinCode")));
+        hospital.setPhone(String.valueOf(request.get("phone")));
+        hospital.setContactEmail(String.valueOf(request.get("email")));
+        
+        // Handle Logo
+        if (hospitalLogo != null && !hospitalLogo.isEmpty()) {
+            try {
+                String logoUrl = supabaseStorageService.uploadFile(hospitalLogo);
+                if (logoUrl != null) hospital.setLogoUrl(logoUrl);
+            } catch (Exception e) {
+                System.err.println("Failed to upload hospital logo: " + e.getMessage());
+            }
+        }
+        
+        hospital = hospitalRepository.save(hospital);
 
         // 3. Create Admin Profile
         com.health.medisync.model.HospitalAdmin admin = new com.health.medisync.model.HospitalAdmin();
         admin.setUser(user);
         admin.setHospital(hospital);
+        admin.setName(request.get("name") != null ? String.valueOf(request.get("name")) : null);
         admin.setPosition(request.get("position") != null ? String.valueOf(request.get("position")) : "Administrator");
+
+        if (profilePicture != null && !profilePicture.isEmpty()) {
+            try {
+                String adminPhotoUrl = supabaseStorageService.uploadFile(profilePicture);
+                if (adminPhotoUrl != null) admin.setProfilePictureUrl(adminPhotoUrl);
+            } catch (Exception e) {
+                System.err.println("Failed to upload admin photo: " + e.getMessage());
+            }
+        }
+
         hospitalAdminRepository.save(admin);
 
         return ResponseEntity.ok(Map.of("message", "Hospital Administration registered successfully!"));

@@ -17,6 +17,7 @@ public class HospitalAdmin {
     @JoinColumn(name = "hospital_id")
     private Hospital hospital;
 
+    private String name;
     private String position;
     private String profilePictureUrl;
 
@@ -32,6 +33,9 @@ public class HospitalAdmin {
 
     public String getPosition() { return position; }
     public void setPosition(String position) { this.position = position; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
     public String getProfilePictureUrl() { return profilePictureUrl; }
     public void setProfilePictureUrl(String profilePictureUrl) { this.profilePictureUrl = profilePictureUrl; }

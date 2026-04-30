@@ -18,6 +18,10 @@ public class Hospital {
     private String licenseCode;
 
     private String location;
+    private String state;
+    private String city;
+    private String pinCode;
+    private String phone;
     private String contactEmail;
     private String logoUrl;
     
@@ -45,4 +49,16 @@ public class Hospital {
 
     public List<Doctor> getDoctors() { return doctors; }
     public void setDoctors(List<Doctor> doctors) { this.doctors = doctors; }
+
+    public String getState() { return state; }
+    public void setState(String state) { this.state = state; }
+
+    public String getCity() { return city; }
+    public void setCity(String city) { this.city = city; }
+
+    public String getPinCode() { return pinCode; }
+    public void setPinCode(String pinCode) { this.pinCode = pinCode; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
 }
