@@ -39,7 +39,6 @@ public class HospitalController {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         HospitalAdmin admin = hospitalService.getAdminByUser(user);
         List<Doctor> doctors = hospitalService.getHospitalDoctors(admin.getHospital());
-        System.out.println("DEBUG: Fetching doctors for hospital " + admin.getHospital().getName() + " (ID: " + admin.getHospital().getId() + "). Found: " + doctors.size());
         return ResponseEntity.ok(doctors);
     }
 

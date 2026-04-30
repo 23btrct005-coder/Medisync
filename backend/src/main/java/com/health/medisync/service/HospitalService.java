@@ -83,7 +83,6 @@ public class HospitalService {
 
     public List<Doctor> getHospitalDoctors(Hospital hospital) {
         List<Doctor> doctors = doctorRepository.findByHospitalEntity(hospital);
-        System.out.println("DEBUG: HospitalService.getHospitalDoctors for " + hospital.getName() + " (ID: " + hospital.getId() + ") found " + doctors.size() + " doctors.");
         return doctors;
     }
 
