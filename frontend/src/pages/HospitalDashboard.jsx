@@ -90,7 +90,7 @@ const HospitalDashboard = () => {
             
             await api.post('/auth/register/doctor', formDataToSend);
             toast.success("Staff member onboarded successfully!");
-            fetchData(); // Refresh the list
+            fetchInstitutionalData(); // Refresh the list
             setShowOnboardModal(false);
             setOnboardData({ 
                 name: '', email: '', specialization: '', medicalLicenseNumber: '', 

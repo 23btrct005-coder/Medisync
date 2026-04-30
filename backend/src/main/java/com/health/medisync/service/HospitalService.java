@@ -111,4 +111,27 @@ public class HospitalService {
                 .distinct()
                 .toList();
     }
+
+    public void bookAppointment(Long patientId, Long doctorId, java.time.LocalDate date, String slot, String type, Hospital hospital) {
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+        
+        if (doctor.getHospitalEntity() == null || !doctor.getHospitalEntity().getId().equals(hospital.getId())) {
+            throw new RuntimeException("Unauthorized: Physician not affiliated with your institution");
+        }
+        
+        Patient patient = patientRepository.findById(patientId)
+                .orElseThrow(() -> new RuntimeException("Patient not found"));
+        
+        com.health.medisync.model.Appointment appointment = new com.health.medisync.model.Appointment();
+        appointment.setPatient(patient);
+        appointment.setDoctor(doctor);
+        appointment.setAppointmentDate(date);
+        appointment.setAppointmentTime(slot);
+        appointment.setStatus("SCHEDULED");
+        appointment.setType(com.health.medisync.model.Appointment.ConsultationType.valueOf(type));
+        appointment.setPaymentStatus("COMPLETED"); // Hospital-booked appointments are pre-authorized/paid internally
+        
+        appointmentRepository.save(appointment);
+    }
 }

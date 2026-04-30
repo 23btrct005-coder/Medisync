@@ -75,4 +75,20 @@ public class HospitalController {
         HospitalAdmin admin = hospitalService.getAdminByUser(user);
         return ResponseEntity.ok(admin);
     }
+
+    @PostMapping("/book-appointment")
+    public ResponseEntity<?> bookAppointment(@RequestBody Map<String, Object> request, @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        HospitalAdmin admin = hospitalService.getAdminByUser(user);
+        
+        Long patientId = Long.valueOf(request.get("patientId").toString());
+        Long doctorId = Long.valueOf(request.get("doctorId").toString());
+        java.time.LocalDate date = java.time.LocalDate.parse(request.get("date").toString());
+        String slot = request.get("slot").toString();
+        String type = request.get("type").toString();
+        
+        hospitalService.bookAppointment(patientId, doctorId, date, slot, type, admin.getHospital());
+        return ResponseEntity.ok(Map.of("message", "Appointment synchronized successfully"));
+    }
 }

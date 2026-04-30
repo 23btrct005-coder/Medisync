@@ -98,13 +98,6 @@ const Landing = () => {
                 <Stethoscope size={20} />
                 I'm a Physician
               </button>
-              <button 
-                onClick={() => navigate('/login')}
-                className="flex items-center justify-center gap-3 px-8 py-4 bg-slate-900 hover:bg-slate-800 text-white border border-slate-700 rounded-2xl font-black text-lg transition-all shadow-2xl active:scale-95"
-              >
-                <Building2 size={20} />
-                Hospital Admin
-              </button>
             </div>
 
             <div className="flex items-center gap-8 pt-8 opacity-40">

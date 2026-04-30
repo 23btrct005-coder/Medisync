@@ -8,6 +8,13 @@ const HospitalPatients = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
+    const [selectedPatient, setSelectedPatient] = useState(null);
+    const [showBookingModal, setShowBookingModal] = useState(false);
+    const [availableDoctors, setAvailableDoctors] = useState([]);
+    const [bookingData, setBookingData] = useState({ doctorId: '', date: '', slot: '', type: 'OFFLINE' });
+    const [slots, setSlots] = useState([]);
+    const [bookingLoading, setBookingLoading] = useState(false);
+
     useEffect(() => {
         const fetchPatients = async () => {
             try {
@@ -20,7 +27,59 @@ const HospitalPatients = () => {
             }
         };
         fetchPatients();
+        fetchDoctors();
     }, []);
+
+    const fetchDoctors = async () => {
+        try {
+            const res = await api.get('/hospital/doctors');
+            // Filter only approved doctors for booking
+            setAvailableDoctors(res.data.filter(d => d.approved));
+        } catch (err) {
+            console.error("Failed to fetch doctors for booking");
+        }
+    };
+
+    useEffect(() => {
+        if (bookingData.doctorId && bookingData.date) {
+            fetchSlots();
+        }
+    }, [bookingData.doctorId, bookingData.date]);
+
+    const fetchSlots = async () => {
+        try {
+            const res = await api.get(`/appointments/slots?doctorId=${bookingData.doctorId}&date=${bookingData.date}`);
+            setSlots(res.data);
+        } catch (err) {
+            toast.error("Failed to fetch available slots");
+        }
+    };
+
+    const handleQuickBook = async (e) => {
+        e.preventDefault();
+        if (!bookingData.slot) {
+            toast.error("Please select a time slot");
+            return;
+        }
+        setBookingLoading(true);
+        try {
+            // Internal admin booking (skips payment for hospital-initiated bookings)
+            await api.post('/hospital/book-appointment', {
+                patientId: selectedPatient.id,
+                doctorId: bookingData.doctorId,
+                date: bookingData.date,
+                slot: bookingData.slot,
+                type: bookingData.type
+            });
+            toast.success("Appointment synchronized successfully!");
+            setShowBookingModal(false);
+            setBookingData({ doctorId: '', date: '', slot: '', type: 'OFFLINE' });
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Failed to synchronize appointment");
+        } finally {
+            setBookingLoading(false);
+        }
+    };
 
     const filteredPatients = (Array.isArray(patients) ? patients : []).filter(p => 
         p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -83,9 +142,17 @@ const HospitalPatients = () => {
                                 </div>
                             </div>
                             
-                            <button className="w-full py-4 bg-slate-50 text-slate-400 rounded-2xl text-[10px] font-black uppercase tracking-widest group-hover:bg-slate-900 group-hover:text-white transition-all flex items-center justify-center gap-2">
-                                Access Dossier <ChevronRight size={16} />
-                            </button>
+                            <div className="flex gap-2">
+                                <button className="flex-1 py-4 bg-slate-50 text-slate-400 rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all flex items-center justify-center gap-2">
+                                    Dossier <ChevronRight size={14} />
+                                </button>
+                                <button 
+                                    onClick={() => { setSelectedPatient(patient); setShowBookingModal(true); }}
+                                    className="flex-1 py-4 bg-primary/10 text-primary rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-2"
+                                >
+                                    <Calendar size={14} /> Book
+                                </button>
+                            </div>
                         </div>
                     ))
                 ) : (
@@ -94,6 +161,102 @@ const HospitalPatients = () => {
                     </div>
                 )}
             </div>
+
+            {/* Booking Modal */}
+            {showBookingModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+                    <div className="bg-white rounded-[3rem] w-full max-w-md shadow-2xl overflow-hidden border border-slate-100">
+                        <div className="p-8 bg-slate-900 text-white rounded-t-[3rem]">
+                            <h3 className="text-xl font-black uppercase tracking-tight italic">Quick <span className="not-italic text-primary">Appointment</span></h3>
+                            <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1">Booking for {selectedPatient?.name}</p>
+                        </div>
+                        <form onSubmit={handleQuickBook} className="p-8 space-y-6">
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Attending Physician</label>
+                                    <select 
+                                        required
+                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 appearance-none"
+                                        value={bookingData.doctorId}
+                                        onChange={(e) => setBookingData({...bookingData, doctorId: e.target.value})}
+                                    >
+                                        <option value="">Select Physician...</option>
+                                        {availableDoctors.map(doc => (
+                                            <option key={doc.id} value={doc.id}>Dr. {doc.name} ({doc.specialization})</option>
+                                        ))}
+                                    </select>
+                                    {availableDoctors.length === 0 && (
+                                        <p className="text-[9px] text-amber-600 font-bold mt-2 ml-1">No verified physicians available. Please approve staff first.</p>
+                                    )}
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Schedule Date</label>
+                                        <input 
+                                            type="date" required
+                                            min={new Date().toISOString().split('T')[0]}
+                                            value={bookingData.date}
+                                            onChange={(e) => setBookingData({...bookingData, date: e.target.value})}
+                                            className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Modality</label>
+                                        <select 
+                                            required
+                                            className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 appearance-none"
+                                            value={bookingData.type}
+                                            onChange={(e) => setBookingData({...bookingData, type: e.target.value})}
+                                        >
+                                            <option value="OFFLINE">In-Person</option>
+                                            <option value="ONLINE">Virtual</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {bookingData.date && bookingData.doctorId && (
+                                    <div>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Available Slots</label>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {slots.map(slot => (
+                                                <button 
+                                                    key={slot}
+                                                    type="button"
+                                                    onClick={() => setBookingData({...bookingData, slot})}
+                                                    className={`py-2 rounded-xl text-[10px] font-bold transition-all border ${bookingData.slot === slot ? 'bg-primary text-white border-primary' : 'bg-white border-slate-100 text-slate-600 hover:border-primary/30'}`}
+                                                >
+                                                    {slot}
+                                                </button>
+                                            ))}
+                                            {slots.length === 0 && (
+                                                <p className="col-span-3 text-[9px] text-slate-400 italic text-center py-4 bg-slate-50 rounded-xl">No slots found for this date</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex gap-4 pt-4">
+                                <button 
+                                    type="button"
+                                    onClick={() => setShowBookingModal(false)}
+                                    className="flex-1 py-4 bg-slate-50 text-slate-400 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit"
+                                    disabled={bookingLoading || !bookingData.slot}
+                                    className="flex-[2] py-4 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                                >
+                                    {bookingLoading ? 'Synchronizing...' : 'Confirm Booking'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
