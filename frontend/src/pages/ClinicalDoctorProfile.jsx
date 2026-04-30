@@ -57,13 +57,20 @@ const DoctorProfile = () => {
           <h2 className="text-2xl font-bold text-slate-800">Physician Profile</h2>
           <p className="text-slate-500 text-sm mt-1">Your professional profile on MEDISYNC</p>
         </div>
-        <button 
-          onClick={() => navigate('/doctor-dashboard/profile/edit')}
-          className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 font-bold px-6 py-3 rounded-2xl hover:bg-slate-50 transition shadow-sm active:scale-95"
-        >
-          <Edit3 size={18} className="text-blue-600" />
-          Edit My Professional Profile
-        </button>
+        {!user.hospitalEntity ? (
+          <button 
+            onClick={() => navigate('/doctor-dashboard/profile/edit')}
+            className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 font-bold px-6 py-3 rounded-2xl hover:bg-slate-50 transition shadow-sm active:scale-95"
+          >
+            <Edit3 size={18} className="text-blue-600" />
+            Edit My Professional Profile
+          </button>
+        ) : (
+          <div className="flex items-center gap-2 px-4 py-3 bg-slate-100 text-slate-500 rounded-2xl text-sm font-bold shadow-sm">
+            <Building2 size={18} className="text-slate-400" /> 
+            Institutional Profile (Managed by Admin)
+          </div>
+        )}
       </div>
 
       {/* Identity Card */}
@@ -187,7 +194,7 @@ const DoctorProfile = () => {
                   <MapPin size={18} className="text-red-600" />
                   <h4 className="font-bold text-slate-700 text-sm uppercase tracking-wide">Clinic Location Hub</h4>
                 </div>
-                {!user.clinicAddress ? (
+                {!user.clinicAddress && !user.hospitalEntity ? (
                   <button 
                     onClick={() => navigate('/doctor-dashboard/profile/edit')}
                     className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all animate-pulse"
@@ -201,8 +208,8 @@ const DoctorProfile = () => {
                 )}
               </div>
              <div className="p-6">
-                <ClinicMap address={user.clinicAddress} hospitalName={user.hospital} height="350px" />
-                {user.clinicAddress && (
+                <ClinicMap address={user.clinicAddress || user.hospitalEntity?.location} hospitalName={user.hospital} height="350px" />
+                {user.clinicAddress && !user.hospitalEntity && (
                   <p className="mt-4 text-xs font-bold text-slate-400 flex items-center gap-2">
                      <AlertCircle size={14} className="text-amber-500" />
                      If this location is incorrect, please update it in the Professional Profile Editor.

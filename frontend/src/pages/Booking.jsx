@@ -526,7 +526,7 @@ const DoctorCard = ({ doctor, onSelect }) => (
 
     <div className="mt-auto pt-3 border-t border-slate-100 flex items-center justify-between">
        <div className="flex items-baseline gap-1">
-          <span className="text-base font-black text-slate-900">₹{doctor.onlineConsultationFee || 500}</span>
+          <span className="text-base font-black text-slate-900">₹{doctor.onlineConsultationFee || doctor.consultationFee || 500}</span>
           <span className="text-[8px] font-black uppercase text-slate-400">/ Session</span>
        </div>
        <div className="p-1.5 bg-slate-50 rounded-lg group-hover:bg-primary/10 group-hover:text-primary transition-colors">
