@@ -151,17 +151,19 @@ public class HospitalService {
             throw new RuntimeException("Unauthorized: Physician not affiliated with your institution");
         }
         
-        if (updates.containsKey("name")) doctor.setName(updates.get("name").toString());
-        if (updates.containsKey("specialization")) doctor.setSpecialization(updates.get("specialization").toString());
-        if (updates.containsKey("medicalDegree")) doctor.setMedicalDegree(updates.get("medicalDegree").toString());
-        if (updates.containsKey("medicalLicenseNumber")) doctor.setMedicalLicenseNumber(updates.get("medicalLicenseNumber").toString());
+        if (updates.containsKey("name")) doctor.setName(updates.get("name") != null ? updates.get("name").toString() : null);
+        if (updates.containsKey("specialization")) doctor.setSpecialization(updates.get("specialization") != null ? updates.get("specialization").toString() : null);
+        if (updates.containsKey("medicalDegree")) doctor.setMedicalDegree(updates.get("medicalDegree") != null ? updates.get("medicalDegree").toString() : null);
+        if (updates.containsKey("medicalLicenseNumber")) doctor.setMedicalLicenseNumber(updates.get("medicalLicenseNumber") != null ? updates.get("medicalLicenseNumber").toString() : null);
         if (updates.containsKey("yearsOfExperience") && updates.get("yearsOfExperience") != null) {
-            doctor.setYearsOfExperience(Integer.valueOf(updates.get("yearsOfExperience").toString()));
+            try {
+                doctor.setYearsOfExperience(Integer.valueOf(updates.get("yearsOfExperience").toString()));
+            } catch (NumberFormatException ignored) {}
         }
-        if (updates.containsKey("consultationFee")) doctor.setConsultationFee(updates.get("consultationFee").toString());
-        if (updates.containsKey("phone")) doctor.setPhone(updates.get("phone").toString());
-        if (updates.containsKey("workingDays")) doctor.setWorkingDays(updates.get("workingDays").toString());
-        if (updates.containsKey("consultationTimings")) doctor.setConsultationTimings(updates.get("consultationTimings").toString());
+        if (updates.containsKey("consultationFee")) doctor.setConsultationFee(updates.get("consultationFee") != null ? updates.get("consultationFee").toString() : null);
+        if (updates.containsKey("phone")) doctor.setPhone(updates.get("phone") != null ? updates.get("phone").toString() : null);
+        if (updates.containsKey("workingDays")) doctor.setWorkingDays(updates.get("workingDays") != null ? updates.get("workingDays").toString() : null);
+        if (updates.containsKey("consultationTimings")) doctor.setConsultationTimings(updates.get("consultationTimings") != null ? updates.get("consultationTimings").toString() : null);
         
         doctorRepository.save(doctor);
     }
