@@ -67,6 +67,9 @@ const SmartProfileRedirect = ({ type = 'view' }) => {
   if (userRole === 'ROLE_DOCTOR') {
     return <Navigate to={type === 'edit' ? '/doctor-dashboard/profile/edit' : '/doctor-dashboard/profile'} replace />;
   }
+  if (userRole === 'ROLE_HOSPITAL_ADMIN') {
+    return <Navigate to="/hospital-dashboard/profile" replace />;
+  }
   return <Navigate to={type === 'edit' ? '/dashboard/profile/edit' : '/dashboard/profile'} replace />;
 };
 
