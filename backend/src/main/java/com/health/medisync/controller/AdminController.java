@@ -26,19 +26,67 @@ public class AdminController {
 
     private final DoctorRepository doctorRepository;
     private final UserRepository userRepository;
+    private final com.health.medisync.repository.HospitalAdminRepository hospitalAdminRepository;
     private final JdbcTemplate jdbcTemplate;
 
-    public AdminController(DoctorRepository doctorRepository, UserRepository userRepository, JdbcTemplate jdbcTemplate) {
+    public AdminController(DoctorRepository doctorRepository, UserRepository userRepository, 
+                           com.health.medisync.repository.HospitalAdminRepository hospitalAdminRepository,
+                           JdbcTemplate jdbcTemplate) {
         this.doctorRepository = doctorRepository;
         this.userRepository = userRepository;
+        this.hospitalAdminRepository = hospitalAdminRepository;
         this.jdbcTemplate = jdbcTemplate;
+    }
+
+    @GetMapping("/hospitals/pending")
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> getPendingHospitals() {
+        try {
+            String sql = "SELECT ha.id, ha.name as admin_name, ha.position, h.name as hospital_name, h.license_code, h.city, h.state, ha.approved " +
+                         "FROM hospital_admins ha JOIN hospitals h ON ha.hospital_id = h.id WHERE ha.approved = false";
+            List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
+            return ResponseEntity.ok(rows);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("message", "Failed to fetch pending hospitals: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/hospitals/{id}/approve")
+    public ResponseEntity<?> approveHospital(@PathVariable Long id) {
+        return hospitalAdminRepository.findById(id).map(admin -> {
+            admin.setApproved(true);
+            User user = admin.getUser();
+            if (user != null) {
+                user.setEnabled(true);
+                userRepository.save(user);
+            }
+            hospitalAdminRepository.save(admin);
+            return ResponseEntity.ok(Map.of("message", "Hospital Administration approved successfully!"));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/hospitals/{id}/reject")
+    public ResponseEntity<?> rejectHospital(@PathVariable Long id) {
+        return hospitalAdminRepository.findById(id).map(admin -> {
+            User user = admin.getUser();
+            hospitalAdminRepository.delete(admin);
+            if (user != null) {
+                userRepository.delete(user);
+            }
+            return ResponseEntity.ok(Map.of("message", "Hospital Administration rejected."));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/doctors/pending")
     @Transactional(readOnly = true)
     public ResponseEntity<?> getPendingDoctors() {
         try {
-            String sql = "SELECT id, name, email, phone, specialization, medical_degree, medical_license_number, hospital, years_of_experience, profile_picture_url, approved FROM doctors WHERE approved = false";
+            // Only individual doctors (not affiliated with hospital) or all pending?
+            // The user said "the institutional and only doctor should be get approved by the admin"
+            // Institutional doctors are approved by Hospital Admin.
+            // Individual doctors are approved by Global Admin.
+            String sql = "SELECT id, name, email, phone, specialization, medical_degree, medical_license_number, hospital, years_of_experience, profile_picture_url, approved " +
+                         "FROM doctors WHERE approved = false AND hospital_id IS NULL";
             List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
             
             List<DoctorDTO> dtos = new ArrayList<>();
@@ -97,5 +145,25 @@ public class AdminController {
             }
             return ResponseEntity.ok(Map.of("message", "Doctor application rejected and record removed."));
         }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/system/wipe")
+    @Transactional
+    public ResponseEntity<?> wipeSystem() {
+        try {
+            // Delete in order to satisfy foreign keys
+            jdbcTemplate.execute("DELETE FROM appointments");
+            jdbcTemplate.execute("DELETE FROM medical_records");
+            jdbcTemplate.execute("DELETE FROM doctors");
+            jdbcTemplate.execute("DELETE FROM hospital_admins");
+            jdbcTemplate.execute("DELETE FROM hospitals");
+            jdbcTemplate.execute("DELETE FROM patients");
+            // Only delete users that are not the main admin
+            jdbcTemplate.execute("DELETE FROM users WHERE role != 'ROLE_ADMIN'");
+            
+            return ResponseEntity.ok(Map.of("message", "System wiped successfully. All professional and patient data removed."));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("message", "Wipe failed: " + e.getMessage()));
+        }
     }
 }

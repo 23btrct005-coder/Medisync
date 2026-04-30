@@ -106,23 +106,20 @@ public class AuthController {
                 effectiveUsername = normalizedUsername;
             }
             
-            // PRE-AUTH SELF-HEALING
+            // APPROVAL CHECK: For Doctors and Hospital Admins
             userRepository.findByUsernameIgnoreCase(effectiveUsername).ifPresent(user -> {
-                boolean isDoctor = doctorRepository.findByUserId(user.getId()).isPresent();
-                boolean isAdmin = hospitalAdminRepository.findByUserId(user.getId()).isPresent();
-                
-                if (isDoctor || isAdmin) {
-                    boolean needsUpdate = false;
-                    if (!user.isEnabled()) {
-                        user.setEnabled(true);
-                        needsUpdate = true;
-                    }
-                    String expectedRole = isDoctor ? "ROLE_DOCTOR" : "ROLE_HOSPITAL_ADMIN";
-                    if (!expectedRole.equals(user.getRole())) {
-                        user.setRole(expectedRole);
-                        needsUpdate = true;
-                    }
-                    if (needsUpdate) userRepository.saveAndFlush(user);
+                if (user.getRole().equals("ROLE_DOCTOR")) {
+                    doctorRepository.findByUserId(user.getId()).ifPresent(doctor -> {
+                        if (!doctor.isApproved()) {
+                            throw new org.springframework.security.authentication.DisabledException("Your professional account is pending institutional approval.");
+                        }
+                    });
+                } else if (user.getRole().equals("ROLE_HOSPITAL_ADMIN")) {
+                    hospitalAdminRepository.findByUserId(user.getId()).ifPresent(admin -> {
+                        if (!admin.isApproved()) {
+                            throw new org.springframework.security.authentication.DisabledException("Your institutional portal access is pending global administrative approval.");
+                        }
+                    });
                 }
             });
 
@@ -138,7 +135,7 @@ public class AuthController {
             return ResponseEntity.ok(new AuthResponse(jwt, user.getRole()));
 
         } catch (org.springframework.security.authentication.DisabledException e) {
-            return ResponseEntity.status(403).body(Map.of("message", "Your account is pending institutional approval."));
+            return ResponseEntity.status(403).body(Map.of("message", e.getMessage()));
         } catch (org.springframework.security.core.AuthenticationException e) {
             System.out.println("DEBUG: Authentication failed for " + loginRequest.getUsername() + ": " + e.getMessage());
             return ResponseEntity.status(401).body(Map.of("message", "Invalid credentials."));
@@ -527,7 +524,7 @@ public class AuthController {
 
         hospitalAdminRepository.save(admin);
 
-        return ResponseEntity.ok(Map.of("message", "Hospital Administration registered successfully!"));
+        return ResponseEntity.ok(Map.of("message", "Hospital Administration registered successfully! Your account is now pending global administrative approval."));
     }
 
     @PostMapping("/verify-otp")

@@ -20,8 +20,11 @@ public class HospitalAdmin {
     private String name;
     private String position;
     private String profilePictureUrl;
+    private boolean approved = false;
 
     // Getters & Setters
+    public boolean isApproved() { return approved; }
+    public void setApproved(boolean approved) { this.approved = approved; }
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
