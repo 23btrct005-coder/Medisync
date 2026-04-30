@@ -79,7 +79,7 @@ const HospitalDashboard = () => {
             const formDataToSend = new FormData();
             const userData = {
                 ...onboardData,
-                username: onboardData.email.split('@')[0] + Math.floor(Math.random() * 1000),
+                username: onboardData.email,
                 hospital: stats?.hospitalId != null ? String(stats.hospitalId) : ''
             };
             formDataToSend.append('userData', JSON.stringify(userData));

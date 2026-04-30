@@ -88,18 +88,32 @@ public class AuthController {
     public ResponseEntity<?> authenticateUser(@RequestBody AuthRequest loginRequest) {
         String normalizedUsername = loginRequest.getUsername() != null ? loginRequest.getUsername().toLowerCase() : null;
         System.out.println("DEBUG: Login attempt for " + normalizedUsername);
+
+        // SMART RESOLVER: If username doesn't exist, check if it's an email
+        final String effectiveUsername;
+        if (userRepository.findByUsernameIgnoreCase(normalizedUsername).isEmpty() && normalizedUsername != null && normalizedUsername.contains("@")) {
+            System.out.println("DEBUG: Username not found, attempting email lookup for " + normalizedUsername);
+            effectiveUsername = doctorRepository.findByEmail(normalizedUsername)
+                .map(d -> d.getUser() != null ? d.getUser().getUsername() : normalizedUsername)
+                .orElse(patientRepository.findByEmail(normalizedUsername)
+                    .map(p -> p.getUser() != null ? p.getUser().getUsername() : normalizedUsername)
+                    .orElse(normalizedUsername));
+            System.out.println("DEBUG: Resolved effective username: " + effectiveUsername);
+        } else {
+            effectiveUsername = normalizedUsername;
+        }
         
         // PRE-AUTH SELF-HEALING: Proactively enable and promote physicians and administrators
-        userRepository.findByUsernameIgnoreCase(normalizedUsername).ifPresent(user -> {
+        userRepository.findByUsernameIgnoreCase(effectiveUsername).ifPresent(user -> {
             boolean isDoctor = doctorRepository.findByUserId(user.getId()).isPresent();
             boolean isAdmin = hospitalAdminRepository.findByUserId(user.getId()).isPresent();
             
-            System.out.println("DEBUG: Self-healing check for " + normalizedUsername + ". isDoctor=" + isDoctor + ", isAdmin=" + isAdmin);
+            System.out.println("DEBUG: Self-healing check for " + effectiveUsername + ". isDoctor=" + isDoctor + ", isAdmin=" + isAdmin);
             
             if (isDoctor || isAdmin) {
                 boolean needsUpdate = false;
                 if (!user.isEnabled()) {
-                    System.out.println("SELF-HEALING (PRE-AUTH): Activating professional account for " + normalizedUsername);
+                    System.out.println("SELF-HEALING (PRE-AUTH): Activating professional account for " + effectiveUsername);
                     user.setEnabled(true);
                     needsUpdate = true;
                 }
@@ -119,7 +133,7 @@ public class AuthController {
 
         try {
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(normalizedUsername, loginRequest.getPassword()));
+                    new UsernamePasswordAuthenticationToken(effectiveUsername, loginRequest.getPassword()));
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
             
@@ -153,13 +167,13 @@ public class AuthController {
         final String finalUsername = (username == null || username.isEmpty()) ? email : username;
 
         try {
+            // Check for existing user by username/email
             userRepository.findByUsernameIgnoreCase(finalUsername).ifPresent(existing -> {
                 if (existing.isEnabled()) {
                     throw new RuntimeException("Error: This account is already registered and verified. Please log in.");
                 }
                 
                 // Protection: Don't allow overwriting a pending doctor/admin with a different role
-                // But since we ARE in registerDoctor, we can overwrite a pending doctor or a ghost patient
                 boolean hasAdminProfile = hospitalAdminRepository.findByUserId(existing.getId()).isPresent();
                 if (hasAdminProfile) {
                     throw new RuntimeException("Error: This email is already associated with a hospital administrator account.");
@@ -172,6 +186,26 @@ public class AuthController {
                 hospitalAdminRepository.findByUserId(existing.getId()).ifPresent(hospitalAdminRepository::delete);
                 userRepository.delete(existing);
             });
+
+            // Check for existing doctor by email directly (if username was different)
+            if (email != null) {
+                doctorRepository.findByEmail(email).ifPresent(existingDoctor -> {
+                    User u = existingDoctor.getUser();
+                    if (u != null && u.isEnabled()) {
+                        throw new RuntimeException("Error: A physician with this email is already registered.");
+                    }
+                    // Clean up if unverified
+                    if (u != null) {
+                        passwordResetTokenRepository.deleteByUserId(u.getId());
+                        doctorRepository.delete(existingDoctor);
+                        patientRepository.findByUserId(u.getId()).ifPresent(patientRepository::delete);
+                        hospitalAdminRepository.findByUserId(u.getId()).ifPresent(hospitalAdminRepository::delete);
+                        userRepository.delete(u);
+                    } else {
+                        doctorRepository.delete(existingDoctor);
+                    }
+                });
+            }
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
