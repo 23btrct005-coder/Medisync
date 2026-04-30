@@ -49,6 +49,7 @@ public class AuthController {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final com.health.medisync.repository.HospitalRepository hospitalRepository;
     private final com.health.medisync.repository.HospitalAdminRepository hospitalAdminRepository;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
     public AuthController(AuthenticationManager authenticationManager, JwtUtils jwtUtils,
                           UserRepository userRepository, DoctorRepository doctorRepository,
@@ -57,7 +58,8 @@ public class AuthController {
                           SupabaseStorageService supabaseStorageService,
                           PasswordResetTokenRepository passwordResetTokenRepository,
                           com.health.medisync.repository.HospitalRepository hospitalRepository,
-                          com.health.medisync.repository.HospitalAdminRepository hospitalAdminRepository) {
+                          com.health.medisync.repository.HospitalAdminRepository hospitalAdminRepository,
+                          org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
         this.userRepository = userRepository;
@@ -69,6 +71,7 @@ public class AuthController {
         this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.hospitalRepository = hospitalRepository;
         this.hospitalAdminRepository = hospitalAdminRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
     
     @GetMapping("/geography")
@@ -106,22 +109,13 @@ public class AuthController {
                 effectiveUsername = normalizedUsername;
             }
             
-            // APPROVAL CHECK: For Doctors and Hospital Admins
-            userRepository.findByUsernameIgnoreCase(effectiveUsername).ifPresent(user -> {
-                if (user.getRole().equals("ROLE_DOCTOR")) {
-                    doctorRepository.findByUserId(user.getId()).ifPresent(doctor -> {
-                        if (!doctor.isApproved()) {
-                            throw new org.springframework.security.authentication.DisabledException("Your professional account is pending institutional approval.");
-                        }
-                    });
-                } else if (user.getRole().equals("ROLE_HOSPITAL_ADMIN")) {
-                    hospitalAdminRepository.findByUserId(user.getId()).ifPresent(admin -> {
-                        if (!admin.isApproved()) {
-                            throw new org.springframework.security.authentication.DisabledException("Your institutional portal access is pending global administrative approval.");
-                        }
-                    });
-                }
-            });
+            // SCHEMA SELF-HEAL: Ensure the approved column exists (PostgreSQL syntax)
+            try {
+                jdbcTemplate.execute("ALTER TABLE hospital_admins ADD COLUMN IF NOT EXISTS approved BOOLEAN DEFAULT FALSE");
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS approved BOOLEAN DEFAULT FALSE");
+            } catch (Exception e) {
+                System.out.println("DEBUG: Schema self-heal skipped: " + e.getMessage());
+            }
 
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(effectiveUsername, loginRequest.getPassword()));
@@ -130,6 +124,21 @@ public class AuthController {
             
             User user = userRepository.findByUsernameIgnoreCase(authentication.getName())
                     .orElseThrow(() -> new RuntimeException("Error: User not found."));
+
+            // APPROVAL GATE: Post-Authentication Check
+            if ("ROLE_DOCTOR".equals(user.getRole())) {
+                doctorRepository.findByUserId(user.getId()).ifPresent(doctor -> {
+                    if (!doctor.isApproved()) {
+                        throw new org.springframework.security.authentication.DisabledException("Your professional account is pending institutional approval.");
+                    }
+                });
+            } else if ("ROLE_HOSPITAL_ADMIN".equals(user.getRole())) {
+                hospitalAdminRepository.findByUserId(user.getId()).ifPresent(admin -> {
+                    if (!admin.isApproved()) {
+                        throw new org.springframework.security.authentication.DisabledException("Your institutional portal access is pending global administrative approval.");
+                    }
+                });
+            }
 
             String jwt = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole());
             return ResponseEntity.ok(new AuthResponse(jwt, user.getRole()));
