@@ -40,6 +40,14 @@ const HospitalPatients = () => {
         }
     };
 
+    const handleRefreshDoctors = () => {
+        toast.promise(fetchDoctors(), {
+            loading: 'Refreshing physician list...',
+            success: 'Physician list updated',
+            error: 'Failed to update physician list'
+        });
+    };
+
     useEffect(() => {
         if (bookingData.doctorId && bookingData.date) {
             fetchSlots();
@@ -173,7 +181,16 @@ const HospitalPatients = () => {
                         <form onSubmit={handleQuickBook} className="p-8 space-y-6">
                             <div className="space-y-4">
                                 <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Attending Physician</label>
+                                    <div className="flex justify-between items-center mb-1">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Attending Physician</label>
+                                        <button 
+                                            type="button" 
+                                            onClick={handleRefreshDoctors}
+                                            className="text-[9px] font-bold text-primary hover:text-primary-600 underline"
+                                        >
+                                            Refresh List
+                                        </button>
+                                    </div>
                                     <select 
                                         required
                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 appearance-none"

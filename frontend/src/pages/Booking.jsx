@@ -322,13 +322,17 @@ const Booking = () => {
                          </div>
                       </div>
 
-                      <div className="w-full space-y-3">
-                         <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
-                            <span className="text-xs font-medium text-slate-400 italic">Experience</span>
-                            <span className="text-xs font-black uppercase tracking-widest underline decoration-primary decoration-2">{selectedDoctor.yearsOfExperience || '8+'} Years</span>
-                         </div>
-                      </div>
-                   </div>
+                       <div className="w-full space-y-3">
+                          <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                             <span className="text-xs font-medium text-slate-400 italic">Affiliated Hospital</span>
+                             <span className="text-xs font-black uppercase tracking-widest text-primary-400">{selectedDoctor.hospital || 'Care Center'}</span>
+                          </div>
+                          <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                             <span className="text-xs font-medium text-slate-400 italic">Experience</span>
+                             <span className="text-xs font-black uppercase tracking-widest underline decoration-primary decoration-2">{selectedDoctor.yearsOfExperience || '8+'} Years</span>
+                          </div>
+                       </div>
+                    </div>
                 </div>
              </div>
 

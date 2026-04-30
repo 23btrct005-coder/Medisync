@@ -4,10 +4,13 @@ import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
 
 const HospitalDoctorRoster = () => {
-    const [selectedDoctor, setSelectedDoctor] = useState(null);
-    const [showEditModal, setShowEditModal] = useState(false);
+    const [doctors, setDoctors] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const [editingDoctor, setEditingDoctor] = useState(null);
     const [editData, setEditData] = useState({});
-    const [submitting, setSubmitting] = useState(false);
+    const [updating, setUpdating] = useState(false);
 
     const fetchRoster = async () => {
         try {
@@ -34,18 +37,18 @@ const HospitalDoctorRoster = () => {
         }
     };
 
-    const handleUpdate = async (e) => {
+    const handleUpdateDoctor = async (e) => {
         e.preventDefault();
-        setSubmitting(true);
+        setUpdating(true);
         try {
-            await api.post(`/hospital/update-doctor/${selectedDoctor.id}`, editData);
+            await api.post(`/hospital/update-doctor/${editingDoctor.id}`, editData);
             toast.success("Physician profile updated successfully");
-            setShowEditModal(false);
+            setEditingDoctor(null);
             fetchRoster();
         } catch (err) {
             toast.error("Failed to update profile");
         } finally {
-            setSubmitting(false);
+            setUpdating(false);
         }
     };
 
@@ -138,21 +141,23 @@ const HospitalDoctorRoster = () => {
                                                 </span>
                                             )}
                                         </td>
-                                        <td className="px-8 py-6 text-right flex justify-end gap-2">
-                                            {!doctor.approved && (
+                                        <td className="px-8 py-6 text-right">
+                                            <div className="flex items-center justify-end gap-2">
+                                                {!doctor.approved && (
+                                                    <button 
+                                                        onClick={() => approveDoctor(doctor.id)}
+                                                        className="px-4 py-2 bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all"
+                                                    >
+                                                        Authorize
+                                                    </button>
+                                                )}
                                                 <button 
-                                                    onClick={() => approveDoctor(doctor.id)}
-                                                    className="px-4 py-2 bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all"
+                                                    onClick={() => { setEditingDoctor(doctor); setEditData(doctor); }}
+                                                    className="p-2.5 bg-slate-100 text-slate-500 hover:bg-primary hover:text-white rounded-xl transition-all shadow-sm"
                                                 >
-                                                    Authorize
+                                                    <ChevronRight size={18} />
                                                 </button>
-                                            )}
-                                            <button 
-                                                onClick={() => { setSelectedDoctor(doctor); setEditData(doctor); setShowEditModal(true); }}
-                                                className="px-4 py-2 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:scale-105 active:scale-95 transition-all"
-                                            >
-                                                Edit
-                                            </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -172,25 +177,20 @@ const HospitalDoctorRoster = () => {
             </div>
 
             {/* Edit Modal */}
-            {showEditModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm overflow-y-auto">
-                    <div className="bg-white rounded-[3rem] w-full max-w-2xl shadow-2xl overflow-hidden border border-slate-100 my-8">
-                        <div className="p-8 bg-slate-900 text-white flex justify-between items-center">
-                            <div>
-                                <h3 className="text-xl font-black uppercase tracking-tight italic">Modify <span className="not-italic text-primary">Physician</span></h3>
-                                <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1">Institutional record management</p>
-                            </div>
-                            <button onClick={() => setShowEditModal(false)} className="text-slate-400 hover:text-white transition-colors">
-                                <Users size={24} />
-                            </button>
+            {editingDoctor && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+                    <div className="bg-white rounded-[3rem] w-full max-w-lg shadow-2xl overflow-hidden border border-slate-100">
+                        <div className="p-8 bg-slate-900 text-white rounded-t-[3rem]">
+                            <h3 className="text-xl font-black uppercase tracking-tight italic">Update <span className="not-italic text-primary">Physician</span></h3>
+                            <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1">Institutional Profile Editor</p>
                         </div>
-                        <form onSubmit={handleUpdate} className="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
-                            <div className="grid grid-cols-2 gap-6">
+                        <form onSubmit={handleUpdateDoctor} className="p-8 space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
                                 <div className="col-span-2">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Full Name</label>
                                     <input 
                                         type="text" required
-                                        value={editData.name || ''}
+                                        value={editData.name}
                                         onChange={(e) => setEditData({...editData, name: e.target.value})}
                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
                                     />
@@ -199,84 +199,73 @@ const HospitalDoctorRoster = () => {
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Specialization</label>
                                     <input 
                                         type="text" required
-                                        value={editData.specialization || ''}
+                                        value={editData.specialization}
                                         onChange={(e) => setEditData({...editData, specialization: e.target.value})}
                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Gender</label>
-                                    <select 
-                                        required
-                                        value={editData.gender || 'Male'}
-                                        onChange={(e) => setEditData({...editData, gender: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 appearance-none"
-                                    >
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                        <option value="Other">Other</option>
-                                    </select>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Medical Degree</label>
+                                    <input 
+                                        type="text" required
+                                        value={editData.medicalDegree}
+                                        onChange={(e) => setEditData({...editData, medicalDegree: e.target.value})}
+                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                    />
                                 </div>
                                 <div>
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">License Number</label>
                                     <input 
                                         type="text" required
-                                        value={editData.medicalLicenseNumber || ''}
+                                        value={editData.medicalLicenseNumber}
                                         onChange={(e) => setEditData({...editData, medicalLicenseNumber: e.target.value})}
                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Experience (Yrs)</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Years of Experience</label>
                                     <input 
                                         type="number" required
-                                        value={editData.yearsOfExperience || ''}
+                                        value={editData.yearsOfExperience}
                                         onChange={(e) => setEditData({...editData, yearsOfExperience: e.target.value})}
                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
                                     />
                                 </div>
-                                <div>
+                                <div className="col-span-2">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Working Days</label>
                                     <input 
                                         type="text" required
-                                        value={editData.workingDays || ''}
+                                        value={editData.workingDays}
                                         onChange={(e) => setEditData({...editData, workingDays: e.target.value})}
                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Timings</label>
-                                    <input 
-                                        type="text" required
-                                        value={editData.consultationTimings || ''}
-                                        onChange={(e) => setEditData({...editData, consultationTimings: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                        placeholder="e.g. Mon - Fri"
                                     />
                                 </div>
                                 <div className="col-span-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Clinic/Facility Address</label>
-                                    <textarea 
-                                        required
-                                        value={editData.clinicAddress || ''}
-                                        onChange={(e) => setEditData({...editData, clinicAddress: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 resize-none h-20"
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Consultation Timings</label>
+                                    <input 
+                                        type="text" required
+                                        value={editData.consultationTimings}
+                                        onChange={(e) => setEditData({...editData, consultationTimings: e.target.value})}
+                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                        placeholder="e.g. 10:00 AM - 05:00 PM"
                                     />
                                 </div>
                             </div>
-                            <div className="flex gap-4 pt-4 sticky bottom-0 bg-white">
+                            <div className="flex gap-4 pt-4">
                                 <button 
                                     type="button"
-                                    onClick={() => setShowEditModal(false)}
+                                    onClick={() => setEditingDoctor(null)}
                                     className="flex-1 py-4 bg-slate-50 text-slate-400 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button 
                                     type="submit"
-                                    disabled={submitting}
+                                    disabled={updating}
                                     className="flex-[2] py-4 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
                                 >
-                                    {submitting ? 'Syncing...' : 'Update Institutional Record'}
+                                    {updating ? 'Updating...' : 'Save Changes'}
                                 </button>
                             </div>
                         </form>

@@ -11,6 +11,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.dao.DataAccessException;
+import org.springframework.transaction.CannotCreateTransactionException;
 
 import com.health.medisync.model.Patient;
 import com.health.medisync.repository.PatientRepository;
@@ -140,6 +142,12 @@ public class AuthController {
         } catch (org.springframework.security.core.AuthenticationException e) {
             System.out.println("DEBUG: Authentication failed for " + loginRequest.getUsername() + ": " + e.getMessage());
             return ResponseEntity.status(401).body(Map.of("message", "Invalid credentials."));
+        } catch (CannotCreateTransactionException e) {
+            System.err.println("CRITICAL: Database connection pool exhausted during login: " + e.getMessage());
+            return ResponseEntity.status(500).body(Map.of("message", "High traffic. Please try again in a few moments."));
+        } catch (DataAccessException e) {
+            System.err.println("CRITICAL: Database error during login: " + e.getMessage());
+            return ResponseEntity.status(500).body(Map.of("message", "Database operation failed."));
         } catch (Exception e) {
             System.err.println("CRITICAL: Internal Server Error during login for " + loginRequest.getUsername());
             e.printStackTrace();
@@ -229,7 +237,10 @@ public class AuthController {
 
         Doctor doctor = new Doctor();
         doctor.setUser(user);
-        doctor.setApproved(false); // Must be approved by admin
+        
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_HOSPITAL_ADMIN"));
+        doctor.setApproved(isAdmin); // Must be approved by admin, unless created by one
         doctor.setName(request.get("name") != null ? String.valueOf(request.get("name")) : null);
         doctor.setEmail(email);
         doctor.setGender(request.get("gender") != null ? String.valueOf(request.get("gender")) : null);

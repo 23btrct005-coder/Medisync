@@ -41,11 +41,6 @@ const EditDoctorProfile = () => {
 
   useEffect(() => {
     if (user) {
-      if (user.hospitalEntity) {
-          toast.error("Institutional profile: Your credentials are managed by your hospital administrator.");
-          navigate('/doctor-dashboard/profile');
-          return;
-      }
       setFormData({
         name: user.name || '',
         phone: user.phone || '',
@@ -324,6 +319,8 @@ const EditDoctorProfile = () => {
   const inputClass = "block w-full rounded-xl border-slate-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-4 py-3 border transition-all bg-slate-50/50 hover:bg-white focus:bg-white";
   const sectionTitleClass = "flex items-center gap-2 text-md font-bold text-slate-800 border-b border-slate-100 pb-4 mb-2";
 
+  const isAffiliated = !!user?.hospital;
+
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-20">
       <div className="flex items-center justify-between">
@@ -336,6 +333,21 @@ const EditDoctorProfile = () => {
         </div>
       </div>
 
+      {isAffiliated && (
+        <div className="p-6 bg-amber-50 border-2 border-amber-200 rounded-3xl flex items-start gap-4 animate-in fade-in slide-in-from-top-4">
+            <div className="p-3 bg-amber-100 text-amber-600 rounded-2xl">
+                <AlertCircle size={24} />
+            </div>
+            <div>
+                <h4 className="font-black text-amber-900 uppercase tracking-tight italic">Institutional Lockdown Active</h4>
+                <p className="text-sm text-amber-700 font-medium mt-1">
+                    Your professional profile is currently managed by <span className="font-bold underline">{user.hospital}</span>. 
+                    Manual updates are restricted to ensure institutional data integrity. Please contact your Hospital Administrator for any modifications.
+                </p>
+            </div>
+        </div>
+      )}
+
       {message.text && (
         <div className={`p-4 rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
           {message.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
@@ -343,7 +355,7 @@ const EditDoctorProfile = () => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={handleSubmit} className={`space-y-8 ${isAffiliated ? 'opacity-60 pointer-events-none' : ''}`}>
         
         {/* ── Photo Section ── */}
         <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 flex flex-col items-center">
