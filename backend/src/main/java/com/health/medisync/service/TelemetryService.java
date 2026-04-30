@@ -20,6 +20,14 @@ public class TelemetryService {
         messagingTemplate.convertAndSendToUser(username, "/queue/vitals", telemetry);
     }
 
+    public Telemetry saveTelemetry(String username, Telemetry telemetry) {
+        // Find patient
+        // Note: we might need a PatientRepository here or pass it in. 
+        // Let's assume the controller handles the model resolution if needed, 
+        // but it's cleaner to do it in service.
+        return telemetryRepository.save(telemetry);
+    }
+
     public List<Telemetry> getPatientTelemetry(Long patientId) {
         return telemetryRepository.findByPatientIdOrderByCreatedAtDesc(patientId);
     }

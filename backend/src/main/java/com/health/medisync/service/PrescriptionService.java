@@ -77,4 +77,11 @@ public class PrescriptionService {
         }
         return prescriptionRepository.findByPatientIdOrderByCreatedAtDesc(patient.getId());
     }
+
+    public Prescription addPatientMedication(String username, Prescription prescription) {
+        Patient patient = patientRepository.findByUserUsernameIgnoreCase(username)
+                .orElseThrow(() -> new RuntimeException("Patient not found"));
+        prescription.setPatient(patient);
+        return prescriptionRepository.save(prescription);
+    }
 }

@@ -145,6 +145,16 @@ public class PatientController {
         return ResponseEntity.ok(Map.of("message", "Pulse broadcasted live"));
     }
 
+    @PostMapping("/vitals/log")
+    public ResponseEntity<com.health.medisync.model.Telemetry> logVitals(@RequestBody com.health.medisync.model.Telemetry vitals, Authentication authentication) {
+        com.health.medisync.model.Patient patient = patientService.getPatientProfile(authentication.getName());
+        vitals.setPatient(patient);
+        com.health.medisync.model.Telemetry saved = telemetryService.saveTelemetry(authentication.getName(), vitals);
+        // Also broadcast it for real-time UI updates if any
+        telemetryService.broadcastVitalUpdate(authentication.getName(), saved);
+        return ResponseEntity.ok(saved);
+    }
+
     @GetMapping("/medications")
     public ResponseEntity<List<com.health.medisync.model.Prescription>> getMyMedications(Authentication authentication) {
         return ResponseEntity.ok(prescriptionService.getMyPrescriptions(authentication.getName()));

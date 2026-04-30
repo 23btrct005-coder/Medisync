@@ -24,6 +24,11 @@ public class PrescriptionController {
         return ResponseEntity.ok(prescriptionService.getMyPrescriptions(authentication.getName()));
     }
 
+    @PostMapping("/patient/add")
+    public ResponseEntity<Prescription> addMedication(@RequestBody Prescription prescription, Authentication authentication) {
+        return ResponseEntity.ok(prescriptionService.addPatientMedication(authentication.getName(), prescription));
+    }
+
     // Doctor Actions
     @PostMapping("/doctor/patients/{id}")
     public ResponseEntity<Prescription> createPrescription(@PathVariable Long id, 
