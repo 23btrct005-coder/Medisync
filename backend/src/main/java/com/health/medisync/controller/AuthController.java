@@ -86,52 +86,44 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody AuthRequest loginRequest) {
-        String normalizedUsername = loginRequest.getUsername() != null ? loginRequest.getUsername().toLowerCase() : null;
-        System.out.println("DEBUG: Login attempt for " + normalizedUsername);
-
-        // SMART RESOLVER: If username doesn't exist, check if it's an email
-        final String effectiveUsername;
-        if (normalizedUsername != null && normalizedUsername.contains("@") && userRepository.findByUsernameIgnoreCase(normalizedUsername).isEmpty()) {
-            System.out.println("DEBUG: Username not found, attempting email lookup for " + normalizedUsername);
-            effectiveUsername = doctorRepository.findByEmail(normalizedUsername)
-                .map(d -> d.getUser() != null ? d.getUser().getUsername() : normalizedUsername)
-                .orElseGet(() -> patientRepository.findByEmail(normalizedUsername)
-                    .map(p -> p.getUser() != null ? p.getUser().getUsername() : normalizedUsername)
-                    .orElse(normalizedUsername));
-            System.out.println("DEBUG: Resolved effective username: " + effectiveUsername);
-        } else {
-            effectiveUsername = normalizedUsername;
-        }
-        
-        // PRE-AUTH SELF-HEALING: Proactively enable and promote physicians and administrators
-        userRepository.findByUsernameIgnoreCase(effectiveUsername).ifPresent(user -> {
-            boolean isDoctor = doctorRepository.findByUserId(user.getId()).isPresent();
-            boolean isAdmin = hospitalAdminRepository.findByUserId(user.getId()).isPresent();
-            
-            System.out.println("DEBUG: Self-healing check for " + effectiveUsername + ". isDoctor=" + isDoctor + ", isAdmin=" + isAdmin);
-            
-            if (isDoctor || isAdmin) {
-                boolean needsUpdate = false;
-                if (!user.isEnabled()) {
-                    System.out.println("SELF-HEALING (PRE-AUTH): Activating professional account for " + effectiveUsername);
-                    user.setEnabled(true);
-                    needsUpdate = true;
-                }
-                
-                String expectedRole = isDoctor ? "ROLE_DOCTOR" : "ROLE_HOSPITAL_ADMIN";
-                if (!expectedRole.equals(user.getRole())) {
-                    System.out.println("SELF-HEALING (PRE-AUTH): Correcting role for " + normalizedUsername + " to " + expectedRole);
-                    user.setRole(expectedRole);
-                    needsUpdate = true;
-                }
-                
-                if (needsUpdate) {
-                    userRepository.saveAndFlush(user);
-                }
-            }
-        });
-
         try {
+            String normalizedUsername = loginRequest.getUsername() != null ? loginRequest.getUsername().toLowerCase() : null;
+            System.out.println("DEBUG: Login attempt for " + normalizedUsername);
+
+            // SMART RESOLVER: If username doesn't exist, check if it's an email
+            final String effectiveUsername;
+            if (normalizedUsername != null && normalizedUsername.contains("@") && userRepository.findByUsernameIgnoreCase(normalizedUsername).isEmpty()) {
+                System.out.println("DEBUG: Username not found, attempting email lookup for " + normalizedUsername);
+                effectiveUsername = doctorRepository.findByEmail(normalizedUsername)
+                    .map(d -> d.getUser() != null ? d.getUser().getUsername() : normalizedUsername)
+                    .orElseGet(() -> patientRepository.findByEmail(normalizedUsername)
+                        .map(p -> p.getUser() != null ? p.getUser().getUsername() : normalizedUsername)
+                        .orElse(normalizedUsername));
+                System.out.println("DEBUG: Resolved effective username: " + effectiveUsername);
+            } else {
+                effectiveUsername = normalizedUsername;
+            }
+            
+            // PRE-AUTH SELF-HEALING
+            userRepository.findByUsernameIgnoreCase(effectiveUsername).ifPresent(user -> {
+                boolean isDoctor = doctorRepository.findByUserId(user.getId()).isPresent();
+                boolean isAdmin = hospitalAdminRepository.findByUserId(user.getId()).isPresent();
+                
+                if (isDoctor || isAdmin) {
+                    boolean needsUpdate = false;
+                    if (!user.isEnabled()) {
+                        user.setEnabled(true);
+                        needsUpdate = true;
+                    }
+                    String expectedRole = isDoctor ? "ROLE_DOCTOR" : "ROLE_HOSPITAL_ADMIN";
+                    if (!expectedRole.equals(user.getRole())) {
+                        user.setRole(expectedRole);
+                        needsUpdate = true;
+                    }
+                    if (needsUpdate) userRepository.saveAndFlush(user);
+                }
+            });
+
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(effectiveUsername, loginRequest.getPassword()));
 
@@ -141,13 +133,17 @@ public class AuthController {
                     .orElseThrow(() -> new RuntimeException("Error: User not found."));
 
             String jwt = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole());
-            String role = user.getRole();
-            
-            return ResponseEntity.ok(new AuthResponse(jwt, role));
+            return ResponseEntity.ok(new AuthResponse(jwt, user.getRole()));
+
         } catch (org.springframework.security.authentication.DisabledException e) {
-            return ResponseEntity.status(403).body(Map.of("message", "Your account is pending institutional approval. Please contact your hospital administrator."));
+            return ResponseEntity.status(403).body(Map.of("message", "Your account is pending institutional approval."));
         } catch (org.springframework.security.core.AuthenticationException e) {
+            System.out.println("DEBUG: Authentication failed for " + loginRequest.getUsername() + ": " + e.getMessage());
             return ResponseEntity.status(401).body(Map.of("message", "Invalid credentials."));
+        } catch (Exception e) {
+            System.err.println("CRITICAL: Internal Server Error during login for " + loginRequest.getUsername());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("message", "A secure clinical node exception occurred: " + e.getMessage()));
         }
     }
 
