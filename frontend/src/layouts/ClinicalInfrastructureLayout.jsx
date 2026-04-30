@@ -33,7 +33,12 @@ const DoctorLayout = () => {
                 <span className="text-xl font-bold tracking-tight text-slate-800">MEDISYNC</span>
             </div>
             <Activity className="text-primary-600 mr-2 hidden md:block" size={24} />
-            <span className="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight hidden md:block">MEDISYNC <span className="hidden sm:inline-block text-sm font-medium text-primary-600 ml-2 border border-primary-200 bg-primary-50 px-2 py-1 rounded-full">Doctor Portal</span></span>
+            <span className="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight hidden md:block">
+              MEDISYNC 
+              <span className="hidden sm:inline-block text-sm font-medium text-primary-600 ml-2 border border-primary-200 bg-primary-50 px-2 py-1 rounded-full">
+                {user?.role === 'ROLE_HOSPITAL_ADMIN' ? 'Hospital Portal' : 'Doctor Portal'}
+              </span>
+            </span>
         </div>
         <div className="flex items-center space-x-2 sm:space-x-6">
           <div className="hidden sm:flex items-center space-x-3">
