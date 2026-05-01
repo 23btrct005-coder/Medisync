@@ -36,7 +36,11 @@ const EditDoctorProfile = () => {
     offlineConsultationFee: '',
     clinicAddress: '',
     razorpayAccountId: '',
-    appointmentsEnabled: true
+    upiId: '',
+    preferredPaymentMode: 'RAZORPAY',
+    appointmentsEnabled: true,
+    startTime: '09:00',
+    endTime: '17:00'
   });
 
   useEffect(() => {
@@ -59,7 +63,12 @@ const EditDoctorProfile = () => {
         offlineConsultationFee: user.offlineConsultationFee || '',
         clinicAddress: user.clinicAddress || '',
         razorpayAccountId: user.razorpayAccountId || '',
-        appointmentsEnabled: user.appointmentsEnabled !== false // default true
+        upiId: user.upiId || '',
+        preferredPaymentMode: user.preferredPaymentMode || 'RAZORPAY',
+        appointmentsEnabled: user.appointmentsEnabled !== false, // default true
+        // Split timings for easier editing
+        startTime: (user.consultationTimings?.split(' - ')[0]) || '09:00',
+        endTime: (user.consultationTimings?.split(' - ')[1]) || '17:00',
       });
       setPhotoPreview(`${api.defaults.baseURL}/auth/doctor/photo/${user.id}?t=${Date.now()}`);
     }
@@ -261,10 +270,29 @@ const EditDoctorProfile = () => {
     }));
   };
 
+  const handleDayToggle = (day) => {
+    const currentDays = formData.workingDays ? formData.workingDays.split(', ').filter(d => d) : [];
+    const newDays = currentDays.includes(day)
+        ? currentDays.filter(d => d !== day)
+        : [...currentDays, day];
+    
+    // Sort days to keep them in order
+    const dayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const sortedDays = newDays.sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
+    
+    setFormData(prev => ({ ...prev, workingDays: sortedDays.join(', ') }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage({ type: '', text: '' });
+
+    // Format timings for backend
+    const submissionData = {
+        ...formData,
+        consultationTimings: `${formData.startTime} - ${formData.endTime}`
+    };
     
     // VALIDATION: Required Fields for Active Consultations
     const isActive = formData.appointmentsEnabled || formData.onlineConsultation;
@@ -276,11 +304,6 @@ const EditDoctorProfile = () => {
       }
       if (!formData.workingDays) {
         toast.error("Working Days are required.");
-        setLoading(false);
-        return;
-      }
-      if (!formData.consultationTimings) {
-        toast.error("Consultation Timings are required.");
         setLoading(false);
         return;
       }
@@ -300,7 +323,7 @@ const EditDoctorProfile = () => {
     }, 10000);
 
     try {
-      await api.post('doctor/profile/sync', formData);
+      await api.post('doctor/profile/sync', submissionData);
       clearTimeout(timeout);
       await refreshUser();
       setMessage({ type: 'success', text: 'Professional profile updated successfully!' });
@@ -430,14 +453,50 @@ const EditDoctorProfile = () => {
                 Working Days
                 {(formData.appointmentsEnabled || formData.onlineConsultation) && <span className="text-red-500 ml-1 font-bold">*</span>}
               </label>
-              <input type="text" name="workingDays" value={formData.workingDays} onChange={handleChange} className={inputClass} placeholder="e.g. Mon-Fri" />
+              <div className="flex flex-wrap gap-2">
+                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                  <button
+                    key={day}
+                    type="button"
+                    onClick={() => handleDayToggle(day)}
+                    className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                        formData.workingDays?.includes(day)
+                            ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                            : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+                    }`}
+                  >
+                    {day}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="md:col-span-2">
               <label className={labelClass}>
                 Consultation Timings
                 {(formData.appointmentsEnabled || formData.onlineConsultation) && <span className="text-red-500 ml-1 font-bold">*</span>}
               </label>
-              <input type="text" name="consultationTimings" value={formData.consultationTimings} onChange={handleChange} className={inputClass} placeholder="e.g. 10:00 AM - 04:00 PM" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-slate-400 uppercase">Start</span>
+                  <input 
+                    type="time" 
+                    name="startTime" 
+                    value={formData.startTime} 
+                    onChange={handleChange} 
+                    className={`${inputClass} pl-14`} 
+                  />
+                </div>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-slate-400 uppercase">End</span>
+                  <input 
+                    type="time" 
+                    name="endTime" 
+                    value={formData.endTime} 
+                    onChange={handleChange} 
+                    className={`${inputClass} pl-14`} 
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Clinic Map Terminal */}
@@ -459,8 +518,32 @@ const EditDoctorProfile = () => {
             {/* Payment & Specific Fees */}
             <div className="md:col-span-2">
               <p className="text-sm font-bold text-blue-600 mb-4 bg-blue-50 p-3 rounded-xl border border-blue-100 flex items-center gap-2">
-                <BadgeCheck size={18} /> Direct Payment Setup
+                <Wallet size={18} /> Direct Payment & UPI Integration
               </p>
+            </div>
+            <div className="md:col-span-2">
+                <label className={labelClass}>Preferred Payment Channel</label>
+                <div className="grid grid-cols-3 gap-3">
+                    {[
+                        { id: 'RAZORPAY', label: 'Razorpay', icon: CreditCard },
+                        { id: 'UPI', label: 'Direct UPI', icon: Activity },
+                        { id: 'BOTH', label: 'Both / Dual', icon: CheckCircle }
+                    ].map(mode => (
+                        <button
+                            key={mode.id}
+                            type="button"
+                            onClick={() => setFormData(prev => ({ ...prev, preferredPaymentMode: mode.id }))}
+                            className={`flex flex-col items-center gap-2 p-3 rounded-2xl border-2 transition-all ${
+                                formData.preferredPaymentMode === mode.id
+                                    ? 'bg-blue-50 border-blue-600 text-blue-600 shadow-sm'
+                                    : 'bg-white border-slate-100 text-slate-400 grayscale'
+                            }`}
+                        >
+                            <mode.icon size={20} />
+                            <span className="text-[9px] font-black uppercase tracking-widest">{mode.label}</span>
+                        </button>
+                    ))}
+                </div>
             </div>
             <div>
               <label className={labelClass}>Online Consultation Fee (INR)</label>
@@ -494,14 +577,20 @@ const EditDoctorProfile = () => {
                   <Target size={18} className="group-hover/loc:animate-pulse" />
                 </button>
               </div>
-              <p className="text-[10px] text-slate-400 mt-2 ml-1 italic flex items-center gap-1">
-                 <Navigation size={10} /> Use the target icon to automatically fetch your current clinic address via GPS.
-              </p>
             </div>
-            <div className="md:col-span-2">
-                <label className={labelClass}>Razorpay Linked Account ID (for Direct Payments)</label>
-                <input type="text" name="razorpayAccountId" value={formData.razorpayAccountId} onChange={handleChange} className={inputClass} placeholder="acc_XXXXX..." />
-                <p className="text-[10px] text-slate-400 mt-1 ml-1">Payments will be routed directly to this account via Razorpay Route.</p>
+            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label className={labelClass}>Razorpay Linked Account ID</label>
+                    <input type="text" name="razorpayAccountId" value={formData.razorpayAccountId} onChange={handleChange} className={inputClass} placeholder="acc_XXXXX..." />
+                </div>
+                <div>
+                    <label className={labelClass}>Personal UPI ID (VPA)</label>
+                    <input type="text" name="upiId" value={formData.upiId} onChange={handleChange} className={inputClass} placeholder="doctor@okaxis" />
+                </div>
+                <p className="md:col-span-2 text-[10px] text-slate-400 mt-1 ml-1 flex items-center gap-2">
+                    <AlertCircle size={12} />
+                    Payments will be routed based on your preferred channel. Razorpay requires account verification.
+                </p>
             </div>
             <div className="md:col-span-2">
                 <label className="flex items-center gap-3 cursor-pointer p-4 bg-blue-50/50 rounded-2xl border border-blue-100 hover:bg-blue-100/50 transition-colors shadow-sm">

@@ -60,6 +60,7 @@ public class Doctor {
     // Payment Integration
     private String razorpayAccountId; // For Razorpay Route / Connected Accounts
     private String upiId; // For direct peer-to-peer clinical payments
+    private String preferredPaymentMode = "RAZORPAY"; // RAZORPAY, UPI, or BOTH
 
     @Column(name = "profile_picture_url")
     private String profilePictureUrl;
@@ -153,6 +154,9 @@ public class Doctor {
 
     public String getUpiId() { return upiId; }
     public void setUpiId(String upiId) { this.upiId = upiId; }
+
+    public String getPreferredPaymentMode() { return preferredPaymentMode != null ? preferredPaymentMode : "RAZORPAY"; }
+    public void setPreferredPaymentMode(String preferredPaymentMode) { this.preferredPaymentMode = preferredPaymentMode; }
 
     public Boolean getAppointmentsEnabled() { return appointmentsEnabled != null ? appointmentsEnabled : true; }
     public void setAppointmentsEnabled(Boolean appointmentsEnabled) { this.appointmentsEnabled = appointmentsEnabled; }

@@ -236,6 +236,8 @@ public class DoctorService {
         // Direct Payment Details
         if (updates.containsKey("clinicAddress")) doctor.setClinicAddress((String) updates.get("clinicAddress"));
         if (updates.containsKey("razorpayAccountId")) doctor.setRazorpayAccountId((String) updates.get("razorpayAccountId"));
+        if (updates.containsKey("upiId")) doctor.setUpiId((String) updates.get("upiId"));
+        if (updates.containsKey("preferredPaymentMode")) doctor.setPreferredPaymentMode((String) updates.get("preferredPaymentMode"));
         if (updates.containsKey("appointmentsEnabled")) doctor.setAppointmentsEnabled((Boolean) updates.get("appointmentsEnabled"));
         
         if (updates.containsKey("onlineConsultationFee")) {
