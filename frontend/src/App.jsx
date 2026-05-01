@@ -47,6 +47,7 @@ import HospitalPatients from './pages/HospitalPatients';
 import HospitalProfile from './pages/HospitalProfile';
 import HospitalAnalytics from './pages/HospitalAnalytics';
 import VerifyEmail from './pages/VerifyEmail';
+import PatientMessages from './pages/PatientMessages';
 import ClinicalError404 from './pages/ClinicalError404';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -130,7 +131,6 @@ function App() {
 
                 <Route path="/" element={<Landing />} />
                 
-                {/* Patient Routes */}
                 <Route path="/dashboard" element={
                   <ProtectedRoute allowedRole="ROLE_PATIENT">
                     <DashboardLayout />
@@ -140,7 +140,7 @@ function App() {
                   <Route path="wallet" element={<HealthWallet />} />
                   <Route path="records" element={<MedicalHistory />} />
                   <Route path="reports" element={<Reports />} />
-                  <Route path="vitals" element={<ClinicalVitals />} />
+                  <Route path="messages" element={<PatientMessages />} />
                   <Route path="medications" element={<MedicationAdherence />} />
                   <Route path="security" element={<SecurityLogs />} />
                   <Route path="sessions" element={<Sessions />} />
