@@ -93,6 +93,13 @@ public class Doctor {
     private String joiningDate;
     private String salary;
     private String contractType; // e.g. PERMANENT, VISITING, INTERN
+    private Double revenueSharePercentage;
+
+    // Permissions
+    private boolean canPrescribe = true;
+    private boolean canEditPatientData = false;
+    private boolean canAccessReports = true;
+    private boolean canManageAppointments = true;
 
     // Getters & Setters
     public Long getId() { return id; }
@@ -259,4 +266,19 @@ public class Doctor {
 
     public String getContractType() { return contractType; }
     public void setContractType(String contractType) { this.contractType = contractType; }
+
+    public Double getRevenueSharePercentage() { return revenueSharePercentage; }
+    public void setRevenueSharePercentage(Double revenueSharePercentage) { this.revenueSharePercentage = revenueSharePercentage; }
+
+    public boolean isCanPrescribe() { return canPrescribe; }
+    public void setCanPrescribe(boolean canPrescribe) { this.canPrescribe = canPrescribe; }
+
+    public boolean isCanEditPatientData() { return canEditPatientData; }
+    public void setCanEditPatientData(boolean canEditPatientData) { this.canEditPatientData = canEditPatientData; }
+
+    public boolean isCanAccessReports() { return canAccessReports; }
+    public void setCanAccessReports(boolean canAccessReports) { this.canAccessReports = canAccessReports; }
+
+    public boolean isCanManageAppointments() { return canManageAppointments; }
+    public void setCanManageAppointments(boolean canManageAppointments) { this.canManageAppointments = canManageAppointments; }
 }

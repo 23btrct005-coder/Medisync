@@ -61,6 +61,11 @@ public class DoctorDTO {
     private String contractType;
     private String gender;
     private String dateOfBirth;
+    private Double revenueSharePercentage;
+    private boolean canPrescribe;
+    private boolean canEditPatientData;
+    private boolean canAccessReports;
+    private boolean canManageAppointments;
 
     // Constructors
     public DoctorDTO() {}
@@ -124,6 +129,11 @@ public class DoctorDTO {
         this.razorpayAccountId = d.getRazorpayAccountId();
         this.gender = d.getGender();
         this.dateOfBirth = d.getDateOfBirth();
+        this.revenueSharePercentage = d.getRevenueSharePercentage();
+        this.canPrescribe = d.isCanPrescribe();
+        this.canEditPatientData = d.isCanEditPatientData();
+        this.canAccessReports = d.isCanAccessReports();
+        this.canManageAppointments = d.isCanManageAppointments();
     }
 
     // Getters and Setters
@@ -264,4 +274,19 @@ public class DoctorDTO {
 
     public String getDateOfBirth() { return dateOfBirth; }
     public void setDateOfBirth(String dateOfBirth) { this.dateOfBirth = dateOfBirth; }
+
+    public Double getRevenueSharePercentage() { return revenueSharePercentage; }
+    public void setRevenueSharePercentage(Double revenueSharePercentage) { this.revenueSharePercentage = revenueSharePercentage; }
+
+    public boolean isCanPrescribe() { return canPrescribe; }
+    public void setCanPrescribe(boolean canPrescribe) { this.canPrescribe = canPrescribe; }
+
+    public boolean isCanEditPatientData() { return canEditPatientData; }
+    public void setCanEditPatientData(boolean canEditPatientData) { this.canEditPatientData = canEditPatientData; }
+
+    public boolean isCanAccessReports() { return canAccessReports; }
+    public void setCanAccessReports(boolean canAccessReports) { this.canAccessReports = canAccessReports; }
+
+    public boolean isCanManageAppointments() { return canManageAppointments; }
+    public void setCanManageAppointments(boolean canManageAppointments) { this.canManageAppointments = canManageAppointments; }
 }

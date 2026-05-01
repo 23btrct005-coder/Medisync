@@ -39,17 +39,31 @@ const Register = () => {
     specialization: '',
     college: '',
     additionalCertifications: '',
+    // Clinical Depth
+    subSpecialties: '',
+    proceduresHandled: '',
+    treatmentFocus: '',
+    languagesSpoken: '',
+    publications: '',
     // License
     medicalLicenseNumber: '',
+    medicalCouncil: '',
+    licenseExpiryDate: '',
+    registrationYear: '',
     // Work Details
     hospital: '', // ID
     hospitalName: '', // For 'other'
     yearsOfExperience: '',
-    consultationFee: '',
+    consultationFee: '', // Combined/Legacy
+    onlineConsultationFee: '',
+    offlineConsultationFee: '',
+    clinicAddress: '',
     upiId: '',
     // Availability
     workingDays: '',
     consultationTimings: '',
+    slotDuration: '15',
+    maxPatientsPerDay: '30',
     // Institutional (Shared/Legacy)
     licenseCode: '',
     hospitalType: '',
@@ -76,6 +90,7 @@ const Register = () => {
   const [profilePicture, setProfilePicture] = useState(null);
   const [hospitalLogo, setHospitalLogo] = useState(null);
   const [registrationCertificate, setRegistrationCertificate] = useState(null);
+  const [licenseDocument, setLicenseDocument] = useState(null);
 
   // Verification states
   const [otpSent, setOtpSent] = useState(false);
@@ -280,6 +295,10 @@ const Register = () => {
 
       if (registrationCertificate && role === 'ROLE_HOSPITAL_ADMIN') {
         formDataToSend.append('registrationCertificate', registrationCertificate);
+      }
+
+      if (licenseDocument && role === 'ROLE_DOCTOR') {
+        formDataToSend.append('licenseDocument', licenseDocument);
       }
 
       await api.post(endpoint, formDataToSend, {
@@ -521,19 +540,86 @@ const Register = () => {
                   <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
                     <ShieldCheck size={16} /> 5. License & Verification
                   </h3>
-                  <div>
-                    <label className={labelClass}>Medical License Number <span className="text-red-500">*</span></label>
-                    <input type="text" name="medicalLicenseNumber" required value={formData.medicalLicenseNumber} onChange={handleChange}
-                      className={inputClass} placeholder="e.g. MCI-12345678" />
-                    <p className="text-[9px] text-slate-400 mt-2 ml-1 font-medium italic">Issued by MCI / State Medical Council</p>
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className={labelClass}>Medical Council <span className="text-red-500">*</span></label>
+                            <input type="text" name="medicalCouncil" required value={formData.medicalCouncil} onChange={handleChange}
+                                className={inputClass} placeholder="e.g. Karnataka Medical Council" />
+                        </div>
+                        <div>
+                            <label className={labelClass}>License Expiry Date <span className="text-red-500">*</span></label>
+                            <input type="date" name="licenseExpiryDate" required value={formData.licenseExpiryDate} onChange={handleChange}
+                                className={inputClass} />
+                        </div>
+                        <div>
+                            <label className={labelClass}>Registration Year <span className="text-red-500">*</span></label>
+                            <input type="number" name="registrationYear" required value={formData.registrationYear} onChange={handleChange}
+                                className={inputClass} placeholder="e.g. 2015" />
+                        </div>
+                        <div>
+                            <label className={labelClass}>License Number <span className="text-red-500">*</span></label>
+                            <input type="text" name="medicalLicenseNumber" required value={formData.medicalLicenseNumber} onChange={handleChange}
+                                className={inputClass} placeholder="e.g. MCI-12345678" />
+                        </div>
+                    </div>
+                    <div>
+                        <label className={labelClass}>License Document (PDF/JPG) <span className="text-red-500">*</span></label>
+                        <input 
+                            type="file" required
+                            onChange={(e) => setLicenseDocument(e.target.files[0])}
+                            className="text-[10px] block w-full text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                            accept=".pdf,image/*"
+                        />
+                        <p className="text-[9px] text-slate-400 mt-2 ml-1 font-medium italic">Upload a clear scan of your medical license for institutional verification.</p>
+                    </div>
                   </div>
                 </div>
               )}
-              {/* Step 6: Work Details (Doctor Only) */}
+
+              {/* Step 6: Clinical Expertise Depth (Doctor Only) [NEW] */}
+              {role === 'ROLE_DOCTOR' && (
+                <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-[350ms]">
+                  <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
+                    <Activity size={16} /> 6. Clinical Expertise Depth
+                  </h3>
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className={labelClass}>Sub-Specialties</label>
+                            <input type="text" name="subSpecialties" value={formData.subSpecialties} onChange={handleChange}
+                                className={inputClass} placeholder="e.g. Diabetes, Hypertension" />
+                        </div>
+                        <div>
+                            <label className={labelClass}>Languages Spoken</label>
+                            <input type="text" name="languagesSpoken" value={formData.languagesSpoken} onChange={handleChange}
+                                className={inputClass} placeholder="e.g. English, Hindi, Kannada" />
+                        </div>
+                    </div>
+                    <div>
+                        <label className={labelClass}>Procedures Handled</label>
+                        <textarea name="proceduresHandled" value={formData.proceduresHandled} onChange={handleChange}
+                            className={`${inputClass} min-h-[80px]`} placeholder="List clinical procedures you are certified for..." />
+                    </div>
+                    <div>
+                        <label className={labelClass}>Treatment Focus Areas</label>
+                        <textarea name="treatmentFocus" value={formData.treatmentFocus} onChange={handleChange}
+                            className={`${inputClass} min-h-[80px]`} placeholder="e.g. Preventive Cardiology, Robotic Surgery..." />
+                    </div>
+                    <div>
+                        <label className={labelClass}>Research & Publications</label>
+                        <textarea name="publications" value={formData.publications} onChange={handleChange}
+                            className={`${inputClass} min-h-[80px]`} placeholder="List your medical research, papers, or publications..." />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 7: Work Details (Doctor Only) */}
               {role === 'ROLE_DOCTOR' && (
                 <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-400">
                   <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
-                    <Building2 size={16} /> 6. Work Details
+                    <Building2 size={16} /> 7. Work Details
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -551,13 +637,25 @@ const Register = () => {
                         <input type="number" name="yearsOfExperience" value={formData.yearsOfExperience} onChange={handleChange}
                           className={inputClass} placeholder="e.g. 10" />
                     </div>
+                  </div>
+                  <div>
+                        <label className={labelClass}>Clinic / Office Address (For Offline)</label>
+                        <input type="text" name="clinicAddress" value={formData.clinicAddress} onChange={handleChange}
+                          className={inputClass} placeholder="e.g. Room 204, Alpha Plaza, MG Road" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label className={labelClass}>Consultation Fee (₹)</label>
-                        <input type="number" name="consultationFee" value={formData.consultationFee} onChange={handleChange}
+                        <label className={labelClass}>Online Consultation Fee (₹)</label>
+                        <input type="number" name="onlineConsultationFee" value={formData.onlineConsultationFee} onChange={handleChange}
                           className={inputClass} placeholder="e.g. 500" />
                     </div>
                     <div>
-                        <label className={labelClass}>UPI ID (for payments)</label>
+                        <label className={labelClass}>Offline Consultation Fee (₹)</label>
+                        <input type="number" name="offlineConsultationFee" value={formData.offlineConsultationFee} onChange={handleChange}
+                          className={inputClass} placeholder="e.g. 800" />
+                    </div>
+                    <div className="md:col-span-2">
+                        <label className={labelClass}>UPI ID (for direct payments)</label>
                         <input type="text" name="upiId" value={formData.upiId} onChange={handleChange}
                           className={inputClass} placeholder="e.g. doctor@upi" />
                     </div>
@@ -565,11 +663,11 @@ const Register = () => {
                 </div>
               )}
 
-              {/* Step 7: Availability (Doctor Only) */}
+              {/* Step 8: Availability (Doctor Only) */}
               {role === 'ROLE_DOCTOR' && (
                 <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
                   <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
-                    <Activity size={16} /> 7. Availability
+                    <Activity size={16} /> 8. Advanced Availability
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -581,6 +679,20 @@ const Register = () => {
                         <label className={labelClass}>Consultation Timings</label>
                         <input type="text" name="consultationTimings" value={formData.consultationTimings} onChange={handleChange}
                           className={inputClass} placeholder="e.g. 9:00 AM – 6:00 PM" />
+                    </div>
+                    <div>
+                        <label className={labelClass}>Slot Duration (Minutes)</label>
+                        <select name="slotDuration" value={formData.slotDuration} onChange={handleChange} className={inputClass}>
+                            <option value="15">15 Minutes</option>
+                            <option value="30">30 Minutes</option>
+                            <option value="45">45 Minutes</option>
+                            <option value="60">60 Minutes</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className={labelClass}>Max Patients Per Day</label>
+                        <input type="number" name="maxPatientsPerDay" value={formData.maxPatientsPerDay} onChange={handleChange}
+                          className={inputClass} placeholder="e.g. 30" />
                     </div>
                   </div>
                 </div>
@@ -642,10 +754,10 @@ const Register = () => {
                 </div>
               )}
 
-              {/* Step 8/4: Account Security (Universal) */}
+              {/* Step 9/4: Account Security (Universal) */}
               <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-700">
                 <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
-                  <Lock size={16} /> {role === 'ROLE_DOCTOR' ? '8. Account Security' : '4. Account Security'}
+                  <Lock size={16} /> {role === 'ROLE_DOCTOR' ? '9. Account Security' : '4. Account Security'}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="relative">

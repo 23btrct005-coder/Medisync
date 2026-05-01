@@ -175,7 +175,8 @@ public class AuthController {
     @Transactional
     public ResponseEntity<?> registerDoctor(
             @RequestPart("userData") String userDataJson,
-            @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture) throws IOException {
+            @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture,
+            @RequestPart(value = "licenseDocument", required = false) MultipartFile licenseDocument) throws IOException {
         
         ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> request = mapper.readValue(userDataJson, Map.class);
@@ -289,7 +290,22 @@ public class AuthController {
         doctor.setMedicalDegree(request.get("medicalDegree") != null ? String.valueOf(request.get("medicalDegree")) : null);
         doctor.setAdditionalCertifications(request.get("additionalCertifications") != null ? String.valueOf(request.get("additionalCertifications")) : null);
         doctor.setCollege(request.get("college") != null ? String.valueOf(request.get("college")) : null);
+        
+        // Clinical Depth
+        doctor.setSubSpecialties(request.get("subSpecialties") != null ? String.valueOf(request.get("subSpecialties")) : null);
+        doctor.setProceduresHandled(request.get("proceduresHandled") != null ? String.valueOf(request.get("proceduresHandled")) : null);
+        doctor.setTreatmentFocus(request.get("treatmentFocus") != null ? String.valueOf(request.get("treatmentFocus")) : null);
+        doctor.setLanguagesSpoken(request.get("languagesSpoken") != null ? String.valueOf(request.get("languagesSpoken")) : null);
+        doctor.setPublications(request.get("publications") != null ? String.valueOf(request.get("publications")) : null);
+
+        // License & Verification
         doctor.setMedicalLicenseNumber(request.get("medicalLicenseNumber") != null ? String.valueOf(request.get("medicalLicenseNumber")) : null);
+        doctor.setMedicalCouncil(request.get("medicalCouncil") != null ? String.valueOf(request.get("medicalCouncil")) : null);
+        doctor.setLicenseExpiryDate(request.get("licenseExpiryDate") != null ? String.valueOf(request.get("licenseExpiryDate")) : null);
+        if (request.get("registrationYear") != null && !String.valueOf(request.get("registrationYear")).isEmpty()) {
+            try { doctor.setRegistrationYear(Integer.parseInt(String.valueOf(request.get("registrationYear")))); }
+            catch (NumberFormatException ignored) {}
+        }
         
         // Institutional Linkage
         String hospitalIdStr = request.get("hospital") != null ? String.valueOf(request.get("hospital")) : null;
@@ -301,9 +317,46 @@ public class AuthController {
         }
         doctor.setHospital(request.get("hospitalName") != null ? String.valueOf(request.get("hospitalName")) : hospitalIdStr);
         
+        doctor.setEmployeeId(request.get("employeeId") != null ? String.valueOf(request.get("employeeId")) : null);
+        doctor.setOpdRoomNumber(request.get("opdRoomNumber") != null ? String.valueOf(request.get("opdRoomNumber")) : null);
+        doctor.setSalary(request.get("salary") != null ? String.valueOf(request.get("salary")) : null);
+        doctor.setContractType(request.get("contractType") != null ? String.valueOf(request.get("contractType")) : "PERMANENT");
+        
+        if (request.get("revenueSharePercentage") != null && !String.valueOf(request.get("revenueSharePercentage")).isEmpty()) {
+            try { doctor.setRevenueSharePercentage(Double.parseDouble(String.valueOf(request.get("revenueSharePercentage")))); }
+            catch (NumberFormatException ignored) {}
+        }
+
+        // Permissions
+        if (request.containsKey("canPrescribe")) doctor.setCanPrescribe(Boolean.parseBoolean(String.valueOf(request.get("canPrescribe"))));
+        if (request.containsKey("canEditPatientData")) doctor.setCanEditPatientData(Boolean.parseBoolean(String.valueOf(request.get("canEditPatientData"))));
+        if (request.containsKey("canAccessReports")) doctor.setCanAccessReports(Boolean.parseBoolean(String.valueOf(request.get("canAccessReports"))));
+        if (request.containsKey("canManageAppointments")) doctor.setCanManageAppointments(Boolean.parseBoolean(String.valueOf(request.get("canManageAppointments"))));
+
         doctor.setConsultationFee(request.get("consultationFee") != null ? String.valueOf(request.get("consultationFee")) : null);
+        if (request.get("onlineConsultationFee") != null && !String.valueOf(request.get("onlineConsultationFee")).isEmpty()) {
+            try { doctor.setOnlineConsultationFee(Double.parseDouble(String.valueOf(request.get("onlineConsultationFee")))); }
+            catch (NumberFormatException ignored) {}
+        }
+        if (request.get("offlineConsultationFee") != null && !String.valueOf(request.get("offlineConsultationFee")).isEmpty()) {
+            try { doctor.setOfflineConsultationFee(Double.parseDouble(String.valueOf(request.get("offlineConsultationFee")))); }
+            catch (NumberFormatException ignored) {}
+        }
+        doctor.setClinicAddress(request.get("clinicAddress") != null ? String.valueOf(request.get("clinicAddress")) : null);
+
         doctor.setWorkingDays(request.get("workingDays") != null ? String.valueOf(request.get("workingDays")) : null);
         doctor.setConsultationTimings(request.get("consultationTimings") != null ? String.valueOf(request.get("consultationTimings")) : null);
+        doctor.setBreakTimings(request.get("breakTimings") != null ? String.valueOf(request.get("breakTimings")) : null);
+        
+        if (request.get("slotDuration") != null && !String.valueOf(request.get("slotDuration")).isEmpty()) {
+            try { doctor.setSlotDuration(Integer.parseInt(String.valueOf(request.get("slotDuration")))); }
+            catch (NumberFormatException ignored) {}
+        }
+        if (request.get("maxPatientsPerDay") != null && !String.valueOf(request.get("maxPatientsPerDay")).isEmpty()) {
+            try { doctor.setMaxPatientsPerDay(Integer.parseInt(String.valueOf(request.get("maxPatientsPerDay")))); }
+            catch (NumberFormatException ignored) {}
+        }
+
         doctor.setRazorpayAccountId(request.get("razorpayAccountId") != null ? String.valueOf(request.get("razorpayAccountId")) : null);
         doctor.setUpiId(request.get("upiId") != null ? String.valueOf(request.get("upiId")) : null);
         
@@ -322,6 +375,11 @@ public class AuthController {
         if (profilePicture != null && !profilePicture.isEmpty()) {
             String photoUrl = supabaseStorageService.uploadFile(profilePicture);
             if (photoUrl != null) doctor.setProfilePictureUrl(photoUrl);
+        }
+
+        if (licenseDocument != null && !licenseDocument.isEmpty()) {
+            String docUrl = supabaseStorageService.uploadFile(licenseDocument);
+            if (docUrl != null) doctor.setLicenseDocumentUrl(docUrl);
         }
 
         System.out.println("DEBUG: Saving doctor profile for user " + finalUsername + " linked to hospital " + (doctor.getHospitalEntity() != null ? doctor.getHospitalEntity().getName() : "NONE"));

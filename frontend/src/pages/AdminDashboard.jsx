@@ -193,12 +193,16 @@ const AdminDashboard = () => {
                       <p className="font-bold text-slate-900">{selectedItem.specialization}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Medical Degree</p>
-                      <p className="font-bold text-slate-900">{selectedItem.medicalDegree}</p>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Medical Council</p>
+                      <p className="font-bold text-slate-900">{selectedItem.medicalCouncil || "N/A"}</p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">License Number</p>
                       <p className="font-bold text-primary-600 font-mono">{selectedItem.medicalLicenseNumber}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">License Expiry</p>
+                      <p className="font-bold text-red-500 font-mono">{selectedItem.licenseExpiryDate || "N/A"}</p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Experience</p>
@@ -208,9 +212,41 @@ const AdminDashboard = () => {
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gender / DOB</p>
                       <p className="font-bold text-slate-900">{selectedItem.gender} | {selectedItem.dateOfBirth}</p>
                     </div>
+                  </div>
+
+                  <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100 grid grid-cols-2 gap-6">
                     <div className="space-y-1">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Consultation Fee</p>
-                      <p className="font-bold text-emerald-600">₹{selectedItem.consultationFee}</p>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Employee ID / OPD</p>
+                      <p className="font-bold text-slate-900">{selectedItem.employeeId || "N/A"} | {selectedItem.opdRoomNumber || "N/A"}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Role / Contract</p>
+                      <p className="font-bold text-slate-900">{selectedItem.contractType}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Monthly Salary</p>
+                      <p className="font-bold text-emerald-600">₹{selectedItem.salary || "0"}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Revenue Share</p>
+                      <p className="font-bold text-emerald-600">{selectedItem.revenueSharePercentage || "0"}%</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Permissions Matrix</p>
+                    <div className="grid grid-cols-2 gap-2">
+                        {[
+                            { key: 'canPrescribe', label: 'Prescribe' },
+                            { key: 'canEditPatientData', label: 'Edit Data' },
+                            { key: 'canAccessReports', label: 'Reports' },
+                            { key: 'canManageAppointments', label: 'Schedule' },
+                        ].map(perm => (
+                            <div key={perm.key} className={`px-4 py-2 rounded-xl border flex items-center gap-2 ${selectedItem[perm.key] ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-slate-50 border-slate-100 text-slate-400'}`}>
+                                {selectedItem[perm.key] ? <CheckCircle size={12} /> : <XCircle size={12} />}
+                                <span className="text-[10px] font-black uppercase tracking-tight">{perm.label}</span>
+                            </div>
+                        ))}
                     </div>
                   </div>
 

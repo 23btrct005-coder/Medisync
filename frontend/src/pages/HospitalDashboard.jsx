@@ -19,17 +19,27 @@ const HospitalDashboard = () => {
         alternatePhone: '',
         specialization: '', 
         medicalLicenseNumber: '', 
+        medicalCouncil: '',
+        licenseExpiryDate: '',
         medicalDegree: '',
         yearsOfExperience: '',
         consultationFee: '',
-        workingDaysArray: [], // New structured format
+        workingDaysArray: [],
         startTime: '09:00',
         endTime: '17:00',
+        breakTimings: '13:00 - 14:00',
+        maxPatientsPerDay: '30',
         college: '',
         additionalCertifications: '',
-        onlineConsultation: false,
-        razorpayAccountId: '',
-        upiId: '',
+        employeeId: '',
+        opdRoomNumber: '',
+        salary: '',
+        contractType: 'PERMANENT',
+        revenueSharePercentage: '',
+        canPrescribe: true,
+        canEditPatientData: false,
+        canAccessReports: true,
+        canManageAppointments: true,
         age: '',
         password: 'Password@123' 
     });
@@ -148,17 +158,27 @@ const HospitalDashboard = () => {
                 alternatePhone: '',
                 specialization: '', 
                 medicalLicenseNumber: '', 
+                medicalCouncil: '',
+                licenseExpiryDate: '',
                 medicalDegree: '',
                 yearsOfExperience: '',
                 consultationFee: '',
                 workingDaysArray: [],
                 startTime: '09:00',
                 endTime: '17:00',
+                breakTimings: '13:00 - 14:00',
+                maxPatientsPerDay: '30',
                 college: '',
                 additionalCertifications: '',
-                onlineConsultation: false,
-                razorpayAccountId: '',
-                upiId: '',
+                employeeId: '',
+                opdRoomNumber: '',
+                salary: '',
+                contractType: 'PERMANENT',
+                revenueSharePercentage: '',
+                canPrescribe: true,
+                canEditPatientData: false,
+                canAccessReports: true,
+                canManageAppointments: true,
                 age: '',
                 password: 'Password@123' 
             });
@@ -296,6 +316,102 @@ const HospitalDashboard = () => {
                         <h3 className="text-white text-xl font-black uppercase tracking-tight italic mb-2">Clinical <span className="not-italic text-slate-900">Reach</span></h3>
                         <p className="text-white/80 text-[10px] font-black uppercase tracking-widest">{stats?.totalPatientsInstitutional} Active Registrations</p>
                     </div>
+                </div>
+            </div>
+
+            {/* Institutional Staff Roster */}
+            <div className="bg-white rounded-[3.5rem] border border-slate-100 shadow-xl overflow-hidden mb-12">
+                <div className="p-10 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-slate-50/50">
+                    <div>
+                        <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Institutional <span className="not-italic text-primary">Staff Roster</span></h3>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Personnel management and clinical authorization</p>
+                    </div>
+                    <div className="flex bg-white border border-slate-200 rounded-2xl px-4 py-2 focus-within:ring-2 ring-primary/20 transition-all">
+                        <Search size={16} className="text-slate-400 mt-1 mr-2" />
+                        <input 
+                            type="text" 
+                            placeholder="Search personnel..."
+                            className="border-none text-xs p-0 focus:ring-0 placeholder:text-slate-300 w-48"
+                        />
+                    </div>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-slate-50/30">
+                                <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Personnel</th>
+                                <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Specialization</th>
+                                <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Employee ID</th>
+                                <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">OPD Room</th>
+                                <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Role</th>
+                                <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Permissions</th>
+                                <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-50">
+                            {doctors.length > 0 ? doctors.map((doctor) => (
+                                <tr key={doctor.id} className="hover:bg-slate-50/50 transition-colors group">
+                                    <td className="p-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:scale-110 transition-transform overflow-hidden">
+                                                {doctor.profilePictureUrl ? (
+                                                    <img src={doctor.profilePictureUrl} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <Users size={20} />
+                                                )}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-black text-slate-800 tracking-tight italic">{doctor.name}</p>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase">{doctor.email}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="p-6">
+                                        <span className="px-3 py-1 bg-primary/5 text-primary text-[9px] font-black uppercase tracking-widest rounded-lg">
+                                            {doctor.specialization}
+                                        </span>
+                                    </td>
+                                    <td className="p-6">
+                                        <span className="font-mono text-xs font-bold text-slate-600">{doctor.employeeId || 'ST-999'}</span>
+                                    </td>
+                                    <td className="p-6 text-xs font-bold text-slate-600">{doctor.opdRoomNumber || 'N/A'}</td>
+                                    <td className="p-6">
+                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{doctor.contractType || 'PERMANENT'}</span>
+                                    </td>
+                                    <td className="p-6">
+                                        <div className="flex gap-1.5">
+                                            {doctor.canPrescribe && <div title="Prescribe" className="w-2 h-2 rounded-full bg-emerald-500" />}
+                                            {doctor.canEditPatientData && <div title="Edit Data" className="w-2 h-2 rounded-full bg-blue-500" />}
+                                            {doctor.canAccessReports && <div title="Reports" className="w-2 h-2 rounded-full bg-indigo-500" />}
+                                            {doctor.canManageAppointments && <div title="Appointments" className="w-2 h-2 rounded-full bg-amber-500" />}
+                                        </div>
+                                    </td>
+                                    <td className="p-6">
+                                        <div className="flex items-center gap-2">
+                                            {doctor.approved ? (
+                                                <span className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-widest">
+                                                    <ClipboardCheck size={12} /> Active
+                                                </span>
+                                            ) : (
+                                                <button 
+                                                    onClick={() => approveDoctor(doctor.id)}
+                                                    className="px-3 py-1 bg-amber-50 text-amber-600 border border-amber-100 rounded-full text-[9px] font-black uppercase tracking-widest hover:bg-amber-100 transition-all"
+                                                >
+                                                    Verify Now
+                                                </button>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            )) : (
+                                <tr>
+                                    <td colSpan="7" className="p-12 text-center">
+                                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">No personnel onboarded to this institutional node.</p>
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             </div>
             
@@ -466,6 +582,27 @@ const HospitalDashboard = () => {
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Medical Council</label>
+                                            <input 
+                                                type="text" required
+                                                value={onboardData.medicalCouncil}
+                                                onChange={(e) => setOnboardData({...onboardData, medicalCouncil: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                                placeholder="National Medical Commission"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">License Expiry</label>
+                                            <input 
+                                                type="date" required
+                                                value={onboardData.licenseExpiryDate}
+                                                onChange={(e) => setOnboardData({...onboardData, licenseExpiryDate: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
                                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">License Number</label>
                                             <input 
                                                 type="text" required
@@ -488,9 +625,56 @@ const HospitalDashboard = () => {
                                     </div>
                                 </div>
 
-                                {/* Section 3: Availability & Logistics */}
+                                {/* Section 3: Hospital Mapping & Work Schedule */}
                                 <div className="space-y-4">
-                                    <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] border-b border-primary/10 pb-2">3. Availability & Logistics</h4>
+                                    <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] border-b border-primary/10 pb-2">3. Institutional Mapping</h4>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Employee ID</label>
+                                            <input 
+                                                type="text" required
+                                                value={onboardData.employeeId}
+                                                onChange={(e) => setOnboardData({...onboardData, employeeId: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                                placeholder="ST-2026-001"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">OPD Room No.</label>
+                                            <input 
+                                                type="text" required
+                                                value={onboardData.opdRoomNumber}
+                                                onChange={(e) => setOnboardData({...onboardData, opdRoomNumber: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                                placeholder="OPD-204"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Role Type</label>
+                                            <select 
+                                                value={onboardData.contractType}
+                                                onChange={(e) => setOnboardData({...onboardData, contractType: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 appearance-none"
+                                            >
+                                                <option value="PERMANENT">Full-time Employee</option>
+                                                <option value="VISITING">Visiting Consultant</option>
+                                                <option value="RESIDENT">Resident Physician</option>
+                                                <option value="INTERN">Medical Intern</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Max Patients/Day</label>
+                                            <input 
+                                                type="number" required
+                                                value={onboardData.maxPatientsPerDay}
+                                                onChange={(e) => setOnboardData({...onboardData, maxPatientsPerDay: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                                placeholder="30"
+                                            />
+                                        </div>
+                                    </div>
                                     <div>
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Working Days</label>
                                         <div className="flex flex-wrap gap-2">
@@ -510,7 +694,7 @@ const HospitalDashboard = () => {
                                             ))}
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-3 gap-4">
                                         <div>
                                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Shift Starts</label>
                                             <input 
@@ -529,70 +713,76 @@ const HospitalDashboard = () => {
                                                 className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
                                             />
                                         </div>
-                                    </div>
-                                    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
-                                        <div className="space-y-0.5">
-                                            <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest">Enable Online Consultation</p>
-                                            <p className="text-[9px] font-medium text-slate-400 uppercase">Allow remote video appointments</p>
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Break Timings</label>
+                                            <input 
+                                                type="text" required
+                                                value={onboardData.breakTimings}
+                                                onChange={(e) => setOnboardData({...onboardData, breakTimings: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                                placeholder="13:00 - 14:00"
+                                            />
                                         </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => setOnboardData(prev => ({...prev, onlineConsultation: !prev.onlineConsultation}))}
-                                            className={`w-12 h-6 rounded-full relative transition-all ${onboardData.onlineConsultation ? 'bg-primary' : 'bg-slate-200'}`}
-                                        >
-                                            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${onboardData.onlineConsultation ? 'right-1' : 'left-1'}`} />
-                                        </button>
                                     </div>
                                 </div>
 
-                                {/* Section 4: Financial & Security */}
+                                {/* Section 4: Financial Governance */}
                                 <div className="space-y-4">
-                                    <div className="flex items-center justify-between border-b border-primary/10 pb-2">
-                                        <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">4. Financial & Security</h4>
-                                        <button 
-                                            type="button"
-                                            onClick={() => { setShowOnboardModal(false); navigate('/hospital-dashboard/appointments'); }}
-                                            className="text-[9px] font-black text-primary hover:underline uppercase tracking-widest flex items-center gap-1"
-                                        >
-                                            <Calendar size={10} /> View Ledger
-                                        </button>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] border-b border-primary/10 pb-2">4. Financial Governance</h4>
+                                    <div className="grid grid-cols-3 gap-4">
                                         <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 flex items-center justify-between">
-                                                Consultation Fee (₹)
-                                            </label>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Monthly Salary (₹)</label>
+                                            <input 
+                                                type="number" required
+                                                value={onboardData.salary}
+                                                onChange={(e) => setOnboardData({...onboardData, salary: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                                placeholder="150000"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Revenue Share (%)</label>
+                                            <input 
+                                                type="number"
+                                                value={onboardData.revenueSharePercentage}
+                                                onChange={(e) => setOnboardData({...onboardData, revenueSharePercentage: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                                placeholder="15"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">OPD Fee (₹)</label>
                                             <input 
                                                 type="number" required
                                                 value={onboardData.consultationFee}
                                                 onChange={(e) => setOnboardData({...onboardData, consultationFee: e.target.value})}
                                                 className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                                placeholder="1500"
+                                                placeholder="500"
                                             />
                                         </div>
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 flex items-center justify-between">
-                                                Razorpay Account ID
-                                                <a href="https://dashboard.razorpay.com/" target="_blank" rel="noreferrer" className="text-[8px] text-primary hover:underline font-black">OPEN DASHBOARD</a>
+                                    </div>
+                                </div>
+
+                                {/* Section 5: Permissions Matrix (RBAC) */}
+                                <div className="space-y-4">
+                                    <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] border-b border-primary/10 pb-2">5. Permissions Matrix</h4>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {[
+                                            { key: 'canPrescribe', label: 'Prescribe Medication' },
+                                            { key: 'canEditPatientData', label: 'Edit Patient Data' },
+                                            { key: 'canAccessReports', label: 'Access Medical Reports' },
+                                            { key: 'canManageAppointments', label: 'Modify Schedule' },
+                                        ].map(perm => (
+                                            <label key={perm.key} className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl cursor-pointer hover:bg-slate-100 transition-colors">
+                                                <input 
+                                                    type="checkbox"
+                                                    checked={onboardData[perm.key]}
+                                                    onChange={(e) => setOnboardData({...onboardData, [perm.key]: e.target.checked})}
+                                                    className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/20"
+                                                />
+                                                <span className="text-[10px] font-bold text-slate-700 uppercase tracking-tight">{perm.label}</span>
                                             </label>
-                                            <input 
-                                                type="text"
-                                                value={onboardData.razorpayAccountId}
-                                                onChange={(e) => setOnboardData({...onboardData, razorpayAccountId: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 font-mono"
-                                                placeholder="acc_... (Optional)"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">UPI ID</label>
-                                            <input 
-                                                type="text"
-                                                value={onboardData.upiId}
-                                                onChange={(e) => setOnboardData({...onboardData, upiId: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 font-mono"
-                                                placeholder="doctor@okaxis (Optional)"
-                                            />
-                                        </div>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
