@@ -17,11 +17,13 @@ public class AuditLog {
     private String performerName;
 
     @Column(nullable = false)
-    private String action; // ACCESS_VIEW, RECORD_CREATE, REPORT_ANALYZE, etc.
+    private String action; // ACCESS_VIEW, RECORD_CREATE, REPORT_ANALYZE, INFRA_UPDATE, etc.
 
-    @Column(nullable = false)
-    private Long targetPatientId;
+    private Long targetPatientId; // Nullable for institutional actions
 
+    private Long hospitalId; // To scope logs to a specific institution
+
+    @Column(columnDefinition = "TEXT")
     private String details;
 
     private String ipAddress;
@@ -46,6 +48,8 @@ public class AuditLog {
     public void setTargetPatientId(Long targetPatientId) { this.targetPatientId = targetPatientId; }
     public String getDetails() { return details; }
     public void setDetails(String details) { this.details = details; }
+    public Long getHospitalId() { return hospitalId; }
+    public void setHospitalId(Long hospitalId) { this.hospitalId = hospitalId; }
     public String getIpAddress() { return ipAddress; }
     public void setIpAddress(String ipAddress) { this.ipAddress = ipAddress; }
     public Instant getCreatedAt() { return createdAt; }

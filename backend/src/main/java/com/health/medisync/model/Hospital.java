@@ -41,6 +41,8 @@ public class Hospital {
     private Integer icuBeds;
     private Integer operationTheatersCount;
     private Integer ambulanceCount;
+    private Integer nurseCount;
+    private Integer generalStaffCount;
     private Boolean emergencyServicesAvailable = true; // 24/7 services
     
     // ── 5. Billing & Financial ──
@@ -130,6 +132,12 @@ public class Hospital {
 
     public Integer getAmbulanceCount() { return ambulanceCount; }
     public void setAmbulanceCount(Integer ambulanceCount) { this.ambulanceCount = ambulanceCount; }
+
+    public Integer getNurseCount() { return nurseCount; }
+    public void setNurseCount(Integer nurseCount) { this.nurseCount = nurseCount; }
+
+    public Integer getGeneralStaffCount() { return generalStaffCount; }
+    public void setGeneralStaffCount(Integer generalStaffCount) { this.generalStaffCount = generalStaffCount; }
 
     public Boolean getEmergencyServicesAvailable() { return emergencyServicesAvailable; }
     public void setEmergencyServicesAvailable(Boolean emergencyServicesAvailable) { this.emergencyServicesAvailable = emergencyServicesAvailable; }

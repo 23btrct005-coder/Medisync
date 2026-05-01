@@ -7,4 +7,5 @@ import java.util.List;
 public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
     List<AuditLog> findByTargetPatientIdOrderByCreatedAtDesc(Long patientId);
     List<AuditLog> findByPerformerIdOrderByCreatedAtDesc(Long performerId);
+    List<AuditLog> findByHospitalIdOrderByCreatedAtDesc(Long hospitalId);
 }

@@ -45,10 +45,13 @@ public class ReportController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<?> uploadReport(@RequestParam("file") MultipartFile file, Authentication authentication) {
+    public ResponseEntity<?> uploadReport(
+            @RequestParam("file") MultipartFile file, 
+            @RequestParam(value = "category", required = false) String category,
+            Authentication authentication) {
         try {
             String username = authentication.getName();
-            return ResponseEntity.ok(reportService.uploadReport(username, file));
+            return ResponseEntity.ok(reportService.uploadReport(username, file, category));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage() != null ? e.getMessage() : "Failed to upload file"));

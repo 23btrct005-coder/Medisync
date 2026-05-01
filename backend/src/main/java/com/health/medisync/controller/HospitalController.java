@@ -29,17 +29,28 @@ public class HospitalController {
     private final HospitalRepository hospitalRepository;
     private final HospitalAdminRepository hospitalAdminRepository;
     private final SupabaseStorageService supabaseStorageService;
+    private final com.health.medisync.service.AuditLogService auditLogService;
 
     public HospitalController(HospitalService hospitalService,
                               UserRepository userRepository,
                               HospitalRepository hospitalRepository,
                               HospitalAdminRepository hospitalAdminRepository,
-                              SupabaseStorageService supabaseStorageService) {
+                              SupabaseStorageService supabaseStorageService,
+                              com.health.medisync.service.AuditLogService auditLogService) {
         this.hospitalService = hospitalService;
         this.userRepository = userRepository;
         this.hospitalRepository = hospitalRepository;
         this.hospitalAdminRepository = hospitalAdminRepository;
         this.supabaseStorageService = supabaseStorageService;
+        this.auditLogService = auditLogService;
+    }
+
+    @GetMapping("/audit-logs")
+    public ResponseEntity<?> getAuditLogs(@AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        HospitalAdmin admin = hospitalService.getAdminByUser(user);
+        return ResponseEntity.ok(auditLogService.getHospitalAuditLogs(admin.getHospital().getId()));
     }
 
     @GetMapping("/stats")
@@ -136,6 +147,10 @@ public class HospitalController {
                 hospital.setOperationTheatersCount(Integer.parseInt(data.get("operationTheatersCount").toString()));
             if (data.get("ambulanceCount") != null && !data.get("ambulanceCount").toString().isEmpty()) 
                 hospital.setAmbulanceCount(Integer.parseInt(data.get("ambulanceCount").toString()));
+            if (data.get("nurseCount") != null && !data.get("nurseCount").toString().isEmpty()) 
+                hospital.setNurseCount(Integer.parseInt(data.get("nurseCount").toString()));
+            if (data.get("generalStaffCount") != null && !data.get("generalStaffCount").toString().isEmpty()) 
+                hospital.setGeneralStaffCount(Integer.parseInt(data.get("generalStaffCount").toString()));
             if (data.get("emergencyServicesAvailable") != null) 
                 hospital.setEmergencyServicesAvailable(Boolean.parseBoolean(data.get("emergencyServicesAvailable").toString()));
 
@@ -162,6 +177,11 @@ public class HospitalController {
 
             hospitalRepository.save(hospital);
             hospitalAdminRepository.save(admin);
+
+            // Log administrative update
+            auditLogService.log(user.getId(), admin.getName(), "INSTITUTIONAL_PROFILE_UPDATE", null, hospital.getId(), 
+                               "Admin updated institutional profile for: " + hospital.getName());
+
             return ResponseEntity.ok(Map.of("message", "Institutional profile updated successfully"));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("message", "Update failed: " + e.getMessage()));

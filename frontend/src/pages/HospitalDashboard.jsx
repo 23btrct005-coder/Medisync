@@ -45,15 +45,19 @@ const HospitalDashboard = () => {
         }));
     };
 
+    const [auditLogs, setAuditLogs] = useState([]);
+
     const fetchInstitutionalData = async (silent = false) => {
         if (!silent) setLoading(true);
         try {
-            const [statsRes, doctorsRes] = await Promise.all([
+            const [statsRes, doctorsRes, auditRes] = await Promise.all([
                 api.get('/hospital/stats'),
-                api.get('/hospital/doctors')
+                api.get('/hospital/doctors'),
+                api.get('/hospital/audit-logs')
             ]);
             setStats(statsRes.data);
             setDoctors(doctorsRes.data);
+            setAuditLogs(auditRes.data);
         } catch (err) {
             console.error("Institutional sync failed", err);
             if (!silent) toast.error("Failed to synchronize hospital data");
@@ -257,22 +261,32 @@ const HospitalDashboard = () => {
 
                 <div className="space-y-8">
                     <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-xl relative overflow-hidden group">
-                        <div className="flex items-center gap-4 mb-6">
+                        <div className="flex items-center gap-4 mb-6 text-left">
                             <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600">
                                 <ShieldAlert size={24} />
                             </div>
                             <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Security <span className="not-italic text-amber-600">Sentinel</span></h3>
                         </div>
-                        <p className="text-slate-400 text-xs font-bold leading-relaxed mb-8">
-                            CROSS-INSTITUTIONAL AUDIT DETECTED 3 UNVERIFIED ACCESS ATTEMPTS IN THE LAST 24 HOURS. REVIEW SECURITY LEDGER IMMEDIATELY.
-                        </p>
-                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 group-hover:border-amber-200 transition-all">
-                            <div className="flex items-center gap-3">
-                                <div className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-700">Audit Status: WARNING</span>
-                            </div>
-                            <ChevronRight size={16} className="text-slate-300" />
+                        <div className="space-y-4 mb-8 text-left">
+                            {auditLogs.length > 0 ? (
+                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                    <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-1">{auditLogs[0].action}</p>
+                                    <p className="text-[9px] font-bold text-slate-400 leading-relaxed uppercase">{auditLogs[0].details}</p>
+                                    <p className="text-[8px] font-black text-primary uppercase mt-2">{new Date(auditLogs[0].createdAt).toLocaleString()}</p>
+                                </div>
+                            ) : (
+                                <p className="text-slate-400 text-xs font-bold leading-relaxed">
+                                    No critical security events detected in the current clinical cycle. Institutional integrity is OPTIMAL.
+                                </p>
+                            )}
                         </div>
+                        <button 
+                            onClick={() => navigate('/hospital-dashboard/institutional-profile')}
+                            className="w-full flex items-center justify-between p-4 bg-slate-900 rounded-2xl text-white group-hover:bg-primary transition-all"
+                        >
+                            <span className="text-[10px] font-black uppercase tracking-widest">Review Security Ledger</span>
+                            <ChevronRight size={16} />
+                        </button>
                     </div>
 
                     <div className="bg-primary p-10 rounded-[3.5rem] shadow-xl shadow-primary/20 relative overflow-hidden group hover:scale-[1.02] transition-all cursor-pointer">

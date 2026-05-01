@@ -46,7 +46,7 @@ public class ReportService {
         this.notificationService = notificationService;
     }
 
-    public Report uploadReport(String username, MultipartFile file) throws Exception {
+    public Report uploadReport(String username, MultipartFile file, String category) throws Exception {
         Patient patient = patientService.getPatientProfile(username);
 
         Report report = new Report();
@@ -54,6 +54,7 @@ public class ReportService {
         report.setFileName(file.getOriginalFilename());
         report.setFileType(file.getContentType());
         report.setFileData(file.getBytes());
+        report.setReportCategory(category != null ? category : "OTHER");
         report.setUploadDate(LocalDate.now());
 
         // Immediate save to return ID to user

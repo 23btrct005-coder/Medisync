@@ -21,6 +21,7 @@ public class Report {
 
     private String fileName;
     private String fileType;
+    private String reportCategory; // LAB, IMAGING, PRESCRIPTION, OTHER
 
     @JsonIgnore
     @JdbcTypeCode(SqlTypes.BINARY)
@@ -53,6 +54,8 @@ public class Report {
 
     public String getFileType() { return fileType; }
     public void setFileType(String fileType) { this.fileType = fileType; }
+    public String getReportCategory() { return reportCategory; }
+    public void setReportCategory(String reportCategory) { this.reportCategory = reportCategory; }
 
     public byte[] getFileData() { return fileData; }
     public void setFileData(byte[] fileData) { this.fileData = fileData; }

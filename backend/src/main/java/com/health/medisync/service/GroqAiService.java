@@ -128,4 +128,42 @@ public class GroqAiService implements AiProvider {
         }
         return "Groq AI Analysis failed due to persistent service issues.";
     }
+    public String getCompletion(String prompt) {
+        if (apiKey == null || apiKey.trim().isEmpty() || apiKey.equals("YOUR_API_KEY_HERE")) {
+            return "{\"error\": \"AI is disabled. Configure groq.api.key.\"}";
+        }
+
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            String url = "https://api.groq.com/openai/v1/chat/completions";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(apiKey);
+
+            Map<String, Object> message = new HashMap<>();
+            message.put("role", "user");
+            message.put("content", prompt);
+
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("model", "llama-3.3-70b-versatile");
+            requestBody.put("messages", Arrays.asList(message));
+            requestBody.put("temperature", 0.5);
+
+            HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
+            ResponseEntity<Map> response = restTemplate.postForEntity(url, requestEntity, Map.class);
+            Map<String, Object> responseBody = response.getBody();
+
+            if (responseBody != null && responseBody.containsKey("choices")) {
+                List<Map<String, Object>> choices = (List<Map<String, Object>>) responseBody.get("choices");
+                if (!choices.isEmpty()) {
+                    Map<String, Object> messageObj = (Map<String, Object>) choices.get(0).get("message");
+                    return (String) messageObj.get("content");
+                }
+            }
+            return "{\"error\": \"Parse error.\"}";
+        } catch (Exception e) {
+            return "{\"error\": \"" + e.getMessage() + "\"}";
+        }
+    }
 }

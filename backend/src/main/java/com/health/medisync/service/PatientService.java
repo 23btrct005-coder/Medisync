@@ -84,6 +84,11 @@ public class PatientService {
             .orElseThrow(() -> new RuntimeException("Patient with ID " + shortCode + " not found."));
     }
 
+    public Patient getPatientById(Long id) {
+        return patientRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Patient not found."));
+    }
+
     @Transactional
     public Patient updateProfile(String overrideEmail, java.util.Map<String, Object> profileData) {
         String username = (overrideEmail != null) ? overrideEmail : (String) profileData.get("email");

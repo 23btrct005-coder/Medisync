@@ -31,6 +31,8 @@ const HospitalProfile = () => {
         icuBeds: '',
         operationTheatersCount: '',
         ambulanceCount: '',
+        nurseCount: '',
+        generalStaffCount: '',
         emergencyServicesAvailable: true,
         // Financial
         insuranceProviders: '',
@@ -77,6 +79,8 @@ const HospitalProfile = () => {
                 icuBeds: h.icuBeds || '',
                 operationTheatersCount: h.operationTheatersCount || '',
                 ambulanceCount: h.ambulanceCount || '',
+                nurseCount: h.nurseCount || '',
+                generalStaffCount: h.generalStaffCount || '',
                 emergencyServicesAvailable: h.emergencyServicesAvailable !== false,
                 insuranceProviders: h.insuranceProviders || '',
                 billingContactEmail: h.billingContactEmail || '',
@@ -363,6 +367,26 @@ const HospitalProfile = () => {
                                     onChange={(e) => setFormData({...formData, ambulanceCount: e.target.value})}
                                     className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-emerald-100"
                                     placeholder="5"
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nurse Count</label>
+                                <input 
+                                    type="number"
+                                    value={formData.nurseCount}
+                                    onChange={(e) => setFormData({...formData, nurseCount: e.target.value})}
+                                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-emerald-100"
+                                    placeholder="200"
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">General Staff</label>
+                                <input 
+                                    type="number"
+                                    value={formData.generalStaffCount}
+                                    onChange={(e) => setFormData({...formData, generalStaffCount: e.target.value})}
+                                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-emerald-100"
+                                    placeholder="150"
                                 />
                             </div>
                         </div>
