@@ -26,6 +26,7 @@ public class User implements UserDetails {
 
     private String role = "ROLE_PATIENT";
     private boolean enabled = false;
+    private boolean emailVerified = false;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -40,6 +41,9 @@ public class User implements UserDetails {
     public void setRole(String role) { this.role = role; }
 
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
+
+    public boolean isEmailVerified() { return emailVerified; }
+    public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
 
     @Override
     @JsonIgnore

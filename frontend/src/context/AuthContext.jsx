@@ -73,6 +73,11 @@ export const AuthProvider = ({ children }) => {
 
       const response = await api.get(endpoint);
       const profileData = { ...response.data, role };
+      
+      // Extract emailVerified from nested user object if it exists (Doctor/HospitalAdmin)
+      const verified = profileData.user ? profileData.user.emailVerified : profileData.emailVerified;
+      profileData.emailVerified = verified;
+      
       setUser(profileData);
     } catch (error) {
       console.error("Error fetching profile from backend", error);
@@ -89,11 +94,12 @@ export const AuthProvider = ({ children }) => {
     
     try {
       const response = await api.post('auth/login', { username, password });
-      const { token, role } = response.data;
+      const { token, role, emailVerified } = response.data;
       
       localStorage.setItem('token', token);
       localStorage.setItem('role', role);
       localStorage.setItem('userEmail', username);
+      localStorage.setItem('emailVerified', emailVerified);
       
       setUserRole(role);
       await fetchUserProfile(role, username);
@@ -127,6 +133,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
     localStorage.removeItem('userEmail');
+    localStorage.removeItem('emailVerified');
     setUserRole(null);
     setUser(null);
   };

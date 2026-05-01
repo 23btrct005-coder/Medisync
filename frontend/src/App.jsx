@@ -44,6 +44,7 @@ import HospitalDoctorRoster from './pages/HospitalDoctorRoster';
 import HospitalAppointments from './pages/HospitalAppointments';
 import HospitalPatients from './pages/HospitalPatients';
 import HospitalProfile from './pages/HospitalProfile';
+import VerifyEmail from './pages/VerifyEmail';
 import ClinicalError404 from './pages/ClinicalError404';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -59,6 +60,15 @@ const ProtectedRoute = ({ children, allowedRole }) => {
     if (userRole === 'ROLE_HOSPITAL_ADMIN') return <Navigate to="/hospital-dashboard" />;
     return <Navigate to={userRole === 'ROLE_DOCTOR' ? '/doctor-dashboard' : '/'} />;
   }
+
+  // Mandatory Email Verification Gate for Professionals
+  const isProfessional = userRole === 'ROLE_DOCTOR' || userRole === 'ROLE_HOSPITAL_ADMIN';
+  const emailVerified = user?.user ? user.user.emailVerified : user?.emailVerified;
+  
+  if (isProfessional && !emailVerified) {
+    return <Navigate to="/verify-email" />;
+  }
+
   return children;
 };
 
@@ -97,6 +107,7 @@ function App() {
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-of-service" element={<TermsOfService />} />
                 <Route path="/ai-disclaimer" element={<AIDisclaimer />} />
+                <Route path="/verify-email" element={<VerifyEmail />} />
                 
                 {/* Legacy Redirects */}
                 <Route path="/profile" element={

@@ -141,7 +141,7 @@ public class AuthController {
             }
 
             String jwt = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole());
-            return ResponseEntity.ok(new AuthResponse(jwt, user.getRole()));
+            return ResponseEntity.ok(new AuthResponse(jwt, user.getRole(), user.isEmailVerified()));
 
         } catch (org.springframework.security.authentication.DisabledException e) {
             return ResponseEntity.status(403).body(Map.of("message", e.getMessage()));
@@ -260,6 +260,7 @@ public class AuthController {
         // Professional accounts are enabled by default since email is verified via OTP
         // Their 'approved' status in the Doctor entity controls institutional access
         user.setEnabled(true); 
+        user.setEmailVerified(request.containsKey("otp")); 
         user = userRepository.save(user);
 
         Doctor doctor = new Doctor();
@@ -315,7 +316,7 @@ public class AuthController {
         doctorRepository.save(doctor);
         System.out.println("DEBUG: Doctor profile saved successfully for " + finalUsername);
 
-        return ResponseEntity.ok(Map.of("message", "Doctor registered and verified successfully!"));
+        return ResponseEntity.ok(Map.of("message", "Doctor registered successfully! Please log in and verify your email."));
     }
 
     @PostMapping(value = "/register/patient", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -436,6 +437,9 @@ public class AuthController {
             patientRepository.save(patient);
         }
 
+        user.setEmailVerified(true); // Patients verify via OTP before registration
+        userRepository.save(user);
+
         return ResponseEntity.ok(Map.of("message", "Patient registered and verified successfully!"));
     }
 
@@ -534,6 +538,24 @@ public class AuthController {
         hospitalAdminRepository.save(admin);
 
         return ResponseEntity.ok(Map.of("message", "Hospital Administration registered successfully! Your account is now pending global administrative approval."));
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<?> verifyEmail(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email") != null ? request.get("email").toLowerCase() : null;
+            String otp = request.get("otp");
+            authService.verifyOtpStandalone(email, otp);
+            
+            userRepository.findByUsernameIgnoreCase(email).ifPresent(user -> {
+                user.setEmailVerified(true);
+                userRepository.save(user);
+            });
+            
+            return ResponseEntity.ok(Map.of("message", "Institutional email verified successfully!"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 
     @PostMapping("/verify-otp")
