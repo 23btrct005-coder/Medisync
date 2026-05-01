@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.dao.DataAccessException;
 import org.springframework.transaction.CannotCreateTransactionException;
+import org.springframework.security.access.prepost.PreAuthorize;
+
 
 import com.health.medisync.model.Patient;
 import com.health.medisync.repository.PatientRepository;
@@ -763,7 +765,9 @@ public class AuthController {
         } else if ("ROLE_DOCTOR".equals(user.getRole())) {
             email = doctorRepository.findByUserId(user.getId()).map(Doctor::getEmail).orElse(null);
         } else if ("ROLE_HOSPITAL_ADMIN".equals(user.getRole())) {
-            email = hospitalAdminRepository.findByUserId(user.getId()).map(com.health.medisync.model.HospitalAdmin::getContactEmail).orElse(null);
+            email = hospitalAdminRepository.findByUserId(user.getId())
+                    .map(admin -> admin.getHospital() != null ? admin.getHospital().getContactEmail() : null)
+                    .orElse(null);
         }
         
         if (email == null) return ResponseEntity.badRequest().body(Map.of("message", "No verified email associated with this node."));
@@ -787,7 +791,9 @@ public class AuthController {
         } else if ("ROLE_DOCTOR".equals(user.getRole())) {
             email = doctorRepository.findByUserId(user.getId()).map(Doctor::getEmail).orElse(null);
         } else if ("ROLE_HOSPITAL_ADMIN".equals(user.getRole())) {
-            email = hospitalAdminRepository.findByUserId(user.getId()).map(com.health.medisync.model.HospitalAdmin::getContactEmail).orElse(null);
+            email = hospitalAdminRepository.findByUserId(user.getId())
+                    .map(admin -> admin.getHospital() != null ? admin.getHospital().getContactEmail() : null)
+                    .orElse(null);
         }
         
         if (email == null || otp == null) return ResponseEntity.badRequest().body(Map.of("message", "Invalid deletion request."));

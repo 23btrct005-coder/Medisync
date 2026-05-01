@@ -198,6 +198,36 @@ public class HospitalService {
         if (updates.containsKey("joiningDate")) doctor.setJoiningDate(updates.get("joiningDate") != null ? updates.get("joiningDate").toString() : null);
         if (updates.containsKey("salary")) doctor.setSalary(updates.get("salary") != null ? updates.get("salary").toString() : null);
         if (updates.containsKey("contractType")) doctor.setContractType(updates.get("contractType") != null ? updates.get("contractType").toString() : null);
+
+        // Professional Legitimacy
+        if (updates.containsKey("medicalCouncil")) doctor.setMedicalCouncil(updates.get("medicalCouncil") != null ? updates.get("medicalCouncil").toString() : null);
+        if (updates.containsKey("licenseExpiryDate")) doctor.setLicenseExpiryDate(updates.get("licenseExpiryDate") != null ? updates.get("licenseExpiryDate").toString() : null);
+        if (updates.containsKey("registrationYear") && updates.get("registrationYear") != null && !updates.get("registrationYear").toString().isEmpty()) {
+            doctor.setRegistrationYear(Integer.valueOf(updates.get("registrationYear").toString()));
+        }
+
+        // Clinical Depth
+        if (updates.containsKey("subSpecialties")) doctor.setSubSpecialties(updates.get("subSpecialties") != null ? updates.get("subSpecialties").toString() : null);
+        if (updates.containsKey("proceduresHandled")) doctor.setProceduresHandled(updates.get("proceduresHandled") != null ? updates.get("proceduresHandled").toString() : null);
+        if (updates.containsKey("treatmentFocus")) doctor.setTreatmentFocus(updates.get("treatmentFocus") != null ? updates.get("treatmentFocus").toString() : null);
+        if (updates.containsKey("languagesSpoken")) doctor.setLanguagesSpoken(updates.get("languagesSpoken") != null ? updates.get("languagesSpoken").toString() : null);
+        if (updates.containsKey("publications")) doctor.setPublications(updates.get("publications") != null ? updates.get("publications").toString() : null);
+
+        // Advanced Availability
+        if (updates.containsKey("slotDuration") && updates.get("slotDuration") != null && !updates.get("slotDuration").toString().isEmpty()) {
+            doctor.setSlotDuration(Integer.valueOf(updates.get("slotDuration").toString()));
+        }
+        if (updates.containsKey("maxPatientsPerDay") && updates.get("maxPatientsPerDay") != null && !updates.get("maxPatientsPerDay").toString().isEmpty()) {
+            doctor.setMaxPatientsPerDay(Integer.valueOf(updates.get("maxPatientsPerDay").toString()));
+        }
+        if (updates.containsKey("breakTimings")) doctor.setBreakTimings(updates.get("breakTimings") != null ? updates.get("breakTimings").toString() : null);
+
+        // Institutional Sync
+        if (updates.containsKey("employeeId")) doctor.setEmployeeId(updates.get("employeeId") != null ? updates.get("employeeId").toString() : null);
+        if (updates.containsKey("opdRoomNumber")) doctor.setOpdRoomNumber(updates.get("opdRoomNumber") != null ? updates.get("opdRoomNumber").toString() : null);
+        
+        // Auto-flag as institutional if updated through hospital context
+        doctor.setInstitutional(true);
         
         doctorRepository.save(doctor);
     }

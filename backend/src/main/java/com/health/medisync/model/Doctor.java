@@ -36,6 +36,17 @@ public class Doctor {
 
     // License & Verification
     private String medicalLicenseNumber;
+    private String medicalCouncil; // e.g. Karnataka Medical Council
+    private String licenseExpiryDate;
+    private String licenseDocumentUrl;
+    private Integer registrationYear;
+
+    // Clinical Expertise Depth
+    private String subSpecialties; // Comma separated
+    private String proceduresHandled;
+    private String treatmentFocus;
+    private String languagesSpoken;
+    private String publications;
 
     // Work Details
     private String hospital; // Keep for legacy/external compatibility
@@ -50,12 +61,24 @@ public class Doctor {
     private Double offlineConsultationFee;
     private String clinicAddress;
 
-    // Availability
+    // Advanced Availability
+    private Integer slotDuration = 15; // default 15 mins
+    private Integer maxPatientsPerDay;
+    private String breakTimings;
     private String workingDays;
     private String consultationTimings;
     private Boolean onlineConsultation;
     private boolean approved = false;
     private Boolean appointmentsEnabled = true;
+
+    // Institutional Flag
+    private boolean institutional = false;
+    private String employeeId;
+    private String opdRoomNumber;
+
+    // Ratings & Reputation
+    private Double rating = 0.0;
+    private Integer reviewCount = 0;
 
     // Payment Integration
     private String razorpayAccountId; // For Razorpay Route / Connected Accounts
@@ -113,6 +136,57 @@ public class Doctor {
 
     public String getMedicalLicenseNumber() { return medicalLicenseNumber; }
     public void setMedicalLicenseNumber(String medicalLicenseNumber) { this.medicalLicenseNumber = medicalLicenseNumber; }
+
+    public String getMedicalCouncil() { return medicalCouncil; }
+    public void setMedicalCouncil(String medicalCouncil) { this.medicalCouncil = medicalCouncil; }
+
+    public String getLicenseExpiryDate() { return licenseExpiryDate; }
+    public void setLicenseExpiryDate(String licenseExpiryDate) { this.licenseExpiryDate = licenseExpiryDate; }
+
+    public String getLicenseDocumentUrl() { return licenseDocumentUrl; }
+    public void setLicenseDocumentUrl(String licenseDocumentUrl) { this.licenseDocumentUrl = licenseDocumentUrl; }
+
+    public Integer getRegistrationYear() { return registrationYear; }
+    public void setRegistrationYear(Integer registrationYear) { this.registrationYear = registrationYear; }
+
+    public String getSubSpecialties() { return subSpecialties; }
+    public void setSubSpecialties(String subSpecialties) { this.subSpecialties = subSpecialties; }
+
+    public String getProceduresHandled() { return proceduresHandled; }
+    public void setProceduresHandled(String proceduresHandled) { this.proceduresHandled = proceduresHandled; }
+
+    public String getTreatmentFocus() { return treatmentFocus; }
+    public void setTreatmentFocus(String treatmentFocus) { this.treatmentFocus = treatmentFocus; }
+
+    public String getLanguagesSpoken() { return languagesSpoken; }
+    public void setLanguagesSpoken(String languagesSpoken) { this.languagesSpoken = languagesSpoken; }
+
+    public String getPublications() { return publications; }
+    public void setPublications(String publications) { this.publications = publications; }
+
+    public Integer getSlotDuration() { return slotDuration != null ? slotDuration : 15; }
+    public void setSlotDuration(Integer slotDuration) { this.slotDuration = slotDuration; }
+
+    public Integer getMaxPatientsPerDay() { return maxPatientsPerDay; }
+    public void setMaxPatientsPerDay(Integer maxPatientsPerDay) { this.maxPatientsPerDay = maxPatientsPerDay; }
+
+    public String getBreakTimings() { return breakTimings; }
+    public void setBreakTimings(String breakTimings) { this.breakTimings = breakTimings; }
+
+    public boolean isInstitutional() { return institutional; }
+    public void setInstitutional(boolean institutional) { this.institutional = institutional; }
+
+    public String getEmployeeId() { return employeeId; }
+    public void setEmployeeId(String employeeId) { this.employeeId = employeeId; }
+
+    public String getOpdRoomNumber() { return opdRoomNumber; }
+    public void setOpdRoomNumber(String opdRoomNumber) { this.opdRoomNumber = opdRoomNumber; }
+
+    public Double getRating() { return rating != null ? rating : 0.0; }
+    public void setRating(Double rating) { this.rating = rating; }
+
+    public Integer getReviewCount() { return reviewCount != null ? reviewCount : 0; }
+    public void setReviewCount(Integer reviewCount) { this.reviewCount = reviewCount; }
 
     public String getHospital() { return hospital; }
     public void setHospital(String hospital) { this.hospital = hospital; }

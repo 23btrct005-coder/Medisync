@@ -110,6 +110,27 @@ const AdminDashboard = () => {
     }
   };
 
+  const handlePermanentDelete = async (id, email, type = 'doctors') => {
+    const userInput = window.prompt(`CRITICAL: To permanently delete this ${type === 'doctors' ? 'doctor' : 'hospital'} and ALL associated medical records, please type their email address (${email}) to confirm:`);
+    
+    if (userInput === email) {
+      setActionLoading(id);
+      try {
+        const endpoint = type === 'doctors' ? `admin/doctors/${id}/purge` : `admin/hospitals/${id}/purge`;
+        await api.delete(endpoint);
+        toast.success("Account purged permanently from the registry.");
+        setSelectedItem(null);
+        fetchData(false);
+      } catch (error) {
+        toast.error(error.response?.data?.message || "Purge failed. Insufficient administrative clearance.");
+      } finally {
+        setActionLoading(null);
+      }
+    } else if (userInput !== null) {
+      toast.error("Email mismatch. Verification failed.");
+    }
+  };
+
   const handleReject = (id, type = 'doctors') => {
     toast((t) => (
       <div className="flex flex-col gap-3">
@@ -230,9 +251,9 @@ const AdminDashboard = () => {
               )}
             </div>
 
-            <div className="p-8 border-t border-slate-100 bg-slate-50/50 flex gap-4">
+            <div className="p-8 border-t border-slate-100 bg-slate-50/50 flex flex-col gap-4">
               {activeTab.includes('pending') ? (
-                <>
+                <div className="flex gap-4">
                   <button
                     onClick={() => handleReject(selectedItem.id, activeTab.includes('doctors') ? 'doctors' : 'hospitals')}
                     className="flex-1 py-4 bg-white border border-slate-200 text-red-500 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-red-50 transition-all active:scale-95"
@@ -245,14 +266,22 @@ const AdminDashboard = () => {
                   >
                     Confirm Verification
                   </button>
-                </>
+                </div>
               ) : (
-                <button
-                  onClick={() => handleToggleAccess(selectedItem.user_id, selectedItem.id)}
-                  className={`flex-1 py-4 ${selectedItem.enabled ? 'bg-red-600 shadow-red-600/20' : 'bg-emerald-600 shadow-emerald-600/20'} text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl hover:opacity-90 transition-all active:scale-95`}
-                >
-                  {selectedItem.enabled ? 'Revoke System Access' : 'Grant System Access'}
-                </button>
+                <>
+                  <button
+                    onClick={() => handleToggleAccess(selectedItem.user_id, selectedItem.id)}
+                    className={`w-full py-4 ${selectedItem.enabled ? 'bg-red-600 shadow-red-600/20' : 'bg-emerald-600 shadow-emerald-600/20'} text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl hover:opacity-90 transition-all active:scale-95`}
+                  >
+                    {selectedItem.enabled ? 'Revoke System Access' : 'Grant System Access'}
+                  </button>
+                  <button
+                    onClick={() => handlePermanentDelete(selectedItem.id, selectedItem.email, activeTab.includes('doctors') ? 'doctors' : 'hospitals')}
+                    className="w-full py-3 bg-white border border-red-100 text-red-500 font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl hover:bg-red-50 transition-all active:scale-95 flex items-center justify-center gap-2"
+                  >
+                    <XCircle size={14} /> Permanently Purge Account
+                  </button>
+                </>
               )}
             </div>
           </div>

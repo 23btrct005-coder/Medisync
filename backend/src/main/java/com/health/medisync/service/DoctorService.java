@@ -253,7 +253,6 @@ public class DoctorService {
             }
         }
 
-        // AUTO-SYNC: Only perform extraction if numeric tiers are strictly missing (null)
         if (doctor.getOnlineConsultationFee() == null) {
            String numeric = doctor.getConsultationFee().replaceAll("[^0-9]", "");
            if (!numeric.isEmpty()) {
@@ -266,6 +265,36 @@ public class DoctorService {
                } catch (Exception e) {}
            }
         }
+
+        // New Professional & Clinical Fields
+        if (updates.containsKey("medicalCouncil")) doctor.setMedicalCouncil((String) updates.get("medicalCouncil"));
+        if (updates.containsKey("licenseExpiryDate")) doctor.setLicenseExpiryDate((String) updates.get("licenseExpiryDate"));
+        if (updates.containsKey("registrationYear")) {
+            Object regYear = updates.get("registrationYear");
+            if (regYear != null && !regYear.toString().isEmpty()) {
+                doctor.setRegistrationYear(Integer.parseInt(regYear.toString()));
+            }
+        }
+        
+        if (updates.containsKey("subSpecialties")) doctor.setSubSpecialties((String) updates.get("subSpecialties"));
+        if (updates.containsKey("proceduresHandled")) doctor.setProceduresHandled((String) updates.get("proceduresHandled"));
+        if (updates.containsKey("treatmentFocus")) doctor.setTreatmentFocus((String) updates.get("treatmentFocus"));
+        if (updates.containsKey("languagesSpoken")) doctor.setLanguagesSpoken((String) updates.get("languagesSpoken"));
+        if (updates.containsKey("publications")) doctor.setPublications((String) updates.get("publications"));
+        
+        if (updates.containsKey("slotDuration")) {
+            Object duration = updates.get("slotDuration");
+            if (duration != null && !duration.toString().isEmpty()) {
+                doctor.setSlotDuration(Integer.parseInt(duration.toString()));
+            }
+        }
+        if (updates.containsKey("maxPatientsPerDay")) {
+            Object maxP = updates.get("maxPatientsPerDay");
+            if (maxP != null && !maxP.toString().isEmpty()) {
+                doctor.setMaxPatientsPerDay(Integer.parseInt(maxP.toString()));
+            }
+        }
+        if (updates.containsKey("breakTimings")) doctor.setBreakTimings((String) updates.get("breakTimings"));
 
         return doctorRepository.save(doctor);
     }

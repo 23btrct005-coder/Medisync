@@ -240,170 +240,213 @@ const HospitalDoctorRoster = () => {
                             <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1">Institutional Profile Editor</p>
                         </div>
                         <form onSubmit={handleUpdateDoctor} className="p-8 space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="col-span-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Full Name</label>
-                                    <input 
-                                        type="text" required
-                                        value={editData.name}
-                                        onChange={(e) => setEditData({...editData, name: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Specialization</label>
-                                    <input 
-                                        type="text" required
-                                        value={editData.specialization}
-                                        onChange={(e) => setEditData({...editData, specialization: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Medical Degree</label>
-                                    <input 
-                                        type="text" required
-                                        value={editData.medicalDegree}
-                                        onChange={(e) => setEditData({...editData, medicalDegree: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">License Number</label>
-                                    <input 
-                                        type="text" required
-                                        value={editData.medicalLicenseNumber}
-                                        onChange={(e) => setEditData({...editData, medicalLicenseNumber: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Years of Experience</label>
-                                    <input 
-                                        type="number" required
-                                        value={editData.yearsOfExperience}
-                                        onChange={(e) => setEditData({...editData, yearsOfExperience: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Age</label>
-                                    <input 
-                                        type="number" required
-                                        value={editData.age}
-                                        onChange={(e) => setEditData({...editData, age: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                    />
-                                </div>
-                                <div className="col-span-2">
-                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Working Days</label>
-                                     <div className="flex flex-wrap gap-2">
-                                         {daysOfWeek.map(day => (
-                                             <button
-                                                 key={day}
-                                                 type="button"
-                                                 onClick={() => handleDayToggle(day)}
-                                                 className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                                                     editData.workingDaysArray?.includes(day)
-                                                         ? 'bg-primary text-white shadow-md shadow-primary/20'
-                                                         : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
-                                                 }`}
-                                             >
-                                                 {day}
-                                             </button>
-                                         ))}
-                                     </div>
-                                 </div>
-                                 <div>
-                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Shift Starts</label>
-                                     <input 
-                                         type="time" required
-                                         value={editData.startTime}
-                                         onChange={(e) => setEditData({...editData, startTime: e.target.value})}
-                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                     />
-                                 </div>
-                                 <div>
-                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Shift Ends</label>
-                                     <input 
-                                         type="time" required
-                                         value={editData.endTime}
-                                         onChange={(e) => setEditData({...editData, endTime: e.target.value})}
-                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                     />
-                                 </div>
                                  <div className="col-span-2">
-                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">UPI ID</label>
+                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Full Name</label>
+                                     <input 
+                                         type="text" required
+                                         value={editData.name}
+                                         onChange={(e) => setEditData({...editData, name: e.target.value})}
+                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                     />
+                                 </div>
+                                 <div>
+                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Specialization</label>
+                                     <input 
+                                         type="text" required
+                                         value={editData.specialization}
+                                         onChange={(e) => setEditData({...editData, specialization: e.target.value})}
+                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                     />
+                                 </div>
+                                 <div>
+                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Sub-Specialties</label>
                                      <input 
                                          type="text"
-                                         value={editData.upiId || ''}
-                                         onChange={(e) => setEditData({...editData, upiId: e.target.value})}
-                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 font-mono"
-                                         placeholder="doctor@upi"
+                                         value={editData.subSpecialties || ''}
+                                         onChange={(e) => setEditData({...editData, subSpecialties: e.target.value})}
+                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                         placeholder="e.g. Diabetes, Hypertension"
+                                     />
+                                 </div>
+                                 <div>
+                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Medical Council</label>
+                                     <input 
+                                         type="text" required
+                                         value={editData.medicalCouncil || ''}
+                                         onChange={(e) => setEditData({...editData, medicalCouncil: e.target.value})}
+                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                         placeholder="e.g. KMC"
+                                     />
+                                 </div>
+                                 <div>
+                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">License Expiry</label>
+                                     <input 
+                                         type="date" required
+                                         value={editData.licenseExpiryDate || ''}
+                                         onChange={(e) => setEditData({...editData, licenseExpiryDate: e.target.value})}
+                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                     />
+                                 </div>
+                                 <div>
+                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Medical Degree</label>
+                                     <input 
+                                         type="text" required
+                                         value={editData.medicalDegree}
+                                         onChange={(e) => setEditData({...editData, medicalDegree: e.target.value})}
+                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                     />
+                                 </div>
+                                 <div>
+                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">License Number</label>
+                                     <input 
+                                         type="text" required
+                                         value={editData.medicalLicenseNumber}
+                                         onChange={(e) => setEditData({...editData, medicalLicenseNumber: e.target.value})}
+                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                     />
+                                 </div>
+                                 <div>
+                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Exp (Years)</label>
+                                     <input 
+                                         type="number" required
+                                         value={editData.yearsOfExperience}
+                                         onChange={(e) => setEditData({...editData, yearsOfExperience: e.target.value})}
+                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                     />
+                                 </div>
+                                 <div>
+                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">OPD Room No</label>
+                                     <input 
+                                         type="text"
+                                         value={editData.opdRoomNumber || ''}
+                                         onChange={(e) => setEditData({...editData, opdRoomNumber: e.target.value})}
+                                         className="w-full px-5 py-3 bg-emerald-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-emerald-200"
+                                         placeholder="e.g. OPD-102"
                                      />
                                  </div>
 
-                                {/* Administrative Section */}
-                                <div className="col-span-2 pt-4 border-t border-slate-50">
-                                                                         <div className="flex items-center justify-between mb-4">
-                                        <p className="text-[9px] font-black text-primary uppercase tracking-[0.3em]">Institutional Administrative Data</p>
-                                        <div className="flex gap-4">
-                                            <button 
-                                                type="button"
-                                                onClick={() => { setEditingDoctor(null); navigate('/hospital-dashboard/appointments'); }}
-                                                className="text-[8px] font-black text-primary hover:underline uppercase tracking-widest flex items-center gap-1"
-                                            >
-                                                <Calendar size={10} /> View Ledger
-                                            </button>
-                                            <a href="https://dashboard.razorpay.com/" target="_blank" rel="noreferrer" className="text-[8px] text-primary hover:underline font-black uppercase tracking-widest">Razorpay Dash</a>
-                                        </div>
-                                     </div>
-                                </div>
+                                 <div className="col-span-2">
+                                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Working Days</label>
+                                      <div className="flex flex-wrap gap-2">
+                                          {daysOfWeek.map(day => (
+                                              <button
+                                                  key={day}
+                                                  type="button"
+                                                  onClick={() => handleDayToggle(day)}
+                                                  className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                                                      editData.workingDaysArray?.includes(day)
+                                                          ? 'bg-primary text-white shadow-md shadow-primary/20'
+                                                          : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+                                                  }`}
+                                              >
+                                                  {day}
+                                              </button>
+                                          ))}
+                                      </div>
+                                  </div>
+                                  <div>
+                                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Shift Starts</label>
+                                      <input 
+                                          type="time" required
+                                          value={editData.startTime}
+                                          onChange={(e) => setEditData({...editData, startTime: e.target.value})}
+                                          className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                      />
+                                  </div>
+                                  <div>
+                                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Shift Ends</label>
+                                      <input 
+                                          type="time" required
+                                          value={editData.endTime}
+                                          onChange={(e) => setEditData({...editData, endTime: e.target.value})}
+                                          className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                      />
+                                  </div>
+                                  <div>
+                                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Slot Size (Min)</label>
+                                      <select 
+                                          value={editData.slotDuration || 15}
+                                          onChange={(e) => setEditData({...editData, slotDuration: e.target.value})}
+                                          className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 appearance-none"
+                                      >
+                                          <option value={10}>10 Min</option>
+                                          <option value={15}>15 Min</option>
+                                          <option value={30}>30 Min</option>
+                                          <option value={60}>60 Min</option>
+                                      </select>
+                                  </div>
+                                  <div>
+                                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Max Daily Patients</label>
+                                      <input 
+                                          type="number"
+                                          value={editData.maxPatientsPerDay || ''}
+                                          onChange={(e) => setEditData({...editData, maxPatientsPerDay: e.target.value})}
+                                          className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                          placeholder="e.g. 40"
+                                      />
+                                  </div>
 
-                                <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Staff ID</label>
-                                    <input 
-                                        type="text"
-                                        value={editData.staffId || ''}
-                                        onChange={(e) => setEditData({...editData, staffId: e.target.value})}
-                                        className="w-full px-5 py-3 bg-blue-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-blue-200"
-                                        placeholder="EMP-XXXX"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Joining Date</label>
-                                    <input 
-                                        type="date"
-                                        value={editData.joiningDate || ''}
-                                        onChange={(e) => setEditData({...editData, joiningDate: e.target.value})}
-                                        className="w-full px-5 py-3 bg-blue-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-blue-200"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Salary / Payout</label>
-                                    <input 
-                                        type="text"
-                                        value={editData.salary || ''}
-                                        onChange={(e) => setEditData({...editData, salary: e.target.value})}
-                                        className="w-full px-5 py-3 bg-blue-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-blue-200"
-                                        placeholder="e.g. 1,50,000"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Contract Type</label>
-                                    <select 
-                                        value={editData.contractType || ''}
-                                        onChange={(e) => setEditData({...editData, contractType: e.target.value})}
-                                        className="w-full px-5 py-3 bg-blue-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-blue-200 appearance-none"
-                                    >
-                                        <option value="">Select Type...</option>
-                                        <option value="PERMANENT">Permanent</option>
-                                        <option value="VISITING">Visiting</option>
-                                        <option value="INTERN">Intern</option>
-                                        <option value="CONSULTANT">Consultant</option>
-                                    </select>
-                                </div>
-                            </div>
+                                 {/* Administrative Section */}
+                                 <div className="col-span-2 pt-4 border-t border-slate-50">
+                                                                          <div className="flex items-center justify-between mb-4">
+                                         <p className="text-[9px] font-black text-primary uppercase tracking-[0.3em]">Institutional Administrative Data</p>
+                                         <div className="flex gap-4">
+                                             <button 
+                                                 type="button"
+                                                 onClick={() => { setEditingDoctor(null); navigate('/hospital-dashboard/appointments'); }}
+                                                 className="text-[8px] font-black text-primary hover:underline uppercase tracking-widest flex items-center gap-1"
+                                             >
+                                                 <Calendar size={10} /> View Ledger
+                                             </button>
+                                             <a href="https://dashboard.razorpay.com/" target="_blank" rel="noreferrer" className="text-[8px] text-primary hover:underline font-black uppercase tracking-widest">Razorpay Dash</a>
+                                         </div>
+                                      </div>
+                                 </div>
+ 
+                                 <div>
+                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Employee / Staff ID</label>
+                                     <input 
+                                         type="text"
+                                         value={editData.staffId || ''}
+                                         onChange={(e) => setEditData({...editData, staffId: e.target.value})}
+                                         className="w-full px-5 py-3 bg-blue-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-blue-200"
+                                         placeholder="EMP-XXXX"
+                                     />
+                                 </div>
+                                 <div>
+                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Joining Date</label>
+                                     <input 
+                                         type="date"
+                                         value={editData.joiningDate || ''}
+                                         onChange={(e) => setEditData({...editData, joiningDate: e.target.value})}
+                                         className="w-full px-5 py-3 bg-blue-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-blue-200"
+                                     />
+                                 </div>
+                                 <div>
+                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Salary / Payout</label>
+                                     <input 
+                                         type="text"
+                                         value={editData.salary || ''}
+                                         onChange={(e) => setEditData({...editData, salary: e.target.value})}
+                                         className="w-full px-5 py-3 bg-blue-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-blue-200"
+                                         placeholder="e.g. 1,50,000"
+                                     />
+                                 </div>
+                                 <div>
+                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Contract Type</label>
+                                     <select 
+                                         value={editData.contractType || ''}
+                                         onChange={(e) => setEditData({...editData, contractType: e.target.value})}
+                                         className="w-full px-5 py-3 bg-blue-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-blue-200 appearance-none"
+                                     >
+                                         <option value="">Select Type...</option>
+                                         <option value="PERMANENT">Permanent</option>
+                                         <option value="VISITING">Visiting</option>
+                                         <option value="INTERN">Intern</option>
+                                         <option value="CONSULTANT">Consultant</option>
+                                     </select>
+                                 </div>
+                             </div>
                             <div className="flex gap-4 pt-4">
                                 <button 
                                     type="button"

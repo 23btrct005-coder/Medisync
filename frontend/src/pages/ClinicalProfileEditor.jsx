@@ -26,10 +26,21 @@ const EditDoctorProfile = () => {
     specialization: '',
     medicalDegree: '',
     medicalLicenseNumber: '',
+    medicalCouncil: '',
+    licenseExpiryDate: '',
+    registrationYear: '',
+    subSpecialties: '',
+    proceduresHandled: '',
+    treatmentFocus: '',
+    languagesSpoken: '',
+    publications: '',
     hospital: '',
     yearsOfExperience: '',
     workingDays: '',
     consultationTimings: '',
+    slotDuration: 15,
+    maxPatientsPerDay: '',
+    breakTimings: '',
     onlineConsultation: false,
     college: '',
     additionalCertifications: '',
@@ -46,15 +57,14 @@ const EditDoctorProfile = () => {
 
   const convertTo24Hour = (timeStr) => {
     if (!timeStr) return "09:00";
-    // Check if already in HH:mm format
     if (/^\d{2}:\d{2}$/.test(timeStr)) return timeStr;
     
     try {
       const cleaned = timeStr.replace('.', ':').trim();
       const [time, modifier] = cleaned.split(' ');
       let [hours, minutes] = time.split(':');
-      if (hours === '12') hours = '00';
-      if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
+      if (hours === '12') hours = modifier === 'PM' ? '12' : '00';
+      else if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
       return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
     } catch (e) {
       return "09:00";
@@ -71,10 +81,21 @@ const EditDoctorProfile = () => {
         specialization: user.specialization || '',
         medicalDegree: user.medicalDegree || '',
         medicalLicenseNumber: user.medicalLicenseNumber || '',
+        medicalCouncil: user.medicalCouncil || '',
+        licenseExpiryDate: user.licenseExpiryDate || '',
+        registrationYear: user.registrationYear || '',
+        subSpecialties: user.subSpecialties || '',
+        proceduresHandled: user.proceduresHandled || '',
+        treatmentFocus: user.treatmentFocus || '',
+        languagesSpoken: user.languagesSpoken || '',
+        publications: user.publications || '',
         hospital: user.hospital || '',
         yearsOfExperience: user.yearsOfExperience || '',
         workingDays: user.workingDays || '',
         consultationTimings: user.consultationTimings || '',
+        slotDuration: user.slotDuration || 15,
+        maxPatientsPerDay: user.maxPatientsPerDay || '',
+        breakTimings: user.breakTimings || '',
         onlineConsultation: user.onlineConsultation || false,
         college: user.college || '',
         additionalCertifications: user.additionalCertifications || '',
@@ -84,8 +105,7 @@ const EditDoctorProfile = () => {
         razorpayAccountId: user.razorpayAccountId || '',
         upiId: user.upiId || '',
         preferredPaymentMode: user.preferredPaymentMode || 'RAZORPAY',
-        appointmentsEnabled: user.appointmentsEnabled !== false, // default true
-        // Split and convert timings for HTML5 time input compliance
+        appointmentsEnabled: user.appointmentsEnabled !== false,
         startTime: convertTo24Hour(rawStart),
         endTime: convertTo24Hour(rawEnd),
       });
@@ -425,32 +445,72 @@ const EditDoctorProfile = () => {
             </div>
         </div>
         
-        {/* ── Section 1: Professional Identity ── */}
+        {/* ── Section 1: Professional Identity & Expertise ── */}
         <div className={sectionClass}>
-          <h3 className={sectionTitleClass}><Stethoscope className="text-blue-600" size={20} /> Professional Identity</h3>
+          <h3 className={sectionTitleClass}><Stethoscope className="text-blue-600" size={20} /> Professional Identity & Expertise</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className={labelClass}>Medical Specialization</label>
-              <input type="text" name="specialization" value={formData.specialization} onChange={handleChange} className={inputClass} placeholder="e.g. Cardiologist, Neurologist" required />
+              <input type="text" name="specialization" value={formData.specialization} onChange={handleChange} className={inputClass} placeholder="e.g. Cardiologist" required />
+            </div>
+            <div>
+              <label className={labelClass}>Sub-Specialties</label>
+              <input type="text" name="subSpecialties" value={formData.subSpecialties} onChange={handleChange} className={inputClass} placeholder="e.g. Diabetes, Hypertension" />
             </div>
             <div>
               <label className={labelClass}>Medical Degree</label>
               <input type="text" name="medicalDegree" value={formData.medicalDegree} onChange={handleChange} className={inputClass} placeholder="e.g. MBBS, MD" required />
             </div>
             <div>
-              <label className={labelClass}>Medical License Number</label>
-              <input type="text" name="medicalLicenseNumber" value={formData.medicalLicenseNumber} onChange={handleChange} className={inputClass} placeholder="e.g. REG-552311" required />
-            </div>
-            <div>
               <label className={labelClass}>Years of Experience</label>
               <input type="number" name="yearsOfExperience" value={formData.yearsOfExperience} onChange={handleChange} className={inputClass} placeholder="e.g. 12" required />
+            </div>
+            
+            <div className="md:col-span-2 pt-4 border-t border-slate-50">
+                <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-4">Regulatory Credentials</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label className={labelClass}>Medical Council</label>
+                        <input type="text" name="medicalCouncil" value={formData.medicalCouncil} onChange={handleChange} className={inputClass} placeholder="e.g. KMC" required />
+                    </div>
+                    <div>
+                        <label className={labelClass}>License Number</label>
+                        <input type="text" name="medicalLicenseNumber" value={formData.medicalLicenseNumber} onChange={handleChange} className={inputClass} placeholder="e.g. REG-552311" required />
+                    </div>
+                    <div>
+                        <label className={labelClass}>License Expiry</label>
+                        <input type="date" name="licenseExpiryDate" value={formData.licenseExpiryDate} onChange={handleChange} className={inputClass} required />
+                    </div>
+                </div>
+            </div>
+
+            <div className="md:col-span-2 pt-4 border-t border-slate-50">
+                <p className="text-[10px] font-black text-purple-600 uppercase tracking-widest mb-4">Clinical Depth</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className={labelClass}>Procedures Handled</label>
+                        <textarea name="proceduresHandled" rows="2" value={formData.proceduresHandled} onChange={handleChange} className={inputClass} placeholder="e.g. Angioplasty, Stent Placement" />
+                    </div>
+                    <div>
+                        <label className={labelClass}>Treatment Focus</label>
+                        <textarea name="treatmentFocus" rows="2" value={formData.treatmentFocus} onChange={handleChange} className={inputClass} placeholder="e.g. Chronic Heart Failure" />
+                    </div>
+                    <div>
+                        <label className={labelClass}>Languages Spoken</label>
+                        <input type="text" name="languagesSpoken" value={formData.languagesSpoken} onChange={handleChange} className={inputClass} placeholder="e.g. English, Hindi, Kannada" />
+                    </div>
+                    <div>
+                        <label className={labelClass}>Scientific Publications</label>
+                        <input type="text" name="publications" value={formData.publications} onChange={handleChange} className={inputClass} placeholder="Link to research or journal" />
+                    </div>
+                </div>
             </div>
           </div>
         </div>
 
         {/* ── Section 2: Clinical Practice ── */}
         <div className={sectionClass}>
-          <h3 className={sectionTitleClass}><Building2 className="text-indigo-600" size={20} /> Clinical Practice</h3>
+          <h3 className={sectionTitleClass}><Building2 className="text-indigo-600" size={20} /> Clinical Practice & Scheduling</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
               <label className={labelClass}>
@@ -466,6 +526,26 @@ const EditDoctorProfile = () => {
                 className={inputClass} 
                 placeholder="e.g. Apollo Hospital, City Clinic" 
               />
+            </div>
+
+            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label className={labelClass}>Slot Size (Minutes)</label>
+                    <select name="slotDuration" value={formData.slotDuration} onChange={handleChange} className={inputClass}>
+                        <option value={10}>10 Minutes</option>
+                        <option value={15}>15 Minutes</option>
+                        <option value={30}>30 Minutes</option>
+                        <option value={60}>60 Minutes</option>
+                    </select>
+                </div>
+                <div>
+                    <label className={labelClass}>Max Daily Patients</label>
+                    <input type="number" name="maxPatientsPerDay" value={formData.maxPatientsPerDay} onChange={handleChange} className={inputClass} placeholder="e.g. 40" />
+                </div>
+                <div>
+                    <label className={labelClass}>Break Timings</label>
+                    <input type="text" name="breakTimings" value={formData.breakTimings} onChange={handleChange} className={inputClass} placeholder="e.g. 13:00 - 14:00" />
+                </div>
             </div>
             <div>
               <label className={labelClass}>
