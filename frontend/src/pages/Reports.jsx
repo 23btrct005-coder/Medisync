@@ -167,6 +167,27 @@ const Reports = () => {
     }
   };
 
+  const handleDownload = async (id, fileName) => {
+    if (!id) return;
+    setDownloadingId(id);
+    try {
+      const res = await api.get(`reports/download/${id}`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download failed", error);
+      toast.error("Failed to securely download clinical document.");
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
   const closePreview = () => {
     if (previewData.url) window.URL.revokeObjectURL(previewData.url);
     setPreviewData({ ...previewData, isOpen: false, url: null });

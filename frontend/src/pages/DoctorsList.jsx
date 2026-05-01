@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  UserCheck, Shield, Revoke, Trash2, Mail, Plus, 
+  UserCheck, Shield, Ban, Trash2, Mail, Plus, 
   ChevronRight, Activity, Clock, ShieldX, UserMinus, MessageSquare 
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -112,7 +112,7 @@ const DoctorsList = () => {
                 making your telemetry unavailable to their portal.
               </p>
               <div className="p-4 bg-white/5 rounded-2xl border border-white/10 flex items-center gap-3">
-                 <Clock size={18} className="text-primary-400" />
+                 <Ban size={18} className="text-primary-400" />
                  <span className="text-[10px] font-black uppercase tracking-widest">Real-time Revocation Active</span>
               </div>
             </div>

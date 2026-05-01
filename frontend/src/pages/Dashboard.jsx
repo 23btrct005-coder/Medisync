@@ -6,15 +6,17 @@ import {
   Activity, ClipboardList, UserCheck, Calendar, QrCode, X, 
   Download, Loader2, MessageSquare, ShieldCheck, Sparkles, 
   ChevronRight, Plus, Zap, Heart, Bell, Database, Globe,
-  TrendingUp, ArrowUpRight, Lock
+  TrendingUp, ArrowUpRight, Lock, LayoutGrid, FileText, Pill, Wallet
 } from 'lucide-react';
 import ProfileCompletionBanner from '../components/ProfileCompletionBanner';
 import ActivityHub from '../components/ActivityHub';
 import HealthSyncScore from '../components/HealthSyncScore';
 import StatCardPro from '../components/StatCard'; 
 import { useNavigate } from 'react-router-dom';
+import { useNotifications } from '../context/NotificationContext';
 import toast from 'react-hot-toast';
 import ClinicalAlertBanner from '../components/ClinicalAlertBanner';
+import QRModal from '../components/QRModal';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -107,8 +109,19 @@ const Dashboard = () => {
                   Clinical Node Active
                 </div>
                 
-                <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-none">
+                <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-none flex flex-wrap items-center gap-4">
                   Welcome, <span className="text-emerald-400">{(user?.name || 'User').split(' ')[0]}</span>
+                  <button 
+                    onClick={() => navigate('/dashboard/messages')}
+                    className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 transition-all relative group/msg"
+                  >
+                    <MessageSquare size={24} className="group-hover:scale-110 transition-transform" />
+                    {useNotifications().unreadChatCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] font-black border-2 border-[#0A1A1A]">
+                        {useNotifications().unreadChatCount}
+                      </span>
+                    )}
+                  </button>
                 </h1>
                 
                 <p className="text-slate-400 font-medium text-lg leading-relaxed">
@@ -265,7 +278,7 @@ const Dashboard = () => {
             {/* Quick Access Grid (Restoring Old UI feel) */}
             <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-xl">
                <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest mb-6 flex items-center gap-2">
-                 <Grid size={16} className="text-primary" /> Service Hub
+                 <LayoutGrid size={16} className="text-primary" /> Service Hub
                </h3>
                <div className="grid grid-cols-2 gap-4">
                  {[

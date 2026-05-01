@@ -14,7 +14,9 @@ const AdminDashboard = () => {
   const location = useLocation();
   const [pendingDoctors, setPendingDoctors] = useState([]);
   const [pendingHospitals, setPendingHospitals] = useState([]);
-  const [activeTab, setActiveTab] = useState(location.pathname.includes('pending') ? 'doctors' : 'doctors'); 
+  const [allDoctors, setAllDoctors] = useState([]);
+  const [allHospitals, setAllHospitals] = useState([]);
+  const [activeTab, setActiveTab] = useState('pending_doctors'); 
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
   const [message, setMessage] = useState({ type: '', text: '' });
@@ -36,18 +38,37 @@ const AdminDashboard = () => {
   const fetchData = async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
-      if (activeTab === 'doctors') {
+      if (activeTab === 'pending_doctors') {
         const response = await api.get('admin/doctors/pending');
         setPendingDoctors(response.data);
-      } else {
+      } else if (activeTab === 'pending_hospitals') {
         const response = await api.get('admin/hospitals/pending');
         setPendingHospitals(response.data);
+      } else if (activeTab === 'all_doctors') {
+        const response = await api.get('admin/doctors/all');
+        setAllDoctors(response.data);
+      } else if (activeTab === 'all_hospitals') {
+        const response = await api.get('admin/hospitals/all');
+        setAllHospitals(response.data);
       }
     } catch (error) {
-      console.error("Error fetching pending data", error);
-      if (showLoading) setMessage({ type: 'error', text: 'Failed to load pending applications.' });
+      console.error("Error fetching admin data", error);
+      if (showLoading) setMessage({ type: 'error', text: 'Failed to synchronize clinical registry.' });
     } finally {
       if (showLoading) setLoading(false);
+    }
+  };
+
+  const handleToggleAccess = async (userId, itemId) => {
+    setActionLoading(itemId);
+    try {
+      const response = await api.post(`admin/users/${userId}/toggle`);
+      toast.success(response.data.message);
+      fetchData(false);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to toggle user access.");
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -101,17 +122,23 @@ const AdminDashboard = () => {
     ), { duration: Infinity });
   };
 
-  const filteredDoctors = pendingDoctors.filter(d => 
-    (d.name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) || 
-    (d.email?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-    (d.medicalLicenseNumber?.toLowerCase() || "").includes(searchTerm.toLowerCase())
-  );
+  const getFilteredData = () => {
+    let data = [];
+    if (activeTab === 'pending_doctors') data = pendingDoctors;
+    else if (activeTab === 'pending_hospitals') data = pendingHospitals;
+    else if (activeTab === 'all_doctors') data = allDoctors;
+    else if (activeTab === 'all_hospitals') data = allHospitals;
 
-  const filteredHospitals = pendingHospitals.filter(h => 
-    (h.hospital_name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-    (h.admin_name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-    (h.license_code?.toLowerCase() || "").includes(searchTerm.toLowerCase())
-  );
+    return data.filter(item => {
+      const name = (item.name || item.hospital_name || "").toLowerCase();
+      const email = (item.email || "").toLowerCase();
+      const license = (item.medicalLicenseNumber || item.license_code || "").toLowerCase();
+      const search = searchTerm.toLowerCase();
+      return name.includes(search) || email.includes(search) || license.includes(search);
+    });
+  };
+
+  const filteredData = getFilteredData();
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 relative">
@@ -204,18 +231,29 @@ const AdminDashboard = () => {
             </div>
 
             <div className="p-8 border-t border-slate-100 bg-slate-50/50 flex gap-4">
-              <button
-                onClick={() => handleReject(selectedItem.id, activeTab)}
-                className="flex-1 py-4 bg-white border border-slate-200 text-red-500 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-red-50 transition-all active:scale-95"
-              >
-                Reject Application
-              </button>
-              <button
-                onClick={() => handleApprove(selectedItem.id, activeTab)}
-                className={`flex-1 py-4 ${activeTab === 'doctors' ? 'bg-primary-600 shadow-primary-600/20' : 'bg-indigo-600 shadow-indigo-600/20'} text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl hover:opacity-90 transition-all active:scale-95`}
-              >
-                Confirm Verification
-              </button>
+              {activeTab.includes('pending') ? (
+                <>
+                  <button
+                    onClick={() => handleReject(selectedItem.id, activeTab.includes('doctors') ? 'doctors' : 'hospitals')}
+                    className="flex-1 py-4 bg-white border border-slate-200 text-red-500 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-red-50 transition-all active:scale-95"
+                  >
+                    Reject Application
+                  </button>
+                  <button
+                    onClick={() => handleApprove(selectedItem.id, activeTab.includes('doctors') ? 'doctors' : 'hospitals')}
+                    className={`flex-1 py-4 ${activeTab.includes('doctors') ? 'bg-primary-600 shadow-primary-600/20' : 'bg-indigo-600 shadow-indigo-600/20'} text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl hover:opacity-90 transition-all active:scale-95`}
+                  >
+                    Confirm Verification
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => handleToggleAccess(selectedItem.user_id, selectedItem.id)}
+                  className={`flex-1 py-4 ${selectedItem.enabled ? 'bg-red-600 shadow-red-600/20' : 'bg-emerald-600 shadow-emerald-600/20'} text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl hover:opacity-90 transition-all active:scale-95`}
+                >
+                  {selectedItem.enabled ? 'Revoke System Access' : 'Grant System Access'}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -299,165 +337,117 @@ const AdminDashboard = () => {
       </div>
 
       {/* Tab Switcher */}
-      <div className="flex gap-2 p-1.5 bg-slate-100 rounded-2xl w-fit">
-        <button
-          onClick={() => { setActiveTab('doctors'); setSelectedItem(null); }}
-          className={`px-8 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-            activeTab === 'doctors' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-          }`}
-        >
-          Physicians ({pendingDoctors.length})
-        </button>
-        <button
-          onClick={() => { setActiveTab('hospitals'); setSelectedItem(null); }}
-          className={`px-8 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-            activeTab === 'hospitals' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-          }`}
-        >
-          Institutions ({pendingHospitals.length})
-        </button>
+      <div className="flex flex-wrap gap-2 p-1.5 bg-slate-100 rounded-2xl w-fit">
+        {[
+          { id: 'pending_doctors', label: 'Pending Docs', count: pendingDoctors.length },
+          { id: 'pending_hospitals', label: 'Pending Hubs', count: pendingHospitals.length },
+          { id: 'all_doctors', label: 'All Registry', count: allDoctors.length },
+          { id: 'all_hospitals', label: 'Institutions', count: allHospitals.length },
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => { setActiveTab(tab.id); setSelectedItem(null); }}
+            className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+              activeTab === tab.id ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            {tab.label} {tab.count > 0 && `(${tab.count})`}
+          </button>
+        ))}
       </div>
 
       {/* Pending List Table/Cards */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[40px] border border-slate-200 shadow-sm">
           <Loader2 size={48} className="animate-spin text-primary-500 mb-4" />
-          <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-xs">Querying {activeTab === 'doctors' ? 'Medical' : 'Institutional'} Registry...</p>
+          <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-xs">Querying MediSync Registry...</p>
         </div>
-      ) : (activeTab === 'doctors' ? filteredDoctors : filteredHospitals).length === 0 ? (
+      ) : filteredData.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[40px] border border-slate-200 shadow-sm text-center">
             <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
                 <CheckCircle size={40} className="text-slate-200" />
             </div>
-            <h3 className="text-2xl font-black text-slate-900 tracking-tight">Zero Pending Applications</h3>
-            <p className="text-slate-400 font-medium mt-2 max-w-xs mx-auto">All records have been reviewed. Good job!</p>
+            <h3 className="text-2xl font-black text-slate-900 tracking-tight">Empty Dataset</h3>
+            <p className="text-slate-400 font-medium mt-2 max-w-xs mx-auto">No records found matching your current filter criteria.</p>
         </div>
       ) : (
         <div className="space-y-4">
-          {activeTab === 'doctors' ? (
-            filteredDoctors.map((doctor) => (
-              <div 
-                key={doctor.id} 
-                onClick={() => setSelectedItem(doctor)}
-                className="bg-white border border-slate-100 rounded-[32px] p-6 sm:p-8 hover:shadow-xl hover:shadow-slate-200/50 hover:border-primary-100 transition-all duration-300 group flex flex-col xl:flex-row xl:items-center justify-between gap-8 cursor-pointer"
-              >
-                <div className="flex items-start gap-6">
-                  <div className="w-20 h-20 shrink-0 bg-slate-100 rounded-3xl overflow-hidden flex items-center justify-center border-4 border-slate-50 shadow-inner">
+          {filteredData.map((item) => (
+            <div 
+              key={item.id} 
+              onClick={() => setSelectedItem(item)}
+              className="bg-white border border-slate-100 rounded-[32px] p-6 sm:p-8 hover:shadow-xl hover:shadow-slate-200/50 hover:border-primary-100 transition-all duration-300 group flex flex-col xl:flex-row xl:items-center justify-between gap-8 cursor-pointer"
+            >
+              <div className="flex items-start gap-6">
+                <div className="w-20 h-20 shrink-0 bg-slate-100 rounded-3xl overflow-hidden flex items-center justify-center border-4 border-slate-50 shadow-inner">
+                    {activeTab.includes('doctors') ? (
                       <img 
-                          src={doctor.profilePictureUrl || `${api.defaults.baseURL}/auth/doctor/photo/${doctor.id}?t=${Date.now()}`} 
-                          alt={doctor.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                              e.target.style.display = 'none';
-                              e.target.nextSibling.style.display = 'flex';
-                          }}
+                        src={item.profilePictureUrl || `${api.defaults.baseURL}/auth/doctor/photo/${item.id}?t=${Date.now()}`} 
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                        }}
                       />
-                      <div className="hidden items-center justify-center w-full h-full">
-                          <Stethoscope size={32} className="text-slate-300" />
-                      </div>
-                  </div>
-                  <div className="min-w-0">
-                      <h3 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3 italic">
-                          {doctor.name}
-                          <span className="text-[10px] font-black bg-amber-100 text-amber-700 px-3 py-1 rounded-full uppercase tracking-widest not-italic">Unverified</span>
-                      </h3>
-                      <div className="flex flex-wrap gap-x-6 gap-y-2 mt-3">
-                          <div className="flex items-center gap-1.5 text-sm font-bold text-slate-500">
-                              <GraduationCap size={16} className="text-primary-500" /> {doctor.specialization}
-                          </div>
-                          <div className="flex items-center gap-1.5 text-sm font-bold text-slate-500">
-                              <ShieldCheck size={16} className="text-emerald-500" /> License: {doctor.medicalLicenseNumber}
-                          </div>
-                      </div>
-                      <div className="mt-4 flex flex-wrap gap-3">
-                          <span className="px-3 py-1.5 bg-slate-50 rounded-2xl text-[11px] font-black font-mono text-slate-400 border border-slate-100">
-                              UID: #{doctor.id}
-                          </span>
-                          <span className="px-3 py-1.5 bg-slate-50 rounded-2xl text-[11px] font-bold text-slate-500 border border-slate-100">
-                              {doctor.email}
-                          </span>
-                      </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-3xl border border-slate-100" onClick={e => e.stopPropagation()}>
-                  <button
-                      onClick={() => handleReject(doctor.id, 'doctors')}
-                      disabled={actionLoading === doctor.id}
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-red-500 hover:bg-red-50 font-black text-sm rounded-2xl border border-slate-200 transition-all active:scale-95 disabled:opacity-50"
-                  >
-                      <XCircle size={18} />
-                      Reject
-                  </button>
-                  <button
-                      onClick={() => handleApprove(doctor.id, 'doctors')}
-                      disabled={actionLoading === doctor.id}
-                      className="flex-2 sm:flex-none flex items-center justify-center gap-2 px-8 py-3.5 bg-primary-600 text-white hover:bg-primary-700 font-black text-sm rounded-2xl shadow-xl shadow-primary-600/20 transition-all active:scale-95 disabled:opacity-50"
-                  >
-                      {actionLoading === doctor.id ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />}
-                      Approve Credentials
-                  </button>
-                </div>
-              </div>
-            ))
-          ) : (
-            filteredHospitals.map((hospital) => (
-              <div 
-                key={hospital.id} 
-                onClick={() => setSelectedItem(hospital)}
-                className="bg-white border border-slate-100 rounded-[32px] p-6 sm:p-8 hover:shadow-xl hover:shadow-slate-200/50 hover:border-indigo-100 transition-all duration-300 group flex flex-col xl:flex-row xl:items-center justify-between gap-8 cursor-pointer"
-              >
-                <div className="flex items-start gap-6">
-                  <div className="w-20 h-20 shrink-0 bg-indigo-50 rounded-3xl flex items-center justify-center border-4 border-white shadow-sm">
+                    ) : (
                       <Building2 size={36} className="text-indigo-400" />
-                  </div>
-                  <div className="min-w-0">
-                      <h3 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3 italic">
-                          {hospital.hospital_name}
-                          <span className="text-[10px] font-black bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full uppercase tracking-widest not-italic">Institutional</span>
-                      </h3>
-                      <div className="flex flex-wrap gap-x-6 gap-y-2 mt-3">
-                          <div className="flex items-center gap-1.5 text-sm font-bold text-slate-500">
-                              <UserCheck size={16} className="text-indigo-500" /> Admin: {hospital.admin_name}
-                          </div>
-                          <div className="flex items-center gap-1.5 text-sm font-bold text-slate-500">
-                              <ShieldCheck size={16} className="text-emerald-500" /> License: {hospital.license_code}
-                          </div>
-                      </div>
-                      <div className="mt-4 flex flex-wrap gap-3">
-                          <span className="px-3 py-1.5 bg-slate-50 rounded-2xl text-[11px] font-black font-mono text-slate-400 border border-slate-100">
-                              ID: #{hospital.id}
-                          </span>
-                          <span className="px-3 py-1.5 bg-slate-50 rounded-2xl text-[11px] font-bold text-slate-500 border border-slate-100">
-                              {hospital.city}, {hospital.state}
-                          </span>
-                      </div>
-                  </div>
+                    )}
+                    <div className="hidden items-center justify-center w-full h-full">
+                        <Stethoscope size={32} className="text-slate-300" />
+                    </div>
                 </div>
-
-                <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-3xl border border-slate-100" onClick={e => e.stopPropagation()}>
-                  <button
-                      onClick={() => handleReject(hospital.id, 'hospitals')}
-                      disabled={actionLoading === hospital.id}
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-red-500 hover:bg-red-50 font-black text-sm rounded-2xl border border-slate-200 transition-all active:scale-95 disabled:opacity-50"
-                  >
-                      <XCircle size={18} />
-                      Reject
-                  </button>
-                  <button
-                      onClick={() => handleApprove(hospital.id, 'hospitals')}
-                      disabled={actionLoading === hospital.id}
-                      className="flex-2 sm:flex-none flex items-center justify-center gap-2 px-8 py-3.5 bg-indigo-600 text-white hover:bg-indigo-700 font-black text-sm rounded-2xl shadow-xl shadow-indigo-600/20 transition-all active:scale-95 disabled:opacity-50"
-                  >
-                      {actionLoading === hospital.id ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />}
-                      Verify Institution
-                  </button>
+                <div className="min-w-0">
+                    <h3 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3 italic">
+                        {item.name || item.hospital_name}
+                        {!item.approved && <span className="text-[10px] font-black bg-amber-100 text-amber-700 px-3 py-1 rounded-full uppercase tracking-widest not-italic">Pending</span>}
+                        {item.enabled === false && <span className="text-[10px] font-black bg-red-100 text-red-700 px-3 py-1 rounded-full uppercase tracking-widest not-italic">Suspended</span>}
+                    </h3>
+                    <div className="flex flex-wrap gap-x-6 gap-y-2 mt-3">
+                        <div className="flex items-center gap-1.5 text-sm font-bold text-slate-500">
+                            {activeTab.includes('doctors') ? <GraduationCap size={16} className="text-primary-500" /> : <UserCheck size={16} className="text-indigo-500" />}
+                            {item.specialization || `Admin: ${item.admin_name}`}
+                        </div>
+                        <div className="flex items-center gap-1.5 text-sm font-bold text-slate-500">
+                            <ShieldCheck size={16} className="text-emerald-500" /> License: {item.medicalLicenseNumber || item.license_code}
+                        </div>
+                    </div>
                 </div>
               </div>
-            ))
-          )}
+
+              <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-3xl border border-slate-100" onClick={e => e.stopPropagation()}>
+                {activeTab.includes('pending') ? (
+                  <>
+                    <button
+                        onClick={() => handleReject(item.id, activeTab.includes('doctors') ? 'doctors' : 'hospitals')}
+                        disabled={actionLoading === item.id}
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-red-500 hover:bg-red-50 font-black text-sm rounded-2xl border border-slate-200 transition-all active:scale-95 disabled:opacity-50"
+                    >
+                        <XCircle size={18} /> Reject
+                    </button>
+                    <button
+                        onClick={() => handleApprove(item.id, activeTab.includes('doctors') ? 'doctors' : 'hospitals')}
+                        disabled={actionLoading === item.id}
+                        className={`flex-2 sm:flex-none flex items-center justify-center gap-2 px-8 py-3.5 ${activeTab.includes('doctors') ? 'bg-primary-600' : 'bg-indigo-600'} text-white font-black text-sm rounded-2xl shadow-xl transition-all active:scale-95 disabled:opacity-50`}
+                    >
+                        {actionLoading === item.id ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />} Verify
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => handleToggleAccess(item.user_id, item.id)}
+                    disabled={actionLoading === item.id}
+                    className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3.5 ${item.enabled ? 'bg-white text-red-600 border-red-100' : 'bg-emerald-600 text-white shadow-emerald-600/20'} font-black text-xs uppercase tracking-widest rounded-2xl border shadow-lg transition-all active:scale-95 disabled:opacity-50`}
+                  >
+                    {actionLoading === item.id ? <Loader2 size={18} className="animate-spin" /> : (item.enabled ? <XCircle size={18} /> : <CheckCircle size={18} />)}
+                    {item.enabled ? 'Suspend Access' : 'Grant Access'}
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
-      )}
+      )}}
 
       {/* Security Tip & Danger Zone */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">

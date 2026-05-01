@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Activity, Search, ShieldAlert, ChevronRight, UserPlus, Filter } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Users, Activity, Search, ShieldAlert, ChevronRight, UserPlus, Filter, Calendar } from 'lucide-react';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
 
 const HospitalDoctorRoster = () => {
+    const navigate = useNavigate();
     const [doctors, setDoctors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');

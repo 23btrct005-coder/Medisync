@@ -8,6 +8,7 @@ import {
 import api from '../api/axiosConfig';
 import { Html5Qrcode } from 'html5-qrcode';
 import { useNavigate } from 'react-router-dom';
+import { useNotifications } from '../context/NotificationContext';
 import ProfileCompletionBanner from '../components/ProfileCompletionBanner';
 import StatCardPro from '../components/StatCard';
 import { SkeletonRow } from '../components/SkeletonCard';
@@ -159,8 +160,19 @@ const DoctorDashboard = () => {
                   Verified Clinical Gateway
                 </div>
                 
-                <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-none">
+                <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-none flex flex-wrap items-center gap-4">
                   Clinical Hub, <span className="text-emerald-400">Dr. {user?.name || 'Physician'}</span>
+                  <button 
+                    onClick={() => navigate('/doctor-dashboard/messages')}
+                    className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 transition-all relative group/msg"
+                  >
+                    <MessageSquare size={24} className="group-hover:scale-110 transition-transform" />
+                    {useNotifications().unreadChatCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] font-black border-2 border-[#0A1A1A]">
+                        {useNotifications().unreadChatCount}
+                      </span>
+                    )}
+                  </button>
                 </h1>
                 
                 <p className="text-slate-400 font-medium text-lg leading-relaxed">

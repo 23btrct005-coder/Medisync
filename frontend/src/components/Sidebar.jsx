@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, FileText, ClipboardList, User, LogOut, Activity, 
   Calendar, UserCheck, CalendarPlus, ShieldCheck, Pill, Wallet, 
-  MessageSquare, Settings, HelpCircle, ChevronDown
+  MessageSquare, Settings, HelpCircle, ChevronDown, TrendingUp
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';

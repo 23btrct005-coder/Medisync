@@ -141,4 +141,13 @@ public class EmailService {
         System.out.println("DEBUG: Sending physician invitation to: " + to);
         sendEmail(to, subject, body);
     }
+
+    public void sendDeletionOtpEmail(String to, String otp) {
+        String subject = "MediSync - PERMANENT Account Deletion Request";
+        String body = "You have requested to PERMANENTLY DELETE your MediSync account.\n\n" +
+                      "Your security verification code is: " + otp + "\n\n" +
+                      "This code is valid for 10 minutes. If you did not request this, please change your password immediately. " +
+                      "MediSync staff will NEVER ask for this code.";
+        sendEmail(to, subject, body);
+    }
 }

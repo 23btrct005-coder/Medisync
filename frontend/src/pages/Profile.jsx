@@ -6,8 +6,9 @@ import {
   UserCircle, Mail, Phone, MapPin, Droplet, Calendar,
   Activity, AlertCircle, Heart, ShieldCheck, Users,
   AlertTriangle, Pill, Stethoscope, Scissors, Download, QrCode,
-  Edit3, Briefcase, Zap, Info
+  Edit3, Briefcase, Zap, Info, X
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import api from '../api/axiosConfig';
 
 const InfoRow = ({ icon: Icon, label, value, color = 'text-primary-500' }) => (
@@ -31,8 +32,41 @@ const Section = ({ title, icon: Icon, children }) => (
 );
 
 const Profile = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
+  const [showDeleteModal, setShowDeleteModal] = React.useState(false);
+  const [deleteStep, setDeleteStep] = React.useState('request'); // request, confirm
+  const [otp, setOtp] = React.useState('');
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  const handleRequestDeletion = async () => {
+    setIsSubmitting(true);
+    try {
+      await api.post('auth/delete-account/request');
+      setDeleteStep('confirm');
+      toast.success("Security code sent to your registered email.");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to initiate deletion.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleConfirmDeletion = async () => {
+    if (!otp || otp.length !== 6) return toast.error("Please enter the 6-digit security code.");
+    setIsSubmitting(true);
+    try {
+      await api.post('auth/delete-account/confirm', { otp });
+      toast.success("Account permanently deleted.");
+      setShowDeleteModal(false);
+      logout();
+      navigate('/');
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Security verification failed.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (loading) return (
     <div className="flex justify-center items-center p-20">
@@ -270,6 +304,96 @@ const Profile = () => {
               </p>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── Danger Zone ── */}
+      <div className="bg-white rounded-[40px] border border-red-100 p-10 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-8 opacity-5 -rotate-12 translate-x-1/4 -translate-y-1/4 group-hover:rotate-0 transition-transform duration-700">
+              <AlertTriangle size={200} className="text-red-600" />
+          </div>
+          <div className="relative z-10 text-center md:text-left">
+              <h4 className="text-2xl font-black text-red-900 tracking-tight flex items-center justify-center md:justify-start gap-2">
+                  <AlertCircle size={24} className="text-red-500" /> Permanent Account Deletion
+              </h4>
+              <p className="text-red-600/70 font-medium mt-2 max-w-xl">
+                  This action is irreversible. All clinical records, laboratory reports, appointments, and telemetry linkage 
+                  will be PERMANENTLY scrubbed from the MediSync secure nodes.
+              </p>
+          </div>
+          <button 
+            onClick={() => setShowDeleteModal(true)}
+            className="relative z-10 px-8 py-4 bg-red-600 text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl shadow-xl shadow-red-600/20 hover:bg-red-700 transition-all active:scale-95 shrink-0"
+          >
+              Delete My Account
+          </button>
+      </div>
+
+      {/* Deletion Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-300">
+            <div className="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden border border-slate-200 animate-in zoom-in-95 duration-300">
+                <div className="p-10 text-center">
+                    <div className="w-20 h-20 bg-red-50 text-red-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
+                        <AlertTriangle size={40} />
+                    </div>
+                    
+                    {deleteStep === 'request' ? (
+                        <>
+                            <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-3">Critical Confirmation</h3>
+                            <p className="text-slate-500 font-medium leading-relaxed mb-8">
+                                Are you absolutely sure you want to proceed? 
+                                A security verification code will be sent to your email to confirm this action.
+                            </p>
+                            <div className="flex flex-col gap-4">
+                                <button 
+                                    onClick={handleRequestDeletion}
+                                    disabled={isSubmitting}
+                                    className="w-full py-4 bg-red-600 text-white font-black text-xs uppercase tracking-widest rounded-2xl hover:opacity-90 transition-all disabled:opacity-50"
+                                >
+                                    {isSubmitting ? "Generating Security Code..." : "Send Verification Code"}
+                                </button>
+                                <button 
+                                    onClick={() => setShowDeleteModal(false)}
+                                    className="w-full py-4 bg-slate-100 text-slate-600 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-slate-200 transition-all"
+                                >
+                                    Cancel & Return
+                                </button>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-3">Enter Security Code</h3>
+                            <p className="text-slate-500 font-medium mb-8">
+                                Input the 6-digit verification code sent to your registered email to finalize deletion.
+                            </p>
+                            <input 
+                                type="text"
+                                maxLength="6"
+                                placeholder="000000"
+                                className="w-full text-center text-4xl font-black tracking-[0.5em] py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl mb-8 focus:border-red-500 transition-all outline-none"
+                                value={otp}
+                                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                            />
+                            <div className="flex flex-col gap-4">
+                                <button 
+                                    onClick={handleConfirmDeletion}
+                                    disabled={isSubmitting || otp.length !== 6}
+                                    className="w-full py-4 bg-red-600 text-white font-black text-xs uppercase tracking-widest rounded-2xl hover:opacity-90 transition-all disabled:opacity-50"
+                                >
+                                    {isSubmitting ? "Scrubbing Data..." : "Permanently Delete Data"}
+                                </button>
+                                <button 
+                                    onClick={() => setDeleteStep('request')}
+                                    className="text-xs font-black text-slate-400 uppercase tracking-widest hover:text-slate-600"
+                                >
+                                    Back
+                                </button>
+                            </div>
+                        </>
+                    )}
+                </div>
+            </div>
         </div>
       )}
 

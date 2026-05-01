@@ -158,6 +158,18 @@ public class AuthService {
     }
 
     @Transactional
+    public void generateAndSendDeletionOtp(String email) {
+        String normalizedEmail = email != null ? email.toLowerCase() : null;
+        emailVerificationOtpRepository.deleteByEmail(normalizedEmail);
+        emailVerificationOtpRepository.flush();
+
+        String otp = String.format("%06d", new Random().nextInt(1000000));
+        EmailVerificationOtp verificationOtp = new EmailVerificationOtp(normalizedEmail, otp, 10);
+        emailVerificationOtpRepository.save(verificationOtp);
+        emailService.sendDeletionOtpEmail(normalizedEmail, otp);
+    }
+
+    @Transactional
     public void verifyOtp(String email, String otp) {
         String normalizedEmail = email != null ? email.toLowerCase() : null;
         verifyOtpStandalone(normalizedEmail, otp);

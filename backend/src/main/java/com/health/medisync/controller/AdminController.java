@@ -147,6 +147,47 @@ public class AdminController {
         }).orElse(ResponseEntity.status(404).body(Map.of("message", "Physician with ID " + id + " not found.")));
     }
 
+    @GetMapping("/hospitals/all")
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> getAllHospitals() {
+        try {
+            String sql = "SELECT ha.id, ha.name as admin_name, ha.position, h.name as hospital_name, h.license_code, h.city, h.state, ha.approved, u.enabled, u.id as user_id " +
+                         "FROM hospital_admins ha " +
+                         "JOIN hospitals h ON ha.hospital_id = h.id " +
+                         "JOIN users u ON ha.user_id = u.id";
+            List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
+            return ResponseEntity.ok(rows);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("message", "Failed to fetch all hospitals: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/doctors/all")
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> getAllDoctors() {
+        try {
+            String sql = "SELECT d.id, d.name, d.email, d.phone, d.specialization, d.medical_degree, d.medical_license_number, d.hospital, d.years_of_experience, d.profile_picture_url, d.approved, u.enabled, u.id as user_id " +
+                         "FROM doctors d " +
+                         "JOIN users u ON d.user_id = u.id";
+            List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
+            return ResponseEntity.ok(rows);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("message", "Failed to fetch all doctors: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/users/{id}/toggle")
+    public ResponseEntity<?> toggleUserStatus(@PathVariable Long id) {
+        return userRepository.findById(id).map(user -> {
+            if ("ROLE_ADMIN".equals(user.getRole())) {
+                return ResponseEntity.status(403).body(Map.of("message", "Administrative nodes cannot be toggled."));
+            }
+            user.setEnabled(!user.isEnabled());
+            userRepository.save(user);
+            return ResponseEntity.ok(Map.of("message", "User access " + (user.isEnabled() ? "granted" : "revoked") + " successfully."));
+        }).orElse(ResponseEntity.status(404).body(Map.of("message", "User node not found.")));
+    }
+
     @PostMapping("/system/wipe")
     @Transactional
     public ResponseEntity<?> wipeSystem() {

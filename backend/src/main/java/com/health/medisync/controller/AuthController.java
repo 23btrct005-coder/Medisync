@@ -749,4 +749,76 @@ public class AuthController {
                              .location(java.net.URI.create(diceBearUrl))
                              .build();
     }
+
+    @PostMapping("/delete-account/request")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> requestDeletionOtp() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepository.findByUsernameIgnoreCase(auth.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        String email = null;
+        if ("ROLE_PATIENT".equals(user.getRole())) {
+            email = patientRepository.findByUserId(user.getId()).map(Patient::getEmail).orElse(null);
+        } else if ("ROLE_DOCTOR".equals(user.getRole())) {
+            email = doctorRepository.findByUserId(user.getId()).map(Doctor::getEmail).orElse(null);
+        } else if ("ROLE_HOSPITAL_ADMIN".equals(user.getRole())) {
+            email = hospitalAdminRepository.findByUserId(user.getId()).map(com.health.medisync.model.HospitalAdmin::getContactEmail).orElse(null);
+        }
+        
+        if (email == null) return ResponseEntity.badRequest().body(Map.of("message", "No verified email associated with this node."));
+        
+        authService.generateAndSendDeletionOtp(email);
+        return ResponseEntity.ok(Map.of("message", "Deletion security code broadcasted to " + email));
+    }
+
+    @PostMapping("/delete-account/confirm")
+    @PreAuthorize("isAuthenticated()")
+    @Transactional
+    public ResponseEntity<?> confirmDeletion(@RequestBody Map<String, String> request) {
+        String otp = request.get("otp");
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepository.findByUsernameIgnoreCase(auth.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        String email = null;
+        if ("ROLE_PATIENT".equals(user.getRole())) {
+            email = patientRepository.findByUserId(user.getId()).map(Patient::getEmail).orElse(null);
+        } else if ("ROLE_DOCTOR".equals(user.getRole())) {
+            email = doctorRepository.findByUserId(user.getId()).map(Doctor::getEmail).orElse(null);
+        } else if ("ROLE_HOSPITAL_ADMIN".equals(user.getRole())) {
+            email = hospitalAdminRepository.findByUserId(user.getId()).map(com.health.medisync.model.HospitalAdmin::getContactEmail).orElse(null);
+        }
+        
+        if (email == null || otp == null) return ResponseEntity.badRequest().body(Map.of("message", "Invalid deletion request."));
+        
+        try {
+            authService.verifyOtpStandalone(email, otp);
+            
+            // CASCADED DATA WIPE
+            Long uid = user.getId();
+            
+            jdbcTemplate.update("DELETE FROM appointments WHERE patient_id = (SELECT id FROM patients WHERE user_id = ?) OR doctor_id = (SELECT id FROM doctors WHERE user_id = ?)", uid, uid);
+            jdbcTemplate.update("DELETE FROM medical_records WHERE patient_id = (SELECT id FROM patients WHERE user_id = ?)", uid);
+            jdbcTemplate.update("DELETE FROM reports WHERE patient_id = (SELECT id FROM patients WHERE user_id = ?)", uid);
+            jdbcTemplate.update("DELETE FROM notifications WHERE user_id = ?", uid);
+            jdbcTemplate.update("DELETE FROM chat_messages WHERE sender_id = ? OR receiver_id = ?", uid, uid);
+            jdbcTemplate.update("DELETE FROM access_requests WHERE patient_id = (SELECT id FROM patients WHERE user_id = ?) OR doctor_id = (SELECT id FROM doctors WHERE user_id = ?)", uid, uid);
+            jdbcTemplate.update("DELETE FROM ratings WHERE patient_id = (SELECT id FROM patients WHERE user_id = ?) OR doctor_id = (SELECT id FROM doctors WHERE user_id = ?)", uid, uid);
+            jdbcTemplate.update("DELETE FROM password_reset_tokens WHERE user_id = ?", uid);
+            jdbcTemplate.update("DELETE FROM email_verification_otps WHERE email = ?", email);
+            
+            // Profile Deletion
+            jdbcTemplate.update("DELETE FROM patients WHERE user_id = ?", uid);
+            jdbcTemplate.update("DELETE FROM doctors WHERE user_id = ?", uid);
+            jdbcTemplate.update("DELETE FROM hospital_admins WHERE user_id = ?", uid);
+            
+            // Finally the User
+            userRepository.delete(user);
+            
+            return ResponseEntity.ok(Map.of("message", "Your MediSync clinical node and all associated data have been PERMANENTLY deleted."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Security verification failed: " + e.getMessage()));
+        }
+    }
 }

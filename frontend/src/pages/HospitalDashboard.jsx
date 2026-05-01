@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, Users, ClipboardCheck, TrendingUp, ShieldAlert, Shield, ChevronRight, UserPlus, Search, Activity } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Building2, Users, ClipboardCheck, TrendingUp, ShieldAlert, Shield, ChevronRight, UserPlus, Search, Activity, Calendar } from 'lucide-react';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
 
 const HospitalDashboard = () => {
+    const navigate = useNavigate();
     const [stats, setStats] = useState(null);
     const [doctors, setDoctors] = useState([]);
     const [loading, setLoading] = useState(true);
