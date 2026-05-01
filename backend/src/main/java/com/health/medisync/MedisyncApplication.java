@@ -103,30 +103,9 @@ public class MedisyncApplication {
         return args -> {
             System.out.println("[BOOTSTRAP] Checking for global admin account...");
             
-            // SYSTEM WIPE: As per user request "delete all profiles keep only admin"
-            try {
-                jdbcTemplate.execute("DELETE FROM appointments");
-                jdbcTemplate.execute("DELETE FROM medical_records");
-                jdbcTemplate.execute("DELETE FROM doctors");
-                jdbcTemplate.execute("DELETE FROM hospital_admins");
-                jdbcTemplate.execute("DELETE FROM hospitals");
-                jdbcTemplate.execute("DELETE FROM patients");
-                jdbcTemplate.execute("DELETE FROM users WHERE role != 'ROLE_ADMIN' AND username != 'admin'");
-                System.out.println("[BOOTSTRAP] System wipe complete. Only admin retained.");
-            } catch (Exception e) {
-                System.out.println("[BOOTSTRAP] Wipe failed (likely table doesn't exist yet): " + e.getMessage());
-            }
-
             Optional<User> adminUser = userRepository.findByUsernameIgnoreCase("admin");
 
-            if (adminUser.isPresent()) {
-                User user = adminUser.get();
-                System.out.println("[BOOTSTRAP] Admin user found. Resetting password to 'admin123' and ensuring ROLE_ADMIN.");
-                user.setPassword(passwordEncoder.encode("admin123"));
-                user.setRole("ROLE_ADMIN");
-                user.setEnabled(true);
-                userRepository.save(user);
-            } else {
+            if (adminUser.isEmpty()) {
                 System.out.println("[BOOTSTRAP] No admin user found. Creating global 'admin' account...");
                 User newAdmin = new User();
                 newAdmin.setUsername("admin");
@@ -135,6 +114,8 @@ public class MedisyncApplication {
                 newAdmin.setEnabled(true);
                 userRepository.save(newAdmin);
                 System.out.println("[BOOTSTRAP] Global admin created successfully.");
+            } else {
+                System.out.println("[BOOTSTRAP] Admin user exists. Persistence mode active.");
             }
         };
     }
