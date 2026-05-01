@@ -44,8 +44,26 @@ const EditDoctorProfile = () => {
     endTime: '17:00'
   });
 
+  const convertTo24Hour = (timeStr) => {
+    if (!timeStr) return "09:00";
+    // Check if already in HH:mm format
+    if (/^\d{2}:\d{2}$/.test(timeStr)) return timeStr;
+    
+    try {
+      const cleaned = timeStr.replace('.', ':').trim();
+      const [time, modifier] = cleaned.split(' ');
+      let [hours, minutes] = time.split(':');
+      if (hours === '12') hours = '00';
+      if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
+      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    } catch (e) {
+      return "09:00";
+    }
+  };
+
   useEffect(() => {
     if (user) {
+      const [rawStart, rawEnd] = (user.consultationTimings?.split(' - ')) || ['09:00', '17:00'];
       setFormData({
         name: user.name || '',
         phone: user.phone || '',
@@ -67,9 +85,9 @@ const EditDoctorProfile = () => {
         upiId: user.upiId || '',
         preferredPaymentMode: user.preferredPaymentMode || 'RAZORPAY',
         appointmentsEnabled: user.appointmentsEnabled !== false, // default true
-        // Split timings for easier editing
-        startTime: (user.consultationTimings?.split(' - ')[0]) || '09:00',
-        endTime: (user.consultationTimings?.split(' - ')[1]) || '17:00',
+        // Split and convert timings for HTML5 time input compliance
+        startTime: convertTo24Hour(rawStart),
+        endTime: convertTo24Hour(rawEnd),
       });
       setPhotoPreview(`${api.defaults.baseURL}/auth/doctor/photo/${user.id}?t=${Date.now()}`);
     }

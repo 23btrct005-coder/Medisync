@@ -39,16 +39,19 @@ public class DoctorController {
     }
 
     @GetMapping("/patients/{id}")
+    @Transactional(readOnly = true)
     public ResponseEntity<Patient> getPatientById(@PathVariable Long id, Authentication authentication) {
         return ResponseEntity.ok(doctorService.getPatientById(authentication.getName(), id));
     }
 
     @GetMapping("/patients/{id}/records")
+    @Transactional(readOnly = true)
     public ResponseEntity<List<MedicalRecord>> getPatientRecords(@PathVariable Long id, Authentication authentication) {
         return ResponseEntity.ok(doctorService.getPatientRecords(authentication.getName(), id));
     }
 
     @GetMapping("/patients/{id}/reports")
+    @Transactional(readOnly = true)
     public ResponseEntity<List<Report>> getPatientReports(@PathVariable Long id, Authentication authentication) {
         return ResponseEntity.ok(doctorService.getPatientReports(authentication.getName(), id));
     }
