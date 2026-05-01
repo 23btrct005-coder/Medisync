@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, Filter, Calendar, Clock, ChevronRight,
   User, Star, MapPin, Video, CheckCircle2,
-  ArrowLeft, CreditCard, Loader2, Sparkles, RefreshCw
+  ArrowLeft, CreditCard, Loader2, Sparkles, RefreshCw, QrCode, X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axiosConfig';
@@ -16,6 +16,9 @@ const Booking = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterSpecialty, setFilterSpecialty] = useState('All');
+  
+  const [showUpiModal, setShowUpiModal] = useState(false);
+  const [upiOrderData, setUpiOrderData] = useState(null);
 
   const date = new Date();
   const localToday = [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
@@ -89,6 +92,12 @@ const Booking = () => {
         return;
       }
 
+      if (order.preferredPaymentMode === 'UPI' && order.upiId) {
+        setUpiOrderData(order);
+        setShowUpiModal(true);
+        return;
+      }
+
       const options = {
         key: order.razorpayKeyId,
         amount: order.amount * 100,
@@ -136,6 +145,25 @@ const Booking = () => {
       toast.error(err.response?.data?.message || "Cloud synchronization failed. Please try again.");
     } finally {
       setIsBooking(false);
+    }
+  };
+
+  const handleUpiSuccess = async () => {
+    if (!upiOrderData) return;
+    try {
+        setIsBooking(true);
+        // For UPI, we trust the doctor will verify, but we mark as booked
+        // In a real app, we might wait for a webhook or manual approval
+        await api.post('appointments/verify-upi', {
+            appointmentId: upiOrderData.appointmentId
+        });
+        toast.success("Transaction Initiated! Session Synchronized.");
+        navigate('/dashboard/sessions', { state: { autoOpenApptId: upiOrderData.appointmentId } });
+    } catch (err) {
+        toast.error("Failed to sync UPI transaction.");
+    } finally {
+        setIsBooking(false);
+        setShowUpiModal(false);
     }
   };
 
@@ -478,6 +506,76 @@ const Booking = () => {
               </div>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showUpiModal && upiOrderData && (
+          <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowUpiModal(false)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative w-full max-w-md bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-slate-100"
+            >
+              <div className="p-8 pb-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
+                    <QrCode size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-slate-900 tracking-tight">Direct UPI Payment</h3>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Secure Clinical Node</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowUpiModal(false)} className="p-2 hover:bg-slate-50 rounded-xl transition-colors">
+                  <X size={20} className="text-slate-400" />
+                </button>
+              </div>
+
+              <div className="p-8 pt-4 space-y-8">
+                <div className="bg-slate-50 rounded-3xl p-6 border border-slate-100 text-center">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Consultation Fee</p>
+                  <p className="text-4xl font-black text-slate-900">₹{upiOrderData.amount}</p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-48 h-48 bg-white p-4 rounded-3xl border-2 border-slate-100 shadow-inner flex items-center justify-center">
+                      {/* Simple QR placeholder using API */}
+                      <img 
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiOrderData.upiId}%26pn=MEDISYNC%26am=${upiOrderData.amount}%26cu=INR`} 
+                        alt="UPI QR Code" 
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <div className="text-center">
+                        <p className="text-xs font-black text-slate-900">{upiOrderData.upiId}</p>
+                        <p className="text-[10px] font-medium text-slate-400 mt-1 uppercase tracking-widest italic">Verified Clinical VPA</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                    <button 
+                        onClick={handleUpiSuccess}
+                        className="w-full btn-premium bg-slate-900 text-white py-5 text-sm font-black shadow-xl shadow-slate-900/20 active:scale-95"
+                    >
+                        I've completed the payment
+                    </button>
+                    <p className="text-[10px] text-center text-slate-400 font-medium leading-relaxed px-4">
+                        Please pay the exact amount using any UPI app. Once done, click above to synchronize your session.
+                    </p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

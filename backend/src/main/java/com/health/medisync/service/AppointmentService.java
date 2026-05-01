@@ -283,6 +283,8 @@ public class AppointmentService {
         response.put("amount", fee);
         response.put("razorpayKeyId", razorpayKeyId);
         response.put("isDemo", isDemoMode);
+        response.put("preferredPaymentMode", doctor.getPreferredPaymentMode());
+        response.put("upiId", doctor.getUpiId());
 
         return response;
     }
@@ -322,6 +324,36 @@ public class AppointmentService {
             "APPOINTMENT",
             "Session Confirmed",
             "Your appointment with Dr. " + booked.getDoctor().getName() + " on " + booked.getAppointmentDate() + " is confirmed.",
+            "/dashboard/sessions",
+            "View Details"
+        );
+    }
+
+    @Transactional
+    public void verifyUpiPayment(Long appointmentId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+            .orElseThrow(() -> new RuntimeException("Appointment not found: " + appointmentId));
+
+        appointment.setStatus(AppointmentStatus.BOOKED);
+        appointment.setCreatedAt(LocalDateTime.now());
+        Appointment booked = appointmentRepository.save(appointment);
+
+        // Notify Doctor
+        notificationService.sendNotification(
+            booked.getDoctor().getUser().getId(),
+            "APPOINTMENT",
+            "New Clinical Session (Direct UPI)",
+             booked.getPatient().getName() + " has scheduled an appointment via Direct UPI on " + booked.getAppointmentDate(),
+            "/doctor-dashboard/appointments",
+            "Open Schedule"
+        );
+
+        // Notify Patient
+        notificationService.sendNotification(
+            booked.getPatient().getUser().getId(),
+            "APPOINTMENT",
+            "Session Confirmed (Direct UPI)",
+            "Your direct UPI appointment with Dr. " + booked.getDoctor().getName() + " is confirmed.",
             "/dashboard/sessions",
             "View Details"
         );
