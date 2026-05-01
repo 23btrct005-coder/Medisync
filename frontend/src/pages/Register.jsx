@@ -302,9 +302,9 @@ const Register = () => {
     }
   };
 
-  const inputClass = "block w-full rounded-xl border-slate-200 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm px-4 py-3 border transition-all bg-white";
-  const labelClass = "block text-xs font-bold text-slate-500 uppercase mb-1 ml-1 tracking-wide";
-  const sectionHeadClass = "flex items-center gap-2 text-sm font-bold text-primary-700 uppercase tracking-widest mb-4 pb-2 border-b border-primary-100";
+  const inputClass = "block w-full rounded-xl border-slate-200 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm px-4 py-3.5 border transition-all bg-white placeholder:text-slate-300";
+  const labelClass = "block text-[10px] font-black text-slate-500 uppercase mb-2 ml-1 tracking-[0.15em]";
+  const sectionHeadClass = "flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100";
 
   return (
     <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 bg-slate-50 relative overflow-hidden text-left">
@@ -332,10 +332,10 @@ const Register = () => {
                     <p className="text-primary-100 text-sm mt-0.5">Securely join the MEDISYNC Healthcare Network</p>
                   </div>
                 </div>
-                <div className="flex bg-white/10 p-1 rounded-xl backdrop-blur-md">
+                <div className="flex bg-white/10 p-1 rounded-2xl backdrop-blur-md">
                     {context === 'patient' ? (
                         <button 
-                            className="px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-white text-primary-600 shadow-lg"
+                            className="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-white text-primary-600 shadow-lg"
                         >
                             Patient
                         </button>
@@ -343,17 +343,17 @@ const Register = () => {
                         <div className="flex gap-1">
                             <button 
                                 type="button"
-                                onClick={() => setRole('ROLE_HOSPITAL_ADMIN')}
-                                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${role === 'ROLE_HOSPITAL_ADMIN' ? 'bg-white text-primary-600 shadow-lg' : 'text-white hover:bg-white/10'}`}
+                                onClick={() => setRole('ROLE_DOCTOR')}
+                                className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${role === 'ROLE_DOCTOR' ? 'bg-white text-primary-600 shadow-lg' : 'text-white hover:bg-white/10'}`}
                             >
-                                Institutional
+                                Physician
                             </button>
                             <button 
                                 type="button"
-                                onClick={() => setRole('ROLE_DOCTOR')}
-                                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${role === 'ROLE_DOCTOR' ? 'bg-white text-primary-600 shadow-lg' : 'text-white hover:bg-white/10'}`}
+                                onClick={() => setRole('ROLE_HOSPITAL_ADMIN')}
+                                className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${role === 'ROLE_HOSPITAL_ADMIN' ? 'bg-white text-primary-600 shadow-lg' : 'text-white hover:bg-white/10'}`}
                             >
-                                Practitioner
+                                Institutional
                             </button>
                         </div>
                     )}
@@ -361,35 +361,37 @@ const Register = () => {
             </div>
           </div>
 
-          <div className="p-8 space-y-8">
+          <div className="p-8 space-y-10">
             {error && (
-              <div className="bg-red-50 text-red-700 p-4 rounded-xl text-sm font-medium border border-red-200 flex items-start gap-2">
+              <div className="bg-red-50 text-red-700 p-4 rounded-2xl text-sm font-medium border border-red-100 flex items-start gap-2 animate-in fade-in slide-in-from-top-1">
                 <AlertCircle size={18} className="shrink-0 mt-0.5" /> {error}
               </div>
             )}
             {success && (
-              <div className="bg-green-50 text-green-700 p-4 rounded-xl text-sm font-medium border border-green-200 flex items-start gap-2">
+              <div className="bg-green-50 text-green-700 p-4 rounded-2xl text-sm font-medium border border-green-100 flex items-start gap-2 animate-in fade-in slide-in-from-top-1">
                 <CheckCircle size={18} className="shrink-0 mt-0.5" /> {success}
               </div>
             )}
 
-            <form className="space-y-8" onSubmit={handleRegister}>
+            <form className="space-y-10" onSubmit={handleRegister}>
               {/* Step 1: Identity (Universal) */}
-              <div className="bg-slate-50 rounded-2xl p-6 space-y-4 border border-slate-200 shadow-sm animate-in slide-in-from-right-8 duration-500">
-                  <h3 className={sectionHeadClass}><Mail size={16} />1. Identity Verification</h3>
+              <div className="space-y-6">
+                  <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
+                    <Mail size={16} /> 1. Identity Verification
+                  </h3>
                   <div className="relative">
                     <label className={labelClass}>
-                      {role === 'ROLE_HOSPITAL_ADMIN' ? 'Hospital Official Email' : 'Work / Personal Email'} <span className="text-red-500">*</span>
+                      {role === 'ROLE_HOSPITAL_ADMIN' ? 'Institutional Email' : 'Professional Email'} <span className="text-red-500">*</span>
                     </label>
-                    <div className="flex gap-2">
+                    <div className="flex gap-3">
                       <input type="email" name="email" required disabled={emailVerified}
                         value={formData.email} onChange={handleChange}
                         className={`${inputClass} ${emailVerified ? 'bg-green-50 border-green-300' : ''} flex-1`}
-                        placeholder="e.g. admin@narayanahealth.com" />
+                        placeholder={role === 'ROLE_DOCTOR' ? "doctor@hospital.com" : "admin@hospital.com"} />
                       {!emailVerified && (
                         <button type="button" onClick={handleSendOtp} disabled={verifying}
-                          className="whitespace-nowrap bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-primary-700 disabled:opacity-50 transition-all">
-                          {verifying ? '...' : otpSent ? 'Resend' : 'Verify'}
+                          className="whitespace-nowrap bg-blue-600 text-white px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 disabled:opacity-50 transition-all shadow-lg shadow-blue-100 active:scale-95">
+                          {verifying ? '...' : otpSent ? 'Resend' : 'Send Code'}
                         </button>
                       )}
                     </div>
@@ -414,10 +416,37 @@ const Register = () => {
                   {/* Continue button removed */}
                 </div>
 
-              {/* Step 2: Professional Credentials (Doctor Only) */}
+              {/* Step 2: Basic Details (Doctor Only) */}
               {role === 'ROLE_DOCTOR' && (
-                <div className="bg-slate-50 rounded-2xl p-6 space-y-6 border border-slate-200 shadow-sm animate-in slide-in-from-right-8 duration-500 mt-8">
-                  <h3 className={sectionHeadClass}><Stethoscope size={16} />2. Professional Credentials</h3>
+                <div className="space-y-8 mt-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                  <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
+                    <User size={16} /> 2. Basic Details
+                  </h3>
+                  
+                  <div className="flex flex-col items-center gap-4 py-4">
+                    <ProfilePhotoUpload onFileSelect={setProfilePicture} />
+                    <div className="text-center">
+                        <p className="text-[10px] font-black text-primary-600 uppercase tracking-[0.15em]">Upload Profile Photo</p>
+                        <p className="text-[9px] text-slate-400 mt-1 uppercase font-bold tracking-wider">JPG, PNG or WEBP · Max 2MB</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-6">
+                    <div>
+                        <label className={labelClass}>Full Name <span className="text-red-500">*</span></label>
+                        <input type="text" name="name" required value={formData.name} onChange={handleChange}
+                          className={inputClass} placeholder="Dr. John Smith" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Professional Credentials (Doctor Only) */}
+              {role === 'ROLE_DOCTOR' && (
+                <div className="space-y-8 mt-12 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+                  <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
+                    <Stethoscope size={16} /> 3. Professional Credentials
+                  </h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
@@ -449,10 +478,12 @@ const Register = () => {
                 </div>
               )}
 
-              {/* Step 3: Clinical Affiliation (Doctor Only) */}
+              {/* Step 4: Clinical Affiliation (Doctor Only) */}
               {role === 'ROLE_DOCTOR' && (
-                <div className="bg-slate-50 rounded-2xl p-6 space-y-6 border border-slate-200 shadow-sm animate-in slide-in-from-right-8 duration-500 mt-8">
-                  <h3 className={sectionHeadClass}><Briefcase size={16} />3. Clinical Affiliation</h3>
+                <div className="space-y-8 mt-12 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+                  <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
+                    <Briefcase size={16} /> 4. Clinical Affiliation
+                  </h3>
                   
                   <div className="space-y-4">
                     <div>
@@ -493,8 +524,10 @@ const Register = () => {
 
               {/* Step 2: Institution & Legal (Hospital Only) */}
               {role === 'ROLE_HOSPITAL_ADMIN' && (
-                <div className="bg-slate-50 rounded-2xl p-6 space-y-5 border border-slate-200 shadow-sm animate-in slide-in-from-right-8 duration-500 mt-8">
-                  <h3 className={sectionHeadClass}><Building2 size={16} />2. Institutional & Legal</h3>
+                <div className="space-y-8 mt-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                  <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
+                    <Building2 size={16} /> 2. Institutional & Legal
+                  </h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* Logo & Cert */}
@@ -565,8 +598,10 @@ const Register = () => {
 
               {/* Step 3: Infrastructure & Services (Hospital Only) */}
               {role === 'ROLE_HOSPITAL_ADMIN' && (
-                <div className="bg-slate-50 rounded-2xl p-6 space-y-6 border border-slate-200 shadow-sm animate-in slide-in-from-right-8 duration-500 mt-8">
-                  <h3 className={sectionHeadClass}><Activity size={16} />3. Medical Infrastructure</h3>
+                <div className="space-y-8 mt-12 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+                  <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
+                    <Activity size={16} /> 3. Medical Infrastructure
+                  </h3>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="bg-white p-4 rounded-2xl border border-slate-100">
@@ -627,43 +662,33 @@ const Register = () => {
                   
                   {/* Leadership & Location (Professional Only) */}
                   {(role === 'ROLE_HOSPITAL_ADMIN' || role === 'ROLE_DOCTOR') && (
-                    <div className="bg-slate-50 rounded-2xl p-6 space-y-5 border border-slate-200 shadow-sm mt-8">
-                      <h3 className={sectionHeadClass}>
-                        <User size={16} />
-                        {role === 'ROLE_HOSPITAL_ADMIN' ? '4. Leadership & Location' : '4. Personal & Location'}
+                    <div className="space-y-8 mt-12 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
+                      <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
+                        <MapPin size={16} /> 5. Location Details
                       </h3>
+                      
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div className="flex items-center gap-4">
-                           <ProfilePhotoUpload onFileSelect={setProfilePicture} />
-                           <div className="flex-1">
-                              <label className={labelClass}>
-                                {role === 'ROLE_HOSPITAL_ADMIN' ? 'Admin Full Name' : 'Physician Full Name'} <span className="text-red-500">*</span>
-                              </label>
-                              <input type="text" name="name" required value={formData.name} onChange={handleChange} className={inputClass} />
-                           </div>
-                        </div>
-                        <div>
-                          {role === 'ROLE_HOSPITAL_ADMIN' ? (
-                            <>
-                              <label className={labelClass}>Position</label>
-                              <select name="position" value={formData.position} onChange={handleChange} className={inputClass}>
-                                 <option value="Chief Administrator">Chief Administrator</option>
-                                 <option value="CEO">CEO</option>
-                                 <option value="Director">Director</option>
-                              </select>
-                            </>
-                          ) : (
-                            <>
-                              <label className={labelClass}>Gender <span className="text-red-500">*</span></label>
-                              <select name="gender" required value={formData.gender} onChange={handleChange} className={inputClass}>
-                                 <option value="">Select</option>
-                                 <option value="Male">Male</option>
-                                 <option value="Female">Female</option>
-                                 <option value="Other">Other</option>
-                              </select>
-                            </>
-                          )}
-                        </div>
+                        {role === 'ROLE_DOCTOR' && (
+                            <div>
+                                <label className={labelClass}>Gender <span className="text-red-500">*</span></label>
+                                <select name="gender" required value={formData.gender} onChange={handleChange} className={inputClass}>
+                                    <option value="">Select</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        )}
+                        {role === 'ROLE_HOSPITAL_ADMIN' && (
+                            <div>
+                                <label className={labelClass}>Position</label>
+                                <select name="position" value={formData.position} onChange={handleChange} className={inputClass}>
+                                    <option value="Chief Administrator">Chief Administrator</option>
+                                    <option value="CEO">CEO</option>
+                                    <option value="Director">Director</option>
+                                </select>
+                            </div>
+                        )}
                       </div>
 
                       <div className="pt-4 border-t border-slate-100">
@@ -684,8 +709,10 @@ const Register = () => {
                   )}
 
                   {/* Account Security (Universal) */}
-                  <div className="bg-slate-50 rounded-2xl p-6 space-y-5 border border-slate-200 shadow-sm">
-                    <h3 className={sectionHeadClass}><Lock size={16} />Account Security</h3>
+                  <div className="space-y-8 mt-12 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
+                    <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
+                      <Lock size={16} /> 6. Account Security
+                    </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="relative">
                         <label className={labelClass}>Secure Password <span className="text-red-500">*</span></label>
