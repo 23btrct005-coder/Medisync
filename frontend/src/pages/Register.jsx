@@ -24,58 +24,50 @@ const Register = () => {
   const [formData, setFormData] = useState({
     // Identity
     email: '',
-    // Personal / Institutional
+    password: '',
+    confirmPassword: '',
+    // Basic Details
     name: '',
-    hospitalName: '',
+    gender: '',
+    dateOfBirth: '',
+    age: '',
+    // Contact
+    phone: '',
+    alternatePhone: '',
+    // Qualifications
+    medicalDegree: '',
+    specialization: '',
+    college: '',
+    additionalCertifications: '',
+    // License
+    medicalLicenseNumber: '',
+    // Work Details
+    hospital: '', // ID
+    hospitalName: '', // For 'other'
+    yearsOfExperience: '',
+    consultationFee: '',
+    upiId: '',
+    // Availability
+    workingDays: '',
+    consultationTimings: '',
+    // Institutional (Shared/Legacy)
     licenseCode: '',
     hospitalType: '',
     website: '',
     position: 'Chief Administrator',
-    dateOfBirth: '',
-    age: '',
-    gender: '',
-    bloodGroup: '',
-    // Doctor Specific
-    specialization: '',
-    medicalDegree: '',
-    medicalLicenseNumber: '',
-    yearsOfExperience: '',
-    college: '',
-    hospital: '', // Selected hospital ID
-    consultationFee: '',
-    // Legal & Compliance
     gstNumber: '',
     panNumber: '',
     nabhId: '',
     isoId: '',
-    // Infrastructure
     totalBeds: '',
     icuBeds: '',
     operationTheatersCount: '',
     ambulanceCount: '',
-    departments: [], // Array for multi-select
-    emergencyServicesAvailable: true,
-    // Appointment & Billing
-    consultationTimings: '9:00 AM - 9:00 PM',
-    walkInAllowed: true,
-    avgWaitingTime: '15',
-    consultationFees: '', // JSON mapping or simple string
-    insuranceProviders: '',
-    // Contact
-    phone: '',
-    alternatePhone: '',
-    // Address
+    departments: [],
     street: '',
     city: '',
     state: '',
     pinCode: '',
-    // Emergency (Patient only)
-    emergencyContactName: '',
-    emergencyContactRelationship: '',
-    emergencyContactPhone: '',
-    // Security
-    password: '',
-    confirmPassword: '',
   });
   
   const [loading, setLoading] = useState(false);
@@ -374,20 +366,18 @@ const Register = () => {
             )}
 
             <form className="space-y-10" onSubmit={handleRegister}>
-              {/* Step 1: Identity (Universal) */}
-              <div className="space-y-6">
+              {/* Step 1: Identity Verification */}
+              <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-6">
                   <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
                     <Mail size={16} /> 1. Identity Verification
                   </h3>
                   <div className="relative">
-                    <label className={labelClass}>
-                      {role === 'ROLE_HOSPITAL_ADMIN' ? 'Institutional Email' : 'Professional Email'} <span className="text-red-500">*</span>
-                    </label>
+                    <label className={labelClass}>Professional Email <span className="text-red-500">*</span></label>
                     <div className="flex gap-3">
                       <input type="email" name="email" required disabled={emailVerified}
                         value={formData.email} onChange={handleChange}
                         className={`${inputClass} ${emailVerified ? 'bg-green-50 border-green-300' : ''} flex-1`}
-                        placeholder={role === 'ROLE_DOCTOR' ? "doctor@hospital.com" : "admin@hospital.com"} />
+                        placeholder="doctor@hospital.com" />
                       {!emailVerified && (
                         <button type="button" onClick={handleSendOtp} disabled={verifying}
                           className="whitespace-nowrap bg-blue-600 text-white px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 disabled:opacity-50 transition-all shadow-lg shadow-blue-100 active:scale-95">
@@ -398,7 +388,7 @@ const Register = () => {
                   </div>
 
                   {otpSent && !emailVerified && (
-                    <div className="p-4 bg-white rounded-xl border border-primary-100 space-y-3 animate-in zoom-in-95 shadow-inner">
+                    <div className="p-6 bg-slate-50 rounded-2xl border border-blue-100 space-y-4 animate-in zoom-in-95">
                       <label className={labelClass}>Verification Code</label>
                       <div className="flex gap-3">
                         <input type="text" maxLength="6" value={otpCode}
@@ -406,19 +396,17 @@ const Register = () => {
                           className="block w-full text-center text-xl font-bold tracking-[0.3em] rounded-xl border-slate-200 px-3 py-3 border focus:ring-primary-500"
                           placeholder="000000" />
                         <button type="button" onClick={handleVerifyOtp} disabled={verifying || otpCode.length < 6}
-                          className="bg-primary-600 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-primary-700 shadow-md">
+                          className="bg-blue-600 text-white px-8 py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 shadow-md">
                           Confirm
                         </button>
                       </div>
                     </div>
                   )}
-
-                  {/* Continue button removed */}
-                </div>
+              </div>
 
               {/* Step 2: Basic Details (Doctor Only) */}
               {role === 'ROLE_DOCTOR' && (
-                <div className="space-y-8 mt-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                   <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
                     <User size={16} /> 2. Basic Details
                   </h3>
@@ -431,313 +419,258 @@ const Register = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-6">
+                  <div className="space-y-6">
                     <div>
                         <label className={labelClass}>Full Name <span className="text-red-500">*</span></label>
                         <input type="text" name="name" required value={formData.name} onChange={handleChange}
                           className={inputClass} placeholder="Dr. John Smith" />
                     </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className={labelClass}>Gender <span className="text-red-500">*</span></label>
+                            <select name="gender" required value={formData.gender} onChange={handleChange} className={inputClass}>
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className={labelClass}>Date of Birth <span className="text-red-500">*</span></label>
+                            <input type="date" name="dateOfBirth" required value={formData.dateOfBirth} onChange={handleChange}
+                              className={inputClass} />
+                        </div>
+                    </div>
+                    <div>
+                        <label className={labelClass}>Age (Auto-calculated)</label>
+                        <input type="text" name="age" disabled value={formData.age ? `${formData.age} Years` : 'From DOB'}
+                          className="block w-full rounded-xl border-slate-100 bg-slate-50 sm:text-sm px-4 py-3.5 border text-slate-400 font-medium" />
+                    </div>
                   </div>
                 </div>
               )}
 
-              {/* Step 3: Professional Credentials (Doctor Only) */}
+              {/* Step 3: Contact Information (Doctor Only) */}
               {role === 'ROLE_DOCTOR' && (
-                <div className="space-y-8 mt-12 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+                <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
                   <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
-                    <Stethoscope size={16} /> 3. Professional Credentials
+                    <Phone size={16} /> 3. Contact Information
                   </h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label className={labelClass}>Medical Specialization <span className="text-red-500">*</span></label>
-                        <input type="text" name="specialization" required value={formData.specialization} onChange={handleChange}
-                          className={inputClass} placeholder="e.g. Cardiologist" />
+                        <label className={labelClass}>Mobile Number <span className="text-red-500">*</span></label>
+                        <input type="tel" name="phone" required value={formData.phone} onChange={handleChange}
+                          className={inputClass} placeholder="9876543210" />
                     </div>
                     <div>
-                        <label className={labelClass}>Medical Degree <span className="text-red-500">*</span></label>
-                        <input type="text" name="medicalDegree" required value={formData.medicalDegree} onChange={handleChange}
-                          className={inputClass} placeholder="e.g. MBBS, MD" />
+                        <label className={labelClass}>Alternate Mobile</label>
+                        <input type="tel" name="alternatePhone" value={formData.alternatePhone} onChange={handleChange}
+                          className={inputClass} placeholder="Optional" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 4: Professional Qualifications (Doctor Only) */}
+              {role === 'ROLE_DOCTOR' && (
+                <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+                  <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
+                    <GraduationCap size={16} /> 4. Professional Qualifications
+                  </h3>
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className={labelClass}>Medical Degree <span className="text-red-500">*</span></label>
+                            <select name="medicalDegree" required value={formData.medicalDegree} onChange={handleChange} className={inputClass}>
+                                <option value="">Select Degree</option>
+                                <option value="MBBS">MBBS</option>
+                                <option value="MD">MD</option>
+                                <option value="MS">MS</option>
+                                <option value="DNB">DNB</option>
+                                <option value="DM">DM</option>
+                                <option value="MCh">MCh</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className={labelClass}>Specialization <span className="text-red-500">*</span></label>
+                            <select name="specialization" required value={formData.specialization} onChange={handleChange} className={inputClass}>
+                                <option value="">Select Specialization</option>
+                                {HospitalDepartments.map(dept => (
+                                    <option key={dept} value={dept}>{dept}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
                     <div>
-                        <label className={labelClass}>Medical License Number <span className="text-red-500">*</span></label>
-                        <input type="text" name="medicalLicenseNumber" required value={formData.medicalLicenseNumber} onChange={handleChange}
-                          className={inputClass} placeholder="REG-XXXXXXXX" />
-                    </div>
-                    <div>
-                        <label className={labelClass}>Years of Experience <span className="text-red-500">*</span></label>
-                        <input type="number" name="yearsOfExperience" required value={formData.yearsOfExperience} onChange={handleChange}
-                          className={inputClass} placeholder="e.g. 10" />
-                    </div>
-                    <div className="md:col-span-2">
-                        <label className={labelClass}>Medical College / University</label>
+                        <label className={labelClass}>College / University</label>
                         <input type="text" name="college" value={formData.college} onChange={handleChange}
-                          className={inputClass} placeholder="e.g. AIIMS, Delhi" />
+                          className={inputClass} placeholder="e.g. AIIMS, New Delhi" />
+                    </div>
+                    <div>
+                        <label className={labelClass}>Additional Certifications</label>
+                        <input type="text" name="additionalCertifications" value={formData.additionalCertifications} onChange={handleChange}
+                          className={inputClass} placeholder="e.g. FRCS, Fellowship in Cardiology" />
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Step 4: Clinical Affiliation (Doctor Only) */}
+              {/* Step 5: License & Verification (Doctor Only) */}
               {role === 'ROLE_DOCTOR' && (
-                <div className="space-y-8 mt-12 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+                <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
                   <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
-                    <Briefcase size={16} /> 4. Clinical Affiliation
+                    <ShieldCheck size={16} /> 5. License & Verification
                   </h3>
-                  
-                  <div className="space-y-4">
+                  <div>
+                    <label className={labelClass}>Medical License Number <span className="text-red-500">*</span></label>
+                    <input type="text" name="medicalLicenseNumber" required value={formData.medicalLicenseNumber} onChange={handleChange}
+                      className={inputClass} placeholder="e.g. MCI-12345678" />
+                    <p className="text-[9px] text-slate-400 mt-2 ml-1 font-medium italic">Issued by MCI / State Medical Council</p>
+                  </div>
+                </div>
+              )}
+              {/* Step 6: Work Details (Doctor Only) */}
+              {role === 'ROLE_DOCTOR' && (
+                <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-400">
+                  <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
+                    <Building2 size={16} /> 6. Work Details
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label className={labelClass}>Primary Hospital / Clinic <span className="text-red-500">*</span></label>
+                        <label className={labelClass}>Affiliated Hospital / Clinic <span className="text-red-500">*</span></label>
                         <select name="hospital" required value={formData.hospital} onChange={handleChange} className={inputClass}>
-                            <option value="">Select Facility</option>
+                            <option value="">Select Institution</option>
                             {hospitals.map(h => (
                                 <option key={h.id} value={h.id}>{h.name} ({h.location})</option>
                             ))}
                             <option value="other">Other / Not Listed</option>
                         </select>
-                        {fetchingHospitals && <p className="text-[10px] text-primary-600 mt-1 animate-pulse italic">Synchronizing facility database...</p>}
                     </div>
-
-                    {formData.hospital === 'other' && (
-                        <div className="animate-in fade-in slide-in-from-top-2">
-                            <label className={labelClass}>Facility Name <span className="text-red-500">*</span></label>
-                            <input type="text" name="hospitalName" required value={formData.hospitalName} onChange={handleChange}
-                              className={inputClass} placeholder="Enter your clinic/hospital name" />
-                        </div>
-                    )}
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div>
-                            <label className={labelClass}>Standard Consultation Fee (INR)</label>
-                            <input type="number" name="consultationFee" value={formData.consultationFee} onChange={handleChange}
-                              className={inputClass} placeholder="e.g. 500" />
-                        </div>
-                        <div>
-                            <label className={labelClass}>Consultation Timings</label>
-                            <input type="text" name="consultationTimings" value={formData.consultationTimings} onChange={handleChange}
-                              className={inputClass} placeholder="e.g. 10 AM - 4 PM" />
-                        </div>
+                    <div>
+                        <label className={labelClass}>Years of Experience</label>
+                        <input type="number" name="yearsOfExperience" value={formData.yearsOfExperience} onChange={handleChange}
+                          className={inputClass} placeholder="e.g. 10" />
+                    </div>
+                    <div>
+                        <label className={labelClass}>Consultation Fee (₹)</label>
+                        <input type="number" name="consultationFee" value={formData.consultationFee} onChange={handleChange}
+                          className={inputClass} placeholder="e.g. 500" />
+                    </div>
+                    <div>
+                        <label className={labelClass}>UPI ID (for payments)</label>
+                        <input type="text" name="upiId" value={formData.upiId} onChange={handleChange}
+                          className={inputClass} placeholder="e.g. doctor@upi" />
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Step 2: Institution & Legal (Hospital Only) */}
-              {role === 'ROLE_HOSPITAL_ADMIN' && (
-                <div className="space-y-8 mt-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              {/* Step 7: Availability (Doctor Only) */}
+              {role === 'ROLE_DOCTOR' && (
+                <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
                   <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
-                    <Building2 size={16} /> 2. Institutional & Legal
+                    <Activity size={16} /> 7. Availability
                   </h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {/* Logo & Cert */}
-                    <div className="flex flex-col items-center gap-6 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                       <div className="text-center">
-                          <p className={labelClass}>Hospital Logo</p>
-                          <ProfilePhotoUpload onFileSelect={setHospitalLogo} />
-                       </div>
-                       <div className="w-full h-[1px] bg-slate-100" />
-                       <div className="text-center w-full">
-                          <p className={labelClass}>Registration Certificate (PDF/JPG)</p>
-                          <input 
-                            type="file" 
-                            accept=".pdf,.jpg,.png"
-                            onChange={(e) => setRegistrationCertificate(e.target.files[0])}
-                            className="text-[10px] block w-full text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
-                          />
-                       </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div>
-                        <label className={labelClass}>Hospital Name <span className="text-red-500">*</span></label>
-                        <input type="text" name="hospitalName" required value={formData.hospitalName} onChange={handleChange}
-                          className={inputClass} placeholder="Narayana Health City" />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className={labelClass}>Type <span className="text-red-500">*</span></label>
-                          <select name="hospitalType" required value={formData.hospitalType} onChange={handleChange} className={inputClass}>
-                            <option value="">Select</option>
-                            <option value="Private">Private</option>
-                            <option value="Government">Govt</option>
-                            <option value="NGO">NGO</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className={labelClass}>License <span className="text-red-500">*</span></label>
-                          <input type="text" name="licenseCode" required value={formData.licenseCode} onChange={handleChange}
-                            className={inputClass} placeholder="HL-XX-XX" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-slate-100">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className={labelClass}>GST Number</label>
-                      <input type="text" name="gstNumber" value={formData.gstNumber} onChange={handleChange} className={inputClass} placeholder="GSTIN" />
+                        <label className={labelClass}>Working Days</label>
+                        <input type="text" name="workingDays" value={formData.workingDays} onChange={handleChange}
+                          className={inputClass} placeholder="e.g. Mon–Fri, Mon–Sat" />
                     </div>
                     <div>
-                      <label className={labelClass}>PAN Number</label>
-                      <input type="text" name="panNumber" value={formData.panNumber} onChange={handleChange} className={inputClass} placeholder="PAN" />
-                    </div>
-                    <div>
-                      <label className={labelClass}>NABH ID</label>
-                      <input type="text" name="nabhId" value={formData.nabhId} onChange={handleChange} className={inputClass} placeholder="NABH-01" />
-                    </div>
-                    <div>
-                      <label className={labelClass}>ISO ID</label>
-                      <input type="text" name="isoId" value={formData.isoId} onChange={handleChange} className={inputClass} placeholder="ISO-01" />
-                    </div>
-                  </div>
-
-                  {/* Buttons removed */}
-                </div>
-              )}
-
-              {/* Step 3: Infrastructure & Services (Hospital Only) */}
-              {role === 'ROLE_HOSPITAL_ADMIN' && (
-                <div className="space-y-8 mt-12 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
-                  <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
-                    <Activity size={16} /> 3. Medical Infrastructure
-                  </h3>
-
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-white p-4 rounded-2xl border border-slate-100">
-                      <label className={labelClass}>Total Beds</label>
-                      <input type="number" name="totalBeds" value={formData.totalBeds} onChange={handleChange} className="w-full bg-transparent border-none outline-none font-bold text-lg" placeholder="0" />
-                    </div>
-                    <div className="bg-white p-4 rounded-2xl border border-slate-100">
-                      <label className={labelClass}>ICU Beds</label>
-                      <input type="number" name="icuBeds" value={formData.icuBeds} onChange={handleChange} className="w-full bg-transparent border-none outline-none font-bold text-lg" placeholder="0" />
-                    </div>
-                    <div className="bg-white p-4 rounded-2xl border border-slate-100">
-                      <label className={labelClass}>OT Count</label>
-                      <input type="number" name="operationTheatersCount" value={formData.operationTheatersCount} onChange={handleChange} className="w-full bg-transparent border-none outline-none font-bold text-lg" placeholder="0" />
-                    </div>
-                    <div className="bg-white p-4 rounded-2xl border border-slate-100">
-                      <label className={labelClass}>Ambulances</label>
-                      <input type="number" name="ambulanceCount" value={formData.ambulanceCount} onChange={handleChange} className="w-full bg-transparent border-none outline-none font-bold text-lg" placeholder="0" />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className={labelClass}>Clinical Departments <span className="text-slate-400 font-medium">(Select all that apply)</span></label>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {HospitalDepartments.map(dept => (
-                        <button
-                          key={dept}
-                          type="button"
-                          onClick={() => handleDepartmentToggle(dept)}
-                          className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all ${
-                            formData.departments.includes(dept)
-                              ? 'bg-primary border-primary text-white shadow-lg'
-                              : 'bg-white border-slate-200 text-slate-500 hover:border-primary'
-                          }`}
-                        >
-                          {dept}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-4 border-t border-slate-100">
-                     <div>
                         <label className={labelClass}>Consultation Timings</label>
-                        <input type="text" name="consultationTimings" value={formData.consultationTimings} onChange={handleChange} className={inputClass} placeholder="9 AM - 9 PM" />
-                     </div>
-                     <div>
-                        <label className={labelClass}>Average Waiting Time (Mins)</label>
-                        <input type="number" name="avgWaitingTime" value={formData.avgWaitingTime} onChange={handleChange} className={inputClass} />
-                     </div>
+                        <input type="text" name="consultationTimings" value={formData.consultationTimings} onChange={handleChange}
+                          className={inputClass} placeholder="e.g. 9:00 AM – 6:00 PM" />
+                    </div>
                   </div>
-
-                  {/* Buttons removed */}
                 </div>
               )}
 
-              {/* Step 4: Finalize & Security (Hospital Only) / Step 2 (Patient) */}
-              <div className="space-y-8 animate-in slide-in-from-right-8 duration-500 mt-8">
-                  
-                  {/* Leadership & Location (Professional Only) */}
-                  {(role === 'ROLE_HOSPITAL_ADMIN' || role === 'ROLE_DOCTOR') && (
-                    <div className="space-y-8 mt-12 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
-                      <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
-                        <MapPin size={16} /> 5. Location Details
-                      </h3>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        {role === 'ROLE_DOCTOR' && (
-                            <div>
-                                <label className={labelClass}>Gender <span className="text-red-500">*</span></label>
-                                <select name="gender" required value={formData.gender} onChange={handleChange} className={inputClass}>
-                                    <option value="">Select</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-                        )}
-                        {role === 'ROLE_HOSPITAL_ADMIN' && (
-                            <div>
-                                <label className={labelClass}>Position</label>
-                                <select name="position" value={formData.position} onChange={handleChange} className={inputClass}>
-                                    <option value="Chief Administrator">Chief Administrator</option>
-                                    <option value="CEO">CEO</option>
-                                    <option value="Director">Director</option>
-                                </select>
-                            </div>
-                        )}
-                      </div>
-
-                      <div className="pt-4 border-t border-slate-100">
-                         <div className="flex justify-between items-center mb-4">
-                            <p className={labelClass}>Facility Address</p>
-                            <button type="button" onClick={handleGetCurrentLocation} className="text-[10px] font-black text-primary uppercase flex items-center gap-2">
-                               <Navigation size={12} className={locating ? 'animate-pulse' : ''} /> {locating ? 'Locating...' : 'Auto-Locate'}
-                            </button>
-                         </div>
-                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <input type="text" name="state" required value={formData.state} onChange={handleChange} className={inputClass} placeholder="State" />
-                            <input type="text" name="city" required value={formData.city} onChange={handleChange} className={inputClass} placeholder="City" />
-                            <input type="text" name="pinCode" required value={formData.pinCode} onChange={handleChange} className={inputClass} placeholder="PIN" />
-                            <input type="tel" name="phone" required value={formData.phone} onChange={handleChange} className={inputClass} placeholder="Phone" />
-                         </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Account Security (Universal) */}
-                  <div className="space-y-8 mt-12 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
+              {/* Institutional Registration Path (Legacy Support) */}
+              {role === 'ROLE_HOSPITAL_ADMIN' && (
+                <div className="space-y-12">
+                  <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                     <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
-                      <Lock size={16} /> 6. Account Security
+                      <Building2 size={16} /> 2. Institutional & Legal
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      <div className="relative">
-                        <label className={labelClass}>Secure Password <span className="text-red-500">*</span></label>
-                        <input type={showPassword ? 'text' : 'password'} name="password" required value={formData.password} onChange={handleChange} className={inputClass} />
-                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-9 text-slate-400">
-                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
-                      </div>
-                      <div className="relative">
-                        <label className={labelClass}>Confirm Password <span className="text-red-500">*</span></label>
-                        <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" required value={formData.confirmPassword} onChange={handleChange} className={inputClass} />
-                        <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-9 text-slate-400">
-                          {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
-                      </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="flex flex-col items-center gap-6 p-4 bg-slate-50 rounded-2xl border border-slate-100 shadow-inner">
+                           <div className="text-center">
+                              <p className={labelClass}>Hospital Logo</p>
+                              <ProfilePhotoUpload onFileSelect={setHospitalLogo} />
+                           </div>
+                           <div className="text-center w-full">
+                              <p className={labelClass}>Registration Certificate</p>
+                              <input 
+                                type="file" 
+                                onChange={(e) => setRegistrationCertificate(e.target.files[0])}
+                                className="text-[10px] block w-full text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                              />
+                           </div>
+                        </div>
+                        <div className="space-y-4">
+                           <input type="text" name="hospitalName" required value={formData.hospitalName} onChange={handleChange} className={inputClass} placeholder="Institution Name" />
+                           <div className="grid grid-cols-2 gap-3">
+                              <select name="hospitalType" required value={formData.hospitalType} onChange={handleChange} className={inputClass}>
+                                 <option value="">Type</option>
+                                 <option value="Private">Private</option>
+                                 <option value="Government">Govt</option>
+                              </select>
+                              <input type="text" name="licenseCode" required value={formData.licenseCode} onChange={handleChange} className={inputClass} placeholder="License Code" />
+                           </div>
+                        </div>
                     </div>
                   </div>
 
-                  <div className="pt-2">
-                    <button type="submit" disabled={loading}
-                      className={`w-full flex justify-center items-center gap-2 py-4 px-4 rounded-2xl shadow-xl text-md font-extrabold text-white bg-primary-600 hover:bg-primary-700 transition-all ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01]'}`}>
-                      {loading ? 'Finalizing Sync...' : (role === 'ROLE_HOSPITAL_ADMIN' ? 'Complete Institutional Onboarding' : 'Complete Professional Registration')}
+                  <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+                    <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
+                      <MapPin size={16} /> 3. Facility Location
+                    </h3>
+                    <div className="flex justify-between items-center mb-4">
+                        <p className={labelClass}>Geographic Coordinates</p>
+                        <button type="button" onClick={handleGetCurrentLocation} className="text-[10px] font-black text-primary-600 uppercase flex items-center gap-2">
+                           <Navigation size={12} className={locating ? 'animate-pulse' : ''} /> {locating ? 'Locating...' : 'Auto-Locate'}
+                        </button>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <input type="text" name="state" required value={formData.state} onChange={handleChange} className={inputClass} placeholder="State" />
+                        <input type="text" name="city" required value={formData.city} onChange={handleChange} className={inputClass} placeholder="City" />
+                        <input type="text" name="pinCode" required value={formData.pinCode} onChange={handleChange} className={inputClass} placeholder="PIN" />
+                        <input type="tel" name="phone" required value={formData.phone} onChange={handleChange} className={inputClass} placeholder="Phone" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 8/4: Account Security (Universal) */}
+              <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-700">
+                <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
+                  <Lock size={16} /> {role === 'ROLE_DOCTOR' ? '8. Account Security' : '4. Account Security'}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="relative">
+                    <label className={labelClass}>Secure Password <span className="text-red-500">*</span></label>
+                    <input type={showPassword ? 'text' : 'password'} name="password" required value={formData.password} onChange={handleChange} className={inputClass} />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-10 text-slate-400">
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <label className={labelClass}>Confirm Password <span className="text-red-500">*</span></label>
+                    <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" required value={formData.confirmPassword} onChange={handleChange} className={inputClass} />
+                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-10 text-slate-400">
+                      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
                 </div>
+
+                <div className="pt-6">
+                  <button type="submit" disabled={loading}
+                    className={`w-full flex justify-center items-center gap-2 py-4 px-4 rounded-2xl shadow-xl text-xs font-black uppercase tracking-widest text-white bg-blue-600 hover:bg-blue-700 transition-all ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01] shadow-blue-200'}`}>
+                    {loading ? 'Finalizing Sync...' : (role === 'ROLE_DOCTOR' ? 'Complete Physician Enrollment' : 'Complete Institutional Onboarding')}
+                  </button>
+                </div>
+              </div>>
               </form>
           </div>
         </div>
