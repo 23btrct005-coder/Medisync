@@ -43,6 +43,11 @@ public class EmailService {
         String body = "Your MediSync Verification Code is: " + otp + "\n\nThis code will expire in 5 minutes.";
         String result = sendEmailInternal(to, "MediSync - Email Verification", body);
         if (result != null && result.startsWith("ERROR:")) {
+            // Permissive mode for configuration issues (API key or Sender Email missing)
+            if (apiKey == null || apiKey.trim().isEmpty() || result.contains("CONFIG_MISSING")) {
+                System.out.println("CRITICAL [MOCK-SEND]: Infrastructure configuration incomplete. OTP for " + to + " is: " + otp);
+                return; // Allow proceed in dev/missing-config mode
+            }
             throw new RuntimeException(result);
         }
     }
@@ -59,6 +64,7 @@ public class EmailService {
         if (apiKey == null || apiKey.trim().isEmpty()) {
             String err = "ERROR: Brevo API Key is missing!";
             System.err.println(err);
+            System.out.println("SECURITY ALERT: Email relay skipped due to missing credentials. Check logs for payload.");
             return err;
         }
 
@@ -98,6 +104,9 @@ public class EmailService {
         } catch (HttpStatusCodeException e) {
             String errorBody = e.getResponseBodyAsString();
             String fullErr = "ERROR: Brevo API " + e.getStatusCode() + " - " + (errorBody.isEmpty() ? "[Empty Body]" : errorBody);
+            if (senderEmail == null || senderEmail.trim().isEmpty()) {
+                fullErr = "ERROR: CONFIG_MISSING - Brevo Sender Email is missing!";
+            }
             System.err.println(fullErr);
             return fullErr;
         } catch (Exception e) {
