@@ -1,6 +1,7 @@
 package com.health.medisync.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -28,6 +29,7 @@ public class Hospital {
     private String hospitalType;   // Government / Private / Trust / Charitable
     private String website;
     
+    @JsonIgnore
     @OneToMany(mappedBy = "hospitalEntity", cascade = CascadeType.ALL)
     private List<Doctor> doctors = new ArrayList<>();
 
