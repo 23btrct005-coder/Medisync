@@ -62,7 +62,7 @@ public class AdminController {
             }
             hospitalAdminRepository.save(admin);
             return ResponseEntity.ok(Map.of("message", "Hospital Administration approved successfully!"));
-        }).orElse(ResponseEntity.notFound().build());
+        }).orElse(ResponseEntity.status(404).body(Map.of("message", "Hospital Admin with ID " + id + " not found in the registry.")));
     }
 
     @PostMapping("/hospitals/{id}/reject")
@@ -74,7 +74,7 @@ public class AdminController {
                 userRepository.delete(user);
             }
             return ResponseEntity.ok(Map.of("message", "Hospital Administration rejected."));
-        }).orElse(ResponseEntity.notFound().build());
+        }).orElse(ResponseEntity.status(404).body(Map.of("message", "Hospital Admin with ID " + id + " not found.")));
     }
 
     @GetMapping("/doctors/pending")
@@ -132,7 +132,7 @@ public class AdminController {
             }
             doctorRepository.save(doctor);
             return ResponseEntity.ok(Map.of("message", "Doctor approved successfully!"));
-        }).orElse(ResponseEntity.notFound().build());
+        }).orElse(ResponseEntity.status(404).body(Map.of("message", "Physician with ID " + id + " not found in the clinical registry.")));
     }
 
     @PostMapping("/doctors/{id}/reject")
@@ -144,7 +144,7 @@ public class AdminController {
                 userRepository.delete(user);
             }
             return ResponseEntity.ok(Map.of("message", "Doctor application rejected and record removed."));
-        }).orElse(ResponseEntity.notFound().build());
+        }).orElse(ResponseEntity.status(404).body(Map.of("message", "Physician with ID " + id + " not found.")));
     }
 
     @PostMapping("/system/wipe")

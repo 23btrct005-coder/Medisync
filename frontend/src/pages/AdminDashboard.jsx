@@ -64,7 +64,7 @@ const AdminDashboard = () => {
       }
       setSelectedItem(null);
     } catch (error) {
-      toast.error(`Failed to approve ${type === 'doctors' ? 'doctor' : 'hospital'}.`);
+      toast.error(error.response?.data?.message || `Failed to approve ${type === 'doctors' ? 'doctor' : 'hospital'}.`);
     } finally {
       setActionLoading(null);
     }
@@ -83,7 +83,7 @@ const AdminDashboard = () => {
       }
       setSelectedItem(null);
     } catch (error) {
-      toast.error('Failed to reject application.');
+      toast.error(error.response?.data?.message || 'Failed to reject application.');
     } finally {
       setActionLoading(null);
     }
