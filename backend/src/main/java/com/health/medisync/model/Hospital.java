@@ -37,6 +37,8 @@ public class Hospital {
     private String registrationCertificateUrl;
     
     // ── 2. Medical Infrastructure ──
+    @Column(columnDefinition = "TEXT")
+    private String departments; // Cardiology, Neurology, etc. (JSON)
     private Integer totalBeds;
     private Integer icuBeds;
     private Integer operationTheatersCount;
@@ -45,9 +47,15 @@ public class Hospital {
     private Integer generalStaffCount;
     private Boolean emergencyServicesAvailable = true; // 24/7 services
     
+    // ── 4. Appointment & Scheduling ──
+    private String consultationTimings; // e.g. "9:00 AM - 9:00 PM"
+    private Boolean walkInAllowed = true;
+    private Integer avgWaitingTime; // in minutes
+    
     // ── 5. Billing & Financial ──
     @Column(columnDefinition = "TEXT")
     private String insuranceProviders; // Comma-separated or JSON
+    private String consultationFees; // JSON mapping department -> fee
     private String billingContactEmail;
     private String billingContactPhone;
 
@@ -58,6 +66,7 @@ public class Hospital {
     private String instagramUrl;
     @Column(columnDefinition = "TEXT")
     private String galleryUrls; // JSON string for hospital images
+    private String accreditationBadges; // NABH, ISO, etc.
 
     @JsonIgnore
     @OneToMany(mappedBy = "hospitalEntity", cascade = CascadeType.ALL)

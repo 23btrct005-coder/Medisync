@@ -1,11 +1,17 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, FileText, ClipboardList, User, LogOut, Activity, Calendar, UserCheck, CalendarPlus, ShieldCheck, Pill, Wallet, MessageSquare } from 'lucide-react';
+import { 
+  LayoutDashboard, FileText, ClipboardList, User, LogOut, Activity, 
+  Calendar, UserCheck, CalendarPlus, ShieldCheck, Pill, Wallet, 
+  MessageSquare, Settings, HelpCircle, ChevronDown
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
+import { useState } from 'react';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [showMore, setShowMore] = useState(false);
 
   const photoUrl = user?.id ? `${api.defaults.baseURL}/auth/patient/photo/${user.id}` : null;
 
@@ -26,91 +32,132 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         api.get('patient/requests').catch(() => {});
       }
     } catch (e) {
-      // Slient fail for prefetch
+      // Silent fail for prefetch
     }
   };
 
-  const navItems = [
+  // ── MAIN NAV: Most-used features ──
+  const mainItems = [
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
     { name: 'Messages', path: '/dashboard/messages', icon: <MessageSquare size={20} /> },
-    { name: 'Medications', path: '/dashboard/medications', icon: <Pill size={20} /> },
-    { name: 'Medical History', path: '/dashboard/records', icon: <ClipboardList size={20} /> },
-    { name: 'Reports & Briefs', path: '/dashboard/reports', icon: <FileText size={20} /> },
-    { name: 'My Appointments', path: '/dashboard/sessions', icon: <Calendar size={20} /> },
     { name: 'Book Doctor', path: '/dashboard/booking', icon: <CalendarPlus size={20} /> },
-    { name: 'My Doctors', path: '/dashboard/doctors', icon: <UserCheck size={20} /> },
+    { name: 'My Appointments', path: '/dashboard/sessions', icon: <Calendar size={20} /> },
     { name: 'Health Wallet', path: '/dashboard/wallet', icon: <Wallet size={20} /> },
+    { name: 'My Doctors', path: '/dashboard/doctors', icon: <UserCheck size={20} /> },
+  ];
+
+  // ── MORE APPS: Less frequently used ──
+  const moreItems = [
+    { name: 'Medical History', path: '/dashboard/records', icon: <ClipboardList size={20} /> },
+    { name: 'AI Reports', path: '/dashboard/reports', icon: <FileText size={20} /> },
+    { name: 'Medications', path: '/dashboard/medications', icon: <Pill size={20} /> },
     { name: 'Security Ledger', path: '/dashboard/security', icon: <ShieldCheck size={20} /> },
-    { 
-      name: 'My Profile', 
-      path: '/dashboard/profile', 
-      icon: (
-        <div className="h-5 w-5 rounded-full overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center -ml-1 mr-1">
-          {photoUrl ? (
-            <img 
-              src={photoUrl} 
-              alt={user?.name} 
-              className="h-full w-full object-cover"
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'block';
-              }}
-            />
-          ) : null}
-          <User size={14} className={`${photoUrl ? 'hidden' : 'block'} text-slate-400`} />
-        </div>
-      )
-    },
+    { name: 'Settings', path: '/dashboard/settings', icon: <Settings size={20} /> },
+    { name: 'Support', path: '/dashboard/support', icon: <HelpCircle size={20} /> },
   ];
 
   const hospitalItems = [
     { name: 'Command Center', path: '/hospital-dashboard', icon: <LayoutDashboard size={20} /> },
-    { name: 'Staff Physician Manager', path: '/hospital-dashboard/staff', icon: <UserCheck size={20} /> },
+    { name: 'Staff Roster', path: '/hospital-dashboard/staff', icon: <UserCheck size={20} /> },
     { name: 'Institutional Wallet', path: '/dashboard/wallet', icon: <Wallet size={20} /> },
-    { name: 'Compliance LEDGER', path: '/dashboard/security', icon: <ShieldCheck size={20} /> },
+    { name: 'Compliance', path: '/dashboard/security', icon: <ShieldCheck size={20} /> },
   ];
 
-  const currentItems = user?.role === 'ROLE_HOSPITAL_ADMIN' ? hospitalItems : navItems;
+  const isHospital = user?.role === 'ROLE_HOSPITAL_ADMIN';
+  const profileItem = { 
+    name: 'My Profile', 
+    path: '/dashboard/profile', 
+    icon: (
+      <div className="h-5 w-5 rounded-full overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center -ml-1 mr-1">
+        {photoUrl ? (
+          <img 
+            src={photoUrl} 
+            alt={user?.name} 
+            className="h-full w-full object-cover"
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'block';
+            }}
+          />
+        ) : null}
+        <User size={14} className={`${photoUrl ? 'hidden' : 'block'} text-slate-400`} />
+      </div>
+    )
+  };
+
+  const NavItem = ({ item, end }) => (
+    <NavLink
+      to={item.path}
+      end={end}
+      onMouseEnter={() => prefetchData(item.path)}
+      className={({ isActive }) =>
+        `flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${
+          isActive
+            ? 'bg-primary-50 text-primary-700 font-semibold shadow-sm border border-primary-100'
+            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+        }`
+      }
+    >
+      <span className="mr-3">{item.icon}</span>
+      <span className="text-sm font-medium">{item.name}</span>
+    </NavLink>
+  );
 
   return (
     <>
       <div className={`hidden md:flex flex-col border-r border-slate-200 bg-white shadow-xl z-30 w-64 h-screen shrink-0`}>
         <div className="h-16 flex items-center px-6 border-b border-slate-200 shrink-0">
-        <Activity className="text-primary-600 mr-2" size={24} />
-        <span className="text-2xl font-bold text-slate-800 tracking-tight">MEDISYNC</span>
-      </div>
+          <Activity className="text-primary-600 mr-2" size={24} />
+          <span className="text-2xl font-bold text-slate-800 tracking-tight">MEDISYNC</span>
+        </div>
 
-      <nav className="flex-1 py-6 px-4 space-y-2">
-        {currentItems.map((item) => (
-          <NavLink
-            key={item.name}
-            to={item.path}
-            end={item.path === '/dashboard' || item.path === '/hospital-dashboard'}
-            onMouseEnter={() => prefetchData(item.path)}
-            className={({ isActive }) =>
-              `flex items-center px-4 py-3 rounded-lg transition-all duration-200 ${
-                isActive
-                  ? 'bg-primary-50 text-primary-700 font-medium shadow-sm'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-              }`
-            }
+        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto custom-scrollbar">
+          {isHospital ? (
+            hospitalItems.map((item) => (
+              <NavItem key={item.name} item={item} end={item.path === '/hospital-dashboard'} />
+            ))
+          ) : (
+            <>
+              {/* Main Section */}
+              {mainItems.map((item) => (
+                <NavItem key={item.name} item={item} end={item.path === '/dashboard'} />
+              ))}
+
+              {/* More Apps Divider */}
+              <button 
+                onClick={() => setShowMore(!showMore)}
+                className="flex items-center justify-between w-full px-4 py-2.5 mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors"
+              >
+                <span>More Apps</span>
+                <ChevronDown size={14} className={`transition-transform duration-300 ${showMore ? 'rotate-180' : ''}`} />
+              </button>
+
+              {showMore && (
+                <div className="space-y-1 animate-in slide-in-from-top-2 duration-300">
+                  {moreItems.map((item) => (
+                    <NavItem key={item.name} item={item} />
+                  ))}
+                </div>
+              )}
+
+              {/* Profile (always visible) */}
+              <div className="mt-2 pt-2 border-t border-slate-100">
+                <NavItem item={profileItem} />
+              </div>
+            </>
+          )}
+        </nav>
+
+        <div className="p-3 border-t border-slate-200">
+          <button
+            onClick={handleLogout}
+            className="flex items-center w-full px-4 py-3 text-slate-500 rounded-xl hover:bg-red-50 hover:text-red-600 transition-colors duration-200 text-sm font-medium"
           >
-            <span className="mr-3">{item.icon}</span>
-            {item.name}
-          </NavLink>
-        ))}
-      </nav>
-
-      <div className="p-4 border-t border-slate-200">
-        <button
-          onClick={handleLogout}
-          className="flex items-center w-full px-4 py-3 text-slate-600 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors duration-200"
-        >
-          <LogOut size={20} className="mr-3" />
-          <span className="font-medium">Logout</span>
-        </button>
+            <LogOut size={18} className="mr-3" />
+            Logout
+          </button>
+        </div>
       </div>
-    </div>
     </>
   );
 };
