@@ -56,10 +56,13 @@ const DoctorDashboard = () => {
             { facingMode: "environment" },
             { fps: 10, qrbox: { width: 250, height: 250 } },
             (decodedText) => {
-              const patientId = decodedText.split('/').pop();
-              if (patientId && !isNaN(patientId)) {
+              // Extract the last non-empty segment which should be the patient ID
+              const patientId = decodedText.split('/').filter(Boolean).pop();
+              
+              if (patientId) {
                 html5QrCode.stop().then(() => {
                    setShowScanner(false);
+                   toast.success("Clinical Identity Captured");
                    navigate(`/emergency/${patientId}`);
                 });
               }

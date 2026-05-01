@@ -101,6 +101,15 @@ public class MedisyncApplication {
                                            org.springframework.security.crypto.password.PasswordEncoder passwordEncoder,
                                            org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
         return args -> {
+            // 🚀 DATABASE SELF-HEALING: Add email_verified if missing
+            try {
+                System.out.println("[BOOTSTRAP] Verifying User Schema integrity...");
+                jdbcTemplate.execute("ALTER TABLE IF EXISTS users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT TRUE");
+                System.out.println("[BOOTSTRAP] User Schema synchronized.");
+            } catch (Exception e) {
+                System.out.println("[BOOTSTRAP] Schema sync info: " + e.getMessage());
+            }
+
             System.out.println("[BOOTSTRAP] Checking for global admin account...");
             
             Optional<User> adminUser = userRepository.findByUsernameIgnoreCase("admin");
