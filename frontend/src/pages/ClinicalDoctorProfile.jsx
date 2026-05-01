@@ -163,7 +163,16 @@ const DoctorProfile = () => {
 
         {/* Availability */}
         <Section title="Availability" icon={Clock}>
-          <InfoRow icon={Calendar} label="Working Days" value={user.workingDays} color="text-blue-500" />
+          <div className="py-4">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">Active Working Days</p>
+            <div className="flex flex-wrap gap-2">
+              {user.workingDays ? user.workingDays.split(', ').map(day => (
+                <span key={day} className="px-3 py-1.5 bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded-xl border border-blue-100 shadow-sm">
+                  {day}
+                </span>
+              )) : <span className="text-slate-300 italic text-sm">Not scheduled</span>}
+            </div>
+          </div>
           <InfoRow icon={Clock} label="Consultation Timings" value={user.consultationTimings} color="text-blue-500" />
           <div className="py-3 flex items-start gap-3">
             <div className="mt-0.5 shrink-0 text-indigo-500"><Video size={18} /></div>
@@ -179,11 +188,21 @@ const DoctorProfile = () => {
         </Section>
 
         <Section title="Transactional Identity" icon={Wallet}>
-          <InfoRow icon={CreditCard} label="Razorpay Account ID" value={user.razorpayAccountId} color="text-emerald-500" />
+          <div className="py-4 border-b border-slate-100">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">Preferred Channel</p>
+            <div className="flex items-center gap-2">
+               {user.preferredPaymentMode === 'RAZORPAY' && <span className="px-3 py-1.5 bg-indigo-50 text-indigo-700 text-[10px] font-black uppercase tracking-widest rounded-xl border border-indigo-100 flex items-center gap-2"><CreditCard size={14} /> Razorpay Route</span>}
+               {user.preferredPaymentMode === 'UPI' && <span className="px-3 py-1.5 bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded-xl border border-emerald-100 flex items-center gap-2"><Activity size={14} /> Direct UPI</span>}
+               {user.preferredPaymentMode === 'BOTH' && <span className="px-3 py-1.5 bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded-xl border border-blue-100 flex items-center gap-2"><CheckCircle size={14} /> Dual Channel</span>}
+               {!user.preferredPaymentMode && <span className="text-slate-300 italic text-sm">Not configured</span>}
+            </div>
+          </div>
+          <InfoRow icon={CreditCard} label="Razorpay Account ID" value={user.razorpayAccountId} color="text-indigo-500" />
+          <InfoRow icon={Activity} label="Personal UPI ID (VPA)" value={user.upiId} color="text-emerald-500" />
           <div className="py-3">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Direct Payment Node</p>
-            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border ${user.razorpayAccountId ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-400 border-slate-200'}`}>
-              {user.razorpayAccountId ? <><CheckCircle size={13} /> Linked</> : <><XCircle size={13} /> Unlinked</>}
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Clinical Node Status</p>
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border ${(user.razorpayAccountId || user.upiId) ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-400 border-slate-200'}`}>
+              {(user.razorpayAccountId || user.upiId) ? <><CheckCircle size={13} /> Secure Node Active</> : <><XCircle size={13} /> Offline Payments Only</>}
             </span>
           </div>
         </Section>
