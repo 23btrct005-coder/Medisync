@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   UserCheck, Shield, Revoke, Trash2, Mail, Plus, 
-  ChevronRight, Activity, Clock, ShieldX, UserMinus 
+  ChevronRight, Activity, Clock, ShieldX, UserMinus, MessageSquare 
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../api/axiosConfig';
+import ClinicalChatBox from '../components/ClinicalChatBox';
 
 const DoctorsList = () => {
   const [doctors, setDoctors] = useState([]);
@@ -13,6 +14,7 @@ const DoctorsList = () => {
   const [showInvite, setShowInvite] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [isInviting, setIsInviting] = useState(false);
+  const [activeChat, setActiveChat] = useState(null);
 
   useEffect(() => {
     fetchDoctors();
@@ -86,7 +88,12 @@ const DoctorsList = () => {
           ) : (
             <AnimatePresence>
               {doctors.map((doctor) => (
-                <DoctorCard key={doctor.id} doctor={doctor} onRevoke={() => handleRevoke(doctor.id)} />
+                <DoctorCard 
+                  key={doctor.id} 
+                  doctor={doctor} 
+                  onRevoke={() => handleRevoke(doctor.id)} 
+                  setActiveChat={setActiveChat}
+                />
               ))}
             </AnimatePresence>
           )}
@@ -157,7 +164,15 @@ const DoctorsList = () => {
                </div>
             </form>
           </motion.div>
-        </div>
+          {/* Chat Box */}
+      {activeChat && (
+        <ClinicalChatBox 
+          receiverId={activeChat.userId} 
+          receiverName={activeChat.name} 
+          onClose={() => setActiveChat(null)} 
+        />
+      )}
+    </div>
       )}
     </div>
   );
@@ -165,7 +180,7 @@ const DoctorsList = () => {
 
 /* --- SUBCOMPONENTS --- */
 
-const DoctorCard = ({ doctor, onRevoke }) => (
+const DoctorCard = ({ doctor, onRevoke, setActiveChat }) => (
   <motion.div 
     layout
     initial={{ x: -20, opacity: 0 }}
@@ -194,12 +209,20 @@ const DoctorCard = ({ doctor, onRevoke }) => (
       </div>
     </div>
     
-    <button 
-      onClick={onRevoke}
-      className="flex items-center gap-2 px-6 py-3 bg-rose-50 text-rose-600 rounded-xl font-bold text-xs hover:bg-rose-600 hover:text-white transition-all shadow-sm"
-    >
-      <UserMinus size={16} /> Revoke Permissions
-    </button>
+    <div className="flex gap-2">
+      <button 
+        onClick={() => setActiveChat({ id: doctor.id, name: doctor.name, userId: doctor.user?.id })}
+        className="flex items-center gap-2 px-6 py-3 bg-slate-100 text-slate-800 rounded-xl font-bold text-xs hover:bg-primary hover:text-white transition-all shadow-sm"
+      >
+        <MessageSquare size={16} /> Secure Message
+      </button>
+      <button 
+        onClick={onRevoke}
+        className="flex items-center gap-2 px-6 py-3 bg-rose-50 text-rose-600 rounded-xl font-bold text-xs hover:bg-rose-600 hover:text-white transition-all shadow-sm"
+      >
+        <UserMinus size={16} /> Revoke Permissions
+      </button>
+    </div>
   </motion.div>
 );
 

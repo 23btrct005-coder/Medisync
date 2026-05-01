@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axiosConfig';
-import { Search, User, Droplet, Calendar, Phone, Activity } from 'lucide-react';
+import { Search, User, Droplet, Calendar, Phone, Activity, MessageSquare } from 'lucide-react';
+import ClinicalChatBox from '../components/ClinicalChatBox';
 
 const PatientDirectory = () => {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeChat, setActiveChat] = useState(null); // { id, name, userId }
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -103,6 +105,19 @@ const PatientDirectory = () => {
                   <span className="font-medium text-slate-700 truncate max-w-[120px]" title={patient.email}>{patient.email || 'N/A'}</span>
                 </div>
               </div>
+
+              <div className="mt-4 pt-4 border-t border-slate-50 flex gap-2">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveChat({ id: patient.id, name: patient.name, userId: patient.user?.id });
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 py-2 bg-slate-50 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-primary hover:text-white transition-all active:scale-95"
+                >
+                  <MessageSquare size={14} />
+                  Message
+                </button>
+              </div>
             </div>
           )) : (
             <div className="col-span-full py-12 text-center">
@@ -112,6 +127,14 @@ const PatientDirectory = () => {
             </div>
           )}
         </div>
+      )}
+
+      {activeChat && (
+        <ClinicalChatBox 
+          receiverId={activeChat.userId} 
+          receiverName={activeChat.name} 
+          onClose={() => setActiveChat(null)} 
+        />
       )}
     </div>
   );

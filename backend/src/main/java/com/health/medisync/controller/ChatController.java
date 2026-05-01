@@ -1,0 +1,52 @@
+package com.health.medisync.controller;
+
+import com.health.medisync.model.ChatMessage;
+import com.health.medisync.model.User;
+import com.health.medisync.service.ChatService;
+import com.health.medisync.repository.UserRepository;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/chat")
+public class ChatController {
+    private final ChatService chatService;
+    private final UserRepository userRepository;
+
+    public ChatController(ChatService chatService, UserRepository userRepository) {
+        this.chatService = chatService;
+        this.userRepository = userRepository;
+    }
+
+    @GetMapping("/conversation/{receiverId}")
+    public ResponseEntity<List<ChatMessage>> getConversation(
+            @PathVariable Long receiverId, 
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return ResponseEntity.ok(chatService.getConversation(user.getId(), receiverId));
+    }
+
+    @PostMapping("/send")
+    public ResponseEntity<ChatMessage> sendMessage(
+            @RequestBody ChatMessage message, 
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        message.setSenderId(user.getId());
+        return ResponseEntity.ok(chatService.sendMessage(message));
+    }
+
+    @PostMapping("/mark-read/{senderId}")
+    public ResponseEntity<?> markAsRead(
+            @PathVariable Long senderId, 
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        chatService.markAsRead(user.getId(), senderId);
+        return ResponseEntity.ok().build();
+    }
+}
