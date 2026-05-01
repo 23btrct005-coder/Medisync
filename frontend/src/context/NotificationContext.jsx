@@ -12,6 +12,7 @@ export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
+  const [lastMessage, setLastMessage] = useState(null);
   const [stompClient, setStompClient] = useState(null);
 
   const fetchNotifications = useCallback(async () => {
@@ -101,7 +102,9 @@ export const NotificationProvider = ({ children }) => {
 
       // Subscribe to Chat Messages
       client.subscribe(`/user/queue/messages`, (message) => {
+          const newMsg = JSON.parse(message.body);
           setUnreadChatCount(prev => prev + 1);
+          setLastMessage(newMsg);
       });
 
     }, (error) => {
@@ -130,7 +133,7 @@ export const NotificationProvider = ({ children }) => {
   };
 
   return (
-    <NotificationContext.Provider value={{ notifications, unreadCount, markAsRead, fetchNotifications, unreadChatCount, setUnreadChatCount, fetchUnreadChatCount }}>
+    <NotificationContext.Provider value={{ notifications, unreadCount, markAsRead, fetchNotifications, unreadChatCount, setUnreadChatCount, fetchUnreadChatCount, lastMessage }}>
       {children}
     </NotificationContext.Provider>
   );

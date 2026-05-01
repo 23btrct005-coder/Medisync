@@ -3,6 +3,7 @@ import api from '../api/axiosConfig';
 import { MessageSquare, User, Activity, Search, ArrowRight } from 'lucide-react';
 import ClinicalChatBox from '../components/ClinicalChatBox';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 
 const PatientMessages = () => {
     const { user } = useAuth();
@@ -10,8 +11,21 @@ const PatientMessages = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeChat, setActiveChat] = useState(null);
+    const { lastMessage } = useNotifications();
 
     const [unreadCounts, setUnreadCounts] = useState({});
+
+    useEffect(() => {
+        if (lastMessage) {
+            // Only increment if we are not actively chatting with the sender
+            if (!activeChat || activeChat.userId !== lastMessage.senderId) {
+                setUnreadCounts(prev => ({
+                    ...prev,
+                    [lastMessage.senderId]: (prev[lastMessage.senderId] || 0) + 1
+                }));
+            }
+        }
+    }, [lastMessage, activeChat]);
 
     useEffect(() => {
         fetchConversations();
