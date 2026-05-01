@@ -133,4 +133,16 @@ public class DoctorController {
     public ResponseEntity<List<com.health.medisync.model.Doctor>> getDoctorList(@RequestParam(required = false) String search) {
         return ResponseEntity.ok(doctorService.searchDoctors(search));
     }
+
+    @PostMapping("/unlock-history")
+    public ResponseEntity<?> unlockHistory(@RequestBody Map<String, String> request, Authentication authentication) {
+        try {
+            String patientId = request.get("patientId");
+            String passcode = request.get("passcode");
+            doctorService.unlockHistoryWithPasscode(authentication.getName(), patientId, passcode);
+            return ResponseEntity.ok(Map.of("message", "Patient history unlocked successfully. Direct access granted."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
 }

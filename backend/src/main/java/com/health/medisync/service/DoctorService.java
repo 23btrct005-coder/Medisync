@@ -291,4 +291,46 @@ public class DoctorService {
         }
         return doctorRepository.searchDoctors(query);
     }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void unlockHistoryWithPasscode(String doctorUsername, String patientShortCode, String passcode) {
+        Doctor doctor = getDoctorProfile(doctorUsername);
+        Patient patient = patientRepository.findByPatientId(patientShortCode.toUpperCase().trim())
+            .orElseThrow(() -> new RuntimeException("Patient with ID " + patientShortCode + " not found."));
+        
+        if (patient.getHistoryPasscode() == null || !patient.getHistoryPasscode().equals(passcode)) {
+            throw new RuntimeException("Invalid Clinical Passcode. Access Denied.");
+        }
+
+        // Link the doctor and patient immediately
+        patient.getDoctors().add(doctor);
+        patientRepository.save(patient);
+
+        // Also update/create access request to APPROVED state
+        AccessRequest req = accessRequestRepository.findByDoctorAndPatient(doctor, patient)
+            .orElse(new AccessRequest());
+        req.setDoctor(doctor);
+        req.setPatient(patient);
+        req.setStatus("APPROVED");
+        accessRequestRepository.save(req);
+
+        // Security Logging
+        auditLogService.log(
+            doctor.getUser().getId(),
+            doctor.getName(),
+            "VAULT_UNLOCK",
+            patient.getId(),
+            "Doctor unlocked clinical vault using direct passcode"
+        );
+
+        // Notify Patient
+        notificationService.sendNotification(
+            patient.getUser().getId(),
+            "SECURITY",
+            "Vault Unlocked via Passcode",
+            "Dr. " + doctor.getName() + " has accessed your full clinical history using your direct passcode.",
+            "/dashboard/history",
+            "View Access Log"
+        );
+    }
 }

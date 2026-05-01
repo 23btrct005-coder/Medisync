@@ -202,6 +202,26 @@ const Profile = () => {
           <InfoRow icon={Stethoscope} label="Other Conditions" value={user.medicalInfo} color="text-slate-500" />
         </Section>
 
+        {/* ── NEW: Clinical Access Passcode ── */}
+        <Section title="Clinical Access Security" icon={ShieldCheck}>
+          <div className="py-4 space-y-4">
+            <div className="bg-primary-50 border border-primary-100 p-4 rounded-2xl flex items-start gap-3">
+              <div className="mt-0.5 text-primary-600"><ShieldCheck size={20} /></div>
+              <div>
+                <p className="text-xs font-black text-primary-900 uppercase tracking-widest mb-1">Vault Unlock Passcode</p>
+                <div className="flex items-center gap-4">
+                   <p className="text-3xl font-black text-slate-900 tracking-[0.2em] font-mono">
+                     {user.historyPasscode || 'XXXXXX'}
+                   </p>
+                </div>
+              </div>
+            </div>
+            <p className="text-[10px] text-slate-500 leading-relaxed italic">
+              Give this code to your doctor for **Immediate Direct Access** to your full medical history without needing manual approval.
+            </p>
+          </div>
+        </Section>
+
       </div>
 
       {/* ── QR Emergency Card ── */}

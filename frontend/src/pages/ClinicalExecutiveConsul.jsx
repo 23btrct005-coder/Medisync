@@ -19,6 +19,7 @@ const DoctorDashboard = () => {
   const [patientEmail, setPatientEmail] = useState('');
   const [sending, setSending] = useState(false);
   const [patientShortCode, setPatientShortCode] = useState('');
+  const [passcode, setPasscode] = useState('');
   const [searching, setSearching] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const [showManualModal, setShowManualModal] = useState(false);
@@ -100,6 +101,18 @@ const DoctorDashboard = () => {
     if (!patientShortCode) return;
     setSearching(true);
     try {
+      // If passcode is provided, try direct unlock
+      if (passcode) {
+        await api.post('doctor/unlock-history', { patientId: patientShortCode.toUpperCase().trim(), passcode });
+        toast.success('Clinical vault unlocked via passcode');
+        const res = await api.get(`doctor/patient-by-code/${patientShortCode}`);
+        if (res.data?.id) {
+            navigate(`/doctor-dashboard/patients/${res.data.id}`);
+        }
+        setShowManualModal(false);
+        return;
+      }
+
       const res = await api.get(`doctor/patient-by-code/${patientShortCode}`);
       console.log("DEBUG: Search Result Payload", res.data);
       if (res.data?.id) {
@@ -117,7 +130,7 @@ const DoctorDashboard = () => {
         toast.error('Patient not found');
       }
     } catch (err) {
-      toast.error('Search failed');
+      toast.error(err.response?.data?.message || 'Search/Unlock failed');
     } finally {
       setSearching(false);
     }
@@ -420,17 +433,33 @@ const DoctorDashboard = () => {
                 <h3 className="text-3xl font-black text-slate-900 leading-tight tracking-tighter uppercase mb-2">Manual Lookup</h3>
                 <p className="text-sm text-slate-500 mb-10 font-medium uppercase tracking-widest text-[10px]">Enter Patient Short Code</p>
 
-                <div className="relative group/field mb-10">
-                  <Zap className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-500/40 group-focus-within/field:text-emerald-500 transition-colors" size={20} />
-                  <input 
-                    type="text" 
-                    placeholder="TN-29-0008" 
-                    autoFocus
-                    value={patientShortCode}
-                    onChange={(e) => setPatientShortCode(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleManualSearch()}
-                    className="w-full bg-emerald-50/50 border-2 border-emerald-100 rounded-[2rem] pl-16 pr-6 py-5 text-xl font-black uppercase tracking-widest focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all text-emerald-900 placeholder:text-emerald-900/20"
-                  />
+                <div className="space-y-4 mb-10">
+                  <div className="relative group/field">
+                    <Zap className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-500/40 group-focus-within/field:text-emerald-500 transition-colors" size={20} />
+                    <input 
+                      type="text" 
+                      placeholder="Patient ID (e.g. TN-29-0008)" 
+                      autoFocus
+                      value={patientShortCode}
+                      onChange={(e) => setPatientShortCode(e.target.value)}
+                      className="w-full bg-emerald-50/50 border-2 border-emerald-100 rounded-[2rem] pl-16 pr-6 py-4 text-sm font-black uppercase tracking-widest focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all text-emerald-900 placeholder:text-emerald-900/40"
+                    />
+                  </div>
+
+                  <div className="relative group/field">
+                    <ShieldCheck className="absolute left-6 top-1/2 -translate-y-1/2 text-blue-500/40 group-focus-within/field:text-blue-500 transition-colors" size={20} />
+                    <input 
+                      type="text" 
+                      placeholder="Passcode (Optional)" 
+                      maxLength={6}
+                      value={passcode}
+                      onChange={(e) => setPasscode(e.target.value)}
+                      className="w-full bg-blue-50/50 border-2 border-blue-100 rounded-[2rem] pl-16 pr-6 py-4 text-sm font-black tracking-[0.5em] focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all text-blue-900 placeholder:text-blue-900/40"
+                    />
+                  </div>
+                  <p className="text-[9px] text-slate-400 font-bold uppercase text-center px-4 leading-relaxed">
+                    Provide the 6-digit passcode for **direct access** to full history.
+                  </p>
                 </div>
 
                 <button 

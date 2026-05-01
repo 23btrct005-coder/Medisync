@@ -57,6 +57,8 @@ const EmergencyInfo = () => {
   const [requesting, setRequesting] = useState(false);
   const [requestSuccess, setRequestSuccess] = useState(false);
   const [requestError, setRequestError] = useState('');
+  const [passcode, setPasscode] = useState('');
+  const [unlocking, setUnlocking] = useState(false);
 
   useEffect(() => {
     const fetchPatientData = async () => {
@@ -98,6 +100,22 @@ const EmergencyInfo = () => {
       toast.error(msg);
     } finally {
       setRequesting(false);
+    }
+  };
+
+  const handleUnlockHistory = async () => {
+    if (!passcode) return;
+    setUnlocking(true);
+    try {
+      await api.post('doctor/unlock-history', { patientId: patient.patientId, passcode });
+      toast.success('Clinical vault unlocked! Accessing full history...');
+      setTimeout(() => {
+        navigate(`/doctor-dashboard/patients/${patient.id}`);
+      }, 1000);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Invalid Passcode');
+    } finally {
+      setUnlocking(false);
     }
   };
 
@@ -300,27 +318,58 @@ const EmergencyInfo = () => {
               )}
 
               {userRole === 'ROLE_DOCTOR' ? (
-                <button 
-                  onClick={handleRequestAccess}
-                  disabled={requesting || requestSuccess}
-                  className={`w-full ${requestSuccess ? 'bg-green-500 text-white shadow-green-200' : 'bg-red-600 hover:bg-red-700 text-white shadow-red-900/40'} font-black py-4 rounded-2xl flex items-center justify-center gap-3 shadow-xl transition-all duration-300 active:scale-95 disabled:opacity-80 disabled:active:scale-100`}
-                >
-                  {requesting ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      SUBMITTING AUTH REQUEST...
-                    </>
-                  ) : requestSuccess ? (
-                    <>
-                      <CheckCircle size={22} className="animate-in zoom-in duration-300" />
-                      REQUEST SENT
-                    </>
-                  ) : (
-                    <>
-                      AUTHORIZE FULL CLINICAL ACCESS <ArrowRight size={20} />
-                    </>
-                  )}
-                </button>
+                <div className="w-full space-y-4">
+                  <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                       <Shield size={16} className="text-blue-400" />
+                       <span className="text-[10px] font-black uppercase text-white tracking-widest">Clinical Passcode Unlock</span>
+                    </div>
+                    <div className="relative group">
+                       <input 
+                         type="text" 
+                         placeholder="Enter 6-digit passcode..."
+                         maxLength={6}
+                         value={passcode}
+                         onChange={(e) => setPasscode(e.target.value)}
+                         className="w-full bg-[#0A1A1A] border border-white/10 rounded-xl px-4 py-3 text-white text-center font-black tracking-[0.5em] text-lg focus:outline-none focus:ring-2 ring-emerald-500/30 transition-all"
+                       />
+                    </div>
+                    <button 
+                      onClick={handleUnlockHistory}
+                      disabled={unlocking || !passcode}
+                      className="w-full mt-3 py-3 bg-emerald-500 text-[#0A1A1A] rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-400 transition-all active:scale-95 disabled:opacity-50"
+                    >
+                      {unlocking ? 'UNLOCKING VAULT...' : 'UNLOCK FULL HISTORY'}
+                    </button>
+                  </div>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10" /></div>
+                    <div className="relative flex justify-center text-[8px] font-black uppercase"><span className="bg-[#0A1A1A] px-2 text-white/30 tracking-[0.3em]">OR REQUEST SIGNAL</span></div>
+                  </div>
+
+                  <button 
+                    onClick={handleRequestAccess}
+                    disabled={requesting || requestSuccess}
+                    className={`w-full ${requestSuccess ? 'bg-green-500 text-white shadow-green-200' : 'bg-white/5 hover:bg-white/10 text-white border border-white/10'} font-black py-4 rounded-2xl flex items-center justify-center gap-3 shadow-xl transition-all duration-300 active:scale-95 disabled:opacity-80 disabled:active:scale-100 uppercase text-[10px] tracking-widest`}
+                  >
+                    {requesting ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        SUBMITTING REQUEST...
+                      </>
+                    ) : requestSuccess ? (
+                      <>
+                        <CheckCircle size={18} />
+                        REQUEST SENT
+                      </>
+                    ) : (
+                      <>
+                        REQUEST ACCESS SIGNAL <ArrowRight size={18} />
+                      </>
+                    )}
+                  </button>
+                </div>
               ) : (
                 <button 
                   onClick={() => navigate('/login', { state: { from: location.pathname } })}

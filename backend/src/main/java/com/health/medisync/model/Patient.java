@@ -105,6 +105,9 @@ public class Patient {
     @Column(name = "profile_picture_url")
     private String profilePictureUrl;
 
+    @Column(name = "history_passcode")
+    private String historyPasscode;
+
     // ── Getters & Setters ──
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -241,11 +244,18 @@ public class Patient {
     public String getDistrict() { return district; }
     public void setDistrict(String district) { this.district = district; }
 
+    public String getHistoryPasscode() { return historyPasscode; }
+    public void setHistoryPasscode(String historyPasscode) { this.historyPasscode = historyPasscode; }
+
     @PrePersist
     public void ensurePatientId() {
         if (this.patientId == null || this.patientId.isEmpty()) {
             // Initial placeholder to avoid nulls; will be refined to MS-XXXX in controller/migration
             this.patientId = "MS-TEMP-" + java.util.UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+        }
+        if (this.historyPasscode == null || this.historyPasscode.isEmpty()) {
+            // Default 6-digit passcode
+            this.historyPasscode = String.format("%06d", new java.util.Random().nextInt(1000000));
         }
     }
 }
