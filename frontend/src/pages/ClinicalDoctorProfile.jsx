@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axiosConfig';
@@ -31,7 +32,7 @@ const Section = ({ title, icon: Icon, children }) => (
 const DoctorProfile = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = React.useState('identity');
+  const [activeTab, setActiveTab] = useState('identity');
 
   if (loading) return (
     <div className="flex justify-center items-center p-20">
