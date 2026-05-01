@@ -11,18 +11,39 @@ const HospitalDashboard = () => {
     const [onboardData, setOnboardData] = useState({ 
         name: '', 
         email: '', 
+        gender: 'Male',
+        dateOfBirth: '',
+        phone: '',
+        alternatePhone: '',
         specialization: '', 
         medicalLicenseNumber: '', 
         medicalDegree: '',
         yearsOfExperience: '',
         consultationFee: '',
-        workingDays: '',
-        consultationTimings: '',
+        workingDaysArray: [], // New structured format
+        startTime: '09:00',
+        endTime: '17:00',
         college: '',
+        additionalCertifications: '',
+        onlineConsultation: false,
+        razorpayAccountId: '',
+        upiId: '',
+        age: '',
         password: 'Password@123' 
     });
     const [submitting, setSubmitting] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
+
+    const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    const handleDayToggle = (day) => {
+        setOnboardData(prev => ({
+            ...prev,
+            workingDaysArray: prev.workingDaysArray.includes(day)
+                ? prev.workingDaysArray.filter(d => d !== day)
+                : [...prev.workingDaysArray, day]
+        }));
+    };
 
     const fetchInstitutionalData = async (silent = false) => {
         if (!silent) setLoading(true);
@@ -75,13 +96,29 @@ const HospitalDashboard = () => {
         }
     };
 
+    const formatTime = (time24) => {
+        if (!time24) return '';
+        const [hours, minutes] = time24.split(':');
+        const h = parseInt(hours);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const h12 = h % 12 || 12;
+        return `${String(h12).padStart(2, '0')}:${minutes} ${ampm}`;
+    };
+
     const handleOnboardStaff = async (e) => {
         e.preventDefault();
         setSubmitting(true);
         try {
             const formDataToSend = new FormData();
+            
+            // Format days and timings for backend compatibility
+            const workingDays = onboardData.workingDaysArray.join(', ');
+            const consultationTimings = `${formatTime(onboardData.startTime)} - ${formatTime(onboardData.endTime)}`;
+
             const userData = {
                 ...onboardData,
+                workingDays,
+                consultationTimings,
                 username: onboardData.email,
                 hospital: stats?.hospitalId != null ? String(stats.hospitalId) : '',
                 hospitalName: stats?.hospitalName || ''
@@ -97,13 +134,29 @@ const HospitalDashboard = () => {
             fetchInstitutionalData(); // Refresh the list
             setShowOnboardModal(false);
             setOnboardData({ 
-                name: '', email: '', specialization: '', medicalLicenseNumber: '', 
-                medicalDegree: '', yearsOfExperience: '', consultationFee: '',
-                workingDays: '', consultationTimings: '', college: '',
+                name: '', 
+                email: '', 
+                gender: 'Male',
+                dateOfBirth: '',
+                phone: '',
+                alternatePhone: '',
+                specialization: '', 
+                medicalLicenseNumber: '', 
+                medicalDegree: '',
+                yearsOfExperience: '',
+                consultationFee: '',
+                workingDaysArray: [],
+                startTime: '09:00',
+                endTime: '17:00',
+                college: '',
+                additionalCertifications: '',
+                onlineConsultation: false,
+                razorpayAccountId: '',
+                upiId: '',
+                age: '',
                 password: 'Password@123' 
             });
             setSelectedFile(null);
-            fetchInstitutionalData();
         } catch (err) {
             toast.error(err.response?.data?.message || "Failed to onboard staff");
         } finally {
@@ -268,120 +321,250 @@ const HospitalDashboard = () => {
                             </div>
                         </div>
                         <form onSubmit={handleOnboardStaff} className="p-8 space-y-6 overflow-y-auto max-h-[70vh]">
-                            <div className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Full Name</label>
-                                        <input 
-                                            type="text" required
-                                            value={onboardData.name}
-                                            onChange={(e) => setOnboardData({...onboardData, name: e.target.value})}
-                                            className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                            placeholder="Dr. Alexander Wright"
-                                        />
+                        <form onSubmit={handleOnboardStaff} className="p-8 space-y-6 overflow-y-auto max-h-[75vh]">
+                            <div className="space-y-6">
+                                {/* Section 1: Basic Identity */}
+                                <div className="space-y-4">
+                                    <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] border-b border-primary/10 pb-2">1. Basic Identity</h4>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="col-span-2 sm:col-span-1">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Full Name</label>
+                                            <input 
+                                                type="text" required
+                                                value={onboardData.name}
+                                                onChange={(e) => setOnboardData({...onboardData, name: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                                placeholder="Dr. Alexander Wright"
+                                            />
+                                        </div>
+                                        <div className="col-span-2 sm:col-span-1">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Work Email</label>
+                                            <input 
+                                                type="email" required
+                                                value={onboardData.email}
+                                                onChange={(e) => setOnboardData({...onboardData, email: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                                placeholder="a.wright@hospital.com"
+                                            />
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Work Email</label>
-                                        <input 
-                                            type="email" required
-                                            value={onboardData.email}
-                                            onChange={(e) => setOnboardData({...onboardData, email: e.target.value})}
-                                            className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                            placeholder="a.wright@hospital.com"
-                                        />
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Gender</label>
+                                            <select 
+                                                value={onboardData.gender}
+                                                onChange={(e) => setOnboardData({...onboardData, gender: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 appearance-none"
+                                            >
+                                                <option value="Male">Male</option>
+                                                <option value="Female">Female</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Age</label>
+                                            <input 
+                                                type="number"
+                                                value={onboardData.age}
+                                                onChange={(e) => setOnboardData({...onboardData, age: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                                placeholder="35"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Date of Birth</label>
+                                            <input 
+                                                type="date"
+                                                value={onboardData.dateOfBirth}
+                                                onChange={(e) => setOnboardData({...onboardData, dateOfBirth: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                            />
+                                        </div>
                                     </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Medical Degree</label>
-                                        <input 
-                                            type="text" required
-                                            value={onboardData.medicalDegree}
-                                            onChange={(e) => setOnboardData({...onboardData, medicalDegree: e.target.value})}
-                                            className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                            placeholder="MBBS, MD (Cardiology)"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Specialization</label>
-                                        <input 
-                                            type="text" required
-                                            value={onboardData.specialization}
-                                            onChange={(e) => setOnboardData({...onboardData, specialization: e.target.value})}
-                                            className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                            placeholder="Interventional Cardiology"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Working Days</label>
-                                        <input 
-                                            type="text" required
-                                            value={onboardData.workingDays}
-                                            onChange={(e) => setOnboardData({...onboardData, workingDays: e.target.value})}
-                                            className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                            placeholder="Mon - Sat"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Timings</label>
-                                        <input 
-                                            type="text" required
-                                            value={onboardData.consultationTimings}
-                                            onChange={(e) => setOnboardData({...onboardData, consultationTimings: e.target.value})}
-                                            className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                            placeholder="09:00 AM - 04:00 PM"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Medical College</label>
-                                    <input 
-                                        type="text" 
-                                        value={onboardData.college}
-                                        onChange={(e) => setOnboardData({...onboardData, college: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                        placeholder="AIIMS Delhi"
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-3 gap-4">
-                                    <div className="col-span-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">License Number</label>
-                                        <input 
-                                            type="text" required
-                                            value={onboardData.medicalLicenseNumber}
-                                            onChange={(e) => setOnboardData({...onboardData, medicalLicenseNumber: e.target.value})}
-                                            className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                            placeholder="MC-99281-Z"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Exp (Yrs)</label>
-                                        <input 
-                                            type="number" required
-                                            value={onboardData.yearsOfExperience}
-                                            onChange={(e) => setOnboardData({...onboardData, yearsOfExperience: e.target.value})}
-                                            className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                            placeholder="12"
-                                        />
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Primary Phone</label>
+                                            <input 
+                                                type="tel" required
+                                                value={onboardData.phone}
+                                                onChange={(e) => setOnboardData({...onboardData, phone: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                                placeholder="+91 98765 43210"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Alt Phone (Optional)</label>
+                                            <input 
+                                                type="tel"
+                                                value={onboardData.alternatePhone}
+                                                onChange={(e) => setOnboardData({...onboardData, alternatePhone: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                                placeholder="Alternate contact"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Standard Consultation Fee (₹)</label>
-                                    <input 
-                                        type="number" 
-                                        required 
-                                        className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-4 ring-primary/5 transition-all"
-                                        placeholder="1500"
-                                        value={onboardData.consultationFee}
-                                        onChange={(e) => setOnboardData({...onboardData, consultationFee: e.target.value})}
-                                    />
+                                {/* Section 2: Clinical Credentials */}
+                                <div className="space-y-4">
+                                    <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] border-b border-primary/10 pb-2">2. Clinical Credentials</h4>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Medical Degree</label>
+                                            <input 
+                                                type="text" required
+                                                value={onboardData.medicalDegree}
+                                                onChange={(e) => setOnboardData({...onboardData, medicalDegree: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                                placeholder="MBBS, MD (Cardiology)"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Specialization</label>
+                                            <input 
+                                                type="text" required
+                                                value={onboardData.specialization}
+                                                onChange={(e) => setOnboardData({...onboardData, specialization: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                                placeholder="Interventional Cardiology"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Medical College / Alma Mater</label>
+                                        <input 
+                                            type="text" 
+                                            value={onboardData.college}
+                                            onChange={(e) => setOnboardData({...onboardData, college: e.target.value})}
+                                            className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                            placeholder="AIIMS Delhi"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Additional Certifications (Comma Separated)</label>
+                                        <textarea 
+                                            value={onboardData.additionalCertifications}
+                                            onChange={(e) => setOnboardData({...onboardData, additionalCertifications: e.target.value})}
+                                            className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 min-h-[60px]"
+                                            placeholder="Fellow of the American College of Cardiology, etc."
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">License Number</label>
+                                            <input 
+                                                type="text" required
+                                                value={onboardData.medicalLicenseNumber}
+                                                onChange={(e) => setOnboardData({...onboardData, medicalLicenseNumber: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 font-mono"
+                                                placeholder="MC-99281-Z"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Experience (Yrs)</label>
+                                            <input 
+                                                type="number" required
+                                                value={onboardData.yearsOfExperience}
+                                                onChange={(e) => setOnboardData({...onboardData, yearsOfExperience: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                                placeholder="12"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Section 3: Availability & Logistics */}
+                                <div className="space-y-4">
+                                    <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] border-b border-primary/10 pb-2">3. Availability & Logistics</h4>
+                                    <div>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Working Days</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {daysOfWeek.map(day => (
+                                                <button
+                                                    key={day}
+                                                    type="button"
+                                                    onClick={() => handleDayToggle(day)}
+                                                    className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                                                        onboardData.workingDaysArray.includes(day)
+                                                            ? 'bg-primary text-white shadow-md shadow-primary/20'
+                                                            : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+                                                    }`}
+                                                >
+                                                    {day}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Shift Starts</label>
+                                            <input 
+                                                type="time" required
+                                                value={onboardData.startTime}
+                                                onChange={(e) => setOnboardData({...onboardData, startTime: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Shift Ends</label>
+                                            <input 
+                                                type="time" required
+                                                value={onboardData.endTime}
+                                                onChange={(e) => setOnboardData({...onboardData, endTime: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                                        <div className="space-y-0.5">
+                                            <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest">Enable Online Consultation</p>
+                                            <p className="text-[9px] font-medium text-slate-400 uppercase">Allow remote video appointments</p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setOnboardData(prev => ({...prev, onlineConsultation: !prev.onlineConsultation}))}
+                                            className={`w-12 h-6 rounded-full relative transition-all ${onboardData.onlineConsultation ? 'bg-primary' : 'bg-slate-200'}`}
+                                        >
+                                            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${onboardData.onlineConsultation ? 'right-1' : 'left-1'}`} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Section 4: Financial & Security */}
+                                <div className="space-y-4">
+                                    <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] border-b border-primary/10 pb-2">4. Financial & Security</h4>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Consultation Fee (₹)</label>
+                                            <input 
+                                                type="number" required
+                                                value={onboardData.consultationFee}
+                                                onChange={(e) => setOnboardData({...onboardData, consultationFee: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                                placeholder="1500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Razorpay Account ID</label>
+                                            <input 
+                                                type="text"
+                                                value={onboardData.razorpayAccountId}
+                                                onChange={(e) => setOnboardData({...onboardData, razorpayAccountId: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 font-mono"
+                                                placeholder="acc_... (Optional)"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">UPI ID</label>
+                                            <input 
+                                                type="text"
+                                                value={onboardData.upiId}
+                                                onChange={(e) => setOnboardData({...onboardData, upiId: e.target.value})}
+                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 font-mono"
+                                                placeholder="doctor@okaxis (Optional)"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 

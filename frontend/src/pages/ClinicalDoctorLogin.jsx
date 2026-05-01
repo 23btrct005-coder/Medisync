@@ -23,7 +23,7 @@ const DoctorRegisterForm = ({ onBack }) => {
     // License
     medicalLicenseNumber: '',
     // Work
-    hospital: '', yearsOfExperience: '', consultationFee: '',
+    hospital: '', yearsOfExperience: '', consultationFee: '', upiId: '',
     // Availability
     workingDays: '', consultationTimings: '', onlineConsultation: 'false',
     // Account
@@ -100,6 +100,7 @@ const DoctorRegisterForm = ({ onBack }) => {
         consultationFee: formData.consultationFee, workingDays: formData.workingDays,
         consultationTimings: formData.consultationTimings,
         onlineConsultation: formData.onlineConsultation,
+        upiId: formData.upiId,
       };
 
       formDataToSend.append('userData', JSON.stringify(userData));
@@ -381,6 +382,11 @@ const DoctorRegisterForm = ({ onBack }) => {
                     <label className={labelCls}>Consultation Fee (₹)</label>
                     <input type="text" name="consultationFee" value={formData.consultationFee} onChange={handleChange}
                       className={inputCls} placeholder="e.g. 500" />
+                  </div>
+                  <div>
+                    <label className={labelCls}>UPI ID (for payments)</label>
+                    <input type="text" name="upiId" value={formData.upiId} onChange={handleChange}
+                      className={inputCls} placeholder="e.g. doctor@upi" />
                   </div>
                 </div>
               </div>

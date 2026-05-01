@@ -24,6 +24,8 @@ public class DoctorDTO {
     private String clinicAddress;
     private Double averageRating;
     private Long ratingCount;
+    private String upiId;
+    private String razorpayAccountId;
 
     // Admin Only Fields
     private String staffId;
@@ -62,9 +64,17 @@ public class DoctorDTO {
         this.joiningDate = d.getJoiningDate();
         this.salary = d.getSalary();
         this.contractType = d.getContractType();
+        this.upiId = d.getUpiId();
+        this.razorpayAccountId = d.getRazorpayAccountId();
     }
 
     // Getters and Setters
+    public String getUpiId() { return upiId; }
+    public void setUpiId(String upiId) { this.upiId = upiId; }
+
+    public String getRazorpayAccountId() { return razorpayAccountId; }
+    public void setRazorpayAccountId(String razorpayAccountId) { this.razorpayAccountId = razorpayAccountId; }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

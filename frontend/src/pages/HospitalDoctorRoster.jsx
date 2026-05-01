@@ -37,11 +37,42 @@ const HospitalDoctorRoster = () => {
         }
     };
 
+    const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    const formatTime = (time24) => {
+        if (!time24) return '';
+        const [hours, minutes] = time24.split(':');
+        const h = parseInt(hours);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const h12 = h % 12 || 12;
+        return `${String(h12).padStart(2, '0')}:${minutes} ${ampm}`;
+    };
+
+    const parseTime12hTo24h = (time12h) => {
+        if (!time12h) return '09:00';
+        const match = time12h.match(/(\d+):(\d+)\s*(AM|PM)/i);
+        if (!match) return '09:00';
+        let [_, h, m, ampm] = match;
+        h = parseInt(h);
+        if (ampm.toUpperCase() === 'PM' && h < 12) h += 12;
+        if (ampm.toUpperCase() === 'AM' && h === 12) h = 0;
+        return `${String(h).padStart(2, '0')}:${m}`;
+    };
+
     const handleUpdateDoctor = async (e) => {
         e.preventDefault();
         setUpdating(true);
         try {
-            await api.post(`/hospital/update-doctor/${editingDoctor.id}`, editData);
+            const workingDays = editData.workingDaysArray?.join(', ') || '';
+            const consultationTimings = `${formatTime(editData.startTime)} - ${formatTime(editData.endTime)}`;
+            
+            const payload = {
+                ...editData,
+                workingDays,
+                consultationTimings
+            };
+
+            await api.post(`/hospital/update-doctor/${editingDoctor.id}`, payload);
             toast.success("Physician profile updated successfully");
             setEditingDoctor(null);
             fetchRoster();
@@ -50,6 +81,28 @@ const HospitalDoctorRoster = () => {
         } finally {
             setUpdating(false);
         }
+    };
+
+    const startEditing = (doctor) => {
+        const days = doctor.workingDays ? doctor.workingDays.split(',').map(d => d.trim()) : [];
+        const times = doctor.consultationTimings ? doctor.consultationTimings.split('-').map(t => t.trim()) : [];
+        
+        setEditingDoctor(doctor);
+        setEditData({
+            ...doctor,
+            workingDaysArray: days,
+            startTime: times[0] ? parseTime12hTo24h(times[0]) : '09:00',
+            endTime: times[1] ? parseTime12hTo24h(times[1]) : '17:00'
+        });
+    };
+
+    const handleDayToggle = (day) => {
+        setEditData(prev => ({
+            ...prev,
+            workingDaysArray: prev.workingDaysArray?.includes(day)
+                ? prev.workingDaysArray.filter(d => d !== day)
+                : [...(prev.workingDaysArray || []), day]
+        }));
     };
 
     const filteredDoctors = (Array.isArray(doctors) ? doctors : []).filter(doc => {
@@ -152,9 +205,9 @@ const HospitalDoctorRoster = () => {
                                                     </button>
                                                 )}
                                                 <button 
-                                                    onClick={() => { setEditingDoctor(doctor); setEditData(doctor); }}
-                                                    className="p-2.5 bg-slate-100 text-slate-500 hover:bg-primary hover:text-white rounded-xl transition-all shadow-sm"
-                                                >
+                                                     onClick={() => startEditing(doctor)}
+                                                     className="p-2.5 bg-slate-100 text-slate-500 hover:bg-primary hover:text-white rounded-xl transition-all shadow-sm"
+                                                 >
                                                     <ChevronRight size={18} />
                                                 </button>
                                             </div>
@@ -231,26 +284,62 @@ const HospitalDoctorRoster = () => {
                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
                                     />
                                 </div>
-                                <div className="col-span-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Working Days</label>
+                                <div>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Age</label>
                                     <input 
-                                        type="text" required
-                                        value={editData.workingDays}
-                                        onChange={(e) => setEditData({...editData, workingDays: e.target.value})}
+                                        type="number" required
+                                        value={editData.age}
+                                        onChange={(e) => setEditData({...editData, age: e.target.value})}
                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                        placeholder="e.g. Mon - Fri"
                                     />
                                 </div>
                                 <div className="col-span-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Consultation Timings</label>
-                                    <input 
-                                        type="text" required
-                                        value={editData.consultationTimings}
-                                        onChange={(e) => setEditData({...editData, consultationTimings: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                        placeholder="e.g. 10:00 AM - 05:00 PM"
-                                    />
-                                </div>
+                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Working Days</label>
+                                     <div className="flex flex-wrap gap-2">
+                                         {daysOfWeek.map(day => (
+                                             <button
+                                                 key={day}
+                                                 type="button"
+                                                 onClick={() => handleDayToggle(day)}
+                                                 className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                                                     editData.workingDaysArray?.includes(day)
+                                                         ? 'bg-primary text-white shadow-md shadow-primary/20'
+                                                         : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+                                                 }`}
+                                             >
+                                                 {day}
+                                             </button>
+                                         ))}
+                                     </div>
+                                 </div>
+                                 <div>
+                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Shift Starts</label>
+                                     <input 
+                                         type="time" required
+                                         value={editData.startTime}
+                                         onChange={(e) => setEditData({...editData, startTime: e.target.value})}
+                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                     />
+                                 </div>
+                                 <div>
+                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Shift Ends</label>
+                                     <input 
+                                         type="time" required
+                                         value={editData.endTime}
+                                         onChange={(e) => setEditData({...editData, endTime: e.target.value})}
+                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                     />
+                                 </div>
+                                 <div className="col-span-2">
+                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">UPI ID</label>
+                                     <input 
+                                         type="text"
+                                         value={editData.upiId || ''}
+                                         onChange={(e) => setEditData({...editData, upiId: e.target.value})}
+                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 font-mono"
+                                         placeholder="doctor@upi"
+                                     />
+                                 </div>
 
                                 {/* Administrative Section */}
                                 <div className="col-span-2 pt-4 border-t border-slate-50">

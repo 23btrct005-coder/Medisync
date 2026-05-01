@@ -294,6 +294,8 @@ public class AuthController {
         doctor.setConsultationFee(request.get("consultationFee") != null ? String.valueOf(request.get("consultationFee")) : null);
         doctor.setWorkingDays(request.get("workingDays") != null ? String.valueOf(request.get("workingDays")) : null);
         doctor.setConsultationTimings(request.get("consultationTimings") != null ? String.valueOf(request.get("consultationTimings")) : null);
+        doctor.setRazorpayAccountId(request.get("razorpayAccountId") != null ? String.valueOf(request.get("razorpayAccountId")) : null);
+        doctor.setUpiId(request.get("upiId") != null ? String.valueOf(request.get("upiId")) : null);
         
         if (request.get("yearsOfExperience") != null && !String.valueOf(request.get("yearsOfExperience")).isEmpty()) {
             try { doctor.setYearsOfExperience(Integer.parseInt(String.valueOf(request.get("yearsOfExperience")))); }

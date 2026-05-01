@@ -155,7 +155,7 @@ public class HospitalService {
         if (updates.containsKey("specialization")) doctor.setSpecialization(updates.get("specialization") != null ? updates.get("specialization").toString() : null);
         if (updates.containsKey("medicalDegree")) doctor.setMedicalDegree(updates.get("medicalDegree") != null ? updates.get("medicalDegree").toString() : null);
         if (updates.containsKey("medicalLicenseNumber")) doctor.setMedicalLicenseNumber(updates.get("medicalLicenseNumber") != null ? updates.get("medicalLicenseNumber").toString() : null);
-        if (updates.containsKey("yearsOfExperience") && updates.get("yearsOfExperience") != null) {
+        if (updates.containsKey("yearsOfExperience") && updates.get("yearsOfExperience") != null && !updates.get("yearsOfExperience").toString().isEmpty()) {
             try {
                 doctor.setYearsOfExperience(Integer.valueOf(updates.get("yearsOfExperience").toString()));
             } catch (NumberFormatException ignored) {}
@@ -165,6 +165,23 @@ public class HospitalService {
         if (updates.containsKey("workingDays")) doctor.setWorkingDays(updates.get("workingDays") != null ? updates.get("workingDays").toString() : null);
         if (updates.containsKey("consultationTimings")) doctor.setConsultationTimings(updates.get("consultationTimings") != null ? updates.get("consultationTimings").toString() : null);
         
+        // Expanded profile fields
+        if (updates.containsKey("gender")) doctor.setGender(updates.get("gender") != null ? updates.get("gender").toString() : null);
+        if (updates.containsKey("dateOfBirth")) doctor.setDateOfBirth(updates.get("dateOfBirth") != null ? updates.get("dateOfBirth").toString() : null);
+        if (updates.containsKey("alternatePhone")) doctor.setAlternatePhone(updates.get("alternatePhone") != null ? updates.get("alternatePhone").toString() : null);
+        if (updates.containsKey("additionalCertifications")) doctor.setAdditionalCertifications(updates.get("additionalCertifications") != null ? updates.get("additionalCertifications").toString() : null);
+        if (updates.containsKey("college")) doctor.setCollege(updates.get("college") != null ? updates.get("college").toString() : null);
+        if (updates.containsKey("onlineConsultation")) {
+            doctor.setOnlineConsultation(Boolean.parseBoolean(updates.get("onlineConsultation").toString()));
+        }
+        if (updates.containsKey("razorpayAccountId")) doctor.setRazorpayAccountId(updates.get("razorpayAccountId") != null ? updates.get("razorpayAccountId").toString() : null);
+        if (updates.containsKey("upiId")) doctor.setUpiId(updates.get("upiId") != null ? updates.get("upiId").toString() : null);
+        if (updates.containsKey("age") && updates.get("age") != null && !updates.get("age").toString().isEmpty()) {
+            try {
+                doctor.setAge(Integer.valueOf(updates.get("age").toString()));
+            } catch (NumberFormatException ignored) {}
+        }
+
         // Admin-only fields
         if (updates.containsKey("staffId")) doctor.setStaffId(updates.get("staffId") != null ? updates.get("staffId").toString() : null);
         if (updates.containsKey("joiningDate")) doctor.setJoiningDate(updates.get("joiningDate") != null ? updates.get("joiningDate").toString() : null);
