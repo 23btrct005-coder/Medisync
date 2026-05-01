@@ -45,7 +45,7 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
     };
 
     const connectWebSocket = () => {
-        const socket = new SockJS(`${rawBaseURL}/ws`);
+        const socket = new SockJS(`${api.defaults.baseURL}/ws`);
         stompClient.current = Stomp.over(socket);
         stompClient.current.debug = null; // Disable debug logs
 
