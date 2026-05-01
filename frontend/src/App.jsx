@@ -162,6 +162,8 @@ function App() {
                   </ProtectedRoute>
                 }>
                   <Route index element={<AdminDashboard />} />
+                  <Route path="pending" element={<AdminDashboard />} />
+                  <Route path="settings" element={<Settings />} />
                 </Route>
 
                 {/* Hospital Admin Routes */}

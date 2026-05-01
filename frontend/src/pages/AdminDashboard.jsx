@@ -7,10 +7,14 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+import { useLocation } from 'react-router-dom';
+
 const AdminDashboard = () => {
+  const location = useLocation();
   const [pendingDoctors, setPendingDoctors] = useState([]);
   const [pendingHospitals, setPendingHospitals] = useState([]);
-  const [activeTab, setActiveTab] = useState('doctors'); // 'doctors' or 'hospitals'
+  const [activeTab, setActiveTab] = useState(location.pathname.includes('pending') ? 'doctors' : 'doctors'); 
+  // By default we'll keep it on doctors for now, but we can expand this.
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
   const [message, setMessage] = useState({ type: '', text: '' });
