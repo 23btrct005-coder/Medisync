@@ -134,7 +134,8 @@ public class DoctorService {
     public Patient getPatientById(String doctorUsername, Long id) {
         Doctor doctor = getDoctorProfile(doctorUsername);
         verifyAccess(doctor, id);
-        return patientRepository.findById(id).get();
+        return patientRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Clinical telemetry for subject #" + id + " not found in the local ledger."));
     }
 
     public List<MedicalRecord> getPatientRecords(String doctorUsername, Long patientId) {

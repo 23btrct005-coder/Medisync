@@ -45,7 +45,8 @@ public class GlobalExceptionHandler {
         System.err.println("CRITICAL: Clinical System Error: " + ex.getMessage());
         
         Map<String, Object> body = new HashMap<>();
-        body.put("message", "A secure clinical node exception occurred.");
+        String clinicalMessage = ex.getMessage() != null ? ex.getMessage() : "A secure clinical node exception occurred.";
+        body.put("message", "[" + ex.getClass().getSimpleName() + "] " + clinicalMessage);
         body.put("error", ex.getMessage());
         body.put("type", ex.getClass().getName());
         body.put("path", request.getDescription(false));
