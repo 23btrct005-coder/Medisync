@@ -64,6 +64,23 @@ public class MedisyncApplication {
         System.out.println("=================================================");
         System.out.flush();
 
+        // [DATABASE SELF-HEALING] - Resolve Schema Inconsistencies BEFORE Spring Boot starts
+        // This prevents Hibernate from crashing during strict schema validation if DDL-auto fails
+        try {
+            String dbUserRaw = System.getenv("SPRING_DATASOURCE_USERNAME");
+            String dbPassRaw = System.getenv("SPRING_DATASOURCE_PASSWORD");
+            if (springUrl != null && dbUserRaw != null && dbPassRaw != null) {
+                System.out.println("[SELF-HEALING] Pre-synchronizing User Schema...");
+                try (java.sql.Connection conn = java.sql.DriverManager.getConnection(springUrl, dbUserRaw, dbPassRaw);
+                     java.sql.Statement stmt = conn.createStatement()) {
+                    stmt.execute("ALTER TABLE IF EXISTS users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT TRUE");
+                    System.out.println("[SELF-HEALING] User Schema synchronization successful.");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[SELF-HEALING] Pre-sync skipped (Identity Node already active or unreachable): " + e.getMessage());
+        }
+
         try {
             SpringApplication.run(MedisyncApplication.class, args);
         } catch (Exception e) {
