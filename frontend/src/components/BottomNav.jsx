@@ -45,15 +45,11 @@ const BottomNav = () => {
     // ── SECONDARY APPS: Everything else ──
     const secondaryNav = isDoctor ? [
         { name: 'Profile', path: '/doctor-dashboard/profile', icon: <User size={20} />, description: 'Clinical identity' },
-        { name: 'Settings', path: '/doctor-dashboard/settings', icon: <Settings size={20} />, description: 'Preferences' },
-        { name: 'Support', path: '/doctor-dashboard/support', icon: <HelpCircle size={20} />, description: 'Help center' },
     ] : isHospital ? [
         { name: 'Appointments', path: '/hospital-dashboard/appointments', icon: <Calendar size={20} />, description: 'Schedule mgmt' },
         { name: 'Profile', path: '/hospital-dashboard/profile', icon: <Stethoscope size={20} />, description: 'Institutional info' },
         { name: 'Wallet', path: '/dashboard/wallet', icon: <Wallet size={20} />, description: 'Financial hub' },
         { name: 'Compliance', path: '/dashboard/security', icon: <ShieldCheck size={20} />, description: 'Access ledger' },
-        { name: 'Settings', path: '/hospital-dashboard/settings', icon: <Settings size={20} />, description: 'Preferences' },
-        { name: 'Support', path: '/hospital-dashboard/support', icon: <HelpCircle size={20} />, description: 'Help center' },
     ] : [
         { name: 'My Doctors', path: '/dashboard/doctors', icon: <UserCheck size={20} />, description: 'Care team' },
         { name: 'Appointments', path: '/dashboard/sessions', icon: <Calendar size={20} />, description: 'My timeline' },
@@ -62,8 +58,6 @@ const BottomNav = () => {
         { name: 'Medications', path: '/dashboard/medications', icon: <Pill size={20} />, description: 'Adherence tracker' },
         { name: 'Security', path: '/dashboard/security', icon: <ShieldCheck size={20} />, description: 'Access ledger' },
         { name: 'Profile', path: '/dashboard/profile', icon: <User size={20} />, description: 'My identity' },
-        { name: 'Settings', path: '/dashboard/settings', icon: <Settings size={20} />, description: 'Preferences' },
-        { name: 'Support', path: '/dashboard/support', icon: <HelpCircle size={20} />, description: 'Help center' },
     ];
 
     return (

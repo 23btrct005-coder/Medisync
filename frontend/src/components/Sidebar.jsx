@@ -54,8 +54,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { name: 'AI Reports', path: '/dashboard/reports', icon: <FileText size={20} /> },
     { name: 'Medications', path: '/dashboard/medications', icon: <Pill size={20} /> },
     { name: 'Security Ledger', path: '/dashboard/security', icon: <ShieldCheck size={20} /> },
-    { name: 'Settings', path: '/dashboard/settings', icon: <Settings size={20} /> },
-    { name: 'Support', path: '/dashboard/support', icon: <HelpCircle size={20} /> },
   ];
 
   const hospitalItems = [
