@@ -79,6 +79,13 @@ public class HospitalService {
         stats.put("totalRevenue", totalRevenue);
         stats.put("currency", "₹");
         
+        // High-Fidelity Infrastructure Stats
+        stats.put("totalBeds", hospital.getTotalBeds());
+        stats.put("icuBeds", hospital.getIcuBeds());
+        stats.put("operationTheaters", hospital.getOperationTheatersCount());
+        stats.put("ambulances", hospital.getAmbulanceCount());
+        stats.put("emergencyStatus", hospital.getEmergencyServicesAvailable() ? "24/7 ACTIVE" : "LIMITED");
+        
         return stats;
     }
 

@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, LogOut, Activity, UserCircle, Calendar } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, Activity, UserCircle, Calendar, Building2, TrendingUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
 
@@ -33,11 +33,23 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
       path: isAdmin ? `${prefix}/staff` : `${prefix}/patients`, 
       icon: <Users size={20} /> 
     },
-    ...(isAdmin ? [{
-      name: 'Patient Registry',
-      path: `${prefix}/patients`,
-      icon: <Activity size={20} />
-    }] : []),
+    ...(isAdmin ? [
+      {
+        name: 'Patient Registry',
+        path: `${prefix}/patients`,
+        icon: <Activity size={20} />
+      },
+      {
+        name: 'Inst. Analytics',
+        path: `${prefix}/analytics`,
+        icon: <TrendingUp size={20} />
+      },
+      {
+        name: 'Inst. Profile',
+        path: `${prefix}/institutional-profile`,
+        icon: <Building2 size={20} />
+      }
+    ] : []),
     { 
       name: 'My Profile', 
       path: `${prefix}/profile`, 

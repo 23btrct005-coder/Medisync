@@ -122,6 +122,32 @@ public class HospitalController {
             if (data.get("pinCode")      != null)  hospital.setPinCode(String.valueOf(data.get("pinCode")));
             if (data.get("street")       != null)  hospital.setStreet(String.valueOf(data.get("street")));
 
+            // New Legal & Infrastructure Fields
+            if (data.get("gstNumber") != null) hospital.setGstNumber(String.valueOf(data.get("gstNumber")));
+            if (data.get("panNumber") != null) hospital.setPanNumber(String.valueOf(data.get("panNumber")));
+            if (data.get("nabhId")    != null) hospital.setNabhId(String.valueOf(data.get("nabhId")));
+            if (data.get("isoId")     != null) hospital.setIsoId(String.valueOf(data.get("isoId")));
+            
+            if (data.get("totalBeds") != null && !data.get("totalBeds").toString().isEmpty()) 
+                hospital.setTotalBeds(Integer.parseInt(data.get("totalBeds").toString()));
+            if (data.get("icuBeds") != null && !data.get("icuBeds").toString().isEmpty()) 
+                hospital.setIcuBeds(Integer.parseInt(data.get("icuBeds").toString()));
+            if (data.get("operationTheatersCount") != null && !data.get("operationTheatersCount").toString().isEmpty()) 
+                hospital.setOperationTheatersCount(Integer.parseInt(data.get("operationTheatersCount").toString()));
+            if (data.get("ambulanceCount") != null && !data.get("ambulanceCount").toString().isEmpty()) 
+                hospital.setAmbulanceCount(Integer.parseInt(data.get("ambulanceCount").toString()));
+            if (data.get("emergencyServicesAvailable") != null) 
+                hospital.setEmergencyServicesAvailable(Boolean.parseBoolean(data.get("emergencyServicesAvailable").toString()));
+
+            if (data.get("insuranceProviders") != null) hospital.setInsuranceProviders(String.valueOf(data.get("insuranceProviders")));
+            if (data.get("billingContactEmail") != null) hospital.setBillingContactEmail(String.valueOf(data.get("billingContactEmail")));
+            if (data.get("billingContactPhone") != null) hospital.setBillingContactPhone(String.valueOf(data.get("billingContactPhone")));
+
+            if (data.get("googleMapsUrl") != null) hospital.setGoogleMapsUrl(String.valueOf(data.get("googleMapsUrl")));
+            if (data.get("facebookUrl")   != null) hospital.setFacebookUrl(String.valueOf(data.get("facebookUrl")));
+            if (data.get("twitterUrl")    != null) hospital.setTwitterUrl(String.valueOf(data.get("twitterUrl")));
+            if (data.get("instagramUrl")  != null) hospital.setInstagramUrl(String.valueOf(data.get("instagramUrl")));
+
             String city  = hospital.getCity()  != null ? hospital.getCity()  : "";
             String state = hospital.getState() != null ? hospital.getState() : "";
             hospital.setLocation((city + ", " + state).trim().replaceAll("^,\\s*|,\\s*$", "").trim());
