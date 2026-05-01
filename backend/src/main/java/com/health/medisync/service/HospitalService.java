@@ -80,11 +80,15 @@ public class HospitalService {
         stats.put("currency", "₹");
         
         // High-Fidelity Infrastructure Stats
-        stats.put("totalBeds", hospital.getTotalBeds());
-        stats.put("icuBeds", hospital.getIcuBeds());
-        stats.put("operationTheaters", hospital.getOperationTheatersCount());
-        stats.put("ambulances", hospital.getAmbulanceCount());
-        stats.put("emergencyStatus", hospital.getEmergencyServicesAvailable() ? "24/7 ACTIVE" : "LIMITED");
+        stats.put("totalBeds", hospital.getTotalBeds() != null ? hospital.getTotalBeds() : 0);
+        stats.put("icuBeds", hospital.getIcuBeds() != null ? hospital.getIcuBeds() : 0);
+        stats.put("operationTheaters", hospital.getOperationTheatersCount() != null ? hospital.getOperationTheatersCount() : 0);
+        stats.put("ambulances", hospital.getAmbulanceCount() != null ? hospital.getAmbulanceCount() : 0);
+        stats.put("nurseCount", hospital.getNurseCount() != null ? hospital.getNurseCount() : 0);
+        stats.put("staffCount", hospital.getGeneralStaffCount() != null ? hospital.getGeneralStaffCount() : 0);
+        
+        boolean emergencyActive = hospital.getEmergencyServicesAvailable() != null && hospital.getEmergencyServicesAvailable();
+        stats.put("emergencyStatus", emergencyActive ? "24/7 ACTIVE" : "LIMITED");
         
         return stats;
     }
