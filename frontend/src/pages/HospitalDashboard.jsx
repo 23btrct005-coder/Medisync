@@ -320,7 +320,6 @@ const HospitalDashboard = () => {
                                 </div>
                             </div>
                         </div>
-                        <form onSubmit={handleOnboardStaff} className="p-8 space-y-6 overflow-y-auto max-h-[70vh]">
                         <form onSubmit={handleOnboardStaff} className="p-8 space-y-6 overflow-y-auto max-h-[75vh]">
                             <div className="space-y-6">
                                 {/* Section 1: Basic Identity */}
