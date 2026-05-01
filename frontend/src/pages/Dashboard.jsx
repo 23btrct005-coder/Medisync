@@ -261,6 +261,34 @@ const Dashboard = () => {
 
           <div className="xl:col-span-4 space-y-8">
             <ActivityHub />
+            
+            {/* Quick Access Grid (Restoring Old UI feel) */}
+            <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-xl">
+               <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest mb-6 flex items-center gap-2">
+                 <Grid size={16} className="text-primary" /> Service Hub
+               </h3>
+               <div className="grid grid-cols-2 gap-4">
+                 {[
+                   { name: 'Records', path: '/dashboard/records', icon: <ClipboardList size={18} />, color: 'bg-blue-50 text-blue-600' },
+                   { name: 'AI Briefs', path: '/dashboard/reports', icon: <FileText size={18} />, color: 'bg-emerald-50 text-emerald-600' },
+                   { name: 'Meds', path: '/dashboard/medications', icon: <Pill size={18} />, color: 'bg-amber-50 text-amber-600' },
+                   { name: 'Security', path: '/dashboard/security', icon: <ShieldCheck size={18} />, color: 'bg-slate-50 text-slate-600' },
+                   { name: 'Wallet', path: '/dashboard/wallet', icon: <Wallet size={18} />, color: 'bg-indigo-50 text-indigo-600' },
+                   { name: 'Calendar', path: '/dashboard/sessions', icon: <Calendar size={18} />, color: 'bg-rose-50 text-rose-600' },
+                 ].map((app) => (
+                   <button 
+                     key={app.name}
+                     onClick={() => navigate(app.path)}
+                     className="flex flex-col items-center gap-3 p-4 rounded-2xl border border-slate-50 hover:border-primary/20 hover:bg-slate-50 transition-all group"
+                   >
+                     <div className={`p-3 rounded-xl ${app.color} group-hover:scale-110 transition-transform`}>
+                       {app.icon}
+                     </div>
+                     <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">{app.name}</span>
+                   </button>
+                 ))}
+               </div>
+            </div>
           </div>
         </div>
       </div>

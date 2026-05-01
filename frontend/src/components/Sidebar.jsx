@@ -58,8 +58,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
   const hospitalItems = [
     { name: 'Command Center', path: '/hospital-dashboard', icon: <LayoutDashboard size={20} /> },
+    { name: 'Appointments', path: '/hospital-dashboard/appointments', icon: <Calendar size={20} /> },
     { name: 'Staff Roster', path: '/hospital-dashboard/staff', icon: <UserCheck size={20} /> },
-    { name: 'Institutional Wallet', path: '/dashboard/wallet', icon: <Wallet size={20} /> },
+    { name: 'Analytics', path: '/hospital-dashboard/analytics', icon: <TrendingUp size={20} /> },
+    { name: 'Inst. Profile', path: '/hospital-dashboard/profile', icon: <User size={20} /> },
+    { name: 'Inst. Wallet', path: '/dashboard/wallet', icon: <Wallet size={20} /> },
     { name: 'Compliance', path: '/dashboard/security', icon: <ShieldCheck size={20} /> },
   ];
 
@@ -130,22 +133,9 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 <NavItem key={item.name} item={item} end={item.path === '/dashboard'} />
               ))}
 
-              {/* More Apps Divider */}
-              <button 
-                onClick={() => setShowMore(!showMore)}
-                className="flex items-center justify-between w-full px-4 py-2.5 mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors"
-              >
-                <span>More Apps</span>
-                <ChevronDown size={14} className={`transition-transform duration-300 ${showMore ? 'rotate-180' : ''}`} />
-              </button>
-
-              {showMore && (
-                <div className="space-y-1 animate-in slide-in-from-top-2 duration-300">
-                  {moreItems.map((item) => (
-                    <NavItem key={item.name} item={item} />
-                  ))}
-                </div>
-              )}
+              {moreItems.map((item) => (
+                <NavItem key={item.name} item={item} />
+              ))}
 
               {/* Profile (always visible) */}
               <div className="mt-2 pt-2 border-t border-slate-100">

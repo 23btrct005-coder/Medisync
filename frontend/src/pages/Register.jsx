@@ -378,7 +378,7 @@ const Register = () => {
                 </div>
 
               {/* Step 2: Institution & Legal (Hospital Only) */}
-              {role === 'ROLE_HOSPITAL_ADMIN' && emailVerified && (
+              {role === 'ROLE_HOSPITAL_ADMIN' && (
                 <div className="bg-slate-50 rounded-2xl p-6 space-y-5 border border-slate-200 shadow-sm animate-in slide-in-from-right-8 duration-500 mt-8">
                   <h3 className={sectionHeadClass}><Building2 size={16} />2. Institutional & Legal</h3>
                   
@@ -450,7 +450,7 @@ const Register = () => {
               )}
 
               {/* Step 3: Infrastructure & Services (Hospital Only) */}
-              {role === 'ROLE_HOSPITAL_ADMIN' && emailVerified && (
+              {role === 'ROLE_HOSPITAL_ADMIN' && (
                 <div className="bg-slate-50 rounded-2xl p-6 space-y-6 border border-slate-200 shadow-sm animate-in slide-in-from-right-8 duration-500 mt-8">
                   <h3 className={sectionHeadClass}><Activity size={16} />3. Medical Infrastructure</h3>
 
@@ -509,8 +509,7 @@ const Register = () => {
               )}
 
               {/* Step 4: Finalize & Security (Hospital Only) / Step 2 (Patient) */}
-              {emailVerified && (
-                <div className="space-y-8 animate-in slide-in-from-right-8 duration-500 mt-8">
+              <div className="space-y-8 animate-in slide-in-from-right-8 duration-500 mt-8">
                   
                   {/* Leadership & Location (Hospital Only) */}
                   {role === 'ROLE_HOSPITAL_ADMIN' && (
