@@ -49,4 +49,11 @@ public class ChatController {
         chatService.markAsRead(user.getId(), senderId);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/unread-counts")
+    public ResponseEntity<java.util.Map<Long, Long>> getUnreadCounts(@AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return ResponseEntity.ok(chatService.getUnreadCounts(user.getId()));
+    }
 }

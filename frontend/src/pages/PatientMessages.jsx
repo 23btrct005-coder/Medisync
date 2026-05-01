@@ -11,8 +11,11 @@ const PatientMessages = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [activeChat, setActiveChat] = useState(null);
 
+    const [unreadCounts, setUnreadCounts] = useState({});
+
     useEffect(() => {
         fetchConversations();
+        fetchUnreadCounts();
     }, []);
 
     const fetchConversations = async () => {
@@ -26,6 +29,13 @@ const PatientMessages = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const fetchUnreadCounts = async () => {
+        try {
+            const res = await api.get('chat/unread-counts');
+            setUnreadCounts(res.data);
+        } catch (e) { console.error(e); }
     };
 
     const filtered = (Array.isArray(conversations) ? conversations : []).filter(d => 
@@ -73,14 +83,23 @@ const PatientMessages = () => {
                     {filtered.map(doctor => (
                         <div 
                             key={doctor.id}
-                            onClick={() => setActiveChat({ id: doctor.id, name: doctor.name, userId: doctor.user?.id })}
+                            onClick={() => {
+                                setActiveChat({ id: doctor.id, name: doctor.name, userId: doctor.user?.id });
+                                setUnreadCounts(prev => ({ ...prev, [doctor.user?.id]: 0 }));
+                            }}
                             className="bg-white p-4 rounded-[2rem] border border-slate-100 hover:border-primary/30 transition-all cursor-pointer group shadow-sm flex items-center justify-between"
                         >
                             <div className="flex items-center gap-4">
-                                <div className="w-14 h-14 rounded-2xl bg-primary-50 flex items-center justify-center text-primary-600 font-black text-xl border border-primary-100 group-hover:scale-105 transition-transform overflow-hidden">
+                                <div className="w-14 h-14 rounded-2xl bg-primary-50 flex items-center justify-center text-primary-600 font-black text-xl border border-primary-100 group-hover:scale-105 transition-transform overflow-hidden relative">
                                     {doctor.profilePictureUrl ? (
                                         <img src={doctor.profilePictureUrl} alt="" className="w-full h-full object-cover" />
                                     ) : doctor.name.charAt(0)}
+
+                                    {unreadCounts[doctor.user?.id] > 0 && (
+                                        <div className="absolute -top-1 -right-1 w-6 h-6 bg-[#25D366] text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-sm animate-bounce">
+                                            {unreadCounts[doctor.user?.id]}
+                                        </div>
+                                    )}
                                 </div>
                                 <div>
                                     <h4 className="font-black text-slate-800 text-lg group-hover:text-primary transition-colors leading-none">Dr. {doctor.name}</h4>
