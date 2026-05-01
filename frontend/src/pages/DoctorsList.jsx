@@ -164,15 +164,16 @@ const DoctorsList = () => {
                </div>
             </form>
           </motion.div>
-          {/* Chat Box */}
+        </div>
+      )}
+
+      {/* Chat Box */}
       {activeChat && (
         <ClinicalChatBox 
           receiverId={activeChat.userId} 
           receiverName={activeChat.name} 
           onClose={() => setActiveChat(null)} 
         />
-      )}
-    </div>
       )}
     </div>
   );
