@@ -56,6 +56,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                             Long userId = jwtUtils.getUserIdFromToken(jwt);
                             String role = jwtUtils.getRoleFromToken(jwt);
                             
+                            System.out.println("DEBUG: AUTH_FILTER -> Token validated for " + username + " (ID: " + userId + ") with role: " + role);
+                            
                             // Set context for RLS early
                             UserContext.setContext(userId, role);
                             
@@ -66,6 +68,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                             SecurityContextHolder.getContext().setAuthentication(authentication);
                         } catch (Exception e) {
                             String errMsg = "AUTH_ERROR: Token valid but User/Context missing: " + e.getMessage();
+                            System.err.println("DEBUG: AUTH_FILTER -> " + errMsg);
                             PinpointDiagnosticController.setLastError(errMsg);
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType("application/json");
@@ -73,6 +76,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                             return;
                         }
                     } else {
+                        System.err.println("DEBUG: AUTH_FILTER -> JWT validation failed for token starting with: " + (jwt.length() > 10 ? jwt.substring(0, 10) : jwt));
                         PinpointDiagnosticController.setLastError("AUTH_ERROR: JWT validation failed.");
                     }
                 }

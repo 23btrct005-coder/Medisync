@@ -20,8 +20,7 @@ import java.io.PrintWriter;
 
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin(origins = "*", maxAge = 3600)
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 public class AdminController {
 
     private final DoctorRepository doctorRepository;

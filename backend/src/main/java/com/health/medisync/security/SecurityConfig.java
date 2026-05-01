@@ -56,6 +56,18 @@ public class SecurityConfig {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
+            .exceptionHandling(exceptions -> exceptions
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(401);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"message\": \"Clinical session missing or invalid. Please re-authenticate.\", \"error\": \"Unauthorized\"}");
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.setStatus(403);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"message\": \"Insufficient administrative clearance for this clinical node.\", \"error\": \"Forbidden\"}");
+                })
+            )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -64,6 +76,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/patient/profile/sync", "/patient/profile/sync").permitAll()
                 .requestMatchers("/api/admin/diagnose/**").permitAll()
                 .requestMatchers("/api/hospital/**").hasRole("HOSPITAL_ADMIN")
+                .requestMatchers("/api/notifications/**").authenticated()
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated()

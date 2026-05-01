@@ -33,6 +33,28 @@ public class PinpointDiagnosticController {
         return jdbcTemplate.queryForList("SELECT id, name, profile_picture_url FROM doctors LIMIT 5");
     }
 
+    @GetMapping("/whoami")
+    public Map<String, Object> whoami() {
+        Map<String, Object> results = new LinkedHashMap<>();
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        
+        if (auth != null) {
+            results.put("authenticated", auth.isAuthenticated());
+            results.put("principal", auth.getName());
+            results.put("authorities", auth.getAuthorities().stream()
+                .map(org.springframework.security.core.GrantedAuthority::getAuthority)
+                .toList());
+        } else {
+            results.put("authenticated", false);
+            results.put("principal", "anonymousUser");
+        }
+        
+        results.put("user_context_id", com.health.medisync.security.UserContext.getCurrentUserId());
+        results.put("user_context_role", com.health.medisync.security.UserContext.getCurrentUserRole());
+        
+        return results;
+    }
+
     @GetMapping("/pinpoint")
     public Map<String, Object> pinpoint() {
         Map<String, Object> results = new LinkedHashMap<>();
