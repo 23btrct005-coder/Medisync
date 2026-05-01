@@ -1,9 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, UserPlus, Building2, Mail, Lock, User, Phone, MapPin, Camera, AlertCircle, CheckCircle, GraduationCap, Briefcase, ShieldCheck, Heart, Eye, EyeOff, Navigation } from 'lucide-react';
+import { 
+  ArrowLeft, UserPlus, Building2, Mail, Lock, User, Phone, MapPin, 
+  Camera, AlertCircle, CheckCircle, GraduationCap, Briefcase, 
+  ShieldCheck, Heart, Eye, EyeOff, Navigation, ChevronRight, Activity 
+} from 'lucide-react';
 import api from '../api/axiosConfig';
 import ProfilePhotoUpload from '../components/ProfilePhotoUpload';
 import LegalFooter from '../components/LegalFooter';
+import OnboardingProgress from '../components/OnboardingProgress';
+
+const HospitalDepartments = [
+  "Cardiology", "Neurology", "Pediatrics", "Orthopedics", "Oncology", 
+  "Gynecology", "Dermatology", "Urology", "Ophthalmology", "ENT", 
+  "Psychiatry", "Emergency Medicine", "Radiology", "General Surgery"
+];
 
 const Register = () => {
   const navigate = useNavigate();
@@ -11,7 +22,7 @@ const Register = () => {
   const context = searchParams.get('context') || 'patient'; // patient or professional
   
   const [role, setRole] = useState(context === 'professional' ? 'ROLE_HOSPITAL_ADMIN' : 'ROLE_PATIENT');
-  
+  const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     // Identity
     email: '',
@@ -26,6 +37,24 @@ const Register = () => {
     age: '',
     gender: '',
     bloodGroup: '',
+    // Legal & Compliance
+    gstNumber: '',
+    panNumber: '',
+    nabhId: '',
+    isoId: '',
+    // Infrastructure
+    totalBeds: '',
+    icuBeds: '',
+    operationTheatersCount: '',
+    ambulanceCount: '',
+    departments: [], // Array for multi-select
+    emergencyServicesAvailable: true,
+    // Appointment & Billing
+    consultationTimings: '9:00 AM - 9:00 PM',
+    walkInAllowed: true,
+    avgWaitingTime: '15',
+    consultationFees: '', // JSON mapping or simple string
+    insuranceProviders: '',
     // Contact
     phone: '',
     alternatePhone: '',
@@ -48,6 +77,7 @@ const Register = () => {
   const [success, setSuccess] = useState('');
   const [profilePicture, setProfilePicture] = useState(null);
   const [hospitalLogo, setHospitalLogo] = useState(null);
+  const [registrationCertificate, setRegistrationCertificate] = useState(null);
 
   // Verification states
   const [otpSent, setOtpSent] = useState(false);
@@ -99,6 +129,15 @@ const Register = () => {
     }
 
     setFormData(updated);
+  };
+
+  const handleDepartmentToggle = (dept) => {
+    setFormData(prev => {
+      const depts = prev.departments.includes(dept)
+        ? prev.departments.filter(d => d !== dept)
+        : [...prev.departments, dept];
+      return { ...prev, departments: depts };
+    });
   };
 
   const handleGetCurrentLocation = () => {
@@ -223,6 +262,10 @@ const Register = () => {
         formDataToSend.append('hospitalLogo', hospitalLogo);
       }
 
+      if (registrationCertificate && role === 'ROLE_HOSPITAL_ADMIN') {
+        formDataToSend.append('registrationCertificate', registrationCertificate);
+      }
+
       await api.post(endpoint, formDataToSend, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
@@ -296,321 +339,274 @@ const Register = () => {
             )}
 
             <form className="space-y-8" onSubmit={handleRegister}>
-
-              {/* 1. Identity & Verification */}
-              <div className="bg-slate-50 rounded-2xl p-6 space-y-4 border border-slate-200 shadow-sm">
-                <h3 className={sectionHeadClass}><Mail size={16} />1. Identity Verification</h3>
-                <div className="relative">
-                  <label className={labelClass}>
-                    {role === 'ROLE_HOSPITAL_ADMIN' ? 'Hospital Official Email' : 'Work / Personal Email'} <span className="text-red-500">*</span>
-                  </label>
-                  <div className="flex gap-2">
-                    <input type="email" name="email" required disabled={emailVerified}
-                      value={formData.email} onChange={handleChange}
-                      className={`${inputClass} ${emailVerified ? 'bg-green-50 border-green-300' : ''} flex-1`}
-                      placeholder="e.g. admin@narayanahealth.com" />
-                    {!emailVerified && (
-                      <button type="button" onClick={handleSendOtp} disabled={verifying}
-                        className="whitespace-nowrap bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-primary-700 disabled:opacity-50 transition-all">
-                        {verifying ? '...' : otpSent ? 'Resend' : 'Verify'}
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {otpSent && !emailVerified && (
-                  <div className="p-4 bg-white rounded-xl border border-primary-100 space-y-3 animate-in zoom-in-95 shadow-inner">
-                    <label className={labelClass}>Verification Code</label>
-                    <div className="flex gap-3">
-                      <input type="text" maxLength="6" value={otpCode}
-                        onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                        className="block w-full text-center text-xl font-bold tracking-[0.3em] rounded-xl border-slate-200 px-3 py-3 border focus:ring-primary-500"
-                        placeholder="000000" />
-                      <button type="button" onClick={handleVerifyOtp} disabled={verifying || otpCode.length < 6}
-                        className="bg-primary-600 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-primary-700 shadow-md">
-                        Confirm
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* === HOSPITAL ADMIN SECTIONS === */}
               {role === 'ROLE_HOSPITAL_ADMIN' && (
-                <>
-                  {/* 2a. Hospital Identity */}
-                  <div className="bg-slate-50 rounded-2xl p-6 space-y-5 border border-slate-200 shadow-sm">
-                    <h3 className={sectionHeadClass}><Building2 size={16} />2. Hospital Identity</h3>
+                <OnboardingProgress 
+                  currentStep={step} 
+                  steps={["Identity", "Institution", "Medical Info", "Finalize"]} 
+                />
+              )}
 
-                    {/* Logo upload centred at top */}
-                    <div className="flex flex-col items-center gap-2 pb-2">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hospital Logo</p>
-                      <ProfilePhotoUpload onFileSelect={setHospitalLogo} />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      <div className="md:col-span-2">
-                        <label className={labelClass}>Hospital / Institution Name <span className="text-red-500">*</span></label>
-                        <input type="text" name="hospitalName" required value={formData.hospitalName} onChange={handleChange}
-                          className={inputClass} placeholder="e.g. Narayana Health City" />
-                      </div>
-                      <div>
-                        <label className={labelClass}>Hospital Type <span className="text-red-500">*</span></label>
-                        <select name="hospitalType" required value={formData.hospitalType} onChange={handleChange} className={inputClass}>
-                          <option value="">Select Type</option>
-                          <option value="Government">Government</option>
-                          <option value="Private">Private</option>
-                          <option value="Trust / NGO">Trust / NGO</option>
-                          <option value="Charitable">Charitable</option>
-                          <option value="Multi-Specialty">Multi-Specialty</option>
-                          <option value="Clinic">Clinic / Polyclinic</option>
-                          <option value="Diagnostic Centre">Diagnostic Centre</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className={labelClass}>Institutional License Code <span className="text-red-500">*</span></label>
-                        <input type="text" name="licenseCode" required value={formData.licenseCode} onChange={handleChange}
-                          className={inputClass} placeholder="HL-XXXX-XXXX" />
-                      </div>
-                      <div className="md:col-span-2">
-                        <label className={labelClass}>Official Website</label>
-                        <input type="url" name="website" value={formData.website} onChange={handleChange}
-                          className={inputClass} placeholder="https://www.yourhospital.com" />
-                      </div>
+              {/* Step 1: Identity (Universal) */}
+              {step === 1 && (
+                <div className="bg-slate-50 rounded-2xl p-6 space-y-4 border border-slate-200 shadow-sm animate-in slide-in-from-right-8 duration-500">
+                  <h3 className={sectionHeadClass}><Mail size={16} />1. Identity Verification</h3>
+                  <div className="relative">
+                    <label className={labelClass}>
+                      {role === 'ROLE_HOSPITAL_ADMIN' ? 'Hospital Official Email' : 'Work / Personal Email'} <span className="text-red-500">*</span>
+                    </label>
+                    <div className="flex gap-2">
+                      <input type="email" name="email" required disabled={emailVerified}
+                        value={formData.email} onChange={handleChange}
+                        className={`${inputClass} ${emailVerified ? 'bg-green-50 border-green-300' : ''} flex-1`}
+                        placeholder="e.g. admin@narayanahealth.com" />
+                      {!emailVerified && (
+                        <button type="button" onClick={handleSendOtp} disabled={verifying}
+                          className="whitespace-nowrap bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-primary-700 disabled:opacity-50 transition-all">
+                          {verifying ? '...' : otpSent ? 'Resend' : 'Verify'}
+                        </button>
+                      )}
                     </div>
                   </div>
 
-                  {/* 2b. Administrator + Location (combined) */}
-                  <div className="bg-slate-50 rounded-2xl p-6 space-y-5 border border-slate-200 shadow-sm">
-                    <h3 className={sectionHeadClass}><User size={16} />3. Administrator Identity &amp; Location</h3>
-
-                    {/* Admin photo */}
-                    <div className="flex flex-col items-center gap-2 pb-2">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Admin Photo</p>
-                      <ProfilePhotoUpload onFileSelect={setProfilePicture} />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      {/* Admin name */}
-                      <div className="md:col-span-2">
-                        <label className={labelClass}>Administrator Full Name <span className="text-red-500">*</span></label>
-                        <input type="text" name="name" required value={formData.name} onChange={handleChange}
-                          className={inputClass} placeholder="Your Legal Name" />
-                      </div>
-
-                      {/* Position */}
-                      <div className="md:col-span-2">
-                        <label className={labelClass}>Your Position <span className="text-red-500">*</span></label>
-                        <select name="position" required value={formData.position} onChange={handleChange} className={inputClass}>
-                          <option value="Chief Administrator">Chief Administrator</option>
-                          <option value="Medical Director">Medical Director</option>
-                          <option value="CEO / Director">CEO / Director</option>
-                          <option value="Department Head">Department Head</option>
-                          <option value="IT Operations">IT Operations</option>
-                          <option value="HR Manager">HR Manager</option>
-                          <option value="Finance Head">Finance Head</option>
-                        </select>
-                      </div>
-
-                      {/* Divider label */}
-                      <div className="md:col-span-2 pt-2 border-t border-slate-200 flex justify-between items-center">
-                        <p className="text-[10px] font-black text-primary-600 uppercase tracking-[0.2em]">Facility Location &amp; Contact</p>
-                        <button
-                          type="button"
-                          onClick={handleGetCurrentLocation}
-                          disabled={locating}
-                          className="flex items-center gap-1.5 text-[10px] font-bold text-primary-600 hover:text-primary-700 transition-colors bg-primary-50 px-3 py-1.5 rounded-lg border border-primary-100"
-                        >
-                          <Navigation size={12} className={locating ? 'animate-pulse' : ''} />
-                          {locating ? 'Locating...' : 'Get Current Location'}
+                  {otpSent && !emailVerified && (
+                    <div className="p-4 bg-white rounded-xl border border-primary-100 space-y-3 animate-in zoom-in-95 shadow-inner">
+                      <label className={labelClass}>Verification Code</label>
+                      <div className="flex gap-3">
+                        <input type="text" maxLength="6" value={otpCode}
+                          onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                          className="block w-full text-center text-xl font-bold tracking-[0.3em] rounded-xl border-slate-200 px-3 py-3 border focus:ring-primary-500"
+                          placeholder="000000" />
+                        <button type="button" onClick={handleVerifyOtp} disabled={verifying || otpCode.length < 6}
+                          className="bg-primary-600 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-primary-700 shadow-md">
+                          Confirm
                         </button>
                       </div>
-
-                      {/* Phone */}
-                      <div>
-                        <label className={labelClass}>Institutional Phone <span className="text-red-500">*</span></label>
-                        <input type="tel" name="phone" required value={formData.phone} onChange={handleChange}
-                          className={inputClass} maxLength="10" placeholder="10-digit number" />
-                      </div>
-
-                      {/* State */}
-                      <div>
-                        <label className={labelClass}>State <span className="text-red-500">*</span></label>
-                        <select name="state" required value={formData.state} onChange={handleChange} className={inputClass}>
-                          <option value="">Select State</option>
-                          {Object.keys(geographyData).map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
-                      </div>
-
-                      {/* City */}
-                      <div>
-                        <label className={labelClass}>City / District <span className="text-red-500">*</span></label>
-                        <select name="city" required value={formData.city} onChange={handleChange} className={inputClass}>
-                          <option value="">Select City / District</option>
-                          {availableCities.map(c => <option key={c} value={c}>{c}</option>)}
-                        </select>
-                      </div>
-
-                      {/* PIN */}
-                      <div>
-                        <label className={labelClass}>PIN Code <span className="text-red-500">*</span></label>
-                        <input type="text" name="pinCode" required value={formData.pinCode} onChange={handleChange}
-                          className={inputClass} maxLength="6" placeholder="6-digit PIN" />
-                      </div>
-
-                      {/* Street */}
-                      <div className="md:col-span-2">
-                        <label className={labelClass}>Street Address / Locality <span className="text-red-500">*</span></label>
-                        <input type="text" name="street" required value={formData.street} onChange={handleChange}
-                          className={inputClass} placeholder="e.g. 258/A, Hosur Road, Bommasandra" />
-                      </div>
                     </div>
-                  </div>
-                </>
+                  )}
+
+                  {emailVerified && role === 'ROLE_HOSPITAL_ADMIN' && (
+                    <div className="pt-4 flex justify-end">
+                       <button 
+                        type="button" 
+                        onClick={() => setStep(2)}
+                        className="btn-premium bg-primary text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-primary/20 flex items-center gap-2"
+                       >
+                         Continue to Step 2 <ChevronRight size={18} />
+                       </button>
+                    </div>
+                  )}
+                </div>
               )}
 
-              {/* === PATIENT SECTIONS === */}
-              {role === 'ROLE_PATIENT' && (
-                <>
-                  {/* 2. Personal Details */}
-                  <div className="bg-slate-50 rounded-2xl p-6 space-y-6 border border-slate-200 shadow-sm">
-                    <h3 className={sectionHeadClass}><User size={16} />2. Personal Details</h3>
-                    <div className="flex flex-col items-center gap-2 mb-4">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Profile Photo</p>
-                      <ProfilePhotoUpload onFileSelect={setProfilePicture} />
+              {/* Step 2: Institution & Legal (Hospital Only) */}
+              {step === 2 && role === 'ROLE_HOSPITAL_ADMIN' && (
+                <div className="bg-slate-50 rounded-2xl p-6 space-y-5 border border-slate-200 shadow-sm animate-in slide-in-from-right-8 duration-500">
+                  <h3 className={sectionHeadClass}><Building2 size={16} />2. Institutional & Legal</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Logo & Cert */}
+                    <div className="flex flex-col items-center gap-6 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                       <div className="text-center">
+                          <p className={labelClass}>Hospital Logo</p>
+                          <ProfilePhotoUpload onFileSelect={setHospitalLogo} />
+                       </div>
+                       <div className="w-full h-[1px] bg-slate-100" />
+                       <div className="text-center w-full">
+                          <p className={labelClass}>Registration Certificate (PDF/JPG)</p>
+                          <input 
+                            type="file" 
+                            accept=".pdf,.jpg,.png"
+                            onChange={(e) => setRegistrationCertificate(e.target.files[0])}
+                            className="text-[10px] block w-full text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                          />
+                       </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      <div className="md:col-span-2">
-                        <label className={labelClass}>Full Name <span className="text-red-500">*</span></label>
-                        <input type="text" name="name" required value={formData.name} onChange={handleChange}
-                          className={inputClass} placeholder="Full Name" />
-                      </div>
+
+                    <div className="space-y-4">
                       <div>
-                        <label className={labelClass}>Date of Birth <span className="text-red-500">*</span></label>
-                        <input type="date" name="dateOfBirth" required value={formData.dateOfBirth} onChange={handleChange} className={inputClass} />
+                        <label className={labelClass}>Hospital Name <span className="text-red-500">*</span></label>
+                        <input type="text" name="hospitalName" required value={formData.hospitalName} onChange={handleChange}
+                          className={inputClass} placeholder="Narayana Health City" />
                       </div>
-                      <div>
-                        <label className={labelClass}>Gender <span className="text-red-500">*</span></label>
-                        <select name="gender" required value={formData.gender} onChange={handleChange} className={inputClass}>
-                          <option value="">Select Gender</option>
-                          <option value="Male">Male</option>
-                          <option value="Female">Female</option>
-                          <option value="Other">Other</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className={labelClass}>Blood Group <span className="text-red-500">*</span></label>
-                        <select name="bloodGroup" required value={formData.bloodGroup} onChange={handleChange} className={inputClass}>
-                          <option value="">Select Blood Group</option>
-                          <option value="A+">A+</option><option value="A-">A-</option>
-                          <option value="B+">B+</option><option value="B-">B-</option>
-                          <option value="O+">O+</option><option value="O-">O-</option>
-                          <option value="AB+">AB+</option><option value="AB-">AB-</option>
-                        </select>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className={labelClass}>Type <span className="text-red-500">*</span></label>
+                          <select name="hospitalType" required value={formData.hospitalType} onChange={handleChange} className={inputClass}>
+                            <option value="">Select</option>
+                            <option value="Private">Private</option>
+                            <option value="Government">Govt</option>
+                            <option value="NGO">NGO</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className={labelClass}>License <span className="text-red-500">*</span></label>
+                          <input type="text" name="licenseCode" required value={formData.licenseCode} onChange={handleChange}
+                            className={inputClass} placeholder="HL-XX-XX" />
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* 3. Contact Information */}
-                  <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
-                    <h3 className={sectionHeadClass}><Phone size={16} />3. Contact Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      <div>
-                        <label className={labelClass}>Mobile Number <span className="text-red-500">*</span></label>
-                        <input type="tel" name="phone" required value={formData.phone} onChange={handleChange} className={inputClass} maxLength="10" />
-                      </div>
-                      <div>
-                        <label className={labelClass}>State <span className="text-red-500">*</span></label>
-                        <select name="state" required value={formData.state} onChange={handleChange} className={inputClass}>
-                          <option value="">Select State</option>
-                          {Object.keys(geographyData).map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
-                      </div>
-                      <div>
-                        <label className={labelClass}>City / District <span className="text-red-500">*</span></label>
-                        <select name="city" required value={formData.city} onChange={handleChange} className={inputClass}>
-                          <option value="">Select City / District</option>
-                          {availableCities.map(c => <option key={c} value={c}>{c}</option>)}
-                        </select>
-                      </div>
-                      <div>
-                        <label className={labelClass}>PIN Code <span className="text-red-500">*</span></label>
-                        <input type="text" name="pinCode" required value={formData.pinCode} onChange={handleChange} className={inputClass} maxLength="6" />
-                      </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-slate-100">
+                    <div>
+                      <label className={labelClass}>GST Number</label>
+                      <input type="text" name="gstNumber" value={formData.gstNumber} onChange={handleChange} className={inputClass} placeholder="GSTIN" />
+                    </div>
+                    <div>
+                      <label className={labelClass}>PAN Number</label>
+                      <input type="text" name="panNumber" value={formData.panNumber} onChange={handleChange} className={inputClass} placeholder="PAN" />
+                    </div>
+                    <div>
+                      <label className={labelClass}>NABH ID</label>
+                      <input type="text" name="nabhId" value={formData.nabhId} onChange={handleChange} className={inputClass} placeholder="NABH-01" />
+                    </div>
+                    <div>
+                      <label className={labelClass}>ISO ID</label>
+                      <input type="text" name="isoId" value={formData.isoId} onChange={handleChange} className={inputClass} placeholder="ISO-01" />
                     </div>
                   </div>
 
-                  {/* 4. Emergency Contact */}
-                  <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
-                    <h3 className={sectionHeadClass}><Heart size={16} />4. Emergency Contact</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      <div>
-                        <label className={labelClass}>Contact Name <span className="text-red-500">*</span></label>
-                        <input type="text" name="emergencyContactName" required value={formData.emergencyContactName} onChange={handleChange} className={inputClass} />
-                      </div>
-                      <div>
-                        <label className={labelClass}>Relationship <span className="text-red-500">*</span></label>
-                        <select name="emergencyContactRelationship" required value={formData.emergencyContactRelationship} onChange={handleChange} className={inputClass}>
-                          <option value="">Select Relationship</option>
-                          <option value="Spouse">Spouse</option>
-                          <option value="Parent">Parent</option>
-                          <option value="Sibling">Sibling</option>
-                          <option value="Guardian">Guardian</option>
-                          <option value="Other">Other</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className={labelClass}>Emergency Phone</label>
-                        <input type="tel" name="emergencyContactPhone" value={formData.emergencyContactPhone} onChange={handleChange} className={inputClass} maxLength="10" />
-                      </div>
-                    </div>
+                  <div className="flex justify-between pt-6">
+                    <button type="button" onClick={() => setStep(1)} className="text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-600 transition-colors">Back</button>
+                    <button type="button" onClick={() => setStep(3)} className="btn-premium bg-primary text-white px-8 py-3 rounded-xl font-bold">Continue <ChevronRight size={18} /></button>
                   </div>
-                </>
+                </div>
               )}
 
+              {/* Step 3: Infrastructure & Services (Hospital Only) */}
+              {step === 3 && role === 'ROLE_HOSPITAL_ADMIN' && (
+                <div className="bg-slate-50 rounded-2xl p-6 space-y-6 border border-slate-200 shadow-sm animate-in slide-in-from-right-8 duration-500">
+                  <h3 className={sectionHeadClass}><Activity size={16} />3. Medical Infrastructure</h3>
 
-              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
-                <h3 className={sectionHeadClass}>
-                    <ShieldCheck size={16} /> 
-                    {role === 'ROLE_PATIENT' ? '5. Account Security' : '4. Admin Security'}
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div className="relative">
-                    <label className={labelClass}>Password <span className="text-red-500">*</span></label>
-                    <input type={showPassword ? 'text' : 'password'} name="password" required value={formData.password} onChange={handleChange} className={inputClass} />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-9 text-slate-400">
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100">
+                      <label className={labelClass}>Total Beds</label>
+                      <input type="number" name="totalBeds" value={formData.totalBeds} onChange={handleChange} className="w-full bg-transparent border-none outline-none font-bold text-lg" placeholder="0" />
+                    </div>
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100">
+                      <label className={labelClass}>ICU Beds</label>
+                      <input type="number" name="icuBeds" value={formData.icuBeds} onChange={handleChange} className="w-full bg-transparent border-none outline-none font-bold text-lg" placeholder="0" />
+                    </div>
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100">
+                      <label className={labelClass}>OT Count</label>
+                      <input type="number" name="operationTheatersCount" value={formData.operationTheatersCount} onChange={handleChange} className="w-full bg-transparent border-none outline-none font-bold text-lg" placeholder="0" />
+                    </div>
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100">
+                      <label className={labelClass}>Ambulances</label>
+                      <input type="number" name="ambulanceCount" value={formData.ambulanceCount} onChange={handleChange} className="w-full bg-transparent border-none outline-none font-bold text-lg" placeholder="0" />
+                    </div>
                   </div>
-                  <div className="relative">
-                    <label className={labelClass}>Confirm Password <span className="text-red-500">*</span></label>
-                    <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" required value={formData.confirmPassword} onChange={handleChange} className={inputClass} />
-                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-9 text-slate-400">
-                      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+
+                  <div>
+                    <label className={labelClass}>Clinical Departments <span className="text-slate-400 font-medium">(Select all that apply)</span></label>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {HospitalDepartments.map(dept => (
+                        <button
+                          key={dept}
+                          type="button"
+                          onClick={() => handleDepartmentToggle(dept)}
+                          className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all ${
+                            formData.departments.includes(dept)
+                              ? 'bg-primary border-primary text-white shadow-lg'
+                              : 'bg-white border-slate-200 text-slate-500 hover:border-primary'
+                          }`}
+                        >
+                          {dept}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-4 border-t border-slate-100">
+                     <div>
+                        <label className={labelClass}>Consultation Timings</label>
+                        <input type="text" name="consultationTimings" value={formData.consultationTimings} onChange={handleChange} className={inputClass} placeholder="9 AM - 9 PM" />
+                     </div>
+                     <div>
+                        <label className={labelClass}>Average Waiting Time (Mins)</label>
+                        <input type="number" name="avgWaitingTime" value={formData.avgWaitingTime} onChange={handleChange} className={inputClass} />
+                     </div>
+                  </div>
+
+                  <div className="flex justify-between pt-6">
+                    <button type="button" onClick={() => setStep(2)} className="text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-600 transition-colors">Back</button>
+                    <button type="button" onClick={() => setStep(4)} className="btn-premium bg-primary text-white px-8 py-3 rounded-xl font-bold">Continue <ChevronRight size={18} /></button>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 4: Finalize & Security (Hospital Only) / Step 2 (Patient) */}
+              {((step === 4 && role === 'ROLE_HOSPITAL_ADMIN') || (step === 1 && role === 'ROLE_PATIENT' && emailVerified)) && (
+                <div className="space-y-8 animate-in slide-in-from-right-8 duration-500">
+                  
+                  {/* Leadership & Location (Hospital Only) */}
+                  {role === 'ROLE_HOSPITAL_ADMIN' && (
+                    <div className="bg-slate-50 rounded-2xl p-6 space-y-5 border border-slate-200 shadow-sm">
+                      <h3 className={sectionHeadClass}><User size={16} />4. Leadership & Location</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="flex items-center gap-4">
+                           <ProfilePhotoUpload onFileSelect={setProfilePicture} />
+                           <div className="flex-1">
+                              <label className={labelClass}>Admin Full Name <span className="text-red-500">*</span></label>
+                              <input type="text" name="name" required value={formData.name} onChange={handleChange} className={inputClass} />
+                           </div>
+                        </div>
+                        <div>
+                          <label className={labelClass}>Position</label>
+                          <select name="position" value={formData.position} onChange={handleChange} className={inputClass}>
+                             <option value="Chief Administrator">Chief Administrator</option>
+                             <option value="CEO">CEO</option>
+                             <option value="Director">Director</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="pt-4 border-t border-slate-100">
+                         <div className="flex justify-between items-center mb-4">
+                            <p className={labelClass}>Facility Address</p>
+                            <button type="button" onClick={handleGetCurrentLocation} className="text-[10px] font-black text-primary uppercase flex items-center gap-2">
+                               <Navigation size={12} className={locating ? 'animate-pulse' : ''} /> {locating ? 'Locating...' : 'Auto-Locate'}
+                            </button>
+                         </div>
+                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <input type="text" name="state" required value={formData.state} onChange={handleChange} className={inputClass} placeholder="State" />
+                            <input type="text" name="city" required value={formData.city} onChange={handleChange} className={inputClass} placeholder="City" />
+                            <input type="text" name="pinCode" required value={formData.pinCode} onChange={handleChange} className={inputClass} placeholder="PIN" />
+                            <input type="tel" name="phone" required value={formData.phone} onChange={handleChange} className={inputClass} placeholder="Phone" />
+                         </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Account Security (Universal) */}
+                  <div className="bg-slate-50 rounded-2xl p-6 space-y-5 border border-slate-200 shadow-sm">
+                    <h3 className={sectionHeadClass}><Lock size={16} />Account Security</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div className="relative">
+                        <label className={labelClass}>Secure Password <span className="text-red-500">*</span></label>
+                        <input type={showPassword ? 'text' : 'password'} name="password" required value={formData.password} onChange={handleChange} className={inputClass} />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-9 text-slate-400">
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+                      <div className="relative">
+                        <label className={labelClass}>Confirm Password <span className="text-red-500">*</span></label>
+                        <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" required value={formData.confirmPassword} onChange={handleChange} className={inputClass} />
+                        <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-9 text-slate-400">
+                          {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
+                    <button type="submit" disabled={loading}
+                      className={`w-full flex justify-center items-center gap-2 py-4 px-4 rounded-2xl shadow-xl text-md font-extrabold text-white bg-primary-600 hover:bg-primary-700 transition-all ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01]'}`}>
+                      {loading ? 'Finalizing Sync...' : 'Complete Institutional Onboarding'}
                     </button>
                   </div>
                 </div>
-              </div>
-
-              {/* 6. AI & Legal */}
-              {role === 'ROLE_PATIENT' && (
-                  <div className="bg-blue-50/50 border border-blue-100 p-6 rounded-2xl flex items-start gap-3">
-                    <input type="checkbox" id="aiDisclaimer" checked={aiDisclaimerAccepted} onChange={(e) => setAiDisclaimerAccepted(e.target.checked)} className="mt-1 h-4 w-4 text-primary-600 rounded cursor-pointer" />
-                    <label htmlFor="aiDisclaimer" className="text-xs text-slate-600 leading-relaxed cursor-pointer font-bold">
-                        AI Clinical Disclaimer: I acknowledge that Medisync uses AI for clinical analysis.
-                    </label>
-                  </div>
               )}
-
-              <div className="pt-2">
-                <button type="submit" disabled={loading || !emailVerified || (role === 'ROLE_PATIENT' && !aiDisclaimerAccepted)}
-                  className={`w-full flex justify-center items-center gap-2 py-4 px-4 rounded-2xl shadow-xl text-md font-extrabold text-white bg-primary-600 hover:bg-primary-700 transition-all ${loading || !emailVerified ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01]'}`}>
-                  {loading ? 'Onboarding Institution...' : 'Complete Registration'}
-                </button>
-                <div className="mt-8 opacity-60">
-                   <LegalFooter />
-                </div>
-              </div>
             </form>
           </div>
         </div>
