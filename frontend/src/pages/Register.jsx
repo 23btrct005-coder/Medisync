@@ -7,8 +7,8 @@ import {
 } from 'lucide-react';
 import api from '../api/axiosConfig';
 import ProfilePhotoUpload from '../components/ProfilePhotoUpload';
+import ProfilePhotoUpload from '../components/ProfilePhotoUpload';
 import LegalFooter from '../components/LegalFooter';
-import OnboardingProgress from '../components/OnboardingProgress';
 
 const HospitalDepartments = [
   "Cardiology", "Neurology", "Pediatrics", "Orthopedics", "Oncology", 
@@ -22,7 +22,6 @@ const Register = () => {
   const context = searchParams.get('context') || 'patient'; // patient or professional
   
   const [role, setRole] = useState(context === 'professional' ? 'ROLE_HOSPITAL_ADMIN' : 'ROLE_PATIENT');
-  const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     // Identity
     email: '',
@@ -339,16 +338,8 @@ const Register = () => {
             )}
 
             <form className="space-y-8" onSubmit={handleRegister}>
-              {role === 'ROLE_HOSPITAL_ADMIN' && (
-                <OnboardingProgress 
-                  currentStep={step} 
-                  steps={["Identity", "Institution", "Medical Info", "Finalize"]} 
-                />
-              )}
-
               {/* Step 1: Identity (Universal) */}
-              {step === 1 && (
-                <div className="bg-slate-50 rounded-2xl p-6 space-y-4 border border-slate-200 shadow-sm animate-in slide-in-from-right-8 duration-500">
+              <div className="bg-slate-50 rounded-2xl p-6 space-y-4 border border-slate-200 shadow-sm animate-in slide-in-from-right-8 duration-500">
                   <h3 className={sectionHeadClass}><Mail size={16} />1. Identity Verification</h3>
                   <div className="relative">
                     <label className={labelClass}>
@@ -384,23 +375,12 @@ const Register = () => {
                     </div>
                   )}
 
-                  {emailVerified && role === 'ROLE_HOSPITAL_ADMIN' && (
-                    <div className="pt-4 flex justify-end">
-                       <button 
-                        type="button" 
-                        onClick={() => setStep(2)}
-                        className="btn-premium bg-primary text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-primary/20 flex items-center gap-2"
-                       >
-                         Continue to Step 2 <ChevronRight size={18} />
-                       </button>
-                    </div>
-                  )}
+                  {/* Continue button removed */}
                 </div>
-              )}
 
               {/* Step 2: Institution & Legal (Hospital Only) */}
-              {step === 2 && role === 'ROLE_HOSPITAL_ADMIN' && (
-                <div className="bg-slate-50 rounded-2xl p-6 space-y-5 border border-slate-200 shadow-sm animate-in slide-in-from-right-8 duration-500">
+              {role === 'ROLE_HOSPITAL_ADMIN' && emailVerified && (
+                <div className="bg-slate-50 rounded-2xl p-6 space-y-5 border border-slate-200 shadow-sm animate-in slide-in-from-right-8 duration-500 mt-8">
                   <h3 className={sectionHeadClass}><Building2 size={16} />2. Institutional & Legal</h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -466,16 +446,13 @@ const Register = () => {
                     </div>
                   </div>
 
-                  <div className="flex justify-between pt-6">
-                    <button type="button" onClick={() => setStep(1)} className="text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-600 transition-colors">Back</button>
-                    <button type="button" onClick={() => setStep(3)} className="btn-premium bg-primary text-white px-8 py-3 rounded-xl font-bold">Continue <ChevronRight size={18} /></button>
-                  </div>
+                  {/* Buttons removed */}
                 </div>
               )}
 
               {/* Step 3: Infrastructure & Services (Hospital Only) */}
-              {step === 3 && role === 'ROLE_HOSPITAL_ADMIN' && (
-                <div className="bg-slate-50 rounded-2xl p-6 space-y-6 border border-slate-200 shadow-sm animate-in slide-in-from-right-8 duration-500">
+              {role === 'ROLE_HOSPITAL_ADMIN' && emailVerified && (
+                <div className="bg-slate-50 rounded-2xl p-6 space-y-6 border border-slate-200 shadow-sm animate-in slide-in-from-right-8 duration-500 mt-8">
                   <h3 className={sectionHeadClass}><Activity size={16} />3. Medical Infrastructure</h3>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -528,16 +505,13 @@ const Register = () => {
                      </div>
                   </div>
 
-                  <div className="flex justify-between pt-6">
-                    <button type="button" onClick={() => setStep(2)} className="text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-600 transition-colors">Back</button>
-                    <button type="button" onClick={() => setStep(4)} className="btn-premium bg-primary text-white px-8 py-3 rounded-xl font-bold">Continue <ChevronRight size={18} /></button>
-                  </div>
+                  {/* Buttons removed */}
                 </div>
               )}
 
               {/* Step 4: Finalize & Security (Hospital Only) / Step 2 (Patient) */}
-              {((step === 4 && role === 'ROLE_HOSPITAL_ADMIN') || (step === 1 && role === 'ROLE_PATIENT' && emailVerified)) && (
-                <div className="space-y-8 animate-in slide-in-from-right-8 duration-500">
+              {emailVerified && (
+                <div className="space-y-8 animate-in slide-in-from-right-8 duration-500 mt-8">
                   
                   {/* Leadership & Location (Hospital Only) */}
                   {role === 'ROLE_HOSPITAL_ADMIN' && (
