@@ -343,7 +343,19 @@ const HospitalDoctorRoster = () => {
 
                                 {/* Administrative Section */}
                                 <div className="col-span-2 pt-4 border-t border-slate-50">
-                                    <p className="text-[9px] font-black text-primary uppercase tracking-[0.3em] mb-4">Institutional Administrative Data</p>
+                                                                         <div className="flex items-center justify-between mb-4">
+                                        <p className="text-[9px] font-black text-primary uppercase tracking-[0.3em]">Institutional Administrative Data</p>
+                                        <div className="flex gap-4">
+                                            <button 
+                                                type="button"
+                                                onClick={() => { setEditingDoctor(null); navigate('/hospital-dashboard/appointments'); }}
+                                                className="text-[8px] font-black text-primary hover:underline uppercase tracking-widest flex items-center gap-1"
+                                            >
+                                                <Calendar size={10} /> View Ledger
+                                            </button>
+                                            <a href="https://dashboard.razorpay.com/" target="_blank" rel="noreferrer" className="text-[8px] text-primary hover:underline font-black uppercase tracking-widest">Razorpay Dash</a>
+                                        </div>
+                                     </div>
                                 </div>
 
                                 <div>

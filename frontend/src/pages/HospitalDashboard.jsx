@@ -531,10 +531,21 @@ const HospitalDashboard = () => {
 
                                 {/* Section 4: Financial & Security */}
                                 <div className="space-y-4">
-                                    <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] border-b border-primary/10 pb-2">4. Financial & Security</h4>
+                                    <div className="flex items-center justify-between border-b border-primary/10 pb-2">
+                                        <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">4. Financial & Security</h4>
+                                        <button 
+                                            type="button"
+                                            onClick={() => { setShowOnboardModal(false); navigate('/hospital-dashboard/appointments'); }}
+                                            className="text-[9px] font-black text-primary hover:underline uppercase tracking-widest flex items-center gap-1"
+                                        >
+                                            <Calendar size={10} /> View Ledger
+                                        </button>
+                                    </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Consultation Fee (₹)</label>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 flex items-center justify-between">
+                                                Consultation Fee (₹)
+                                            </label>
                                             <input 
                                                 type="number" required
                                                 value={onboardData.consultationFee}
@@ -544,7 +555,10 @@ const HospitalDashboard = () => {
                                             />
                                         </div>
                                         <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Razorpay Account ID</label>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 flex items-center justify-between">
+                                                Razorpay Account ID
+                                                <a href="https://dashboard.razorpay.com/" target="_blank" rel="noreferrer" className="text-[8px] text-primary hover:underline font-black">OPEN DASHBOARD</a>
+                                            </label>
                                             <input 
                                                 type="text"
                                                 value={onboardData.razorpayAccountId}
