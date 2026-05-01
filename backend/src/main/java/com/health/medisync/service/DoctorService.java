@@ -56,10 +56,7 @@ public class DoctorService {
 
     public List<Patient> getLinkedPatients(String doctorUsername) {
         Doctor doctor = getDoctorProfile(doctorUsername);
-        return patientRepository.findAll().stream()
-            .filter(patient -> patient.getDoctors().stream()
-                .anyMatch(d -> d.getId().equals(doctor.getId())))
-            .toList();
+        return patientRepository.findByDoctorId(doctor.getId());
     }
 
     public void requestAccess(String doctorUsername, String patientEmail) {
@@ -118,10 +115,19 @@ public class DoctorService {
     private void verifyAccess(Doctor doctor, Long patientId) {
         Patient patient = patientRepository.findById(patientId)
             .orElseThrow(() -> new RuntimeException("Patient not found"));
+            
         boolean isLinked = patient.getDoctors().stream()
             .anyMatch(d -> d.getId().equals(doctor.getId()));
+            
         if (!isLinked) {
-            throw new RuntimeException("Unauthorized Access: You are not authorized to view this patient's clinical telemetry.");
+            // Final authority check: verify if an ACCEPTED/APPROVED request exists in the clinical ledger
+            boolean hasApprovedRequest = accessRequestRepository.findByDoctorAndPatient(doctor, patient)
+                .map(r -> "ACCEPTED".equals(r.getStatus()) || "APPROVED".equals(r.getStatus()))
+                .orElse(false);
+            
+            if (!hasApprovedRequest) {
+                throw new RuntimeException("Unauthorized Access: You are not authorized to view this patient's clinical telemetry.");
+            }
         }
         
         // Security Logging
@@ -311,7 +317,7 @@ public class DoctorService {
             .orElse(new AccessRequest());
         req.setDoctor(doctor);
         req.setPatient(patient);
-        req.setStatus("APPROVED");
+        req.setStatus("ACCEPTED");
         accessRequestRepository.save(req);
 
         // Security Logging
