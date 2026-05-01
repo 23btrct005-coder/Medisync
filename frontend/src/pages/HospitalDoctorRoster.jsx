@@ -240,8 +240,9 @@ const HospitalDoctorRoster = () => {
                             <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1">Institutional Profile Editor</p>
                         </div>
                         <form onSubmit={handleUpdateDoctor} className="p-8 space-y-6">
-                                 <div className="col-span-2">
-                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Full Name</label>
+                            <div className="grid grid-cols-2 gap-6">
+                                <div className="col-span-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Full Name</label>
                                      <input 
                                          type="text" required
                                          value={editData.name}

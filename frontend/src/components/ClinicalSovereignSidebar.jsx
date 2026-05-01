@@ -131,4 +131,6 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
       </div>
     </>
   );
+};
+
 export default DoctorSidebar;

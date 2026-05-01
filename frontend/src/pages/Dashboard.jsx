@@ -16,7 +16,6 @@ import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../context/NotificationContext';
 import toast from 'react-hot-toast';
 import ClinicalAlertBanner from '../components/ClinicalAlertBanner';
-import QRModal from '../components/QRModal';
 
 const Dashboard = () => {
   const { user } = useAuth();
