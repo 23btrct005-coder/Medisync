@@ -39,7 +39,6 @@ public class DoctorController {
     }
 
     @GetMapping("/patients/{id}")
-    @Transactional(readOnly = true)
     public ResponseEntity<?> getPatientById(@PathVariable Long id, Authentication authentication) {
         try {
             return ResponseEntity.ok(doctorService.getPatientById(authentication.getName(), id));
@@ -49,7 +48,6 @@ public class DoctorController {
     }
 
     @GetMapping("/patients/{id}/records")
-    @Transactional(readOnly = true)
     public ResponseEntity<?> getPatientRecords(@PathVariable Long id, Authentication authentication) {
         try {
             return ResponseEntity.ok(doctorService.getPatientRecords(authentication.getName(), id));
@@ -59,7 +57,6 @@ public class DoctorController {
     }
 
     @GetMapping("/patients/{id}/reports")
-    @Transactional(readOnly = true)
     public ResponseEntity<?> getPatientReports(@PathVariable Long id, Authentication authentication) {
         try {
             return ResponseEntity.ok(doctorService.getPatientReports(authentication.getName(), id));
@@ -121,7 +118,6 @@ public class DoctorController {
     }
 
     @GetMapping("/patient-by-code/{code}")
-    @Transactional(readOnly = true)
     public ResponseEntity<?> getPatientByCode(@PathVariable String code, Authentication authentication) {
         try {
             Patient p = doctorService.getPatientByShortCode(code);
