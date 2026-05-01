@@ -98,26 +98,25 @@ public class MedisyncApplication {
 
     @Bean
     public CommandLineRunner adminBootstrap(UserRepository userRepository, 
-                                            org.springframework.security.crypto.password.PasswordEncoder passwordEncoder,
-                                            org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
+                                           org.springframework.security.crypto.password.PasswordEncoder passwordEncoder,
+                                           org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
         return args -> {
-            System.out.println("[BOOTSTRAP] Executing System Wipe (keeping only admin)...");
+            System.out.println("[BOOTSTRAP] Checking for global admin account...");
+            
+            // SYSTEM WIPE: As per user request "delete all profiles keep only admin"
             try {
-                // Delete in order to satisfy foreign keys
                 jdbcTemplate.execute("DELETE FROM appointments");
                 jdbcTemplate.execute("DELETE FROM medical_records");
                 jdbcTemplate.execute("DELETE FROM doctors");
                 jdbcTemplate.execute("DELETE FROM hospital_admins");
                 jdbcTemplate.execute("DELETE FROM hospitals");
                 jdbcTemplate.execute("DELETE FROM patients");
-                // Only delete users that are not the main admin
                 jdbcTemplate.execute("DELETE FROM users WHERE role != 'ROLE_ADMIN' AND username != 'admin'");
-                System.out.println("[BOOTSTRAP] System wipe complete.");
+                System.out.println("[BOOTSTRAP] System wipe complete. Only admin retained.");
             } catch (Exception e) {
-                System.err.println("[BOOTSTRAP] Wipe partially failed (likely tables don't exist yet): " + e.getMessage());
+                System.out.println("[BOOTSTRAP] Wipe failed (likely table doesn't exist yet): " + e.getMessage());
             }
 
-            System.out.println("[BOOTSTRAP] Checking for global admin account...");
             Optional<User> adminUser = userRepository.findByUsernameIgnoreCase("admin");
 
             if (adminUser.isPresent()) {
