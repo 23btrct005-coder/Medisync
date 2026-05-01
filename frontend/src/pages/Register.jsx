@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   ArrowLeft, UserPlus, Building2, Mail, Lock, User, Phone, MapPin, 
-  Camera, AlertCircle, CheckCircle, GraduationCap, Briefcase, 
+  Camera, AlertCircle, CheckCircle, GraduationCap, Briefcase, Stethoscope,
   ShieldCheck, Heart, Eye, EyeOff, Navigation, ChevronRight, Activity 
 } from 'lucide-react';
 import api from '../api/axiosConfig';
@@ -35,6 +35,14 @@ const Register = () => {
     age: '',
     gender: '',
     bloodGroup: '',
+    // Doctor Specific
+    specialization: '',
+    medicalDegree: '',
+    medicalLicenseNumber: '',
+    yearsOfExperience: '',
+    college: '',
+    hospital: '', // Selected hospital ID
+    consultationFee: '',
     // Legal & Compliance
     gstNumber: '',
     panNumber: '',
@@ -92,6 +100,9 @@ const Register = () => {
   const [geographyData, setGeographyData] = useState({});
   const [availableCities, setAvailableCities] = useState([]);
 
+  const [hospitals, setHospitals] = useState([]);
+  const [fetchingHospitals, setFetchingHospitals] = useState(false);
+
   useEffect(() => {
     const fetchGeo = async () => {
       try {
@@ -101,7 +112,21 @@ const Register = () => {
         console.error('Failed to load geography data');
       }
     };
+
+    const fetchHospitals = async () => {
+        setFetchingHospitals(true);
+        try {
+            const res = await api.get('auth/hospitals');
+            setHospitals(res.data);
+        } catch (err) {
+            console.error('Failed to load hospitals');
+        } finally {
+            setFetchingHospitals(false);
+        }
+    };
+
     fetchGeo();
+    fetchHospitals();
   }, []);
 
   const handleChange = (e) => {
@@ -242,7 +267,8 @@ const Register = () => {
       const formDataToSend = new FormData();
       const endpointMap = {
         'ROLE_PATIENT': 'auth/register/patient',
-        'ROLE_HOSPITAL_ADMIN': 'auth/register/hospital-admin'
+        'ROLE_HOSPITAL_ADMIN': 'auth/register/hospital-admin',
+        'ROLE_DOCTOR': 'auth/register/doctor'
       };
       const endpoint = endpointMap[role];
       
@@ -314,11 +340,22 @@ const Register = () => {
                             Patient
                         </button>
                     ) : (
-                        <button 
-                            className="px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-white text-primary-600 shadow-lg"
-                        >
-                            Institutional
-                        </button>
+                        <div className="flex gap-1">
+                            <button 
+                                type="button"
+                                onClick={() => setRole('ROLE_HOSPITAL_ADMIN')}
+                                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${role === 'ROLE_HOSPITAL_ADMIN' ? 'bg-white text-primary-600 shadow-lg' : 'text-white hover:bg-white/10'}`}
+                            >
+                                Institutional
+                            </button>
+                            <button 
+                                type="button"
+                                onClick={() => setRole('ROLE_DOCTOR')}
+                                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${role === 'ROLE_DOCTOR' ? 'bg-white text-primary-600 shadow-lg' : 'text-white hover:bg-white/10'}`}
+                            >
+                                Practitioner
+                            </button>
+                        </div>
                     )}
                 </div>
             </div>
@@ -376,6 +413,83 @@ const Register = () => {
 
                   {/* Continue button removed */}
                 </div>
+
+              {/* Step 2: Professional Credentials (Doctor Only) */}
+              {role === 'ROLE_DOCTOR' && (
+                <div className="bg-slate-50 rounded-2xl p-6 space-y-6 border border-slate-200 shadow-sm animate-in slide-in-from-right-8 duration-500 mt-8">
+                  <h3 className={sectionHeadClass}><Stethoscope size={16} />2. Professional Credentials</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label className={labelClass}>Medical Specialization <span className="text-red-500">*</span></label>
+                        <input type="text" name="specialization" required value={formData.specialization} onChange={handleChange}
+                          className={inputClass} placeholder="e.g. Cardiologist" />
+                    </div>
+                    <div>
+                        <label className={labelClass}>Medical Degree <span className="text-red-500">*</span></label>
+                        <input type="text" name="medicalDegree" required value={formData.medicalDegree} onChange={handleChange}
+                          className={inputClass} placeholder="e.g. MBBS, MD" />
+                    </div>
+                    <div>
+                        <label className={labelClass}>Medical License Number <span className="text-red-500">*</span></label>
+                        <input type="text" name="medicalLicenseNumber" required value={formData.medicalLicenseNumber} onChange={handleChange}
+                          className={inputClass} placeholder="REG-XXXXXXXX" />
+                    </div>
+                    <div>
+                        <label className={labelClass}>Years of Experience <span className="text-red-500">*</span></label>
+                        <input type="number" name="yearsOfExperience" required value={formData.yearsOfExperience} onChange={handleChange}
+                          className={inputClass} placeholder="e.g. 10" />
+                    </div>
+                    <div className="md:col-span-2">
+                        <label className={labelClass}>Medical College / University</label>
+                        <input type="text" name="college" value={formData.college} onChange={handleChange}
+                          className={inputClass} placeholder="e.g. AIIMS, Delhi" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Clinical Affiliation (Doctor Only) */}
+              {role === 'ROLE_DOCTOR' && (
+                <div className="bg-slate-50 rounded-2xl p-6 space-y-6 border border-slate-200 shadow-sm animate-in slide-in-from-right-8 duration-500 mt-8">
+                  <h3 className={sectionHeadClass}><Briefcase size={16} />3. Clinical Affiliation</h3>
+                  
+                  <div className="space-y-4">
+                    <div>
+                        <label className={labelClass}>Primary Hospital / Clinic <span className="text-red-500">*</span></label>
+                        <select name="hospital" required value={formData.hospital} onChange={handleChange} className={inputClass}>
+                            <option value="">Select Facility</option>
+                            {hospitals.map(h => (
+                                <option key={h.id} value={h.id}>{h.name} ({h.location})</option>
+                            ))}
+                            <option value="other">Other / Not Listed</option>
+                        </select>
+                        {fetchingHospitals && <p className="text-[10px] text-primary-600 mt-1 animate-pulse italic">Synchronizing facility database...</p>}
+                    </div>
+
+                    {formData.hospital === 'other' && (
+                        <div className="animate-in fade-in slide-in-from-top-2">
+                            <label className={labelClass}>Facility Name <span className="text-red-500">*</span></label>
+                            <input type="text" name="hospitalName" required value={formData.hospitalName} onChange={handleChange}
+                              className={inputClass} placeholder="Enter your clinic/hospital name" />
+                        </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label className={labelClass}>Standard Consultation Fee (INR)</label>
+                            <input type="number" name="consultationFee" value={formData.consultationFee} onChange={handleChange}
+                              className={inputClass} placeholder="e.g. 500" />
+                        </div>
+                        <div>
+                            <label className={labelClass}>Consultation Timings</label>
+                            <input type="text" name="consultationTimings" value={formData.consultationTimings} onChange={handleChange}
+                              className={inputClass} placeholder="e.g. 10 AM - 4 PM" />
+                        </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Step 2: Institution & Legal (Hospital Only) */}
               {role === 'ROLE_HOSPITAL_ADMIN' && (
@@ -511,25 +625,44 @@ const Register = () => {
               {/* Step 4: Finalize & Security (Hospital Only) / Step 2 (Patient) */}
               <div className="space-y-8 animate-in slide-in-from-right-8 duration-500 mt-8">
                   
-                  {/* Leadership & Location (Hospital Only) */}
-                  {role === 'ROLE_HOSPITAL_ADMIN' && (
-                    <div className="bg-slate-50 rounded-2xl p-6 space-y-5 border border-slate-200 shadow-sm">
-                      <h3 className={sectionHeadClass}><User size={16} />4. Leadership & Location</h3>
+                  {/* Leadership & Location (Professional Only) */}
+                  {(role === 'ROLE_HOSPITAL_ADMIN' || role === 'ROLE_DOCTOR') && (
+                    <div className="bg-slate-50 rounded-2xl p-6 space-y-5 border border-slate-200 shadow-sm mt-8">
+                      <h3 className={sectionHeadClass}>
+                        <User size={16} />
+                        {role === 'ROLE_HOSPITAL_ADMIN' ? '4. Leadership & Location' : '4. Personal & Location'}
+                      </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div className="flex items-center gap-4">
                            <ProfilePhotoUpload onFileSelect={setProfilePicture} />
                            <div className="flex-1">
-                              <label className={labelClass}>Admin Full Name <span className="text-red-500">*</span></label>
+                              <label className={labelClass}>
+                                {role === 'ROLE_HOSPITAL_ADMIN' ? 'Admin Full Name' : 'Physician Full Name'} <span className="text-red-500">*</span>
+                              </label>
                               <input type="text" name="name" required value={formData.name} onChange={handleChange} className={inputClass} />
                            </div>
                         </div>
                         <div>
-                          <label className={labelClass}>Position</label>
-                          <select name="position" value={formData.position} onChange={handleChange} className={inputClass}>
-                             <option value="Chief Administrator">Chief Administrator</option>
-                             <option value="CEO">CEO</option>
-                             <option value="Director">Director</option>
-                          </select>
+                          {role === 'ROLE_HOSPITAL_ADMIN' ? (
+                            <>
+                              <label className={labelClass}>Position</label>
+                              <select name="position" value={formData.position} onChange={handleChange} className={inputClass}>
+                                 <option value="Chief Administrator">Chief Administrator</option>
+                                 <option value="CEO">CEO</option>
+                                 <option value="Director">Director</option>
+                              </select>
+                            </>
+                          ) : (
+                            <>
+                              <label className={labelClass}>Gender <span className="text-red-500">*</span></label>
+                              <select name="gender" required value={formData.gender} onChange={handleChange} className={inputClass}>
+                                 <option value="">Select</option>
+                                 <option value="Male">Male</option>
+                                 <option value="Female">Female</option>
+                                 <option value="Other">Other</option>
+                              </select>
+                            </>
+                          )}
                         </div>
                       </div>
 
@@ -574,7 +707,7 @@ const Register = () => {
                   <div className="pt-2">
                     <button type="submit" disabled={loading}
                       className={`w-full flex justify-center items-center gap-2 py-4 px-4 rounded-2xl shadow-xl text-md font-extrabold text-white bg-primary-600 hover:bg-primary-700 transition-all ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01]'}`}>
-                      {loading ? 'Finalizing Sync...' : 'Complete Institutional Onboarding'}
+                      {loading ? 'Finalizing Sync...' : (role === 'ROLE_HOSPITAL_ADMIN' ? 'Complete Institutional Onboarding' : 'Complete Professional Registration')}
                     </button>
                   </div>
                 </div>
