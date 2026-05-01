@@ -32,8 +32,8 @@ public class PredictiveHealthService {
 
         StringBuilder context = new StringBuilder();
         context.append("Patient: ").append(patient.getName()).append(" (Age: ").append(patient.getAge()).append(", Gender: ").append(patient.getGender()).append(")\n");
-        context.append("Lifestyle: ").append(patient.getLifestyleInfo()).append("\n");
-        context.append("Medical History: ").append(patient.getMedicalHistory()).append("\n\n");
+        context.append("Lifestyle: ").append(patient.getSmokingStatus()).append(", ").append(patient.getAlcoholStatus()).append(", ").append(patient.getExerciseFrequency()).append("\n");
+        context.append("Medical History: ").append(patient.getMedicalInfo()).append(" | Diseases: ").append(patient.getExistingDiseases()).append("\n\n");
 
         context.append("Recent Lab/Clinical Reports:\n");
         for (Report r : reports.stream().limit(5).collect(Collectors.toList())) {

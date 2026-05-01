@@ -6,5 +6,6 @@ import java.util.List;
 
 public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Long> {
     List<MedicalRecord> findByPatientId(Long patientId);
+    List<MedicalRecord> findByPatientIdOrderByDateDesc(Long patientId);
     List<MedicalRecord> findByPatientIdAndDiagnosisContainingIgnoreCase(Long patientId, String query);
 }
