@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Send, X, MessageSquare, User, Loader2, Check, CheckCheck } from 'lucide-react';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
-import api from '../api/axiosConfig';
+import api, { rawBaseURL } from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -45,7 +45,7 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
     };
 
     const connectWebSocket = () => {
-        const socket = new SockJS(`${api.defaults.baseURL}/ws`);
+        const socket = new SockJS(`${rawBaseURL}/ws`);
         stompClient.current = Stomp.over(socket);
         stompClient.current.debug = null; // Disable debug logs
 
@@ -57,7 +57,7 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
             setConnected(true);
             stompClient.current.subscribe(`/user/queue/messages`, (msg) => {
                 const newMessage = JSON.parse(msg.body);
-                if (newMessage.senderId === receiverId) {
+                if (String(newMessage.senderId) === String(receiverId)) {
                     setMessages(prev => [...prev, newMessage]);
                     // Mark as read immediately if chat is open
                     api.post(`/chat/mark-read/${receiverId}`);
