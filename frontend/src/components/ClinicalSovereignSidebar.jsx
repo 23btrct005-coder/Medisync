@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, LogOut, Activity, UserCircle, Calendar, Building2, TrendingUp } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, Activity, UserCircle, Calendar, Building2, TrendingUp, MessageSquare } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
 
@@ -32,6 +32,11 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
       name: isAdmin ? 'Staff Roster' : 'Patient Directory', 
       path: isAdmin ? `${prefix}/staff` : `${prefix}/patients`, 
       icon: <Users size={20} /> 
+    },
+    { 
+      name: 'Messages', 
+      path: `${prefix}/messages`, 
+      icon: <MessageSquare size={20} /> 
     },
     ...(isAdmin ? [
       {
