@@ -113,21 +113,12 @@ public class DoctorService {
     }
 
     private void verifyAccess(Doctor doctor, Long patientId) {
-        Patient patient = patientRepository.findById(patientId)
-            .orElseThrow(() -> new RuntimeException("Patient not found"));
+        // Authoritative Check: Is this patient in the doctor's verified census?
+        List<Patient> linkedPatients = patientRepository.findByDoctorId(doctor.getId());
+        boolean hasAccess = linkedPatients.stream().anyMatch(p -> p.getId().equals(patientId));
             
-        boolean isLinked = patient.getDoctors().stream()
-            .anyMatch(d -> d.getId().equals(doctor.getId()));
-            
-        if (!isLinked) {
-            // Final authority check: verify if an ACCEPTED/APPROVED request exists in the clinical ledger
-            boolean hasApprovedRequest = accessRequestRepository.findByDoctorAndPatient(doctor, patient)
-                .map(r -> "ACCEPTED".equals(r.getStatus()) || "APPROVED".equals(r.getStatus()))
-                .orElse(false);
-            
-            if (!hasApprovedRequest) {
-                throw new RuntimeException("Unauthorized Access: You are not authorized to view this patient's clinical telemetry.");
-            }
+        if (!hasAccess) {
+            throw new RuntimeException("Unauthorized Access: This patient is not linked to your clinical practice. Please use the Patient Code to establish a secure link.");
         }
         
         // Security Logging

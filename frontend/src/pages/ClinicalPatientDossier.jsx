@@ -247,6 +247,7 @@ const PatientManager = () => {
   const [reportsLoading, setReportsLoading] = useState(false);
   const [recordError, setRecordError] = useState('');
   const [reportError, setReportError] = useState('');
+  const [fetchError, setFetchError] = useState('');
 
   const [previewData, setPreviewData] = useState({
     isOpen: false,
@@ -292,6 +293,7 @@ const PatientManager = () => {
       setSyncLabel('Just Now');
     } catch (err) {
       console.error('Error fetching patient profile', err);
+      setFetchError(err.response?.data?.message || 'Unauthorized Access: This clinical telemetry node is restricted.');
       setLoading(false);
     }
   };
@@ -445,7 +447,21 @@ const PatientManager = () => {
   );
 
   if (!patient) return (
-    <div className="text-center py-12 text-slate-500">Patient not found.</div>
+    <div className="text-center py-20 px-6 max-w-lg mx-auto">
+      <div className="w-20 h-20 bg-red-50 text-red-500 rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-sm">
+        <AlertCircle size={40} />
+      </div>
+      <h3 className="text-xl font-black text-slate-800 mb-2 uppercase tracking-tight">Clinical Node Restricted</h3>
+      <p className="text-slate-500 text-sm font-medium leading-relaxed mb-8">
+        {fetchError || "This patient dossier could not be retrieved from the clinical ledger. Please verify your authorization credentials or patient code."}
+      </p>
+      <button 
+        onClick={() => navigate('/doctor-dashboard/patients')}
+        className="px-8 py-3 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl active:scale-95"
+      >
+        Back to Directory
+      </button>
+    </div>
   );
 
   return (
