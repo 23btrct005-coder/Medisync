@@ -63,6 +63,12 @@ public class Doctor {
     @Column(name = "profile_picture_url")
     private String profilePictureUrl;
 
+    // Administrative Fields (Admin Only)
+    private String staffId;
+    private String joiningDate;
+    private String salary;
+    private String contractType; // e.g. PERMANENT, VISITING, INTERN
+
     // Getters & Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -159,4 +165,16 @@ public class Doctor {
 
     public Department getDepartment() { return department; }
     public void setDepartment(Department department) { this.department = department; }
+
+    public String getStaffId() { return staffId; }
+    public void setStaffId(String staffId) { this.staffId = staffId; }
+
+    public String getJoiningDate() { return joiningDate; }
+    public void setJoiningDate(String joiningDate) { this.joiningDate = joiningDate; }
+
+    public String getSalary() { return salary; }
+    public void setSalary(String salary) { this.salary = salary; }
+
+    public String getContractType() { return contractType; }
+    public void setContractType(String contractType) { this.contractType = contractType; }
 }

@@ -165,6 +165,12 @@ public class HospitalService {
         if (updates.containsKey("workingDays")) doctor.setWorkingDays(updates.get("workingDays") != null ? updates.get("workingDays").toString() : null);
         if (updates.containsKey("consultationTimings")) doctor.setConsultationTimings(updates.get("consultationTimings") != null ? updates.get("consultationTimings").toString() : null);
         
+        // Admin-only fields
+        if (updates.containsKey("staffId")) doctor.setStaffId(updates.get("staffId") != null ? updates.get("staffId").toString() : null);
+        if (updates.containsKey("joiningDate")) doctor.setJoiningDate(updates.get("joiningDate") != null ? updates.get("joiningDate").toString() : null);
+        if (updates.containsKey("salary")) doctor.setSalary(updates.get("salary") != null ? updates.get("salary").toString() : null);
+        if (updates.containsKey("contractType")) doctor.setContractType(updates.get("contractType") != null ? updates.get("contractType").toString() : null);
+        
         doctorRepository.save(doctor);
     }
 }

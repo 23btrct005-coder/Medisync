@@ -577,6 +577,34 @@ const EditDoctorProfile = () => {
           </div>
         </div>
 
+        {/* ── Section 5: Institutional Human Resources (Read Only) ── */}
+        {isAffiliated && (
+          <div className={`${sectionClass} border-amber-100 bg-amber-50/20`}>
+            <h3 className={sectionTitleClass}><Briefcase className="text-amber-600" size={20} /> Institutional Human Resources</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className={labelClass}>Staff Identification ID</label>
+                <input type="text" value={user.staffId || 'Not Assigned'} readOnly className={`${inputClass} bg-amber-50 border-amber-100 font-mono text-amber-900`} />
+              </div>
+              <div>
+                <label className={labelClass}>Joining Date</label>
+                <input type="text" value={user.joiningDate || 'Pending Records'} readOnly className={`${inputClass} bg-amber-50 border-amber-100 font-bold text-amber-900`} />
+              </div>
+              <div>
+                <label className={labelClass}>Contract Status</label>
+                <input type="text" value={user.contractType || 'NOT_DEFINED'} readOnly className={`${inputClass} bg-amber-50 border-amber-100 font-black text-amber-900 uppercase tracking-widest`} />
+              </div>
+              <div>
+                <label className={labelClass}>Institutional Compensation</label>
+                <input type="text" value={user.salary ? `₹ ${user.salary}` : 'Confidential'} readOnly className={`${inputClass} bg-amber-50 border-amber-100 font-bold text-amber-900`} />
+              </div>
+            </div>
+            <p className="text-[10px] text-amber-600 font-medium italic mt-2">
+              Note: The above parameters are managed exclusively by your Hospital Administrator.
+            </p>
+          </div>
+        )}
+
         <div className="sticky bottom-8 flex justify-end">
           <button
             type="submit"

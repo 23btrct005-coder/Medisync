@@ -251,6 +251,55 @@ const HospitalDoctorRoster = () => {
                                         placeholder="e.g. 10:00 AM - 05:00 PM"
                                     />
                                 </div>
+
+                                {/* Administrative Section */}
+                                <div className="col-span-2 pt-4 border-t border-slate-50">
+                                    <p className="text-[9px] font-black text-primary uppercase tracking-[0.3em] mb-4">Institutional Administrative Data</p>
+                                </div>
+
+                                <div>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Staff ID</label>
+                                    <input 
+                                        type="text"
+                                        value={editData.staffId || ''}
+                                        onChange={(e) => setEditData({...editData, staffId: e.target.value})}
+                                        className="w-full px-5 py-3 bg-blue-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-blue-200"
+                                        placeholder="EMP-XXXX"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Joining Date</label>
+                                    <input 
+                                        type="date"
+                                        value={editData.joiningDate || ''}
+                                        onChange={(e) => setEditData({...editData, joiningDate: e.target.value})}
+                                        className="w-full px-5 py-3 bg-blue-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-blue-200"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Salary / Payout</label>
+                                    <input 
+                                        type="text"
+                                        value={editData.salary || ''}
+                                        onChange={(e) => setEditData({...editData, salary: e.target.value})}
+                                        className="w-full px-5 py-3 bg-blue-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-blue-200"
+                                        placeholder="e.g. 1,50,000"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Contract Type</label>
+                                    <select 
+                                        value={editData.contractType || ''}
+                                        onChange={(e) => setEditData({...editData, contractType: e.target.value})}
+                                        className="w-full px-5 py-3 bg-blue-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-blue-200 appearance-none"
+                                    >
+                                        <option value="">Select Type...</option>
+                                        <option value="PERMANENT">Permanent</option>
+                                        <option value="VISITING">Visiting</option>
+                                        <option value="INTERN">Intern</option>
+                                        <option value="CONSULTANT">Consultant</option>
+                                    </select>
+                                </div>
                             </div>
                             <div className="flex gap-4 pt-4">
                                 <button 

@@ -25,6 +25,12 @@ public class DoctorDTO {
     private Double averageRating;
     private Long ratingCount;
 
+    // Admin Only Fields
+    private String staffId;
+    private String joiningDate;
+    private String salary;
+    private String contractType;
+
     // Constructors
     public DoctorDTO() {}
 
@@ -50,6 +56,12 @@ public class DoctorDTO {
         this.offlineConsultationFee = d.getOfflineConsultationFee();
         this.onlineConsultation = d.getOnlineConsultation();
         this.clinicAddress = d.getClinicAddress();
+        
+        // Admin Fields
+        this.staffId = d.getStaffId();
+        this.joiningDate = d.getJoiningDate();
+        this.salary = d.getSalary();
+        this.contractType = d.getContractType();
     }
 
     // Getters and Setters
@@ -115,4 +127,16 @@ public class DoctorDTO {
 
     public Long getRatingCount() { return ratingCount; }
     public void setRatingCount(Long ratingCount) { this.ratingCount = ratingCount; }
+
+    public String getStaffId() { return staffId; }
+    public void setStaffId(String staffId) { this.staffId = staffId; }
+
+    public String getJoiningDate() { return joiningDate; }
+    public void setJoiningDate(String joiningDate) { this.joiningDate = joiningDate; }
+
+    public String getSalary() { return salary; }
+    public void setSalary(String salary) { this.salary = salary; }
+
+    public String getContractType() { return contractType; }
+    public void setContractType(String contractType) { this.contractType = contractType; }
 }
