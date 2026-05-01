@@ -323,6 +323,8 @@ const EditProfile = () => {
                     </div>
                 </div>
           </div>
+        </div>
+
         {/* ── Section 6: Security ── */}
         <div className={sectionClass}>
           <h3 className={sectionTitleClass}><Lock className="text-primary-600" size={20} /> Clinical Access Security</h3>
