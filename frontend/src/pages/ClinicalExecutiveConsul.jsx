@@ -139,7 +139,7 @@ const DoctorDashboard = () => {
     }
   };
 
-  const activePatients = (requests || []).filter(r => r.status === 'ACCEPTED').length;
+  const activePatients = (requests || []).filter(r => r.status === 'ACCEPTED' || r.status === 'APPROVED').length;
   const pendingRequests = (requests || []).filter(r => r.status === 'PENDING').length;
 
   return (
