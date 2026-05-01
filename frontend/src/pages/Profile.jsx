@@ -209,10 +209,16 @@ const Profile = () => {
               <div className="mt-0.5 text-primary-600"><ShieldCheck size={20} /></div>
               <div>
                 <p className="text-xs font-black text-primary-900 uppercase tracking-widest mb-1">Vault Unlock Passcode</p>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-6">
                    <p className="text-3xl font-black text-slate-900 tracking-[0.2em] font-mono">
                      {user.historyPasscode || 'XXXXXX'}
                    </p>
+                   <button 
+                    onClick={() => navigate('/dashboard/profile/edit')}
+                    className="p-2 bg-white text-primary-600 rounded-xl border border-primary-100 hover:bg-primary-600 hover:text-white transition-all shadow-sm"
+                   >
+                     <Edit3 size={16} />
+                   </button>
                 </div>
               </div>
             </div>

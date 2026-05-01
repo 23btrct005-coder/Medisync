@@ -6,7 +6,7 @@ import {
   User, ShieldCheck, Heart, Activity, Save, ArrowLeft,
   Mail, Phone, MapPin, Droplet, Calendar, AlertCircle,
   CheckCircle, Pill, Stethoscope, Scissors, GraduationCap,
-  Camera, Upload
+  Camera, Upload, Lock
 } from 'lucide-react';
 
 const EditProfile = () => {
@@ -51,7 +51,8 @@ const EditProfile = () => {
     existingDiseases: '',
     currentMedications: '',
     pastSurgeries: '',
-    medicalInfo: ''
+    medicalInfo: '',
+    historyPasscode: ''
   });
 
   useEffect(() => {
@@ -81,7 +82,8 @@ const EditProfile = () => {
         existingDiseases: user.existingDiseases || '',
         currentMedications: user.currentMedications || '',
         pastSurgeries: user.pastSurgeries || '',
-        medicalInfo: user.medicalInfo || ''
+        medicalInfo: user.medicalInfo || '',
+        historyPasscode: user.historyPasscode || ''
       });
       setPhotoPreview(`${api.defaults.baseURL}/auth/patient/photo/${user.id}?t=${Date.now()}`);
     }
@@ -320,6 +322,36 @@ const EditProfile = () => {
                         <input type="text" name="district" value={formData.district} onChange={handleChange} className={inputClass} />
                     </div>
                 </div>
+          </div>
+        {/* ── Section 6: Security ── */}
+        <div className={sectionClass}>
+          <h3 className={sectionTitleClass}><Lock className="text-primary-600" size={20} /> Clinical Access Security</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+            <div>
+              <label className={labelClass}>Vault Unlock Passcode (6 Digits)</label>
+              <input 
+                type="text" 
+                name="historyPasscode" 
+                value={formData.historyPasscode} 
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9]/g, '').substring(0, 6);
+                  setFormData(prev => ({ ...prev, historyPasscode: val }));
+                }} 
+                className={`${inputClass} tracking-[0.5em] font-black text-lg text-center`} 
+                placeholder="XXXXXX" 
+              />
+              <p className="text-[10px] text-slate-400 font-medium mt-2 ml-1 leading-relaxed italic">
+                This code allows doctors **Direct Access** to your history without manual approval.
+              </p>
+            </div>
+            <div className="bg-primary-50 p-4 rounded-2xl border border-primary-100">
+               <p className="text-[10px] font-black text-primary-900 uppercase tracking-widest mb-1 flex items-center gap-2">
+                 <ShieldCheck size={14} /> Security Tip
+               </p>
+               <p className="text-[10px] text-primary-700 leading-relaxed">
+                 Change this code regularly or after a consultation to maintain absolute privacy control over your clinical archives.
+               </p>
+            </div>
           </div>
         </div>
 

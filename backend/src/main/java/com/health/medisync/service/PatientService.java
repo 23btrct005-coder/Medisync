@@ -130,6 +130,7 @@ public class PatientService {
         if (profileData.containsKey("currentMedications")) patient.setCurrentMedications((String) profileData.get("currentMedications"));
         if (profileData.containsKey("pastSurgeries")) patient.setPastSurgeries((String) profileData.get("pastSurgeries"));
         if (profileData.containsKey("medicalInfo")) patient.setMedicalInfo((String) profileData.get("medicalInfo"));
+        if (profileData.containsKey("historyPasscode")) patient.setHistoryPasscode((String) profileData.get("historyPasscode"));
 
         // Settings & Preferences
         if (profileData.containsKey("mfaEnabled")) patient.setMfaEnabled((Boolean) profileData.get("mfaEnabled"));
