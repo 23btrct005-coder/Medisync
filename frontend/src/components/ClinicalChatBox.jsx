@@ -133,7 +133,8 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
                     </div>
                 ) : (
                     messages.map((msg, idx) => {
-                        const isMe = String(msg.senderId) === String(user.id);
+                        const myUserId = user?.user?.id || user?.id;
+                        const isMe = String(msg.senderId) === String(myUserId);
                         return (
                             <div key={idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'} animate-in fade-in duration-300`}>
                                 <div className={`max-w-[85%] p-3 px-4 rounded-2xl shadow-sm relative ${
