@@ -90,13 +90,15 @@ const PatientMessages = () => {
                             className="bg-white p-4 rounded-[2rem] border border-slate-100 hover:border-primary/30 transition-all cursor-pointer group shadow-sm flex items-center justify-between"
                         >
                             <div className="flex items-center gap-4">
-                                <div className="w-14 h-14 rounded-2xl bg-primary-50 flex items-center justify-center text-primary-600 font-black text-xl border border-primary-100 group-hover:scale-105 transition-transform overflow-hidden relative">
-                                    {doctor.profilePictureUrl ? (
-                                        <img src={doctor.profilePictureUrl} alt="" className="w-full h-full object-cover" />
-                                    ) : doctor.name.charAt(0)}
+                                <div className="w-14 h-14 relative group-hover:scale-105 transition-transform">
+                                    <div className="w-full h-full rounded-2xl bg-primary-50 flex items-center justify-center text-primary-600 font-black text-xl border border-primary-100 overflow-hidden">
+                                        {doctor.profilePictureUrl ? (
+                                            <img src={doctor.profilePictureUrl} alt="" className="w-full h-full object-cover" />
+                                        ) : doctor.name.charAt(0)}
+                                    </div>
 
                                     {unreadCounts[doctor.user?.id] > 0 && (
-                                        <div className="absolute -top-1 -right-1 w-6 h-6 bg-[#25D366] text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-sm animate-bounce">
+                                        <div className="absolute -top-2 -right-2 w-7 h-7 bg-[#25D366] text-white text-[11px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-md animate-bounce z-10">
                                             {unreadCounts[doctor.user?.id]}
                                         </div>
                                     )}
