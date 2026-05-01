@@ -6,7 +6,7 @@ import {
   Download, Loader2, Phone, MapPin, Heart, Droplet, ShieldCheck,
   Mail, Users, AlertCircle, ChevronDown, ChevronUp,
   Briefcase, Zap, Info, Scissors, Pill, Stethoscope, History as HistoryIcon,
-  RefreshCw, CheckCircle2, Eye
+  RefreshCw, CheckCircle2, Eye, MessageSquare
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ClinicalAlertBanner from '../components/ClinicalAlertBanner';
@@ -15,6 +15,7 @@ import ReportPreviewModal from '../components/ReportPreviewModal';
 import MedicalTimeline from '../components/MedicalTimeline';
 import StructuredAiReport from '../components/StructuredAiReport';
 import AiSummaryModal from '../components/AiSummaryModal';
+import ClinicalChatBox from '../components/ClinicalChatBox';
 
 // ── Reusable row for info display ──────────────────────────────────────────
 const InfoRow = ({ icon: Icon, label, value, color = 'text-primary-500' }) => (
@@ -248,6 +249,7 @@ const PatientManager = () => {
   const [recordError, setRecordError] = useState('');
   const [reportError, setReportError] = useState('');
   const [fetchError, setFetchError] = useState('');
+  const [activeChat, setActiveChat] = useState(null); // { id, name, userId }
 
   const [previewData, setPreviewData] = useState({
     isOpen: false,
@@ -508,6 +510,13 @@ const PatientManager = () => {
              Sync Data
            </button>
            <button 
+            onClick={() => setActiveChat({ id: patient.id, name: patient.name, userId: patient.user?.id })}
+            className="flex items-center gap-2 px-5 py-3 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-2xl border border-blue-100 transition-all font-bold text-sm shadow-sm active:scale-95"
+           >
+             <MessageSquare size={18} />
+             Message Patient
+           </button>
+           <button 
              onClick={() => setShowAddForm(!showAddForm)}
              className={`flex items-center gap-2 px-6 py-3.5 rounded-2xl transition-all font-black text-sm shadow-xl active:scale-95 ${showAddForm ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-slate-900 hover:bg-slate-800 text-white'}`}
            >
@@ -627,6 +636,14 @@ const PatientManager = () => {
         fileType={previewData.type}
         onDownload={() => handleDownload(previewData.id, previewData.name)}
       />
+
+      {activeChat && (
+        <ClinicalChatBox 
+          receiverId={activeChat.userId} 
+          receiverName={activeChat.name} 
+          onClose={() => setActiveChat(null)} 
+        />
+      )}
     </div>
   );
 };
