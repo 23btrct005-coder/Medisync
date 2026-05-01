@@ -7,10 +7,12 @@ import {
     Pill, ShieldCheck, MessageSquare, Wallet, Stethoscope
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import api from '../api/axiosConfig';
 
 const BottomNav = () => {
     const { user, userRole, logout } = useAuth();
+    const { unreadChatCount } = useNotifications();
     const navigate = useNavigate();
     const [showHub, setShowHub] = useState(false);
     
@@ -26,7 +28,7 @@ const BottomNav = () => {
     const primaryNav = isDoctor ? [
         { name: 'Hub', path: '/doctor-dashboard', icon: <LayoutDashboard size={20} /> },
         { name: 'Patients', path: '/doctor-dashboard/patients', icon: <Users size={20} /> },
-        { name: 'Messages', path: '/doctor-dashboard/messages', icon: <MessageSquare size={20} /> },
+        { name: 'Messages', path: '/doctor-dashboard/messages', icon: <MessageSquare size={20} />, badge: unreadChatCount },
         { name: 'Schedule', path: '/doctor-dashboard/appointments', icon: <Calendar size={20} /> },
     ] : isHospital ? [
         { name: 'Hub', path: '/hospital-dashboard', icon: <LayoutDashboard size={20} /> },
@@ -35,7 +37,7 @@ const BottomNav = () => {
         { name: 'Analytics', path: '/hospital-dashboard/analytics', icon: <Activity size={20} /> },
     ] : [
         { name: 'Home', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
-        { name: 'Messages', path: '/dashboard/messages', icon: <MessageSquare size={20} /> },
+        { name: 'Messages', path: '/dashboard/messages', icon: <MessageSquare size={20} />, badge: unreadChatCount },
         { name: 'Book', path: '/dashboard/booking', icon: <CalendarPlus size={20} /> },
         { name: 'Wallet', path: '/dashboard/wallet', icon: <Wallet size={20} /> },
     ];
@@ -126,7 +128,14 @@ const BottomNav = () => {
                         >
                             {({ isActive }) => (
                                 <>
-                                    {item.icon}
+                                    <div className="relative">
+                                      {item.icon}
+                                      {item.badge > 0 && (
+                                          <div className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-bold px-1 min-w-[14px] h-[14px] rounded-full flex items-center justify-center shadow-sm">
+                                              {item.badge > 9 ? '9+' : item.badge}
+                                          </div>
+                                      )}
+                                    </div>
                                     <span className={`text-[8px] font-black uppercase tracking-wider ${isActive ? 'text-white' : 'text-slate-600'}`}>
                                         {item.name}
                                     </span>

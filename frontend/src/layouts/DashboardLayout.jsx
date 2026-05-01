@@ -103,8 +103,8 @@ const DashboardLayout = () => {
                 </header>
 
                 {/* Main Content Area */}
-                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50/50 p-4 md:p-10 mb-20 md:mb-0 custom-scrollbar">
-                    <div className="max-w-7xl mx-auto">
+                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50/50 p-4 md:p-10 pb-24 md:pb-10 custom-scrollbar">
+                    <div className="max-w-7xl mx-auto h-full">
                         <Outlet />
                     </div>
                 </main>

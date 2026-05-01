@@ -11,6 +11,7 @@ export const NotificationProvider = ({ children }) => {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [stompClient, setStompClient] = useState(null);
 
   const fetchNotifications = useCallback(async () => {
@@ -22,6 +23,17 @@ export const NotificationProvider = ({ children }) => {
       setUnreadCount(data.filter(n => !n.read).length);
     } catch (e) {
       console.error("Failed to fetch notification history");
+    }
+  }, [user]);
+
+  const fetchUnreadChatCount = useCallback(async () => {
+    if (!user) return;
+    try {
+      const res = await api.get('/chat/unread-counts');
+      const total = Object.values(res.data).reduce((acc, count) => acc + count, 0);
+      setUnreadChatCount(total);
+    } catch (e) {
+      console.error("Failed to fetch unread chat counts");
     }
   }, [user]);
 
@@ -86,6 +98,12 @@ export const NotificationProvider = ({ children }) => {
           </div>
         ), { duration: 6000 });
       });
+
+      // Subscribe to Chat Messages
+      client.subscribe(`/user/queue/messages`, (message) => {
+          setUnreadChatCount(prev => prev + 1);
+      });
+
     }, (error) => {
       if (user) {
         console.error("WebSocket connection failed, retrying in 5s...", error);
@@ -112,7 +130,7 @@ export const NotificationProvider = ({ children }) => {
   };
 
   return (
-    <NotificationContext.Provider value={{ notifications, unreadCount, markAsRead, fetchNotifications }}>
+    <NotificationContext.Provider value={{ notifications, unreadCount, markAsRead, fetchNotifications, unreadChatCount, setUnreadChatCount, fetchUnreadChatCount }}>
       {children}
     </NotificationContext.Provider>
   );

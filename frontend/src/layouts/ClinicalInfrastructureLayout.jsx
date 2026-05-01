@@ -67,7 +67,7 @@ const DoctorLayout = () => {
         </div>
       </header>
 
-      <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 p-6 min-h-0 mb-16 md:mb-0">
+      <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 p-4 sm:p-6 min-h-0 pb-24 md:pb-6 custom-scrollbar">
         <div className="max-w-6xl mx-auto h-full">
           <Outlet />
         </div>

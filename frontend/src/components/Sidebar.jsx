@@ -5,11 +5,13 @@ import {
   MessageSquare, Settings, HelpCircle, ChevronDown
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import api from '../api/axiosConfig';
 import { useState } from 'react';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const { user, logout } = useAuth();
+  const { unreadChatCount } = useNotifications();
   const navigate = useNavigate();
   const [showMore, setShowMore] = useState(false);
 
@@ -39,7 +41,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   // ── MAIN NAV: Most-used features ──
   const mainItems = [
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
-    { name: 'Messages', path: '/dashboard/messages', icon: <MessageSquare size={20} /> },
+    { name: 'Messages', path: '/dashboard/messages', icon: <MessageSquare size={20} />, badge: unreadChatCount },
     { name: 'Book Doctor', path: '/dashboard/booking', icon: <CalendarPlus size={20} /> },
     { name: 'My Appointments', path: '/dashboard/sessions', icon: <Calendar size={20} /> },
     { name: 'Health Wallet', path: '/dashboard/wallet', icon: <Wallet size={20} /> },
@@ -98,8 +100,15 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         }`
       }
     >
-      <span className="mr-3">{item.icon}</span>
-      <span className="text-sm font-medium">{item.name}</span>
+      <div className="mr-3 relative">
+        {item.icon}
+        {item.badge > 0 && (
+          <div className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold px-1 min-w-[16px] h-[16px] rounded-full flex items-center justify-center shadow-sm border border-white">
+            {item.badge > 9 ? '9+' : item.badge}
+          </div>
+        )}
+      </div>
+      <span className="text-sm font-medium flex-1">{item.name}</span>
     </NavLink>
   );
 
