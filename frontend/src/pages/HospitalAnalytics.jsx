@@ -99,7 +99,7 @@ const HospitalAnalytics = () => {
                             </div>
                         </div>
                         <div className="h-[300px] w-full">
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height="100%" debounce={100}>
                                 <AreaChart data={inflowData}>
                                     <defs>
                                         <linearGradient id="colorInflow" x1="0" y1="0" x2="0" y2="1">
@@ -151,7 +151,7 @@ const HospitalAnalytics = () => {
                         <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm">
                             <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic mb-8">Dept. <span className="not-italic text-rose-500">Pulse</span></h3>
                             <div className="h-[180px] w-full">
-                                <ResponsiveContainer width="100%" height="100%">
+                                <ResponsiveContainer width="100%" height="100%" debounce={100}>
                                     <BarChart data={deptPerformance}>
                                         <Bar dataKey="count" radius={[8, 8, 8, 8]}>
                                             {deptPerformance.map((entry, index) => (
