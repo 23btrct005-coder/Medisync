@@ -111,7 +111,16 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
             </div>
 
             {/* Messages */}
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50">
+            <div 
+                ref={scrollRef} 
+                className="flex-1 overflow-y-auto p-4 space-y-4 relative"
+                style={{
+                    backgroundColor: '#e5ddd5',
+                    backgroundImage: `url("https://w0.peakpx.com/wallpaper/508/606/HD-wallpaper-whatsapp-l-background-doodle-pattern-thumbnail.jpg")`,
+                    backgroundSize: '400px',
+                    backgroundBlendMode: 'overlay'
+                }}
+            >
                 {loading ? (
                     <div className="flex flex-col items-center justify-center h-full opacity-20">
                         <Loader2 className="animate-spin mb-2" />
@@ -124,23 +133,32 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
                     </div>
                 ) : (
                     messages.map((msg, idx) => {
-                        const isMe = msg.senderId === user.id;
+                        const isMe = String(msg.senderId) === String(user.id);
                         return (
                             <div key={idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'} animate-in fade-in duration-300`}>
-                                <div className={`max-w-[80%] p-3 rounded-2xl shadow-sm ${
+                                <div className={`max-w-[85%] p-3 px-4 rounded-2xl shadow-sm relative ${
                                     isMe 
-                                        ? 'bg-primary text-white rounded-tr-none' 
+                                        ? 'bg-[#E7FFDB] text-slate-800 rounded-tr-none' 
                                         : 'bg-white text-slate-800 border border-slate-100 rounded-tl-none'
                                 }`}>
-                                    <p className="text-xs font-medium leading-relaxed">{msg.content}</p>
-                                    <div className={`flex items-center justify-end gap-1 mt-1 opacity-60`}>
-                                        <span className="text-[8px] font-bold uppercase tracking-tighter">
+                                    <p className="text-[13px] font-medium leading-relaxed mb-1">{msg.content}</p>
+                                    <div className="flex items-center justify-end gap-1.5 min-w-[60px]">
+                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
                                             {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </span>
                                         {isMe && (
-                                            msg.read ? <CheckCheck size={10} /> : <Check size={10} />
+                                            <div className="flex items-center text-sky-500">
+                                                {msg.read ? <CheckCheck size={14} /> : <Check size={14} />}
+                                            </div>
                                         )}
                                     </div>
+                                    
+                                    {/* Bubble Tails */}
+                                    <div className={`absolute top-0 w-3 h-3 ${
+                                        isMe 
+                                            ? '-right-2 bg-[#E7FFDB] [clip-path:polygon(0%_0%,0%_100%,100%_0%)]' 
+                                            : '-left-2 bg-white [clip-path:polygon(100%_0%,100%_100%,0%_0%)] border-l border-slate-100'
+                                    }`} />
                                 </div>
                             </div>
                         );
@@ -149,20 +167,24 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
             </div>
 
             {/* Input */}
-            <form onSubmit={handleSend} className="p-4 bg-white border-t border-slate-100 flex items-center gap-2">
-                <input 
-                    type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder="Type a clinical message..."
-                    className="flex-1 bg-slate-50 border-none rounded-xl px-4 py-3 text-xs font-bold focus:ring-1 ring-primary/50"
-                />
+            <form onSubmit={handleSend} className="p-3 bg-[#f0f2f5] flex items-center gap-2 shrink-0">
+                <div className="flex-1 bg-white rounded-[2rem] px-4 py-2 flex items-center shadow-sm">
+                    <input 
+                        type="text"
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        placeholder="Type a clinical message..."
+                        className="flex-1 bg-transparent border-none outline-none text-[14px] font-medium py-1 placeholder:text-slate-400"
+                    />
+                </div>
                 <button 
                     type="submit"
                     disabled={!input.trim()}
-                    className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center hover:bg-primary transition-all active:scale-95 disabled:opacity-20"
+                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-90 shadow-md ${
+                        input.trim() ? 'bg-[#00a884] text-white' : 'bg-slate-300 text-slate-500'
+                    }`}
                 >
-                    <Send size={18} />
+                    <Send size={20} fill={input.trim() ? "currentColor" : "none"} />
                 </button>
             </form>
         </div>
