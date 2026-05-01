@@ -13,6 +13,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/chat")
 public class ChatController {
+    
+    @GetMapping("/ping")
+    public String ping() { return "Chat Node Active"; }
+
     private final ChatService chatService;
     private final UserRepository userRepository;
 
