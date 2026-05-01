@@ -3,7 +3,8 @@ import api from '../api/axiosConfig';
 import { 
   UserCheck, AlertCircle, CheckCircle, XCircle, 
   Stethoscope, GraduationCap, Briefcase, Calendar,
-  ShieldCheck, Loader2, Search, Filter, Info, Building2
+  ShieldCheck, Loader2, Search, Filter, Info, Building2,
+  MapPin, Mail, Phone, Globe, Award, FileText, X
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -14,18 +15,26 @@ const AdminDashboard = () => {
   const [pendingDoctors, setPendingDoctors] = useState([]);
   const [pendingHospitals, setPendingHospitals] = useState([]);
   const [activeTab, setActiveTab] = useState(location.pathname.includes('pending') ? 'doctors' : 'doctors'); 
-  // By default we'll keep it on doctors for now, but we can expand this.
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedItem, setSelectedItem] = useState(null);
 
   useEffect(() => {
     fetchData();
   }, [activeTab]);
 
-  const fetchData = async () => {
-    setLoading(true);
+  // AUTO-SYNC: Refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchData(false); // background fetch
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [activeTab]);
+
+  const fetchData = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     try {
       if (activeTab === 'doctors') {
         const response = await api.get('admin/doctors/pending');
@@ -36,9 +45,9 @@ const AdminDashboard = () => {
       }
     } catch (error) {
       console.error("Error fetching pending data", error);
-      setMessage({ type: 'error', text: 'Failed to load pending applications.' });
+      if (showLoading) setMessage({ type: 'error', text: 'Failed to load pending applications.' });
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 
@@ -47,17 +56,17 @@ const AdminDashboard = () => {
     try {
       const endpoint = type === 'doctors' ? `admin/doctors/${id}/approve` : `admin/hospitals/${id}/approve`;
       await api.post(endpoint);
-      setMessage({ type: 'success', text: `${type === 'doctors' ? 'Doctor' : 'Hospital'} approved successfully!` });
+      toast.success(`${type === 'doctors' ? 'Doctor' : 'Hospital'} approved successfully!`);
       if (type === 'doctors') {
         setPendingDoctors(pendingDoctors.filter(d => d.id !== id));
       } else {
         setPendingHospitals(pendingHospitals.filter(h => h.id !== id));
       }
+      setSelectedItem(null);
     } catch (error) {
-      setMessage({ type: 'error', text: `Failed to approve ${type === 'doctors' ? 'doctor' : 'hospital'}.` });
+      toast.error(`Failed to approve ${type === 'doctors' ? 'doctor' : 'hospital'}.`);
     } finally {
       setActionLoading(null);
-      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
     }
   };
 
@@ -66,17 +75,17 @@ const AdminDashboard = () => {
     try {
       const endpoint = type === 'doctors' ? `admin/doctors/${id}/reject` : `admin/hospitals/${id}/reject`;
       await api.post(endpoint);
-      setMessage({ type: 'success', text: 'Application rejected and removed.' });
+      toast.success('Application rejected.');
       if (type === 'doctors') {
         setPendingDoctors(pendingDoctors.filter(d => d.id !== id));
       } else {
         setPendingHospitals(pendingHospitals.filter(h => h.id !== id));
       }
+      setSelectedItem(null);
     } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to reject application.' });
+      toast.error('Failed to reject application.');
     } finally {
       setActionLoading(null);
-      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
     }
   };
 
@@ -105,7 +114,113 @@ const AdminDashboard = () => {
   );
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-in fade-in duration-500 relative">
+      {/* Details Modal */}
+      {selectedItem && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden border border-slate-200 flex flex-col max-h-[90vh]">
+            <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <div className="flex items-center gap-4">
+                <div className={`p-3 rounded-2xl ${activeTab === 'doctors' ? 'bg-primary-50 text-primary-600' : 'bg-indigo-50 text-indigo-600'}`}>
+                  {activeTab === 'doctors' ? <Stethoscope size={24} /> : <Building2 size={24} />}
+                </div>
+                <div>
+                  <h3 className="text-2xl font-black text-slate-900 tracking-tight italic">
+                    {activeTab === 'doctors' ? selectedItem.name : selectedItem.hospital_name}
+                  </h3>
+                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest mt-0.5">Verification Dossier</p>
+                </div>
+              </div>
+              <button onClick={() => setSelectedItem(null)} className="p-2 hover:bg-slate-200 rounded-xl transition-colors">
+                <X size={24} className="text-slate-400" />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-8 space-y-8">
+              {activeTab === 'doctors' ? (
+                <>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Specialization</p>
+                      <p className="font-bold text-slate-900">{selectedItem.specialization}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Medical Degree</p>
+                      <p className="font-bold text-slate-900">{selectedItem.medicalDegree}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">License Number</p>
+                      <p className="font-bold text-primary-600 font-mono">{selectedItem.medicalLicenseNumber}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Experience</p>
+                      <p className="font-bold text-slate-900">{selectedItem.yearsOfExperience} Years</p>
+                    </div>
+                  </div>
+                  <div className="space-y-4 pt-4 border-t border-slate-100">
+                    <div className="flex items-center gap-3 text-slate-600 font-medium">
+                      <Mail size={18} className="text-slate-400" /> {selectedItem.email}
+                    </div>
+                    <div className="flex items-center gap-3 text-slate-600 font-medium">
+                      <Building2 size={18} className="text-slate-400" /> {selectedItem.hospital || "Independent Practitioner"}
+                    </div>
+                    <div className="flex items-center gap-3 text-slate-600 font-medium">
+                      <Globe size={18} className="text-slate-400" /> Language Proficiency: English, Local
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Admin Name</p>
+                      <p className="font-bold text-slate-900">{selectedItem.admin_name}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Position</p>
+                      <p className="font-bold text-slate-900">{selectedItem.position}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hospital License</p>
+                      <p className="font-bold text-indigo-600 font-mono">{selectedItem.license_code}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Location</p>
+                      <p className="font-bold text-slate-900">{selectedItem.city}, {selectedItem.state}</p>
+                    </div>
+                  </div>
+                  <div className="p-6 bg-indigo-50/50 rounded-3xl border border-indigo-100">
+                    <div className="flex items-center gap-3 text-indigo-900 font-black text-xs uppercase tracking-widest mb-4">
+                      <ShieldCheck size={16} /> Institutional Profile
+                    </div>
+                    <p className="text-sm text-indigo-900/70 font-medium leading-relaxed">
+                      This facility has applied for full MediSync integration. 
+                      Once verified, the Chief Administrator will be able to manage staff rosters 
+                      and view regional health analytics for {selectedItem.hospital_name}.
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="p-8 border-t border-slate-100 bg-slate-50/50 flex gap-4">
+              <button
+                onClick={() => handleReject(selectedItem.id, activeTab)}
+                className="flex-1 py-4 bg-white border border-slate-200 text-red-500 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-red-50 transition-all active:scale-95"
+              >
+                Reject Application
+              </button>
+              <button
+                onClick={() => handleApprove(selectedItem.id, activeTab)}
+                className={`flex-1 py-4 ${activeTab === 'doctors' ? 'bg-primary-600 shadow-primary-600/20' : 'bg-indigo-600 shadow-indigo-600/20'} text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl hover:opacity-90 transition-all active:scale-95`}
+              >
+                Confirm Verification
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
@@ -113,9 +228,9 @@ const AdminDashboard = () => {
             <ShieldCheck size={14} /> System Governance
           </div>
           <h2 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-            Physician Verification Pool
+            Administrative Pool
           </h2>
-          <p className="text-slate-500 font-medium mt-2">Manual credential review and platform inclusion management</p>
+          <p className="text-slate-500 font-medium mt-2">Real-time manual credential review and institutional verification</p>
         </div>
         
         <div className="flex items-center gap-3">
@@ -123,7 +238,7 @@ const AdminDashboard = () => {
                 <Search size={18} className="text-slate-400 mr-2" />
                 <input 
                     type="text" 
-                    placeholder="Search by name, email or license..."
+                    placeholder="Search registry..."
                     className="border-none text-sm p-0 focus:ring-0 placeholder-slate-400 w-64"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -172,18 +287,21 @@ const AdminDashboard = () => {
             <p className="text-sm font-bold text-slate-400 mt-1 uppercase tracking-widest text-[10px]">Security Score</p>
         </div>
         <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-            <div className="p-3 bg-primary-50 text-primary-600 rounded-2xl w-fit mb-4">
-                <ShieldCheck size={24} />
+            <div className="p-3 bg-primary-50 text-primary-600 rounded-2xl w-fit mb-4 relative">
+                <Loader2 size={24} className="animate-spin opacity-20" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <ShieldCheck size={16} />
+                </div>
             </div>
-            <p className="text-3xl font-black text-slate-900">Active</p>
-            <p className="text-sm font-bold text-slate-400 mt-1 uppercase tracking-widest text-[10px]">Registry Status</p>
+            <p className="text-3xl font-black text-slate-900 italic uppercase">Sync</p>
+            <p className="text-sm font-bold text-slate-400 mt-1 uppercase tracking-widest text-[10px]">Interval: 30s</p>
         </div>
       </div>
 
       {/* Tab Switcher */}
       <div className="flex gap-2 p-1.5 bg-slate-100 rounded-2xl w-fit">
         <button
-          onClick={() => setActiveTab('doctors')}
+          onClick={() => { setActiveTab('doctors'); setSelectedItem(null); }}
           className={`px-8 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
             activeTab === 'doctors' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
           }`}
@@ -191,7 +309,7 @@ const AdminDashboard = () => {
           Physicians ({pendingDoctors.length})
         </button>
         <button
-          onClick={() => setActiveTab('hospitals')}
+          onClick={() => { setActiveTab('hospitals'); setSelectedItem(null); }}
           className={`px-8 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
             activeTab === 'hospitals' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
           }`}
@@ -211,14 +329,18 @@ const AdminDashboard = () => {
             <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
                 <CheckCircle size={40} className="text-slate-200" />
             </div>
-            <h3 className="text-2xl font-black text-slate-900 tracking-tight">Zero Pending {activeTab === 'doctors' ? 'Applications' : 'Institutions'}</h3>
-            <p className="text-slate-400 font-medium mt-2 max-w-xs mx-auto">All {activeTab === 'doctors' ? 'medical professionals' : 'healthcare institutions'} have been reviewed. Good job!</p>
+            <h3 className="text-2xl font-black text-slate-900 tracking-tight">Zero Pending Applications</h3>
+            <p className="text-slate-400 font-medium mt-2 max-w-xs mx-auto">All records have been reviewed. Good job!</p>
         </div>
       ) : (
         <div className="space-y-4">
           {activeTab === 'doctors' ? (
             filteredDoctors.map((doctor) => (
-              <div key={doctor.id} className="bg-white border border-slate-100 rounded-[32px] p-6 sm:p-8 hover:shadow-xl hover:shadow-slate-200/50 hover:border-primary-100 transition-all duration-300 group flex flex-col xl:flex-row xl:items-center justify-between gap-8">
+              <div 
+                key={doctor.id} 
+                onClick={() => setSelectedItem(doctor)}
+                className="bg-white border border-slate-100 rounded-[32px] p-6 sm:p-8 hover:shadow-xl hover:shadow-slate-200/50 hover:border-primary-100 transition-all duration-300 group flex flex-col xl:flex-row xl:items-center justify-between gap-8 cursor-pointer"
+              >
                 <div className="flex items-start gap-6">
                   <div className="w-20 h-20 shrink-0 bg-slate-100 rounded-3xl overflow-hidden flex items-center justify-center border-4 border-slate-50 shadow-inner">
                       <img 
@@ -241,13 +363,10 @@ const AdminDashboard = () => {
                       </h3>
                       <div className="flex flex-wrap gap-x-6 gap-y-2 mt-3">
                           <div className="flex items-center gap-1.5 text-sm font-bold text-slate-500">
-                              <GraduationCap size={16} className="text-primary-500" /> {doctor.specialization} ({doctor.medicalDegree})
+                              <GraduationCap size={16} className="text-primary-500" /> {doctor.specialization}
                           </div>
                           <div className="flex items-center gap-1.5 text-sm font-bold text-slate-500">
                               <ShieldCheck size={16} className="text-emerald-500" /> License: {doctor.medicalLicenseNumber}
-                          </div>
-                          <div className="flex items-center gap-1.5 text-sm font-bold text-slate-500">
-                              <Briefcase size={16} className="text-indigo-500" /> {doctor.yearsOfExperience} yrs experience
                           </div>
                       </div>
                       <div className="mt-4 flex flex-wrap gap-3">
@@ -257,14 +376,11 @@ const AdminDashboard = () => {
                           <span className="px-3 py-1.5 bg-slate-50 rounded-2xl text-[11px] font-bold text-slate-500 border border-slate-100">
                               {doctor.email}
                           </span>
-                          <span className="px-3 py-1.5 bg-slate-50 rounded-2xl text-[11px] font-bold text-slate-500 border border-slate-100">
-                              {doctor.hospital || "Independent Practitioner"}
-                          </span>
                       </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-3xl border border-slate-100">
+                <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-3xl border border-slate-100" onClick={e => e.stopPropagation()}>
                   <button
                       onClick={() => handleReject(doctor.id, 'doctors')}
                       disabled={actionLoading === doctor.id}
@@ -286,7 +402,11 @@ const AdminDashboard = () => {
             ))
           ) : (
             filteredHospitals.map((hospital) => (
-              <div key={hospital.id} className="bg-white border border-slate-100 rounded-[32px] p-6 sm:p-8 hover:shadow-xl hover:shadow-slate-200/50 hover:border-indigo-100 transition-all duration-300 group flex flex-col xl:flex-row xl:items-center justify-between gap-8">
+              <div 
+                key={hospital.id} 
+                onClick={() => setSelectedItem(hospital)}
+                className="bg-white border border-slate-100 rounded-[32px] p-6 sm:p-8 hover:shadow-xl hover:shadow-slate-200/50 hover:border-indigo-100 transition-all duration-300 group flex flex-col xl:flex-row xl:items-center justify-between gap-8 cursor-pointer"
+              >
                 <div className="flex items-start gap-6">
                   <div className="w-20 h-20 shrink-0 bg-indigo-50 rounded-3xl flex items-center justify-center border-4 border-white shadow-sm">
                       <Building2 size={36} className="text-indigo-400" />
@@ -298,24 +418,24 @@ const AdminDashboard = () => {
                       </h3>
                       <div className="flex flex-wrap gap-x-6 gap-y-2 mt-3">
                           <div className="flex items-center gap-1.5 text-sm font-bold text-slate-500">
-                              <UserCheck size={16} className="text-indigo-500" /> Admin: {hospital.admin_name} ({hospital.position})
+                              <UserCheck size={16} className="text-indigo-500" /> Admin: {hospital.admin_name}
                           </div>
                           <div className="flex items-center gap-1.5 text-sm font-bold text-slate-500">
                               <ShieldCheck size={16} className="text-emerald-500" /> License: {hospital.license_code}
-                          </div>
-                          <div className="flex items-center gap-1.5 text-sm font-bold text-slate-500">
-                              <Search size={16} className="text-slate-400" /> {hospital.city}, {hospital.state}
                           </div>
                       </div>
                       <div className="mt-4 flex flex-wrap gap-3">
                           <span className="px-3 py-1.5 bg-slate-50 rounded-2xl text-[11px] font-black font-mono text-slate-400 border border-slate-100">
                               ID: #{hospital.id}
                           </span>
+                          <span className="px-3 py-1.5 bg-slate-50 rounded-2xl text-[11px] font-bold text-slate-500 border border-slate-100">
+                              {hospital.city}, {hospital.state}
+                          </span>
                       </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-3xl border border-slate-100">
+                <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-3xl border border-slate-100" onClick={e => e.stopPropagation()}>
                   <button
                       onClick={() => handleReject(hospital.id, 'hospitals')}
                       disabled={actionLoading === hospital.id}
@@ -337,8 +457,7 @@ const AdminDashboard = () => {
             ))
           )}
         </div>
-      )
-    }
+      )}
 
       {/* Security Tip & Danger Zone */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
