@@ -107,7 +107,7 @@ export const AuthProvider = ({ children }) => {
       
     } catch (error) {
       console.error("Login failed:", error);
-      const message = error.response?.data?.message || 'Invalid credentials or account not verified';
+      const message = error.response?.data?.message || (error.response?.status === 401 ? 'Invalid credentials. Please check your password.' : 'Invalid credentials or account not verified');
       return { success: false, message };
     }
   };

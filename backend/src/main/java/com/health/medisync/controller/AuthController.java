@@ -92,12 +92,17 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody AuthRequest loginRequest) {
         try {
-            String normalizedUsername = loginRequest.getUsername() != null ? loginRequest.getUsername().toLowerCase() : null;
+            String normalizedUsername = loginRequest.getUsername() != null ? loginRequest.getUsername().trim().toLowerCase() : null;
+            String rawPassword = loginRequest.getPassword() != null ? loginRequest.getPassword().trim() : null;
+            
             System.out.println("DEBUG: Login attempt for " + normalizedUsername);
 
-            // SMART RESOLVER: If username doesn't exist, check if it's an email
+            // SMART RESOLVER: Ensure we find the primary username even if they login with email
             final String effectiveUsername;
-            if (normalizedUsername != null && normalizedUsername.contains("@") && userRepository.findByUsernameIgnoreCase(normalizedUsername).isEmpty()) {
+            var userOpt = userRepository.findByUsernameIgnoreCase(normalizedUsername);
+            if (userOpt.isPresent()) {
+                effectiveUsername = userOpt.get().getUsername();
+            } else if (normalizedUsername != null && normalizedUsername.contains("@")) {
                 System.out.println("DEBUG: Username not found, attempting email lookup for " + normalizedUsername);
                 effectiveUsername = doctorRepository.findFirstByEmail(normalizedUsername)
                     .map(d -> d.getUser() != null ? d.getUser().getUsername() : normalizedUsername)
@@ -118,7 +123,7 @@ public class AuthController {
             }
 
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(effectiveUsername, loginRequest.getPassword()));
+                    new UsernamePasswordAuthenticationToken(effectiveUsername, rawPassword));
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
             
@@ -145,9 +150,12 @@ public class AuthController {
 
         } catch (org.springframework.security.authentication.DisabledException e) {
             return ResponseEntity.status(403).body(Map.of("message", e.getMessage()));
+        } catch (org.springframework.security.authentication.BadCredentialsException e) {
+            System.out.println("DEBUG: Bad credentials for " + loginRequest.getUsername());
+            return ResponseEntity.status(401).body(Map.of("message", "Invalid credentials. Please check your password and try again."));
         } catch (org.springframework.security.core.AuthenticationException e) {
             System.out.println("DEBUG: Authentication failed for " + loginRequest.getUsername() + ": " + e.getMessage());
-            return ResponseEntity.status(401).body(Map.of("message", "Invalid credentials."));
+            return ResponseEntity.status(401).body(Map.of("message", e.getMessage() != null ? e.getMessage() : "Authentication failed."));
         } catch (CannotCreateTransactionException e) {
             System.err.println("CRITICAL: Database connection pool exhausted during login: " + e.getMessage());
             return ResponseEntity.status(500).body(Map.of("message", "High traffic. Please try again in a few moments."));
