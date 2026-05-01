@@ -116,12 +116,50 @@ public class AuthController {
                 effectiveUsername = normalizedUsername;
             }
             
-            // SCHEMA SELF-HEAL: Ensure the approved column exists (PostgreSQL syntax)
+            // SCHEMA SELF-HEAL: Ensure the approved and production-level clinical columns exist (PostgreSQL syntax)
             try {
                 jdbcTemplate.execute("ALTER TABLE hospital_admins ADD COLUMN IF NOT EXISTS approved BOOLEAN DEFAULT FALSE");
+                
+                // Core Legitimacy & Institutional Mapping
                 jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS approved BOOLEAN DEFAULT FALSE");
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS medical_council TEXT");
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS license_expiry_date TEXT");
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS license_document_url TEXT");
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS registration_year INTEGER");
+                
+                // Clinical Expertise Depth
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS sub_specialties TEXT");
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS procedures_handled TEXT");
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS treatment_focus TEXT");
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS languages_spoken TEXT");
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS publications TEXT");
+                
+                // Advanced Availability & Operations
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS slot_duration INTEGER DEFAULT 15");
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS max_patients_per_day INTEGER DEFAULT 50");
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS break_timings TEXT");
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS online_consultation_fee DOUBLE PRECISION");
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS offline_consultation_fee DOUBLE PRECISION");
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS clinic_address TEXT");
+                
+                // Institutional Permissions
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS can_prescribe BOOLEAN DEFAULT TRUE");
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS can_edit_patient_data BOOLEAN DEFAULT TRUE");
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS can_access_reports BOOLEAN DEFAULT TRUE");
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS can_manage_appointments BOOLEAN DEFAULT TRUE");
+                
+                // Human Resources & Staffing
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS salary TEXT");
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS contract_type TEXT DEFAULT 'PERMANENT'");
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS joining_date TEXT");
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS staff_id TEXT");
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS revenue_share_percentage DOUBLE PRECISION");
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS employee_id TEXT");
+                jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS opd_room_number TEXT");
+                
+                System.out.println("DEBUG: Schema self-heal completed successfully for 'doctors' and 'hospital_admins'");
             } catch (Exception e) {
-                System.out.println("DEBUG: Schema self-heal skipped: " + e.getMessage());
+                System.out.println("DEBUG: Schema self-heal skipped or partially failed: " + e.getMessage());
             }
 
             Authentication authentication = authenticationManager.authenticate(
