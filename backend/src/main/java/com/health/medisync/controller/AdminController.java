@@ -154,7 +154,7 @@ public class AdminController {
             String sql = "SELECT ha.id, ha.name as admin_name, ha.position, h.name as hospital_name, h.license_code, h.city, h.state, ha.approved, u.enabled, u.id as user_id " +
                          "FROM hospital_admins ha " +
                          "JOIN hospitals h ON ha.hospital_id = h.id " +
-                         "JOIN users u ON ha.user_id = u.id";
+                         "LEFT JOIN users u ON ha.user_id = u.id";
             List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
             return ResponseEntity.ok(rows);
         } catch (Exception e) {
@@ -168,7 +168,7 @@ public class AdminController {
         try {
             String sql = "SELECT d.id, d.name, d.email, d.phone, d.specialization, d.medical_degree, d.medical_license_number, d.hospital, d.years_of_experience, d.profile_picture_url, d.approved, u.enabled, u.id as user_id " +
                          "FROM doctors d " +
-                         "JOIN users u ON d.user_id = u.id";
+                         "LEFT JOIN users u ON d.user_id = u.id";
             List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
             return ResponseEntity.ok(rows);
         } catch (Exception e) {
