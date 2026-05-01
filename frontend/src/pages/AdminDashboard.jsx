@@ -169,12 +169,12 @@ const AdminDashboard = () => {
           <div className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden border border-slate-200 flex flex-col max-h-[90vh]">
             <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-2xl ${activeTab === 'doctors' ? 'bg-primary-50 text-primary-600' : 'bg-indigo-50 text-indigo-600'}`}>
-                  {activeTab === 'doctors' ? <Stethoscope size={24} /> : <Building2 size={24} />}
+                <div className={`p-3 rounded-2xl ${activeTab.includes('doctors') ? 'bg-primary-50 text-primary-600' : 'bg-indigo-50 text-indigo-600'}`}>
+                  {activeTab.includes('doctors') ? <Stethoscope size={24} /> : <Building2 size={24} />}
                 </div>
                 <div>
                   <h3 className="text-2xl font-black text-slate-900 tracking-tight italic">
-                    {activeTab === 'doctors' ? selectedItem.name : selectedItem.hospital_name}
+                    {activeTab.includes('doctors') ? selectedItem.name : selectedItem.hospital_name}
                   </h3>
                   <p className="text-xs font-black text-slate-400 uppercase tracking-widest mt-0.5">Verification Dossier</p>
                 </div>
@@ -185,7 +185,7 @@ const AdminDashboard = () => {
             </div>
             
             <div className="flex-1 overflow-y-auto p-8 space-y-8">
-              {activeTab === 'doctors' ? (
+              {activeTab.includes('doctors') ? (
                 <>
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-1">
@@ -204,16 +204,46 @@ const AdminDashboard = () => {
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Experience</p>
                       <p className="font-bold text-slate-900">{selectedItem.yearsOfExperience} Years</p>
                     </div>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gender / DOB</p>
+                      <p className="font-bold text-slate-900">{selectedItem.gender} | {selectedItem.dateOfBirth}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Consultation Fee</p>
+                      <p className="font-bold text-emerald-600">₹{selectedItem.consultationFee}</p>
+                    </div>
                   </div>
+
                   <div className="space-y-4 pt-4 border-t border-slate-100">
-                    <div className="flex items-center gap-3 text-slate-600 font-medium">
-                      <Mail size={18} className="text-slate-400" /> {selectedItem.email}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="flex items-center gap-3 text-slate-600 font-medium text-sm">
+                          <Mail size={16} className="text-slate-400" /> {selectedItem.email}
+                        </div>
+                        <div className="flex items-center gap-3 text-slate-600 font-medium text-sm">
+                          <Phone size={16} className="text-slate-400" /> {selectedItem.phone}
+                        </div>
                     </div>
-                    <div className="flex items-center gap-3 text-slate-600 font-medium">
-                      <Building2 size={18} className="text-slate-400" /> {selectedItem.hospital || "Independent Practitioner"}
+                    <div className="flex items-center gap-3 text-slate-600 font-medium text-sm">
+                      <Building2 size={16} className="text-slate-400" /> {selectedItem.hospital || "Independent / Other"}
                     </div>
-                    <div className="flex items-center gap-3 text-slate-600 font-medium">
-                      <Globe size={18} className="text-slate-400" /> Language Proficiency: English, Local
+                    <div className="flex items-center gap-3 text-slate-600 font-medium text-sm">
+                      <GraduationCap size={16} className="text-slate-400" /> {selectedItem.college}
+                    </div>
+                    {selectedItem.additionalCertifications && (
+                        <div className="flex items-center gap-3 text-slate-600 font-medium text-sm italic">
+                          <Award size={16} className="text-primary-400" /> {selectedItem.additionalCertifications}
+                        </div>
+                    )}
+                  </div>
+
+                  <div className="p-4 bg-primary-50 rounded-2xl border border-primary-100 flex justify-between items-center">
+                    <div>
+                        <p className="text-[9px] font-black text-primary-600 uppercase tracking-widest">UPI Payment ID</p>
+                        <p className="font-mono text-sm font-bold text-primary-900">{selectedItem.upiId || "Not Provided"}</p>
+                    </div>
+                    <div className="text-right">
+                        <p className="text-[9px] font-black text-primary-600 uppercase tracking-widest">Availability</p>
+                        <p className="text-xs font-bold text-primary-900">{selectedItem.workingDays} | {selectedItem.consultationTimings}</p>
                     </div>
                   </div>
                 </>

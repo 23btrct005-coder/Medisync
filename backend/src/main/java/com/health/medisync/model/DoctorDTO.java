@@ -59,6 +59,8 @@ public class DoctorDTO {
     private String joiningDate;
     private String salary;
     private String contractType;
+    private String gender;
+    private String dateOfBirth;
 
     // Constructors
     public DoctorDTO() {}
@@ -120,6 +122,8 @@ public class DoctorDTO {
         this.contractType = d.getContractType();
         this.upiId = d.getUpiId();
         this.razorpayAccountId = d.getRazorpayAccountId();
+        this.gender = d.getGender();
+        this.dateOfBirth = d.getDateOfBirth();
     }
 
     // Getters and Setters
@@ -254,4 +258,10 @@ public class DoctorDTO {
 
     public String getContractType() { return contractType; }
     public void setContractType(String contractType) { this.contractType = contractType; }
+
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
+
+    public String getDateOfBirth() { return dateOfBirth; }
+    public void setDateOfBirth(String dateOfBirth) { this.dateOfBirth = dateOfBirth; }
 }
