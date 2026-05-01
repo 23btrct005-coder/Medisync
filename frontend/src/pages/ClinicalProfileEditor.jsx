@@ -6,7 +6,8 @@ import { toast } from 'react-hot-toast';
 import {
   User, Stethoscope, BadgeCheck, GraduationCap, Building2,
   Clock, Activity, Save, ArrowLeft, Mail, Phone, Calendar,
-  CheckCircle, AlertCircle, Video, Briefcase, Camera, Upload, Target, Navigation, MapPin
+  CheckCircle, AlertCircle, Video, Briefcase, Camera, Upload, Target, Navigation, MapPin,
+  Wallet, CreditCard
 } from 'lucide-react';
 import ClinicMap from '../components/ClinicMap';
 
