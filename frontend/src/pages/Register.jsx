@@ -649,7 +649,8 @@ const Register = () => {
                   )}
 
                   {role === 'ROLE_DOCTOR' && (
-                    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <>
+                      <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
                       <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
                         <h3 className={sectionHeadClass}><GraduationCap size={16} /> 3. Qualifications</h3>
                         <div className="grid grid-cols-2 gap-6">
@@ -702,11 +703,12 @@ const Register = () => {
                             <div><label className={labelClass}>Procedures & Publications</label><textarea name="proceduresHandled" value={formData.proceduresHandled} onChange={handleChange} className={`${inputClass} h-24`} placeholder="Procedures handled..." /></div>
                         </div>
                       </div>
-                    </div>
+                    </>
                   )}
 
                   {role === 'ROLE_HOSPITAL_ADMIN' && (
-                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <>
+                      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
                       
                       {/* Section 1: Basic Identity */}
                       <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
@@ -914,16 +916,16 @@ const Register = () => {
                                 <label className="text-xs text-slate-600 font-medium">I provide explicit consent for clinical data processing in accordance with digital health standards. <span className="text-red-500">*</span></label>
                             </div>
                         </div>
-
                         <button type="submit" disabled={loading} className="w-full bg-primary-600 text-white py-5 rounded-[2rem] font-black uppercase tracking-widest hover:bg-primary-700 shadow-2xl shadow-primary-200 transition-all active:scale-95 disabled:opacity-50">
                             {loading ? 'Finalizing Enrollment...' : 'Complete Institutional Registration'}
                         </button>
                       </div>
-                    </div>
+                    </>
                   )}
 
                   {role === 'ROLE_DOCTOR' && (
-                    <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
+                    <>
+                      <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
                       <h3 className={sectionHeadClass}><CreditCard size={16} /> 7. Banking & Settlement</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div><label className={labelClass}>Bank Name <span className="text-red-500">*</span></label><input type="text" name="bankName" required value={formData.bankName} onChange={handleChange} className={inputClass} placeholder="e.g. HDFC Bank" /></div>
@@ -980,7 +982,7 @@ const Register = () => {
                       <button type="submit" disabled={loading} className="w-full bg-primary-600 text-white py-5 rounded-[2rem] font-black uppercase tracking-widest hover:bg-primary-700 shadow-2xl shadow-primary-200 transition-all active:scale-95 disabled:opacity-50">
                         {loading ? 'Completing Enrollment...' : 'Finalize Physician Registration'}
                       </button>
-                    </div>
+                    </>
                   )}
                 </div>
               )}
