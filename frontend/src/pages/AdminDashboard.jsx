@@ -293,14 +293,25 @@ const AdminDashboard = () => {
                   )}
 
                   <div className="space-y-4">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Clinic Location & Contact</p>
-                    <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100 flex items-start gap-4">
-                        <div className="p-3 bg-white rounded-2xl shadow-sm text-primary-500">
+                    <div className="flex items-center justify-between ml-1">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Clinic Location & Contact</p>
+                        <a 
+                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${selectedItem.clinicStreet || selectedItem.clinicAddress}, ${selectedItem.clinicCity}, ${selectedItem.clinicState} ${selectedItem.clinicPinCode}`)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[10px] font-black text-primary-600 uppercase tracking-widest hover:underline flex items-center gap-1"
+                        >
+                            <Globe size={12} /> View on Google Maps
+                        </a>
+                    </div>
+                    <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100 flex items-start gap-4 group cursor-pointer" 
+                         onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${selectedItem.clinicStreet || selectedItem.clinicAddress}, ${selectedItem.clinicCity}, ${selectedItem.clinicState} ${selectedItem.clinicPinCode}`)}`, '_blank')}>
+                        <div className="p-3 bg-white rounded-2xl shadow-sm text-primary-500 group-hover:bg-primary-500 group-hover:text-white transition-all">
                             <MapPin size={20} />
                         </div>
                         <div className="min-w-0">
-                            <p className="text-sm font-bold text-slate-900 truncate">{selectedItem.clinicStreet || selectedItem.clinicAddress || "Independent Practice"}</p>
-                            <p className="text-xs text-slate-500 mt-0.5">
+                            <p className="text-sm font-bold text-slate-900 group-hover:text-primary-700 transition-colors">{selectedItem.clinicStreet || selectedItem.clinicAddress || "Independent Practice"}</p>
+                            <p className="text-xs text-slate-500 mt-0.5 font-medium">
                                 {selectedItem.clinicCity || "N/A"}, {selectedItem.clinicState || "N/A"} {selectedItem.clinicPinCode || ""}
                             </p>
                         </div>
