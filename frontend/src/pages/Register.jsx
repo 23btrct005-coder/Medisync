@@ -34,8 +34,21 @@ const Register = () => {
     // Contact
     phone: '',
     alternatePhone: '',
-    // Qualifications
-    medicalDegree: '',
+    // Detailed Patient Profile
+    nationalId: '',
+    maritalStatus: '',
+    bloodGroup: '',
+    height: '',
+    weight: '',
+    hasDisability: 'false',
+    emergencyContactName: '',
+    emergencyContactPhone: '',
+    allergies: '',
+    existingDiseases: '',
+    smokingStatus: '',
+    alcoholStatus: '',
+    organDonorStatus: 'Undecided',
+    // Clinical (Doctor)
     specialization: '',
     college: '',
     additionalCertifications: '',
@@ -527,6 +540,25 @@ const Register = () => {
                         <input type="text" name="age" disabled value={formData.age ? `${formData.age} Years` : 'From DOB'}
                           className="block w-full rounded-xl border-slate-100 bg-slate-50 sm:text-sm px-4 py-3.5 border text-slate-400 font-medium" />
                     </div>
+                    {role === 'ROLE_PATIENT' && (
+                        <>
+                            <div>
+                                <label className={labelClass}>National ID Number <span className="text-red-500">*</span></label>
+                                <input type="text" name="nationalId" required value={formData.nationalId} onChange={handleChange}
+                                className={inputClass} placeholder="UIDAI / Passport / Voter ID" />
+                            </div>
+                            <div>
+                                <label className={labelClass}>Marital Status</label>
+                                <select name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} className={inputClass}>
+                                    <option value="">Select Status</option>
+                                    <option value="Single">Single</option>
+                                    <option value="Married">Married</option>
+                                    <option value="Divorced">Divorced</option>
+                                    <option value="Widowed">Widowed</option>
+                                </select>
+                            </div>
+                        </>
+                    )}
                   </div>
                 </div>
               )}
@@ -547,6 +579,103 @@ const Register = () => {
                         <label className={labelClass}>Alternate Mobile</label>
                         <input type="tel" name="alternatePhone" value={formData.alternatePhone} onChange={handleChange}
                           className={inputClass} placeholder="Optional" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Patient Detailed Profile Sections (Step 4-6) */}
+              {role === 'ROLE_PATIENT' && (
+                <div className="space-y-12">
+                   {/* Medical Metrics */}
+                   <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
+                      <Activity size={16} /> 4. Medical Metrics
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div>
+                            <label className={labelClass}>Blood Group</label>
+                            <select name="bloodGroup" value={formData.bloodGroup} onChange={handleChange} className={inputClass}>
+                                <option value="">Select</option>
+                                {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(bg => <option key={bg} value={bg}>{bg}</option>)}
+                            </select>
+                        </div>
+                        <div>
+                            <label className={labelClass}>Height (cm)</label>
+                            <input type="number" name="height" value={formData.height} onChange={handleChange} className={inputClass} placeholder="175" />
+                        </div>
+                        <div>
+                            <label className={labelClass}>Weight (kg)</label>
+                            <input type="number" name="weight" value={formData.weight} onChange={handleChange} className={inputClass} placeholder="70" />
+                        </div>
+                        <div>
+                            <label className={labelClass}>Disability</label>
+                            <select name="hasDisability" value={formData.hasDisability} onChange={handleChange} className={inputClass}>
+                                <option value="false">None</option>
+                                <option value="true">Yes</option>
+                            </select>
+                        </div>
+                    </div>
+                  </div>
+
+                  {/* Residency & Emergency */}
+                  <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+                    <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
+                      <MapPin size={16} /> 5. Residency & Emergency
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="md:col-span-2">
+                            <label className={labelClass}>Full Residential Address</label>
+                            <input type="text" name="street" value={formData.street} onChange={handleChange} className={inputClass} placeholder="Street, Building, Area" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <input type="text" name="city" value={formData.city} onChange={handleChange} className={inputClass} placeholder="City" />
+                            <input type="text" name="pinCode" value={formData.pinCode} onChange={handleChange} className={inputClass} placeholder="PIN" />
+                        </div>
+                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Emergency Contact</p>
+                           <div className="space-y-3">
+                               <input type="text" name="emergencyContactName" value={formData.emergencyContactName} onChange={handleChange} className={inputClass} placeholder="Contact Name" />
+                               <input type="tel" name="emergencyContactPhone" value={formData.emergencyContactPhone} onChange={handleChange} className={inputClass} placeholder="Contact Phone" />
+                           </div>
+                        </div>
+                    </div>
+                  </div>
+
+                  {/* Clinical History */}
+                  <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+                    <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
+                      <ClipboardList size={16} /> 6. Clinical History
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className={labelClass}>Known Allergies</label>
+                            <textarea name="allergies" value={formData.allergies} onChange={handleChange} className={`${inputClass} h-20 resize-none`} placeholder="e.g. Penicillin, Peanuts" />
+                        </div>
+                        <div>
+                            <label className={labelClass}>Chronic Diseases</label>
+                            <textarea name="existingDiseases" value={formData.existingDiseases} onChange={handleChange} className={`${inputClass} h-20 resize-none`} placeholder="e.g. Diabetes, Hypertension" />
+                        </div>
+                        <div className="md:col-span-2">
+                            <label className={labelClass}>Lifestyle & Habits</label>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                <select name="smokingStatus" value={formData.smokingStatus} onChange={handleChange} className={inputClass}>
+                                    <option value="">Smoking</option>
+                                    <option value="Non-Smoker">Non-Smoker</option>
+                                    <option value="Regular">Regular</option>
+                                </select>
+                                <select name="alcoholStatus" value={formData.alcoholStatus} onChange={handleChange} className={inputClass}>
+                                    <option value="">Alcohol</option>
+                                    <option value="None">None</option>
+                                    <option value="Social">Social</option>
+                                </select>
+                                <select name="organDonorStatus" value={formData.organDonorStatus} onChange={handleChange} className={inputClass}>
+                                    <option value="Undecided">Organ Donor</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                   </div>
                 </div>
@@ -924,7 +1053,7 @@ const Register = () => {
               {/* Step 9/4: Account Security (Universal) */}
               <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-700">
                 <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
-                  <Lock size={16} /> {role === 'ROLE_DOCTOR' ? '8. Account Security' : (role === 'ROLE_PATIENT' ? '4. Account Security' : '4. Account Security')}
+                  <Lock size={16} /> {role === 'ROLE_DOCTOR' ? '8. Account Security' : (role === 'ROLE_PATIENT' ? '7. Account Security' : '4. Account Security')}
                 </h3>
                 <div className="mb-6">
                     <label className={labelClass}>Username / Doctor ID <span className="text-red-500">*</span></label>
