@@ -589,7 +589,8 @@ public class AuthController {
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(String.valueOf(request.get("password"))));
         user.setRole("ROLE_HOSPITAL_ADMIN");
-        user.setEnabled(true); // Assuming email pre-verified
+        user.setEnabled(true); 
+        user.setEmailVerified(true); // Assuming email pre-verified via OTP in frontend
         user = userRepository.save(user);
 
         // 2. Create or Find Hospital
