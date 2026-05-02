@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Activity, Search, ShieldAlert, ChevronRight, UserPlus, Filter, Calendar } from 'lucide-react';
+import { Users, Activity, Search, ShieldAlert, ChevronRight, UserPlus, Filter, Calendar, X } from 'lucide-react';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
 
