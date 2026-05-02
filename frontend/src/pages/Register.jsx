@@ -454,10 +454,6 @@ const Register = () => {
                   
                   <div className="flex flex-col items-center gap-4 py-4">
                     <ProfilePhotoUpload onFileSelect={setProfilePicture} />
-                    <div className="text-center">
-                        <p className="text-[10px] font-black text-primary-600 uppercase tracking-[0.15em]">Upload Profile Photo</p>
-                        <p className="text-[9px] text-slate-400 mt-1 uppercase font-bold tracking-wider">JPG, PNG or WEBP · Max 2MB</p>
-                    </div>
                   </div>
 
                   <div className="space-y-6">
@@ -854,7 +850,6 @@ const Register = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="flex flex-col items-center gap-6 p-4 bg-slate-50 rounded-2xl border border-slate-100 shadow-inner">
                            <div className="text-center">
-                              <p className={labelClass}>Hospital Logo</p>
                               <ProfilePhotoUpload onFileSelect={setHospitalLogo} />
                            </div>
                            <div className="text-center w-full">
