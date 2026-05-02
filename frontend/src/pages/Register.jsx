@@ -1031,12 +1031,85 @@ const Register = () => {
                     </div>
                   </div>
 
+                  <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-75">
+                    <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
+                      <ShieldCheck size={16} /> 3. Legal & Financial Compliance
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className={labelClass}>GST Number</label>
+                            <input type="text" name="gstNumber" value={formData.gstNumber} onChange={handleChange} className={inputClass} placeholder="e.g. 22AAAAA0000A1Z5" />
+                        </div>
+                        <div>
+                            <label className={labelCls}>PAN Number</label>
+                            <input type="text" name="panNumber" value={formData.panNumber} onChange={handleChange} className={inputClass} placeholder="e.g. ABCDE1234F" />
+                        </div>
+                        <div>
+                            <label className={labelCls}>NABH ID (Optional)</label>
+                            <input type="text" name="nabhId" value={formData.nabhId} onChange={handleChange} className={inputClass} placeholder="NABH Registration" />
+                        </div>
+                        <div>
+                            <label className={labelCls}>ISO Certification</label>
+                            <input type="text" name="isoId" value={formData.isoId} onChange={handleChange} className={inputClass} placeholder="ISO ID" />
+                        </div>
+                    </div>
+                  </div>
+
                   <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
                     <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
-                      <MapPin size={16} /> 3. Facility Location
+                      <Building2 size={16} /> 4. Operational Infrastructure
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                            <label className={labelCls}>Total Beds</label>
+                            <input type="number" name="totalBeds" value={formData.totalBeds} onChange={handleChange} className={inputClass} placeholder="0" />
+                        </div>
+                        <div>
+                            <label className={labelCls}>ICU Beds</label>
+                            <input type="number" name="icuBeds" value={formData.icuBeds} onChange={handleChange} className={inputClass} placeholder="0" />
+                        </div>
+                        <div>
+                            <label className={labelCls}>OT Count</label>
+                            <input type="number" name="operationTheatersCount" value={formData.operationTheatersCount} onChange={handleChange} className={inputClass} placeholder="0" />
+                        </div>
+                        <div>
+                            <label className={labelCls}>Ambulances</label>
+                            <input type="number" name="ambulanceCount" value={formData.ambulanceCount} onChange={handleChange} className={inputClass} placeholder="0" />
+                        </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
+                    <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
+                      <Stethoscope size={16} /> 5. Clinical Scope & Departments
+                    </h3>
+                    <div>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4">Select all active departments</p>
+                        <div className="flex flex-wrap gap-2">
+                            {HospitalDepartments.map(dept => (
+                                <button
+                                    key={dept}
+                                    type="button"
+                                    onClick={() => handleDepartmentToggle(dept)}
+                                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${
+                                        formData.departments.includes(dept)
+                                            ? 'bg-primary-600 border-primary-600 text-white shadow-lg'
+                                            : 'bg-white border-slate-100 text-slate-400 hover:border-primary-200'
+                                    }`}
+                                >
+                                    {dept}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+                    <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
+                      <MapPin size={16} /> 6. Facility Location
                     </h3>
                     <div className="flex justify-between items-center mb-4">
-                        <p className={labelClass}>Geographic Coordinates</p>
+                        <p className={labelCls}>Geographic Coordinates</p>
                         <button type="button" onClick={handleGetCurrentLocation} className="text-[10px] font-black text-primary-600 uppercase flex items-center gap-2">
                            <Navigation size={12} className={locating ? 'animate-pulse' : ''} /> {locating ? 'Locating...' : 'Auto-Locate'}
                         </button>
