@@ -16,7 +16,8 @@ const AdminDashboard = () => {
   const [pendingHospitals, setPendingHospitals] = useState([]);
   const [allDoctors, setAllDoctors] = useState([]);
   const [allHospitals, setAllHospitals] = useState([]);
-  const [activeTab, setActiveTab] = useState('pending_doctors'); 
+  const [viewMode, setViewMode] = useState('pending'); // 'pending' or 'registry'
+  const [subTab, setSubTab] = useState('doctors'); // 'doctors' or 'hospitals'
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
   const [message, setMessage] = useState({ type: '', text: '' });
@@ -26,7 +27,7 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchData();
-  }, [activeTab]);
+  }, [viewMode, subTab]);
 
   // AUTO-SYNC: Refresh every 30 seconds
   useEffect(() => {
@@ -34,23 +35,27 @@ const AdminDashboard = () => {
       fetchData(false); // background fetch
     }, 30000);
     return () => clearInterval(interval);
-  }, [activeTab]);
+  }, [viewMode, subTab]);
 
   const fetchData = async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
-      if (activeTab === 'pending_doctors') {
-        const response = await api.get('admin/doctors/pending');
-        setPendingDoctors(response.data);
-      } else if (activeTab === 'pending_hospitals') {
-        const response = await api.get('admin/hospitals/pending');
-        setPendingHospitals(response.data);
-      } else if (activeTab === 'all_doctors') {
-        const response = await api.get('admin/doctors/all');
-        setAllDoctors(response.data);
-      } else if (activeTab === 'all_hospitals') {
-        const response = await api.get('admin/hospitals/all');
-        setAllHospitals(response.data);
+      if (viewMode === 'pending') {
+        if (subTab === 'doctors') {
+          const response = await api.get('admin/doctors/pending');
+          setPendingDoctors(response.data);
+        } else {
+          const response = await api.get('admin/hospitals/pending');
+          setPendingHospitals(response.data);
+        }
+      } else {
+        if (subTab === 'doctors') {
+          const response = await api.get('admin/doctors/all');
+          setAllDoctors(response.data);
+        } else {
+          const response = await api.get('admin/hospitals/all');
+          setAllHospitals(response.data);
+        }
       }
     } catch (error) {
       console.error("Error fetching admin data", error);
@@ -146,10 +151,11 @@ const AdminDashboard = () => {
 
   const getFilteredData = () => {
     let data = [];
-    if (activeTab === 'pending_doctors') data = pendingDoctors;
-    else if (activeTab === 'pending_hospitals') data = pendingHospitals;
-    else if (activeTab === 'all_doctors') data = allDoctors;
-    else if (activeTab === 'all_hospitals') data = allHospitals;
+    if (viewMode === 'pending') {
+      data = subTab === 'doctors' ? pendingDoctors : pendingHospitals;
+    } else {
+      data = subTab === 'doctors' ? allDoctors.filter(d => d.approved) : allHospitals.filter(h => h.approved);
+    }
 
     return data.filter(item => {
       const name = (item.name || item.hospital_name || item.hospitalName || "").toLowerCase();
@@ -188,12 +194,12 @@ const AdminDashboard = () => {
           <div className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden border border-slate-200 flex flex-col max-h-[90vh]">
             <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-2xl ${activeTab.includes('doctors') ? 'bg-primary-50 text-primary-600' : 'bg-indigo-50 text-indigo-600'}`}>
-                  {activeTab.includes('doctors') ? <Stethoscope size={24} /> : <Building2 size={24} />}
+                <div className={`p-3 rounded-2xl ${subTab === 'doctors' ? 'bg-primary-50 text-primary-600' : 'bg-indigo-50 text-indigo-600'}`}>
+                  {subTab === 'doctors' ? <Stethoscope size={24} /> : <Building2 size={24} />}
                 </div>
                 <div>
                   <h3 className="text-2xl font-black text-slate-900 tracking-tight italic">
-                    {activeTab.includes('doctors') ? selectedItem.name : selectedItem.hospital_name}
+                    {subTab === 'doctors' ? selectedItem.name : selectedItem.hospital_name}
                   </h3>
                   <p className="text-xs font-black text-slate-400 uppercase tracking-widest mt-0.5">Verification Dossier</p>
                 </div>
@@ -204,7 +210,7 @@ const AdminDashboard = () => {
             </div>
             
             <div className="flex-1 overflow-y-auto p-8 space-y-8">
-              {activeTab.includes('doctors') ? (
+              {subTab === 'doctors' ? (
                 <>
                   <div className="flex items-center gap-6 pb-6 border-b border-slate-100">
                     <div className="w-24 h-24 bg-slate-50 rounded-[32px] overflow-hidden border-4 border-white shadow-lg shrink-0">
@@ -544,20 +550,18 @@ const AdminDashboard = () => {
                   </div>
                 </>
               )}
-            </div>
-
-            <div className="p-8 border-t border-slate-100 bg-slate-50/50 flex flex-col gap-4">
-              {activeTab.includes('pending') ? (
+            </div>            <div className="p-8 border-t border-slate-100 bg-slate-50/50 flex flex-col gap-4">
+              {viewMode === 'pending' ? (
                 <div className="flex gap-4">
                   <button
-                    onClick={() => handleReject(selectedItem.id, activeTab.includes('doctors') ? 'doctors' : 'hospitals')}
+                    onClick={() => handleReject(selectedItem.id, subTab === 'doctors' ? 'doctors' : 'hospitals')}
                     className="flex-1 py-4 bg-white border border-slate-200 text-red-500 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-red-50 transition-all active:scale-95"
                   >
                     Reject Application
                   </button>
                   <button
-                    onClick={() => handleApprove(selectedItem.id, activeTab.includes('doctors') ? 'doctors' : 'hospitals')}
-                    className={`flex-1 py-4 ${activeTab.includes('doctors') ? 'bg-primary-600 shadow-primary-600/20' : 'bg-indigo-600 shadow-indigo-600/20'} text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl hover:opacity-90 transition-all active:scale-95`}
+                    onClick={() => handleApprove(selectedItem.id, subTab === 'doctors' ? 'doctors' : 'hospitals')}
+                    className={`flex-1 py-4 ${subTab === 'doctors' ? 'bg-primary-600 shadow-primary-600/20' : 'bg-indigo-600 shadow-indigo-600/20'} text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl hover:opacity-90 transition-all active:scale-95`}
                   >
                     Confirm Verification
                   </button>
@@ -570,9 +574,9 @@ const AdminDashboard = () => {
                   >
                     {selectedItem.enabled ? 'Revoke System Access' : 'Grant System Access'}
                   </button>
-
+ 
                   {/* Edit Access ONLY for non-institutional doctors */}
-                  {activeTab.includes('doctors') && (!selectedItem.hospital || selectedItem.hospital === "Independent / Other") && (
+                  {subTab === 'doctors' && (!selectedItem.hospital || selectedItem.hospital === "Independent / Other") && (
                     <button
                         onClick={() => toast.error("Live Editing Module is currently in read-only audit mode.")}
                         className="w-full py-4 bg-primary-50 text-primary-600 font-black text-xs uppercase tracking-widest rounded-2xl border border-primary-100 hover:bg-primary-100 transition-all active:scale-95 flex items-center justify-center gap-2"
@@ -581,7 +585,7 @@ const AdminDashboard = () => {
                     </button>
                   )}
                   <button
-                    onClick={() => handlePermanentDelete(selectedItem.id, selectedItem.email || selectedItem.contactEmail || selectedItem.contact_email, activeTab.includes('doctors') ? 'doctors' : 'hospitals')}
+                    onClick={() => handlePermanentDelete(selectedItem.id, selectedItem.email || selectedItem.contactEmail || selectedItem.contact_email, subTab === 'doctors' ? 'doctors' : 'hospitals')}
                     className="w-full py-3 bg-white border border-red-100 text-red-500 font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl hover:bg-red-50 transition-all active:scale-95 flex items-center justify-center gap-2"
                   >
                     <XCircle size={14} /> Permanently Purge Account
@@ -589,6 +593,7 @@ const AdminDashboard = () => {
                 </>
               )}
             </div>
+>
           </div>
         </div>
       )}
@@ -670,24 +675,55 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Tab Switcher */}
-      <div className="flex flex-wrap gap-2 p-1.5 bg-slate-100 rounded-2xl w-fit">
-        {[
-          { id: 'pending_doctors', label: 'Pending Docs', count: pendingDoctors.length },
-          { id: 'pending_hospitals', label: 'Pending Hubs', count: pendingHospitals.length },
-          { id: 'all_doctors', label: 'All Registry', count: allDoctors.length },
-          { id: 'all_hospitals', label: 'Institutions', count: allHospitals.length },
-        ].map(tab => (
+      {/* Two-Tiered Navigation Switcher */}
+      <div className="flex flex-col gap-6">
+        <div className="flex p-1.5 bg-slate-100 rounded-[2rem] w-full max-w-md shadow-inner">
           <button
-            key={tab.id}
-            onClick={() => { setActiveTab(tab.id); setSelectedItem(null); }}
-            className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-              activeTab === tab.id ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            onClick={() => { setViewMode('pending'); setSelectedItem(null); }}
+            className={`flex-1 py-4 rounded-[1.5rem] text-xs font-black uppercase tracking-[0.15em] transition-all duration-500 flex items-center justify-center gap-2 ${
+              viewMode === 'pending' 
+                ? 'bg-white text-slate-900 shadow-xl shadow-slate-200/50 translate-y-[-2px]' 
+                : 'text-slate-400 hover:text-slate-600'
             }`}
           >
-            {tab.label} {tab.count > 0 && `(${tab.count})`}
+            <AlertCircle size={14} className={viewMode === 'pending' ? 'text-amber-500' : 'text-slate-300'} />
+            Pending Registers
+            { (pendingDoctors.length + pendingHospitals.length) > 0 && (
+              <span className="ml-1 px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-[9px]">{pendingDoctors.length + pendingHospitals.length}</span>
+            )}
           </button>
-        ))}
+          <button
+            onClick={() => { setViewMode('registry'); setSelectedItem(null); }}
+            className={`flex-1 py-4 rounded-[1.5rem] text-xs font-black uppercase tracking-[0.15em] transition-all duration-500 flex items-center justify-center gap-2 ${
+              viewMode === 'registry' 
+                ? 'bg-white text-slate-900 shadow-xl shadow-slate-200/50 translate-y-[-2px]' 
+                : 'text-slate-400 hover:text-slate-600'
+            }`}
+          >
+            <ShieldCheck size={14} className={viewMode === 'registry' ? 'text-primary-500' : 'text-slate-300'} />
+            Approved Profiles
+          </button>
+        </div>
+
+        <div className="flex gap-2">
+          {[
+            { id: 'doctors', label: 'Physicians', icon: Stethoscope },
+            { id: 'hospitals', label: 'Institutions', icon: Building2 },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => { setSubTab(tab.id); setSelectedItem(null); }}
+              className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border flex items-center gap-2 ${
+                subTab === tab.id 
+                  ? 'bg-slate-900 text-white border-slate-900 shadow-lg' 
+                  : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
+              }`}
+            >
+              <tab.icon size={14} />
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Pending List Table/Cards */}
@@ -714,7 +750,7 @@ const AdminDashboard = () => {
             >
               <div className="flex items-start gap-6">
                 <div className="w-20 h-20 shrink-0 bg-slate-100 rounded-3xl overflow-hidden flex items-center justify-center border-4 border-slate-50 shadow-inner">
-                    {activeTab.includes('doctors') ? (
+                    {subTab === 'doctors' ? (
                       <img 
                         src={item.profilePictureUrl || `${api.defaults.baseURL}/auth/doctor/photo/${item.id}?t=${Date.now()}`} 
                         alt={item.name}
@@ -739,7 +775,7 @@ const AdminDashboard = () => {
                     </h3>
                     <div className="flex flex-wrap gap-x-6 gap-y-2 mt-3">
                         <div className="flex items-center gap-1.5 text-sm font-bold text-slate-500">
-                            {activeTab.includes('doctors') ? <GraduationCap size={16} className="text-primary-500" /> : <UserCheck size={16} className="text-indigo-500" />}
+                            {subTab === 'doctors' ? <GraduationCap size={16} className="text-primary-500" /> : <UserCheck size={16} className="text-indigo-500" />}
                             {item.specialization || `Admin: ${item.admin_name}`}
                         </div>
                         <div className="flex items-center gap-1.5 text-sm font-bold text-slate-500">
@@ -750,19 +786,19 @@ const AdminDashboard = () => {
               </div>
 
               <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-3xl border border-slate-100" onClick={e => e.stopPropagation()}>
-                {activeTab.includes('pending') ? (
+                {viewMode === 'pending' ? (
                   <>
                     <button
-                        onClick={() => handleReject(item.id, activeTab.includes('doctors') ? 'doctors' : 'hospitals')}
+                        onClick={() => handleReject(item.id, subTab === 'doctors' ? 'doctors' : 'hospitals')}
                         disabled={actionLoading === item.id}
                         className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-red-500 hover:bg-red-50 font-black text-sm rounded-2xl border border-slate-200 transition-all active:scale-95 disabled:opacity-50"
                     >
                         <XCircle size={18} /> Reject
                     </button>
                     <button
-                        onClick={() => handleApprove(item.id, activeTab.includes('doctors') ? 'doctors' : 'hospitals')}
+                        onClick={() => handleApprove(item.id, subTab === 'doctors' ? 'doctors' : 'hospitals')}
                         disabled={actionLoading === item.id}
-                        className={`flex-2 sm:flex-none flex items-center justify-center gap-2 px-8 py-3.5 ${activeTab.includes('doctors') ? 'bg-primary-600' : 'bg-indigo-600'} text-white font-black text-sm rounded-2xl shadow-xl transition-all active:scale-95 disabled:opacity-50`}
+                        className={`flex-2 sm:flex-none flex items-center justify-center gap-2 px-8 py-3.5 ${subTab === 'doctors' ? 'bg-primary-600' : 'bg-indigo-600'} text-white font-black text-sm rounded-2xl shadow-xl transition-all active:scale-95 disabled:opacity-50`}
                     >
                         {actionLoading === item.id ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />} Verify
                     </button>
