@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import api from '../api/axiosConfig';
 import ProfilePhotoUpload from '../components/ProfilePhotoUpload';
+import DocumentUpload from '../components/DocumentUpload';
 import LegalFooter from '../components/LegalFooter';
 
 const HospitalDepartments = [
@@ -554,7 +555,10 @@ const Register = () => {
                           <input type="text" name="medicalCouncil" required value={formData.medicalCouncil} onChange={handleChange} className={inputClass} placeholder="Council" />
                           <input type="text" name="medicalLicenseNumber" required value={formData.medicalLicenseNumber} onChange={handleChange} className={inputClass} placeholder="License No" />
                         </div>
-                        <div><label className={labelClass}>License Document (PDF/JPG) <span className="text-red-500">*</span></label><input type="file" required onChange={(e) => setLicenseDocument(e.target.files[0])} className="text-[10px] block w-full text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100" accept=".pdf,image/*" /></div>
+                        <div>
+                          <label className={labelClass}>Medical License Document <span className="text-red-500">*</span></label>
+                          <DocumentUpload onFileSelect={setLicenseDocument} label="Upload Medical License" />
+                        </div>
                       </div>
                     </div>
                   )}
@@ -566,7 +570,10 @@ const Register = () => {
                         <input type="text" name="hospitalName" required value={formData.hospitalName} onChange={handleChange} className={inputClass} placeholder="Hospital Name" />
                         <input type="text" name="licenseCode" required value={formData.licenseCode} onChange={handleChange} className={inputClass} placeholder="License Code" />
                       </div>
-                      <div><label className={labelClass}>Hospital Logo</label><ProfilePhotoUpload onFileSelect={setHospitalLogo} /></div>
+                      <div>
+                        <label className={labelClass}>Hospital Logo / Registration Certificate</label>
+                        <DocumentUpload onFileSelect={setHospitalLogo} label="Upload Institutional Credentials" />
+                      </div>
                     </div>
                   )}
 
