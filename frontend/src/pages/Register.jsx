@@ -167,6 +167,20 @@ const Register = () => {
     setFormData(updated);
   };
 
+  const handleExpiryDateChange = (type, value) => {
+    const expiry = formData.licenseExpiryDate ? formData.licenseExpiryDate.split('-') : ['', '', ''];
+    let year = expiry[0];
+    let month = expiry[1];
+    let day = expiry[2];
+
+    if (type === 'year') year = value;
+    if (type === 'month') month = value;
+    if (type === 'day') day = value;
+
+    const newExpiry = `${year}-${month}-${day}`;
+    setFormData({ ...formData, licenseExpiryDate: newExpiry });
+  };
+
   const handleDepartmentToggle = (dept) => {
     setFormData(prev => {
       const depts = prev.departments.includes(dept)
@@ -590,8 +604,41 @@ const Register = () => {
                         </div>
                         <div>
                             <label className={labelClass}>License Expiry Date <span className="text-red-500">*</span></label>
-                            <input type="date" name="licenseExpiryDate" required value={formData.licenseExpiryDate} onChange={handleChange}
-                                className={inputClass} />
+                            <div className="grid grid-cols-3 gap-2">
+                                <select 
+                                    className={inputClass}
+                                    value={formData.licenseExpiryDate ? formData.licenseExpiryDate.split('-')[2] : ''}
+                                    onChange={(e) => handleExpiryDateChange('day', e.target.value)}
+                                    required
+                                >
+                                    <option value="">Day</option>
+                                    {Array.from({length: 31}, (_, i) => String(i + 1).padStart(2, '0')).map(d => (
+                                        <option key={d} value={d}>{d}</option>
+                                    ))}
+                                </select>
+                                <select 
+                                    className={inputClass}
+                                    value={formData.licenseExpiryDate ? formData.licenseExpiryDate.split('-')[1] : ''}
+                                    onChange={(e) => handleExpiryDateChange('month', e.target.value)}
+                                    required
+                                >
+                                    <option value="">Month</option>
+                                    {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => (
+                                        <option key={m} value={String(i + 1).padStart(2, '0')}>{m}</option>
+                                    ))}
+                                </select>
+                                <select 
+                                    className={inputClass}
+                                    value={formData.licenseExpiryDate ? formData.licenseExpiryDate.split('-')[0] : ''}
+                                    onChange={(e) => handleExpiryDateChange('year', e.target.value)}
+                                    required
+                                >
+                                    <option value="">Year</option>
+                                    {Array.from({length: 20}, (_, i) => new Date().getFullYear() + i).map(y => (
+                                        <option key={y} value={y}>{y}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
                         <div>
                             <label className={labelClass}>Registration Year <span className="text-red-500">*</span></label>
