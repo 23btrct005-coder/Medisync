@@ -140,6 +140,17 @@ const Register = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    const updated = { ...formData, [name]: value };
+
+    if (name === 'state') {
+      if (geographyData[value]) {
+        setAvailableCities(geographyData[value]);
+        updated.city = '';
+      } else {
+        setAvailableCities([]);
+      }
+    }
+
     setFormData(updated);
   };
 
