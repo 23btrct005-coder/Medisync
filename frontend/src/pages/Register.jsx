@@ -332,8 +332,13 @@ const Register = () => {
                     {role === 'ROLE_PATIENT' ? <UserPlus size={30} /> : <Building2 size={30} />}
                   </div>
                   <div>
-                    <h2 className="text-2xl font-extrabold tracking-tight">{role === 'ROLE_PATIENT' ? 'Patient Registration' : 'Institutional Onboarding'}</h2>
-                    <p className="text-primary-100 text-sm mt-0.5">Securely join the MEDISYNC Healthcare Network</p>
+                    <h2 className="text-2xl font-extrabold tracking-tight">
+                      {role === 'ROLE_PATIENT' ? 'Patient Registration' : 
+                       (role === 'ROLE_DOCTOR' ? 'Physician Enrollment' : 'Institutional Onboarding')}
+                    </h2>
+                    <p className="text-primary-100 text-sm mt-0.5">
+                      {role === 'ROLE_PATIENT' ? 'Securely join the MEDISYNC Healthcare Network' : 'Professional credentials verification for MediSync Access'}
+                    </p>
                   </div>
                 </div>
                 <div className="flex bg-white/10 p-1 rounded-2xl backdrop-blur-md">
@@ -541,7 +546,7 @@ const Register = () => {
                   </div>
 
                   {role === 'ROLE_DOCTOR' && (
-                    <div className="space-y-10">
+                    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
                       <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
                         <h3 className={sectionHeadClass}><GraduationCap size={16} /> 3. Qualifications</h3>
                         <div className="grid grid-cols-2 gap-6">
@@ -564,15 +569,27 @@ const Register = () => {
                   )}
 
                   {role === 'ROLE_HOSPITAL_ADMIN' && (
-                    <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
-                      <h3 className={sectionHeadClass}><Building2 size={16} /> 3. Institutional</h3>
-                      <div className="grid grid-cols-2 gap-6">
-                        <input type="text" name="hospitalName" required value={formData.hospitalName} onChange={handleChange} className={inputClass} placeholder="Hospital Name" />
-                        <input type="text" name="licenseCode" required value={formData.licenseCode} onChange={handleChange} className={inputClass} placeholder="License Code" />
+                    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                      <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
+                        <h3 className={sectionHeadClass}><Building2 size={16} /> 3. Institutional Details</h3>
+                        <div className="grid grid-cols-2 gap-6">
+                          <div><label className={labelClass}>Hospital Name <span className="text-red-500">*</span></label><input type="text" name="hospitalName" required value={formData.hospitalName} onChange={handleChange} className={inputClass} placeholder="e.g. City Hospital" /></div>
+                          <div><label className={labelClass}>License Code <span className="text-red-500">*</span></label><input type="text" name="licenseCode" required value={formData.licenseCode} onChange={handleChange} className={inputClass} placeholder="Registration No" /></div>
+                        </div>
                       </div>
-                      <div>
-                        <label className={labelClass}>Hospital Logo / Registration Certificate</label>
-                        <DocumentUpload onFileSelect={setHospitalLogo} label="Upload Institutional Credentials" />
+
+                      <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
+                        <h3 className={sectionHeadClass}><ShieldCheck size={16} /> 4. Verification Documents</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-4">
+                                <label className={labelClass}>Hospital Logo</label>
+                                <DocumentUpload onFileSelect={setHospitalLogo} label="Upload Logo" />
+                            </div>
+                            <div className="space-y-4">
+                                <label className={labelClass}>Registration Certificate <span className="text-red-500">*</span></label>
+                                <DocumentUpload onFileSelect={setRegistrationCertificate} label="Upload Certificate" />
+                            </div>
+                        </div>
                       </div>
                     </div>
                   )}

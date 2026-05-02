@@ -60,6 +60,10 @@ public class Doctor {
     private Double onlineConsultationFee;
     private Double offlineConsultationFee;
     private String clinicAddress;
+    private String clinicStreet;
+    private String clinicCity;
+    private String clinicState;
+    private String clinicPinCode;
 
     // Advanced Availability
     private Integer slotDuration = 15; // default 15 mins
@@ -229,6 +233,18 @@ public class Doctor {
         return clinicAddress;
     }
     public void setClinicAddress(String clinicAddress) { this.clinicAddress = clinicAddress; }
+    
+    public String getClinicStreet() { return clinicStreet; }
+    public void setClinicStreet(String clinicStreet) { this.clinicStreet = clinicStreet; }
+
+    public String getClinicCity() { return clinicCity; }
+    public void setClinicCity(String clinicCity) { this.clinicCity = clinicCity; }
+
+    public String getClinicState() { return clinicState; }
+    public void setClinicState(String clinicState) { this.clinicState = clinicState; }
+
+    public String getClinicPinCode() { return clinicPinCode; }
+    public void setClinicPinCode(String clinicPinCode) { this.clinicPinCode = clinicPinCode; }
 
     public String getRazorpayAccountId() { return razorpayAccountId; }
     public void setRazorpayAccountId(String razorpayAccountId) { this.razorpayAccountId = razorpayAccountId; }

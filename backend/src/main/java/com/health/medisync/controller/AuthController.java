@@ -372,6 +372,10 @@ public class AuthController {
             catch (NumberFormatException ignored) {}
         }
         doctor.setClinicAddress(request.get("clinicAddress") != null ? String.valueOf(request.get("clinicAddress")) : null);
+        doctor.setClinicStreet(request.get("clinicStreet") != null ? String.valueOf(request.get("clinicStreet")) : null);
+        doctor.setClinicCity(request.get("clinicCity") != null ? String.valueOf(request.get("clinicCity")) : null);
+        doctor.setClinicState(request.get("clinicState") != null ? String.valueOf(request.get("clinicState")) : null);
+        doctor.setClinicPinCode(request.get("clinicPinCode") != null ? String.valueOf(request.get("clinicPinCode")) : null);
 
         doctor.setWorkingDays(request.get("workingDays") != null ? String.valueOf(request.get("workingDays")) : null);
         doctor.setConsultationTimings(request.get("consultationTimings") != null ? String.valueOf(request.get("consultationTimings")) : null);

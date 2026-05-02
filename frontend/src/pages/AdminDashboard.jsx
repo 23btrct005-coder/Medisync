@@ -202,7 +202,14 @@ const AdminDashboard = () => {
                     </div>
                     <div className="space-y-1">
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">License Expiry</p>
-                      <p className="font-bold text-red-500 font-mono">{selectedItem.licenseExpiryDate || "N/A"}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-bold text-red-500 font-mono">{selectedItem.licenseExpiryDate || "N/A"}</p>
+                        {selectedItem.licenseDocumentUrl && (
+                            <a href={selectedItem.licenseDocumentUrl} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:text-primary-700">
+                                <FileText size={14} />
+                            </a>
+                        )}
+                      </div>
                     </div>
                     <div className="space-y-1">
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Experience</p>
@@ -301,7 +308,27 @@ const AdminDashboard = () => {
                     <div className="space-y-1">
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Location</p>
                       <p className="font-bold text-slate-900">{selectedItem.city}, {selectedItem.state}</p>
+                      <p className="text-[9px] text-slate-400">{selectedItem.street} - {selectedItem.pin_code}</p>
                     </div>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Contact Registry</p>
+                      <div className="flex flex-col gap-0.5">
+                        <p className="text-xs font-bold text-slate-700">{selectedItem.contact_email}</p>
+                        <p className="text-xs font-bold text-slate-700">{selectedItem.phone}</p>
+                      </div>
+                    </div>
+                    {selectedItem.registration_certificate_url && (
+                      <div className="col-span-2">
+                        <a 
+                          href={selectedItem.registration_certificate_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-[10px] font-black text-primary-600 uppercase tracking-widest hover:underline"
+                        >
+                          <ShieldCheck size={14} /> View Registration Certificate
+                        </a>
+                      </div>
+                    )}
                   </div>
                   <div className="p-6 bg-indigo-50/50 rounded-3xl border border-indigo-100">
                     <div className="flex items-center gap-3 text-indigo-900 font-black text-xs uppercase tracking-widest mb-4">

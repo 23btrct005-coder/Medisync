@@ -41,7 +41,7 @@ public class AdminController {
     @Transactional(readOnly = true)
     public ResponseEntity<?> getPendingHospitals() {
         try {
-            String sql = "SELECT ha.id, ha.name as admin_name, ha.position, h.name as hospital_name, h.license_code, h.city, h.state, ha.approved " +
+            String sql = "SELECT ha.id, ha.name as admin_name, ha.position, h.name as hospital_name, h.license_code, h.city, h.state, h.street, h.pin_code, h.phone, h.contact_email, h.logo_url, h.registration_certificate_url, ha.approved " +
                          "FROM hospital_admins ha JOIN hospitals h ON ha.hospital_id = h.id WHERE ha.approved = false";
             List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
             return ResponseEntity.ok(rows);
@@ -80,42 +80,19 @@ public class AdminController {
     @Transactional(readOnly = true)
     public ResponseEntity<?> getPendingDoctors() {
         try {
-            // Only individual doctors (not affiliated with hospital) or all pending?
-            // The user said "the institutional and only doctor should be get approved by the admin"
-            // Institutional doctors are approved by Hospital Admin.
-            // Individual doctors are approved by Global Admin.
-            String sql = "SELECT id, name, email, phone, specialization, medical_degree, medical_license_number, hospital, years_of_experience, profile_picture_url, approved " +
-                         "FROM doctors WHERE approved = false AND hospital_id IS NULL";
-            List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
-            
-            List<DoctorDTO> dtos = new ArrayList<>();
-            for (Map<String, Object> row : rows) {
-                DoctorDTO dto = new DoctorDTO();
-                dto.setId(((Number) row.get("id")).longValue());
-                dto.setName((String) row.get("name"));
-                dto.setEmail((String) row.get("email"));
-                dto.setPhone((String) row.get("phone"));
-                dto.setSpecialization((String) row.get("specialization"));
-                dto.setMedicalDegree((String) row.get("medical_degree"));
-                dto.setMedicalLicenseNumber((String) row.get("medical_license_number"));
-                dto.setHospital((String) row.get("hospital"));
-                
-                Object exp = row.get("years_of_experience");
-                dto.setYearsOfExperience(exp != null ? ((Number) exp).intValue() : 0);
-                
-                dto.setProfilePictureUrl((String) row.get("profile_picture_url"));
-                
-                Object app = row.get("approved");
-                dto.setApproved(app != null && (Boolean) app);
-                
-                dtos.add(dto);
-            }
+            // Global Admin only approves independent doctors (hospitalEntity is null)
+            // Institutional doctors are approved by their respective Hospital Admins
+            List<Doctor> pending = doctorRepository.findByApprovedFalse();
+            List<DoctorDTO> dtos = pending.stream()
+                .filter(d -> d.getHospitalEntity() == null)
+                .map(DoctorDTO::new)
+                .collect(Collectors.toList());
             return ResponseEntity.ok(dtos);
         } catch (Exception e) {
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
-            PinpointDiagnosticController.setLastError("ADMIN_500_ERROR: " + sw.toString());
-            throw e;
+            PinpointDiagnosticController.setLastError("ADMIN_PENDING_ERROR: " + sw.toString());
+            return ResponseEntity.status(500).body(Map.of("message", "Failed to fetch pending doctors: " + e.getMessage()));
         }
     }
 
@@ -150,7 +127,7 @@ public class AdminController {
     @Transactional(readOnly = true)
     public ResponseEntity<?> getAllHospitals() {
         try {
-            String sql = "SELECT ha.id, ha.name as admin_name, ha.position, h.name as hospital_name, h.license_code, h.city, h.state, ha.approved, u.enabled, u.id as user_id " +
+            String sql = "SELECT ha.id, ha.name as admin_name, ha.position, h.name as hospital_name, h.license_code, h.city, h.state, h.street, h.pin_code, h.phone, h.contact_email, h.logo_url, h.registration_certificate_url, ha.approved, u.enabled, u.id as user_id " +
                          "FROM hospital_admins ha " +
                          "JOIN hospitals h ON ha.hospital_id = h.id " +
                          "LEFT JOIN users u ON ha.user_id = u.id";
@@ -165,11 +142,47 @@ public class AdminController {
     @Transactional(readOnly = true)
     public ResponseEntity<?> getAllDoctors() {
         try {
-            String sql = "SELECT d.id, d.name, d.email, d.phone, d.specialization, d.medical_degree, d.medical_license_number, d.hospital, d.years_of_experience, d.profile_picture_url, d.approved, u.enabled, u.id as user_id " +
-                         "FROM doctors d " +
-                         "LEFT JOIN users u ON d.user_id = u.id";
-            List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
-            return ResponseEntity.ok(rows);
+            List<Doctor> doctors = doctorRepository.findAll();
+            List<Map<String, Object>> result = doctors.stream().map(d -> {
+                DoctorDTO dto = new DoctorDTO(d);
+                // Add extra fields needed by frontend that might not be in DTO or handled differently
+                Map<String, Object> map = new java.util.HashMap<>();
+                map.put("id", dto.getId());
+                map.put("name", dto.getName());
+                map.put("email", dto.getEmail());
+                map.put("phone", dto.getPhone());
+                map.put("specialization", dto.getSpecialization());
+                map.put("medicalLicenseNumber", dto.getMedicalLicenseNumber());
+                map.put("medicalCouncil", dto.getMedicalCouncil());
+                map.put("licenseExpiryDate", dto.getLicenseExpiryDate());
+                map.put("yearsOfExperience", dto.getYearsOfExperience());
+                map.put("hospital", dto.getHospital());
+                map.put("profilePictureUrl", dto.getProfilePictureUrl());
+                map.put("approved", dto.isApproved());
+                map.put("gender", dto.getGender());
+                map.put("dateOfBirth", dto.getDateOfBirth());
+                map.put("employeeId", dto.getEmployeeId());
+                map.put("opdRoomNumber", dto.getOpdRoomNumber());
+                map.put("contractType", dto.getContractType());
+                map.put("salary", dto.getSalary());
+                map.put("revenueSharePercentage", dto.getRevenueSharePercentage());
+                map.put("upiId", dto.getUpiId());
+                map.put("workingDays", dto.getWorkingDays());
+                map.put("consultationTimings", dto.getConsultationTimings());
+                map.put("college", dto.getCollege());
+                map.put("additionalCertifications", d.getAdditionalCertifications());
+                map.put("canPrescribe", dto.isCanPrescribe());
+                map.put("canEditPatientData", dto.isCanEditPatientData());
+                map.put("canAccessReports", dto.isCanAccessReports());
+                map.put("canManageAppointments", dto.isCanManageAppointments());
+                
+                if (d.getUser() != null) {
+                    map.put("enabled", d.getUser().isEnabled());
+                    map.put("user_id", d.getUser().getId());
+                }
+                return map;
+            }).collect(Collectors.toList());
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("message", "Failed to fetch all doctors: " + e.getMessage()));
         }

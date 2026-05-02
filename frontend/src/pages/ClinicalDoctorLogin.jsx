@@ -57,6 +57,10 @@ const DoctorRegisterForm = ({ onBack }) => {
     yearsOfExperience: '',
     onlineConsultationFee: '',
     clinicAddress: '',
+    clinicStreet: '',
+    clinicCity: '',
+    clinicState: '',
+    clinicPinCode: '',
     upiId: '',
     // Availability
     workingDays: [],
@@ -77,10 +81,24 @@ const DoctorRegisterForm = ({ onBack }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [aiDisclaimerAccepted, setAiDisclaimerAccepted] = useState(false);
+  const [geographyData, setGeographyData] = useState({});
+  const [availableCities, setAvailableCities] = useState([]);
+  const [locating, setLocating] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     const updated = { ...formData, [name]: value };
+    
+    // Cascaded logic for State -> City/District
+    if (name === 'clinicState') {
+      if (geographyData[value]) {
+        setAvailableCities(geographyData[value]);
+        updated.clinicCity = '';
+      } else {
+        setAvailableCities([]);
+      }
+    }
+
     if (name === 'dateOfBirth' && value) {
       const today = new Date();
       const dob = new Date(value);
@@ -165,6 +183,7 @@ const DoctorRegisterForm = ({ onBack }) => {
       formDataToSend.append('userData', JSON.stringify({
         ...formData,
         username: formData.email,
+        clinicAddress: `${formData.clinicStreet}, ${formData.clinicCity}, ${formData.clinicState} - ${formData.clinicPinCode}`,
         workingDays: formData.workingDays.join(', '),
         consultationTimings: `${formData.startTime} - ${formData.endTime}`,
         role: 'ROLE_DOCTOR'
@@ -186,8 +205,64 @@ const DoctorRegisterForm = ({ onBack }) => {
     } finally { setLoading(false); }
   };
 
+  const handleGetCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setError('Geolocation is not supported by your browser.');
+      return;
+    }
+
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`);
+          const data = await response.json();
+          const addr = data.address;
+          
+          const street = [addr.road, addr.suburb, addr.neighbourhood].filter(Boolean).join(', ');
+          const city = addr.city || addr.town || addr.village || addr.district || '';
+          const state = addr.state || '';
+          const pinCode = addr.postcode || '';
+
+          setFormData(prev => ({
+            ...prev,
+            clinicStreet: street || prev.clinicStreet,
+            clinicCity: city || prev.clinicCity,
+            clinicState: state || prev.clinicState,
+            clinicPinCode: pinCode || prev.clinicPinCode
+          }));
+          
+          if (state && geographyData[state]) {
+            setAvailableCities(geographyData[state]);
+          }
+
+          setSuccess('Location detected successfully!');
+        } catch (err) {
+          setError('Failed to fetch address details. Please enter manually.');
+        } finally {
+          setLocating(false);
+        }
+      },
+      (err) => {
+        setError('Location access denied. Please enter address manually.');
+        setLocating(false);
+      }
+    );
+  };
+
   const [hospitals, setHospitals] = useState([]);
   React.useEffect(() => {
+    const fetchGeo = async () => {
+      try {
+        const res = await api.get('auth/geography');
+        setGeographyData(res.data);
+      } catch (err) {
+        console.error('Failed to load geography data');
+      }
+    };
+    fetchGeo();
+
     const fetchHospitals = async () => {
         try {
             const res = await api.get('/auth/hospitals');
@@ -526,7 +601,13 @@ const DoctorRegisterForm = ({ onBack }) => {
 
               {/* 7. Work Details */}
               <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-400">
-                <h3 className={sectionCls}><Building2 size={16} /> 7. Work Details</h3>
+                <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+                    <h3 className={sectionCls}><Building2 size={16} /> 7. Work Details</h3>
+                    <button type="button" onClick={handleGetCurrentLocation} disabled={locating} 
+                        className="flex items-center gap-2 text-[10px] font-black text-blue-600 uppercase tracking-widest hover:text-blue-700 disabled:opacity-50 transition-all">
+                        <Navigation size={12} className={locating ? 'animate-pulse' : ''} /> {locating ? 'Locating...' : 'Auto-Locate'}
+                    </button>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                   <div className="md:col-span-2">
                     <label className={labelCls}>Affiliated Hospital / Clinic <span className="text-red-500">*</span></label>
@@ -558,11 +639,41 @@ const DoctorRegisterForm = ({ onBack }) => {
                       className={inputCls} placeholder="e.g. 10" />
                   </div>
                 </div>
-                <div>
-                  <label className={labelCls}>Clinic / Office Address (For Offline)</label>
-                  <input type="text" name="clinicAddress" value={formData.clinicAddress} onChange={handleChange}
-                    className={inputCls} placeholder="e.g. Room 204, Alpha Plaza, MG Road" />
+
+                <div className="space-y-4 pt-4 border-t border-slate-50">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Clinic Location Details</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="md:col-span-2">
+                            <label className={labelCls}>Clinic / Office Address (Street/Area) <span className="text-red-500">*</span></label>
+                            <input type="text" name="clinicStreet" required value={formData.clinicStreet} onChange={handleChange}
+                                className={inputCls} placeholder="e.g. Room 204, Alpha Plaza, MG Road" />
+                        </div>
+                        <div>
+                            <label className={labelCls}>State <span className="text-red-500">*</span></label>
+                            <select name="clinicState" required value={formData.clinicState} onChange={handleChange} className={inputCls}>
+                                <option value="">Select State</option>
+                                {Object.keys(geographyData).sort().map(s => (
+                                    <option key={s} value={s}>{s}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className={labelCls}>City / District <span className="text-red-500">*</span></label>
+                            <select name="clinicCity" required value={formData.clinicCity} onChange={handleChange} className={inputCls} disabled={!formData.clinicState}>
+                                <option value="">Select City</option>
+                                {availableCities.map(c => (
+                                    <option key={c} value={c}>{c}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className={labelCls}>PIN Code <span className="text-red-500">*</span></label>
+                            <input type="text" name="clinicPinCode" required value={formData.clinicPinCode} onChange={handleChange}
+                                className={inputCls} placeholder="6 Digits" />
+                        </div>
+                    </div>
                 </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                   <div>
                     <label className={labelCls}>Consultation Fee (₹)</label>
