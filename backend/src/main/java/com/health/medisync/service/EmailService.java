@@ -39,24 +39,15 @@ public class EmailService {
         return sendEmailInternal(to, "MediSync - Connection Test", "This is a diagnostic test of the Brevo integration.");
     }
 
+    @Async
     public void sendOtpEmail(String to, String otp) {
         String body = "Your MediSync Verification Code is: " + otp + "\n\nThis code will expire in 5 minutes.";
-        String result = sendEmailInternal(to, "MediSync - Email Verification", body);
-        if (result != null && result.startsWith("ERROR:")) {
-            // Permissive mode for configuration issues (API key or Sender Email missing)
-            if (apiKey == null || apiKey.trim().isEmpty() || result.contains("CONFIG_MISSING")) {
-                System.out.println("CRITICAL [MOCK-SEND]: Infrastructure configuration incomplete. OTP for " + to + " is: " + otp);
-                return; // Allow proceed in dev/missing-config mode
-            }
-            throw new RuntimeException(result);
-        }
+        sendEmailInternal(to, "MediSync - Email Verification", body);
     }
 
+    @Async
     public void sendEmail(String to, String subject, String body) {
-        String result = sendEmailInternal(to, subject, body);
-        if (result != null && result.startsWith("ERROR:")) {
-            throw new RuntimeException(result);
-        }
+        sendEmailInternal(to, subject, body);
     }
 
     @Async
