@@ -157,4 +157,13 @@ public class DoctorController {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
+
+    @GetMapping("/analytics/revenue")
+    public ResponseEntity<?> getRevenueAnalytics(Authentication authentication) {
+        try {
+            return ResponseEntity.ok(doctorService.getRevenueAnalytics(authentication.getName()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
 }

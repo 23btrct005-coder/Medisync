@@ -14,6 +14,7 @@ import com.health.medisync.repository.PatientRepository;
 import com.health.medisync.repository.MedicalRecordRepository;
 import com.health.medisync.repository.ReportRepository;
 import com.health.medisync.repository.AccessRequestRepository;
+import com.health.medisync.repository.AppointmentRepository;
 import com.health.medisync.service.DatabaseSchemaService;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -27,6 +28,7 @@ public class DoctorService {
     private final MedicalRecordRepository recordRepository;
     private final ReportRepository reportRepository;
     private final AccessRequestRepository accessRequestRepository;
+    private final AppointmentRepository appointmentRepository;
     private final SupabaseStorageService supabaseStorageService;
     private final NotificationService notificationService;
     private final AuditLogService auditLogService;
@@ -35,6 +37,7 @@ public class DoctorService {
     public DoctorService(DoctorRepository doctorRepository, UserRepository userRepository,
                          PatientRepository patientRepository, MedicalRecordRepository recordRepository,
                          ReportRepository reportRepository, AccessRequestRepository accessRequestRepository,
+                         AppointmentRepository appointmentRepository,
                          SupabaseStorageService supabaseStorageService,
                          NotificationService notificationService,
                          AuditLogService auditLogService,
@@ -45,6 +48,7 @@ public class DoctorService {
         this.recordRepository = recordRepository;
         this.reportRepository = reportRepository;
         this.accessRequestRepository = accessRequestRepository;
+        this.appointmentRepository = appointmentRepository;
         this.supabaseStorageService = supabaseStorageService;
         this.notificationService = notificationService;
         this.auditLogService = auditLogService;
@@ -367,6 +371,40 @@ public class DoctorService {
             "Dr. " + doctor.getName() + " has accessed your full clinical history using your direct passcode.",
             "/dashboard/history",
             "View Access Log"
+        );
+    }
+
+    public Map<String, Object> getRevenueAnalytics(String doctorUsername) {
+        Doctor doctor = getDoctorProfile(doctorUsername);
+        List<Appointment> appointments = appointmentRepository.findRevenueAppointments(doctor.getId());
+
+        java.time.LocalDate today = java.time.LocalDate.now();
+        double todayRevenue = 0;
+        double weekRevenue = 0;
+        double monthRevenue = 0;
+        double totalRevenue = 0;
+
+        java.util.Map<String, Double> monthlyHistory = new java.util.LinkedHashMap<>();
+
+        for (Appointment appt : appointments) {
+            double amt = appt.getAmount() != null ? appt.getAmount() : 0;
+            totalRevenue += amt;
+
+            java.time.LocalDate date = appt.getAppointmentDate();
+            if (date.equals(today)) todayRevenue += amt;
+            if (!date.isBefore(today.minusWeeks(1))) weekRevenue += amt;
+            if (!date.isBefore(today.minusMonths(1))) monthRevenue += amt;
+
+            String monthKey = date.getYear() + "-" + String.format("%02d", date.getMonthValue());
+            monthlyHistory.put(monthKey, monthlyHistory.getOrDefault(monthKey, 0.0) + amt);
+        }
+
+        return Map.of(
+            "today", todayRevenue,
+            "week", weekRevenue,
+            "month", monthRevenue,
+            "total", totalRevenue,
+            "history", monthlyHistory
         );
     }
 }
