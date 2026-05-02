@@ -417,7 +417,7 @@ const EditDoctorProfile = () => {
   const inputClass = "block w-full rounded-xl border-slate-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-4 py-3 border transition-all bg-slate-50/50 hover:bg-white focus:bg-white";
   const sectionTitleClass = "flex items-center gap-2 text-md font-bold text-slate-800 border-b border-slate-100 pb-4 mb-2";
 
-  const isAffiliated = !!user?.hospital && user.hospital.toLowerCase() !== 'other' && user.hospital.toLowerCase() !== 'none';
+  const isAffiliated = !!user?.institutional;
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-20">
