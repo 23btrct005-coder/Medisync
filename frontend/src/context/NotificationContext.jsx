@@ -109,7 +109,12 @@ export const NotificationProvider = ({ children }) => {
 
     }, (error) => {
       if (user) {
-        console.error("WebSocket connection failed, retrying in 5s...", error);
+        console.error("CRITICAL: WebSocket connection failed.");
+        console.error("Error details:", error);
+        if (error && error.type === 'close') {
+           console.error("Connection closed by remote peer or network reset.");
+        }
+        console.log("Retrying WebSocket connection in 5s...");
         setTimeout(connectWebSocket, 5000);
       }
     });

@@ -168,10 +168,14 @@ public class AuthController {
                         throw new org.springframework.security.authentication.DisabledException("Your professional account is pending institutional approval.");
                     }
                 });
-                // Proactive Auto-Verify for existing accounts
+                // Mandatory Identity Verification Check
                 if (!user.isEmailVerified()) {
-                    user.setEmailVerified(true);
-                    userRepository.save(user);
+                    System.out.println("DEBUG: Unverified physician access detected. Triggering institutional OTP dispatch to " + user.getUsername());
+                    try {
+                        authService.generateAndSendOtp(user.getUsername());
+                    } catch (Exception e) {
+                        System.err.println("CRITICAL: Failed to dispatch automatic verification OTP: " + e.getMessage());
+                    }
                 }
             } else if ("ROLE_HOSPITAL_ADMIN".equals(user.getRole())) {
                 hospitalAdminRepository.findByUserId(user.getId()).ifPresent(admin -> {
@@ -307,10 +311,13 @@ public class AuthController {
             }
         }
         
-        // Professional accounts are enabled and email-verified by default 
-        // since email is pre-verified via OTP before registration in Step 1
+        // Security Policy: Institutional (onboarded) staff must verify their Gmail on 1st login.
+        // Self-registered doctors are pre-verified via OTP in Step 1.
+        String hospitalIdStr = request.get("hospital") != null ? String.valueOf(request.get("hospital")) : null;
+        boolean isInstitutional = hospitalIdStr != null && !hospitalIdStr.isEmpty() && !hospitalIdStr.equals("other");
+        
         user.setEnabled(true); 
-        user.setEmailVerified(true); 
+        user.setEmailVerified(!isInstitutional); 
         user = userRepository.save(user);
 
         Doctor doctor = new Doctor();

@@ -186,6 +186,7 @@ public class AuthService {
 
         if (user != null) {
             user.setEnabled(true);
+            user.setEmailVerified(true);
             userRepository.save(user);
         }
     }

@@ -95,8 +95,8 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         
         config.setAllowedOriginPatterns(Arrays.asList(
-            "https://*.vercel.app",
             "https://medisync-vert-five.vercel.app",
+            "https://*.vercel.app",
             "http://localhost:5173",
             "http://127.0.0.1:5173"
         ));
@@ -108,5 +108,12 @@ public class SecurityConfig {
         
         source.registerCorsConfiguration("/**", config);
         return source;
+    }
+
+    @Bean
+    public FilterRegistrationBean<CorsFilter> corsFilter() {
+        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(corsConfigurationSource()));
+        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return bean;
     }
 }
