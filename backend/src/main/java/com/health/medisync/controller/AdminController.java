@@ -26,14 +26,17 @@ public class AdminController {
     private final DoctorRepository doctorRepository;
     private final UserRepository userRepository;
     private final com.health.medisync.repository.HospitalAdminRepository hospitalAdminRepository;
+    private final com.health.medisync.repository.HospitalRepository hospitalRepository;
     private final JdbcTemplate jdbcTemplate;
 
     public AdminController(DoctorRepository doctorRepository, UserRepository userRepository, 
                            com.health.medisync.repository.HospitalAdminRepository hospitalAdminRepository,
+                           com.health.medisync.repository.HospitalRepository hospitalRepository,
                            JdbcTemplate jdbcTemplate) {
         this.doctorRepository = doctorRepository;
         this.userRepository = userRepository;
         this.hospitalAdminRepository = hospitalAdminRepository;
+        this.hospitalRepository = hospitalRepository;
         this.jdbcTemplate = jdbcTemplate;
     }
 
