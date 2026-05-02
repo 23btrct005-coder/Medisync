@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, Users, ClipboardCheck, TrendingUp, ShieldAlert, Shield, ChevronRight, UserPlus, Search, Activity, Calendar, GraduationCap, Briefcase, Mail, Phone, MapPin, Clock, DollarSign, Lock, X } from 'lucide-react';
+import { Building2, Users, ClipboardCheck, TrendingUp, ShieldAlert, Shield, ChevronRight, UserPlus, Search, Activity, Calendar, GraduationCap, Briefcase, Mail, Phone, MapPin, Clock, DollarSign, Lock, X, Check } from 'lucide-react';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
 import DropZone from '../components/DropZone';
