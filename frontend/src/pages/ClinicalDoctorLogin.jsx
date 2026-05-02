@@ -4,30 +4,65 @@ import { useAuth } from '../context/AuthContext';
 import {
   Stethoscope, Lock, User, Mail, CheckCircle, Eye, EyeOff,
   Phone, GraduationCap, ShieldCheck, Building2, Clock, AlertCircle,
-  ArrowLeft, BadgeCheck, HeartPulse, Bot
+  ArrowLeft, BadgeCheck, HeartPulse, Bot, Activity, MapPin, ClipboardList,
+  Mail as MailIcon, Briefcase, Stethoscope as StethoscopeIcon, User as UserIcon,
+  Navigation, Eye as EyeIcon, EyeOff as EyeOffIcon, ChevronRight, Lock as LockIcon
 } from 'lucide-react';
 import api from '../api/axiosConfig';
 import ProfilePhotoUpload from '../components/ProfilePhotoUpload';
 import LegalFooter from '../components/LegalFooter';
 
+const HospitalDepartments = [
+  "Cardiology", "Neurology", "Pediatrics", "Orthopedics", "Oncology", 
+  "Gynecology", "Dermatology", "Urology", "Ophthalmology", "ENT", 
+  "Psychiatry", "Emergency Medicine", "Radiology", "General Surgery"
+];
+
 // ─── Doctor Registration Form ───────────────────────────────────────────────
 const DoctorRegisterForm = ({ onBack }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    // Basic
-    name: '', gender: '', dateOfBirth: '', age: '',
+    // Identity
+    email: '',
+    password: '',
+    confirmPassword: '',
+    // Basic Details
+    name: '',
+    gender: '',
+    dateOfBirth: '',
+    age: '',
     // Contact
-    email: '', phone: '', alternatePhone: '',
-    // Professional
-    specialization: '', medicalDegree: '', additionalCertifications: '', college: '',
+    phone: '',
+    alternatePhone: '',
+    // Clinical (Doctor)
+    specialization: '',
+    college: '',
+    additionalCertifications: '',
+    medicalDegree: '',
+    // Clinical Depth
+    subSpecialties: '',
+    proceduresHandled: '',
+    treatmentFocus: '',
+    languagesSpoken: '',
+    publications: '',
     // License
     medicalLicenseNumber: '',
-    // Work
-    hospital: '', yearsOfExperience: '', consultationFee: '', upiId: '',
+    medicalCouncil: '',
+    licenseExpiryDate: '',
+    registrationYear: '',
+    // Work Details
+    hospital: '', // ID
+    hospitalName: '', // For 'other'
+    yearsOfExperience: '',
+    onlineConsultationFee: '',
+    clinicAddress: '',
+    upiId: '',
     // Availability
-    workingDays: '', consultationTimings: '', onlineConsultation: 'false',
-    // Account
-    username: '', password: '', confirmPassword: '',
+    workingDays: [],
+    startTime: '09:00',
+    endTime: '18:00',
+    slotDuration: '15',
+    maxPatientsPerDay: '30',
   });
   const [profilePicture, setProfilePicture] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -53,6 +88,44 @@ const DoctorRegisterForm = ({ onBack }) => {
       updated.age = age > 0 ? String(age) : '';
     }
     setFormData(updated);
+  };
+
+  const handleDateChange = (type, value) => {
+    const dob = formData.dateOfBirth ? formData.dateOfBirth.split('-') : ['', '', ''];
+    let year = dob[0];
+    let month = dob[1];
+    let day = dob[2];
+
+    if (type === 'year') year = value;
+    if (type === 'month') month = value;
+    if (type === 'day') day = value;
+
+    const newDob = `${year}-${month}-${day}`;
+    const updated = { ...formData, dateOfBirth: newDob };
+
+    if (year && month && day) {
+        const today = new Date();
+        const dobObj = new Date(year, month - 1, day);
+        let calculatedAge = today.getFullYear() - dobObj.getFullYear();
+        const m = today.getMonth() - dobObj.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < dobObj.getDate())) calculatedAge--;
+        updated.age = calculatedAge > 0 ? String(calculatedAge) : '';
+    }
+    setFormData(updated);
+  };
+
+  const handleExpiryDateChange = (type, value) => {
+    const expiry = formData.licenseExpiryDate ? formData.licenseExpiryDate.split('-') : ['', '', ''];
+    let year = expiry[0];
+    let month = expiry[1];
+    let day = expiry[2];
+
+    if (type === 'year') year = value;
+    if (type === 'month') month = value;
+    if (type === 'day') day = value;
+
+    const newExpiry = `${year}-${month}-${day}`;
+    setFormData({ ...formData, licenseExpiryDate: newExpiry });
   };
 
   const handleSendOtp = async () => {
@@ -87,23 +160,13 @@ const DoctorRegisterForm = ({ onBack }) => {
     try {
       const formDataToSend = new FormData();
       
-      const userData = {
-        username: formData.username || formData.email,
-        password: formData.password,
-        name: formData.name, email: formData.email,
-        gender: formData.gender, dateOfBirth: formData.dateOfBirth, age: formData.age,
-        phone: formData.phone, alternatePhone: formData.alternatePhone,
-        specialization: formData.specialization, medicalDegree: formData.medicalDegree,
-        additionalCertifications: formData.additionalCertifications, college: formData.college,
-        medicalLicenseNumber: formData.medicalLicenseNumber,
-        hospital: formData.hospital, yearsOfExperience: formData.yearsOfExperience,
-        consultationFee: formData.consultationFee, workingDays: formData.workingDays,
-        consultationTimings: formData.consultationTimings,
-        onlineConsultation: formData.onlineConsultation,
-        upiId: formData.upiId,
-      };
-
-      formDataToSend.append('userData', JSON.stringify(userData));
+      formDataToSend.append('userData', JSON.stringify({
+        ...formData,
+        username: formData.email,
+        workingDays: formData.workingDays.join(', '),
+        consultationTimings: `${formData.startTime} - ${formData.endTime}`,
+        role: 'ROLE_DOCTOR'
+      }));
       if (profilePicture) {
         formDataToSend.append('profilePicture', profilePicture);
       }
@@ -131,9 +194,9 @@ const DoctorRegisterForm = ({ onBack }) => {
     fetchHospitals();
   }, []);
 
-  const inputCls = "block w-full rounded-xl border-slate-200 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm px-4 py-3 border transition-all bg-white";
-  const labelCls = "block text-xs font-bold text-slate-500 uppercase mb-1 ml-1 tracking-wide";
-  const sectionCls = "flex items-center gap-2 text-sm font-bold text-primary-700 uppercase tracking-widest mb-4 pb-2 border-b border-primary-100";
+  const inputCls = "block w-full rounded-xl border-slate-200 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm px-4 py-3.5 border transition-all bg-white placeholder:text-slate-300";
+  const labelCls = "block text-[10px] font-black text-slate-500 uppercase mb-2 ml-1 tracking-[0.15em]";
+  const sectionCls = "flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100";
 
   const [enrollmentRole, setEnrollmentRole] = useState('DOCTOR'); // DOCTOR or HOSPITAL
 
@@ -191,42 +254,37 @@ const DoctorRegisterForm = ({ onBack }) => {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <form onSubmit={handleSubmit} className="space-y-10">
 
               {/* 1. Email Verification */}
-              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 space-y-4">
-                <h3 className={sectionCls}><Mail size={16} />1. Identity Verification</h3>
-                <div>
+              <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-6">
+                <h3 className={sectionCls}><MailIcon size={16} /> 1. Identity Verification</h3>
+                <div className="relative">
                   <label className={labelCls}>Professional Email <span className="text-red-500">*</span></label>
-                  <div className="flex gap-2">
+                  <div className="flex gap-3">
                     <input type="email" name="email" required disabled={emailVerified}
                       value={formData.email} onChange={handleChange}
-                      className={`${inputCls} flex-1 ${emailVerified ? 'bg-green-50 border-green-300' : ''}`}
+                      className={`${inputCls} ${emailVerified ? 'bg-green-50 border-green-300' : ''} flex-1`}
                       placeholder="doctor@hospital.com" />
-                    {!emailVerified && !otpSent && (
+                    {!emailVerified && (
                       <button type="button" onClick={handleSendOtp} disabled={verifying}
-                        className="whitespace-nowrap bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-blue-700 disabled:opacity-50 transition active:scale-95">
-                        {verifying ? 'Sending...' : 'Send Code'}
+                        className="whitespace-nowrap bg-blue-600 text-white px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 disabled:opacity-50 transition-all shadow-lg shadow-blue-100 active:scale-95">
+                        {verifying ? '...' : otpSent ? 'Resend' : 'Send Code'}
                       </button>
-                    )}
-                    {emailVerified && (
-                      <span className="flex items-center gap-1.5 text-green-600 text-sm font-bold whitespace-nowrap">
-                        <CheckCircle size={20} /> Verified
-                      </span>
                     )}
                   </div>
                 </div>
                 {otpSent && !emailVerified && (
-                  <div className="p-4 bg-white rounded-xl border border-blue-100 shadow-sm space-y-2 animate-in zoom-in-95">
-                    <label className={labelCls + " text-blue-600"}>Verification Code</label>
+                  <div className="p-6 bg-slate-50 rounded-2xl border border-blue-100 space-y-4 animate-in zoom-in-95">
+                    <label className={labelCls}>Verification Code</label>
                     <div className="flex gap-3">
                       <input type="text" maxLength="6" value={otpCode}
                         onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                        className="block w-full text-center text-xl font-bold tracking-[0.3em] rounded-xl border-slate-200 px-3 py-3 border focus:ring-blue-500"
+                        className="block w-full text-center text-xl font-bold tracking-[0.3em] rounded-xl border-slate-200 px-3 py-3 border focus:ring-primary-500"
                         placeholder="000000" />
                       <button type="button" onClick={handleVerifyOtp} disabled={verifying || otpCode.length < 6}
-                        className="bg-blue-600 text-white px-6 rounded-xl font-bold hover:bg-blue-700 disabled:opacity-50 transition active:scale-95">
-                        {verifying ? '...' : 'Verify'}
+                        className="bg-blue-600 text-white px-8 py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 shadow-md">
+                        Confirm
                       </button>
                     </div>
                   </div>
@@ -234,104 +292,119 @@ const DoctorRegisterForm = ({ onBack }) => {
               </div>
 
               {/* 2. Basic Details */}
-              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
-                <h3 className={sectionCls}><User size={16} />2. Basic Details</h3>
+              <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <h3 className={sectionCls}><UserIcon size={16} /> 2. Basic Clinical Details</h3>
                 
-                <div className="flex justify-center mb-8">
+                <div className="flex flex-col items-center gap-4 py-4">
                   <ProfilePhotoUpload onFileSelect={setProfilePicture} />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div className="md:col-span-2">
+                <div className="space-y-6">
+                  <div>
                     <label className={labelCls}>Full Name <span className="text-red-500">*</span></label>
                     <input type="text" name="name" required value={formData.name} onChange={handleChange}
                       className={inputCls} placeholder="Dr. John Smith" />
                   </div>
-                  <div>
-                    <label className={labelCls}>Gender <span className="text-red-500">*</span></label>
-                    <select name="gender" required value={formData.gender} onChange={handleChange} className={inputCls}>
-                      <option value="">Select Gender</option>
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                      <option value="Other">Other</option>
-                      <option value="Prefer not to say">Prefer not to say</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className={labelCls}>Date of Birth</label>
-                    <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange}
-                      max={new Date().toISOString().split('T')[0]} className={inputCls} />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className={labelCls}>Gender <span className="text-red-500">*</span></label>
+                      <select name="gender" required value={formData.gender} onChange={handleChange} className={inputCls}>
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    <div>
+                        <label className={labelCls}>Date of Birth <span className="text-red-500">*</span></label>
+                        <div className="grid grid-cols-3 gap-2">
+                            <select 
+                                className={inputCls}
+                                value={formData.dateOfBirth ? formData.dateOfBirth.split('-')[2] : ''}
+                                onChange={(e) => handleDateChange('day', e.target.value)}
+                                required
+                            >
+                                <option value="">Day</option>
+                                {Array.from({length: 31}, (_, i) => String(i + 1).padStart(2, '0')).map(d => (
+                                    <option key={d} value={d}>{d}</option>
+                                ))}
+                            </select>
+                            <select 
+                                className={inputCls}
+                                value={formData.dateOfBirth ? formData.dateOfBirth.split('-')[1] : ''}
+                                onChange={(e) => handleDateChange('month', e.target.value)}
+                                required
+                            >
+                                <option value="">Month</option>
+                                {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => (
+                                    <option key={m} value={String(i + 1).padStart(2, '0')}>{m}</option>
+                                ))}
+                            </select>
+                            <select 
+                                className={inputCls}
+                                value={formData.dateOfBirth ? formData.dateOfBirth.split('-')[0] : ''}
+                                onChange={(e) => handleDateChange('year', e.target.value)}
+                                required
+                            >
+                                <option value="">Year</option>
+                                {Array.from({length: 100}, (_, i) => new Date().getFullYear() - i).map(y => (
+                                    <option key={y} value={y}>{y}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
                   </div>
                   <div>
                     <label className={labelCls}>Age (Auto-calculated)</label>
-                    <input type="number" name="age" readOnly value={formData.age}
-                      className={inputCls + " bg-slate-100 cursor-not-allowed"} placeholder="From DOB" />
+                    <input type="text" name="age" disabled value={formData.age ? `${formData.age} Years` : 'From DOB'}
+                      className="block w-full rounded-xl border-slate-100 bg-slate-50 sm:text-sm px-4 py-3.5 border text-slate-400 font-medium" />
                   </div>
                 </div>
               </div>
 
               {/* 3. Contact Information */}
-              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
-                <h3 className={sectionCls}><Phone size={16} />3. Contact Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+                <h3 className={sectionCls}><Phone size={16} /> 3. Contact & Connectivity</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className={labelCls}>Mobile Number <span className="text-red-500">*</span></label>
                     <input type="tel" name="phone" required value={formData.phone} onChange={handleChange}
-                      className={inputCls} placeholder="9876543210" maxLength="10" />
+                      className={inputCls} placeholder="9876543210" />
                   </div>
                   <div>
                     <label className={labelCls}>Alternate Mobile</label>
                     <input type="tel" name="alternatePhone" value={formData.alternatePhone} onChange={handleChange}
-                      className={inputCls} placeholder="Optional" maxLength="10" />
+                      className={inputCls} placeholder="Optional" />
                   </div>
                 </div>
               </div>
 
               {/* 4. Professional Qualifications */}
-              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
-                <h3 className={sectionCls}><GraduationCap size={16} />4. Professional Qualifications</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div>
-                    <label className={labelCls}>Medical Degree <span className="text-red-500">*</span></label>
-                    <select name="medicalDegree" required value={formData.medicalDegree} onChange={handleChange} className={inputCls}>
-                      <option value="">Select Degree</option>
-                      <option value="MBBS">MBBS</option>
-                      <option value="MD">MD</option>
-                      <option value="MS">MS</option>
-                      <option value="DNB">DNB</option>
-                      <option value="DM">DM</option>
-                      <option value="MCh">MCh</option>
-                      <option value="BDS">BDS</option>
-                      <option value="MDS">MDS</option>
-                      <option value="BAMS">BAMS</option>
-                      <option value="BHMS">BHMS</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className={labelCls}>Specialization <span className="text-red-500">*</span></label>
-                    <select name="specialization" required value={formData.specialization} onChange={handleChange} className={inputCls}>
-                      <option value="">Select Specialization</option>
-                      <option value="General Physician">General Physician</option>
-                      <option value="Cardiology">Cardiology</option>
-                      <option value="Neurology">Neurology</option>
-                      <option value="Orthopedics">Orthopedics</option>
-                      <option value="Pediatrics">Pediatrics</option>
-                      <option value="Gynecology">Gynecology</option>
-                      <option value="Dermatology">Dermatology</option>
-                      <option value="Psychiatry">Psychiatry</option>
-                      <option value="Oncology">Oncology</option>
-                      <option value="Radiology">Radiology</option>
-                      <option value="ENT">ENT</option>
-                      <option value="Ophthalmology">Ophthalmology</option>
-                      <option value="Urology">Urology</option>
-                      <option value="Nephrology">Nephrology</option>
-                      <option value="Pulmonology">Pulmonology</option>
-                      <option value="Endocrinology">Endocrinology</option>
-                      <option value="Gastroenterology">Gastroenterology</option>
-                      <option value="Dentistry">Dentistry</option>
-                      <option value="Other">Other</option>
-                    </select>
+              <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+                <h3 className={sectionCls}><GraduationCap size={16} /> 4. Professional Qualifications</h3>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className={labelCls}>Medical Degree <span className="text-red-500">*</span></label>
+                      <select name="medicalDegree" required value={formData.medicalDegree} onChange={handleChange} className={inputCls}>
+                        <option value="">Select Degree</option>
+                        <option value="MBBS">MBBS</option>
+                        <option value="MD">MD</option>
+                        <option value="MS">MS</option>
+                        <option value="DNB">DNB</option>
+                        <option value="DM">DM</option>
+                        <option value="MCh">MCh</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className={labelCls}>Specialization <span className="text-red-500">*</span></label>
+                      <select name="specialization" required value={formData.specialization} onChange={handleChange} className={inputCls}>
+                        <option value="">Select Specialization</option>
+                        {HospitalDepartments.map(dept => (
+                            <option key={dept} value={dept}>{dept}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                   <div>
                     <label className={labelCls}>College / University</label>
@@ -347,22 +420,105 @@ const DoctorRegisterForm = ({ onBack }) => {
               </div>
 
               {/* 5. License & Verification */}
-              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
-                <h3 className={sectionCls}><BadgeCheck size={16} />5. License & Verification</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div className="md:col-span-2">
-                    <label className={labelCls}>Medical License Number <span className="text-red-500">*</span></label>
-                    <input type="text" name="medicalLicenseNumber" required value={formData.medicalLicenseNumber} onChange={handleChange}
-                      className={inputCls} placeholder="e.g. MCI-12345678" />
-                    <p className="text-xs text-slate-400 mt-1 ml-1">Issued by MCI / State Medical Council</p>
+              <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
+                <h3 className={sectionCls}><ShieldCheck size={16} /> 5. License & Verification</h3>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                          <label className={labelCls}>Medical Council <span className="text-red-500">*</span></label>
+                          <input type="text" name="medicalCouncil" required value={formData.medicalCouncil} onChange={handleChange}
+                              className={inputCls} placeholder="e.g. Karnataka Medical Council" />
+                      </div>
+                      <div>
+                          <label className={labelCls}>License Expiry Date <span className="text-red-500">*</span></label>
+                          <div className="grid grid-cols-3 gap-2">
+                              <select 
+                                  className={inputCls}
+                                  value={formData.licenseExpiryDate ? formData.licenseExpiryDate.split('-')[2] : ''}
+                                  onChange={(e) => handleExpiryDateChange('day', e.target.value)}
+                                  required
+                              >
+                                  <option value="">Day</option>
+                                  {Array.from({length: 31}, (_, i) => String(i + 1).padStart(2, '0')).map(d => (
+                                      <option key={d} value={d}>{d}</option>
+                                  ))}
+                              </select>
+                              <select 
+                                  className={inputCls}
+                                  value={formData.licenseExpiryDate ? formData.licenseExpiryDate.split('-')[1] : ''}
+                                  onChange={(e) => handleExpiryDateChange('month', e.target.value)}
+                                  required
+                              >
+                                  <option value="">Month</option>
+                                  {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => (
+                                      <option key={m} value={String(i + 1).padStart(2, '0')}>{m}</option>
+                                  ))}
+                              </select>
+                              <select 
+                                  className={inputCls}
+                                  value={formData.licenseExpiryDate ? formData.licenseExpiryDate.split('-')[0] : ''}
+                                  onChange={(e) => handleExpiryDateChange('year', e.target.value)}
+                                  required
+                              >
+                                  <option value="">Year</option>
+                                  {Array.from({length: 20}, (_, i) => new Date().getFullYear() + i).map(y => (
+                                      <option key={y} value={y}>{y}</option>
+                                  ))}
+                              </select>
+                          </div>
+                      </div>
+                      <div>
+                          <label className={labelCls}>Registration Year <span className="text-red-500">*</span></label>
+                          <input type="number" name="registrationYear" required value={formData.registrationYear} onChange={handleChange}
+                              className={inputCls} placeholder="e.g. 2015" />
+                      </div>
+                      <div>
+                          <label className={labelCls}>License Number <span className="text-red-500">*</span></label>
+                          <input type="text" name="medicalLicenseNumber" required value={formData.medicalLicenseNumber} onChange={handleChange}
+                              className={inputCls} placeholder="e.g. MCI-12345678" />
+                      </div>
                   </div>
                 </div>
               </div>
 
-              {/* 6. Work Details */}
-              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
-                <h3 className={sectionCls}><Building2 size={16} />6. Work Details</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {/* 6. Clinical Expertise Depth [NEW] */}
+              <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-[350ms]">
+                <h3 className={sectionCls}><Activity size={16} /> 6. Clinical Expertise Depth</h3>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                          <label className={labelCls}>Sub-Specialties</label>
+                          <input type="text" name="subSpecialties" value={formData.subSpecialties} onChange={handleChange}
+                              className={inputCls} placeholder="e.g. Diabetes, Hypertension" />
+                      </div>
+                      <div>
+                          <label className={labelCls}>Languages Spoken</label>
+                          <input type="text" name="languagesSpoken" value={formData.languagesSpoken} onChange={handleChange}
+                              className={inputCls} placeholder="e.g. English, Hindi, Kannada" />
+                      </div>
+                  </div>
+                  <div>
+                      <label className={labelCls}>Procedures Handled</label>
+                      <textarea name="proceduresHandled" value={formData.proceduresHandled} onChange={handleChange}
+                          className={`${inputCls} min-h-[80px]`} placeholder="List clinical procedures you are certified for..." />
+                  </div>
+                  <div>
+                      <label className={labelCls}>Treatment Focus Areas</label>
+                      <textarea name="treatmentFocus" value={formData.treatmentFocus} onChange={handleChange}
+                          className={`${inputCls} min-h-[80px]`} placeholder="e.g. Preventive Cardiology, Robotic Surgery..." />
+                  </div>
+                  <div>
+                      <label className={labelCls}>Research & Publications</label>
+                      <textarea name="publications" value={formData.publications} onChange={handleChange}
+                          className={`${inputCls} min-h-[80px]`} placeholder="List your medical research, papers, or publications..." />
+                  </div>
+                </div>
+              </div>
+
+              {/* 7. Work Details */}
+              <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-400">
+                <h3 className={sectionCls}><Building2 size={16} /> 7. Work Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="md:col-span-2">
                     <label className={labelCls}>Affiliated Hospital / Clinic <span className="text-red-500">*</span></label>
                     <select name="hospital" required value={formData.hospital} onChange={handleChange} className={inputCls}>
@@ -370,17 +526,38 @@ const DoctorRegisterForm = ({ onBack }) => {
                         {hospitals.map(h => (
                             <option key={h.id} value={h.id}>{h.name} ({h.location})</option>
                         ))}
-                        <option value="other">Other / Private Clinic</option>
+                        <option value="other">Other / Not Listed</option>
                     </select>
+                    {formData.hospital === 'other' && (
+                        <div className="mt-4 animate-in slide-in-from-top-2 duration-300">
+                            <label className={labelCls}>Clinic / Hospital Name <span className="text-red-500">*</span></label>
+                            <input 
+                                type="text" 
+                                name="hospitalName" 
+                                required={formData.hospital === 'other'} 
+                                value={formData.hospitalName} 
+                                onChange={handleChange} 
+                                className={inputCls} 
+                                placeholder="e.g. Apollo Clinic, City Hospital" 
+                            />
+                        </div>
+                    )}
                   </div>
                   <div>
                     <label className={labelCls}>Years of Experience</label>
-                    <input type="number" name="yearsOfExperience" min="0" max="60" value={formData.yearsOfExperience} onChange={handleChange}
+                    <input type="number" name="yearsOfExperience" value={formData.yearsOfExperience} onChange={handleChange}
                       className={inputCls} placeholder="e.g. 10" />
                   </div>
+                </div>
+                <div>
+                  <label className={labelCls}>Clinic / Office Address (For Offline)</label>
+                  <input type="text" name="clinicAddress" value={formData.clinicAddress} onChange={handleChange}
+                    className={inputCls} placeholder="e.g. Room 204, Alpha Plaza, MG Road" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className={labelCls}>Consultation Fee (₹)</label>
-                    <input type="text" name="consultationFee" value={formData.consultationFee} onChange={handleChange}
+                    <input type="number" name="onlineConsultationFee" value={formData.onlineConsultationFee} onChange={handleChange}
                       className={inputCls} placeholder="e.g. 500" />
                   </div>
                   <div>
@@ -391,72 +568,121 @@ const DoctorRegisterForm = ({ onBack }) => {
                 </div>
               </div>
 
-              {/* 7. Availability */}
-              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
-                <h3 className={sectionCls}><Clock size={16} />7. Availability</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {/* 8. Availability */}
+              <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
+                <h3 className={sectionCls}><Clock size={16} /> 8. Availability</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className={labelCls}>Working Days</label>
-                    <input type="text" name="workingDays" value={formData.workingDays} onChange={handleChange}
-                      className={inputCls} placeholder="e.g. Mon–Fri, Mon-Sat" />
+                    <input type="text" name="workingDaysText" value={formData.workingDays.join(', ')} readOnly
+                      className={`${inputCls} bg-slate-50 cursor-default`} placeholder="e.g. Mon-Fri, Mon-Sat" />
                   </div>
                   <div>
                     <label className={labelCls}>Consultation Timings</label>
-                    <input type="text" name="consultationTimings" value={formData.consultationTimings} onChange={handleChange}
-                      className={inputCls} placeholder="e.g. 9:00 AM – 6:00 PM" />
+                    <input type="text" name="timingsText" value={`${formData.startTime} - ${formData.endTime}`} readOnly
+                      className={`${inputCls} bg-slate-50 cursor-default`} placeholder="e.g. 9:00 AM - 6:00 PM" />
                   </div>
                   <div className="md:col-span-2">
-                    <label className={labelCls}>Online Consultation</label>
-                    <select name="onlineConsultation" value={formData.onlineConsultation} onChange={handleChange} className={inputCls}>
-                      <option value="false">Not Available</option>
-                      <option value="true">Available</option>
+                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">Adjust Working Schedule</p>
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                          <button
+                            key={day}
+                            type="button"
+                            onClick={() => {
+                              const days = formData.workingDays.includes(day)
+                                ? formData.workingDays.filter(d => d !== day)
+                                : [...formData.workingDays, day];
+                              setFormData({ ...formData, workingDays: days });
+                            }}
+                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${
+                              formData.workingDays.includes(day)
+                                ? 'bg-primary-600 border-primary-600 text-white shadow-lg'
+                                : 'bg-white border-slate-100 text-slate-400 hover:border-primary-200'
+                            }`}
+                          >
+                            {day}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className={labelCls}>Consultation Timings</label>
+                    <div className="flex items-center gap-3">
+                      <select name="startTime" value={formData.startTime} onChange={handleChange} className={inputCls}>
+                        {Array.from({length: 24}, (_, i) => String(i).padStart(2, '0')).map(h => (
+                          ['00', '30'].map(m => (
+                            <option key={`${h}:${m}`} value={`${h}:${m}`}>{`${h}:${m}`}</option>
+                          ))
+                        ))}
+                      </select>
+                      <span className="text-slate-300 font-bold">to</span>
+                      <select name="endTime" value={formData.endTime} onChange={handleChange} className={inputCls}>
+                        {Array.from({length: 24}, (_, i) => String(i).padStart(2, '0')).map(h => (
+                          ['00', '30'].map(m => (
+                            <option key={`${h}:${m}`} value={`${h}:${m}`}>{`${h}:${m}`}</option>
+                          ))
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className={labelCls}>Slot Duration</label>
+                    <select name="slotDuration" value={formData.slotDuration} onChange={handleChange} className={inputCls}>
+                      <option value="15">15 Minutes</option>
+                      <option value="30">30 Minutes</option>
+                      <option value="45">45 Minutes</option>
+                      <option value="60">60 Minutes</option>
                     </select>
+                  </div>
+                  <div>
+                    <label className={labelCls}>Max Patients Per Day</label>
+                    <input type="number" name="maxPatientsPerDay" value={formData.maxPatientsPerDay} onChange={handleChange}
+                      className={inputCls} placeholder="e.g. 30" />
                   </div>
                 </div>
               </div>
 
-              {/* 8. Account Security */}
-              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
-                <h3 className={sectionCls}><ShieldCheck size={16} />8. Account Security</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div className="md:col-span-2">
+              {/* 9. Account Security */}
+              <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-700">
+                <h3 className={sectionCls}><ShieldCheck size={16} /> 9. Account Security</h3>
+                <div className="mb-6">
                     <label className={labelCls}>Username / Doctor ID <span className="text-red-500">*</span></label>
                     <input type="text" value={formData.email} disabled className={`${inputCls} bg-blue-50 border-blue-100 text-blue-900 font-bold`} />
-                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="relative">
-                    <label className={labelCls}>Password <span className="text-red-500">*</span></label>
+                    <label className={labelCls}>Secure Password <span className="text-red-500">*</span></label>
                     <input type={showPassword ? 'text' : 'password'} name="password" required
-                      value={formData.password} onChange={handleChange}
-                      className={inputCls + ' pr-10'} placeholder="Min. 8 characters" />
+                      value={formData.password} onChange={handleChange} className={inputCls} />
                     <button type="button" onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-9 text-slate-400 hover:text-blue-600 transition">
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      className="absolute right-3 top-10 text-slate-400 hover:text-blue-600 transition">
+                      {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
                     </button>
                   </div>
                   <div className="relative">
                     <label className={labelCls}>Confirm Password <span className="text-red-500">*</span></label>
                     <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" required
-                      value={formData.confirmPassword} onChange={handleChange}
-                      className={inputCls + ' pr-10'} placeholder="Re-enter password" />
+                      value={formData.confirmPassword} onChange={handleChange} className={inputCls} />
                     <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-9 text-slate-400 hover:text-blue-600 transition">
-                      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      className="absolute right-3 top-10 text-slate-400 hover:text-blue-600 transition">
+                      {showConfirmPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
                     </button>
                   </div>
                 </div>
               </div>
 
               {/* AI Disclaimer Acknowledgement */}
-              <div className="bg-blue-50/50 border border-blue-100 p-4 rounded-xl flex items-start gap-3">
+              <div className="bg-blue-50/50 border border-blue-100 p-6 rounded-3xl flex items-start gap-3 shadow-inner">
                 <input 
-                  type="checkbox" 
-                  id="doctorAiDisclaimer"
-                  checked={aiDisclaimerAccepted}
-                  onChange={(e) => setAiDisclaimerAccepted(e.target.checked)}
-                  className="mt-1 h-4 w-4 text-blue-600 border-blue-300 rounded focus:ring-blue-500 cursor-pointer"
+                  type="checkbox" id="doctorAiDisclaimer"
+                  checked={aiDisclaimerAccepted} onChange={(e) => setAiDisclaimerAccepted(e.target.checked)}
+                  className="mt-1 h-5 w-5 text-blue-600 border-blue-300 rounded-lg focus:ring-blue-500 cursor-pointer"
                 />
-                <label htmlFor="doctorAiDisclaimer" className="text-xs text-slate-600 leading-relaxed cursor-pointer">
-                  <span className="flex items-center gap-1 font-bold text-blue-700 uppercase tracking-tighter mb-0.5">
+                <label htmlFor="doctorAiDisclaimer" className="text-xs text-slate-600 leading-relaxed cursor-pointer font-medium">
+                  <span className="flex items-center gap-1 font-black text-blue-700 uppercase tracking-tighter mb-1">
                     <Bot size={14} /> AI Clinical Acknowledgment
                   </span>
                   I acknowledge that Medisync uses AI (OpenAI/Groq/MONAI) for clinical data processing. I have read the <Link to="/ai-disclaimer" className="text-blue-600 font-bold hover:underline">AI Disclaimer</Link> and agree to verify all AI-generated insights before making clinical decisions.
@@ -465,12 +691,12 @@ const DoctorRegisterForm = ({ onBack }) => {
 
               {/* Submit */}
               <button type="submit" disabled={loading || !emailVerified || !aiDisclaimerAccepted}
-                className={`w-full flex justify-center items-center gap-2 py-4 rounded-2xl shadow-xl font-extrabold text-white bg-gradient-to-r from-blue-800 to-blue-600 transition-all ${loading || !emailVerified || !aiDisclaimerAccepted ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01] active:scale-[0.99]'}`}>
-                <Stethoscope size={20} />
-                {!emailVerified ? 'Please Verify Email First' : !aiDisclaimerAccepted ? 'Accept AI Disclaimer' : loading ? 'Submitting...' : 'Complete Physician Enrollment'}
+                className={`w-full flex justify-center items-center gap-2 py-5 rounded-2xl shadow-xl text-xs font-black uppercase tracking-widest text-white bg-blue-600 hover:bg-blue-700 transition-all ${loading || !emailVerified || !aiDisclaimerAccepted ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01] shadow-blue-200'}`}>
+                {loading ? 'Finalizing Sync...' : !emailVerified ? 'Verify Email to Proceed' : !aiDisclaimerAccepted ? 'Accept AI Disclaimer' : 'Complete Physician Enrollment'}
               </button>
-              <p className="text-center text-xs text-slate-400 uppercase tracking-wider">
-                Fields marked <span className="text-red-500">*</span> are required &nbsp;·&nbsp; By enrolling, you agree to our <Link to="/terms-of-service" className="text-blue-600 hover:underline">Terms</Link> and <Link to="/privacy-policy" className="text-blue-600 hover:underline">Privacy Policy</Link>
+              
+              <p className="text-center text-[10px] text-slate-400 font-black uppercase tracking-[0.2em]">
+                Secure Clinical Enrollment Portal
               </p>
             </form>
           </div>
