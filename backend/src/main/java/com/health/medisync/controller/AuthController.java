@@ -161,19 +161,29 @@ public class AuthController {
             User user = userRepository.findByUsernameIgnoreCase(authentication.getName())
                     .orElseThrow(() -> new RuntimeException("Error: User not found."));
 
-            // APPROVAL GATE: Post-Authentication Check
+            // APPROVAL & AUTO-VERIFY GATE: Post-Authentication Check
             if ("ROLE_DOCTOR".equals(user.getRole())) {
                 doctorRepository.findByUserId(user.getId()).ifPresent(doctor -> {
                     if (!doctor.isApproved()) {
                         throw new org.springframework.security.authentication.DisabledException("Your professional account is pending institutional approval.");
                     }
                 });
+                // Proactive Auto-Verify for existing accounts
+                if (!user.isEmailVerified()) {
+                    user.setEmailVerified(true);
+                    userRepository.save(user);
+                }
             } else if ("ROLE_HOSPITAL_ADMIN".equals(user.getRole())) {
                 hospitalAdminRepository.findByUserId(user.getId()).ifPresent(admin -> {
                     if (!admin.isApproved()) {
                         throw new org.springframework.security.authentication.DisabledException("Your institutional portal access is pending global administrative approval.");
                     }
                 });
+                // Proactive Auto-Verify for existing accounts
+                if (!user.isEmailVerified()) {
+                    user.setEmailVerified(true);
+                    userRepository.save(user);
+                }
             }
 
             String jwt = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole());
