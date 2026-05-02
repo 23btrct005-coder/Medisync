@@ -29,6 +29,7 @@ import ClinicalPatientDossier from './pages/ClinicalPatientDossier';
 import ClinicalDoctorProfile from './pages/ClinicalDoctorProfile';
 import ClinicalScheduleManager from './pages/ClinicalScheduleManager';
 import ClinicalMessages from './pages/ClinicalMessages';
+import ClinicalFinancials from './pages/ClinicalFinancials';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import EmergencyInfo from './pages/EmergencyInfo';
@@ -160,6 +161,7 @@ function App() {
                 }>
                   <Route index element={<ClinicalExecutiveConsul />} />
                   <Route path="appointments" element={<ClinicalScheduleManager />} />
+                  <Route path="financials" element={<ClinicalFinancials />} />
                   <Route path="patients/:id" element={<ClinicalPatientDossier />} />
                   <Route path="patients" element={<ClinicalCensusRegistry />} />
                   <Route path="messages" element={<ClinicalMessages />} />

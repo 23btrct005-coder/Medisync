@@ -3,15 +3,11 @@ import { useAuth } from '../context/AuthContext';
 import { 
   Users, Stethoscope, Camera, Calendar, ShieldCheck, Sparkles, 
   Search, Bell, UserPlus, ChevronRight, Activity, Target,
-  Zap, Globe, Database, ArrowUpRight, X, QrCode, AlertCircle, Star, MessageSquare,
-  TrendingUp, DollarSign, Wallet, ArrowUpCircle
+  Zap, Globe, Database, ArrowUpRight, X, QrCode, AlertCircle, Star, MessageSquare
 } from 'lucide-react';
-import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
-} from 'recharts';
 import api from '../api/axiosConfig';
 import { Html5Qrcode } from 'html5-qrcode';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../context/NotificationContext';
 import ProfileCompletionBanner from '../components/ProfileCompletionBanner';
 import StatCardPro from '../components/StatCard';
@@ -31,30 +27,16 @@ const DoctorDashboard = () => {
   const [scanError, setScanError] = useState('');
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [revenueData, setRevenueData] = useState(null);
   const navigate = useNavigate();
-  const location = useLocation();
  
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       await fetchRequests();
-      if (!user?.institutional) {
-        await fetchRevenue();
-      }
       setLoading(false);
     };
     fetchData();
   }, []);
-
-  useEffect(() => {
-    if (location.hash === '#revenue' && !loading) {
-      const element = document.getElementById('revenue-hub');
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-  }, [location, loading]);
  
   const fetchRequests = async () => {
     try {
@@ -62,15 +44,6 @@ const DoctorDashboard = () => {
       setRequests(res.data || []);
     } catch (err) {
       console.error("Failed to fetch doctor requests", err);
-    }
-  };
-
-  const fetchRevenue = async () => {
-    try {
-      const res = await api.get('doctor/analytics/revenue');
-      setRevenueData(res.data);
-    } catch (err) {
-      console.error("Failed to fetch revenue analytics", err);
     }
   };
 
@@ -278,107 +251,6 @@ const DoctorDashboard = () => {
             subtitle={`${user?.ratingCount || 0} Patient Feedbacks`}
           />
         </div>
-        
-        {/* Financial Intelligence Hub (Non-Institutional Only) */}
-        {!user?.institutional && (
-          <section id="revenue-hub" className="space-y-6 pt-8 scroll-mt-20">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-[#0A1A1A] p-6 rounded-[2rem] border border-white/5">
-                <div className="flex items-center gap-4">
-                    <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl">
-                        <TrendingUp size={24} />
-                    </div>
-                    <div className="text-left">
-                        <h2 className="text-xl font-black text-white uppercase tracking-tighter leading-none">Financial Intelligence Hub</h2>
-                        <p className="text-[9px] text-emerald-500/60 font-bold uppercase tracking-widest mt-1">Real-time Revenue Telemetry</p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-3 bg-white/5 p-2 rounded-2xl border border-white/10">
-                    <div className="px-4 py-2 bg-emerald-500 text-[#0A1A1A] rounded-xl text-[10px] font-black uppercase tracking-widest">Live Updates</div>
-                    <span className="text-white/40 text-[10px] font-bold pr-2">SYNCED: {new Date().toLocaleTimeString()}</span>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Revenue Metrics */}
-                <div className="lg:col-span-1 grid grid-cols-2 gap-4">
-                    <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all text-left group">
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Today</p>
-                        <h4 className="text-2xl font-black text-slate-900">₹{revenueData?.today?.toLocaleString() || '0'}</h4>
-                        <div className="mt-3 flex items-center gap-1 text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full w-fit">
-                            <ArrowUpCircle size={10} /> +12% vs avg
-                        </div>
-                    </div>
-                    <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all text-left group">
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Last 7 Days</p>
-                        <h4 className="text-2xl font-black text-slate-900">₹{revenueData?.week?.toLocaleString() || '0'}</h4>
-                        <div className="mt-3 flex items-center gap-1 text-[9px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full w-fit">
-                            <Calendar size={10} /> 18 Appointments
-                        </div>
-                    </div>
-                    <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all text-left group">
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">This Month</p>
-                        <h4 className="text-2xl font-black text-slate-900">₹{revenueData?.month?.toLocaleString() || '0'}</h4>
-                        <div className="mt-3 flex items-center gap-1 text-[9px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full w-fit">
-                            <TrendingUp size={10} /> Target: 85%
-                        </div>
-                    </div>
-                    <div className="bg-[#0A1A1A] rounded-3xl p-6 shadow-xl text-left group relative overflow-hidden">
-                        <DollarSign className="absolute -right-4 -bottom-4 text-white/5" size={80} />
-                        <p className="text-[10px] text-emerald-400/60 font-bold uppercase tracking-widest mb-1">Total Revenue</p>
-                        <h4 className="text-2xl font-black text-white">₹{revenueData?.total?.toLocaleString() || '0'}</h4>
-                        <div className="mt-3 flex items-center gap-1 text-[9px] font-black text-white bg-emerald-500/20 px-2 py-0.5 rounded-full w-fit border border-emerald-500/30">
-                            <Wallet size={10} /> Lifetime Earnings
-                        </div>
-                    </div>
-                </div>
-
-                {/* Growth Chart */}
-                <div className="lg:col-span-2 bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-sm">
-                    <div className="flex items-center justify-between mb-8">
-                        <h3 className="text-sm font-black text-slate-800 uppercase tracking-tighter">Monthly Growth Dynamics</h3>
-                        <div className="flex gap-2">
-                            <div className="flex items-center gap-1 text-[9px] font-bold text-slate-400"><div className="w-2 h-2 rounded-full bg-emerald-500"></div> Earnings</div>
-                        </div>
-                    </div>
-                    <div className="h-[200px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={Object.entries(revenueData?.history || {}).map(([month, value]) => ({ month, value }))}>
-                                <defs>
-                                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis 
-                                    dataKey="month" 
-                                    axisLine={false} 
-                                    tickLine={false} 
-                                    tick={{fontSize: 9, fontWeight: 700, fill: '#64748b'}}
-                                    tickFormatter={(str) => {
-                                        const [y, m] = str.split('-');
-                                        const date = new Date(y, m-1);
-                                        return date.toLocaleString('default', { month: 'short' });
-                                    }}
-                                />
-                                <YAxis 
-                                    axisLine={false} 
-                                    tickLine={false} 
-                                    tick={{fontSize: 9, fontWeight: 700, fill: '#64748b'}}
-                                    tickFormatter={(value) => `₹${value >= 1000 ? value/1000 + 'k' : value}`}
-                                />
-                                <Tooltip 
-                                    contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '10px', fontWeight: 800 }}
-                                    formatter={(value) => [`₹${value.toLocaleString()}`, 'Earnings']}
-                                />
-                                <Area type="monotone" dataKey="value" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-            </div>
-          </section>
-        )}
 
         {/* Clinical Control Architecture */}
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
