@@ -690,7 +690,7 @@ const Register = () => {
                       
                       {/* Section 1: Basic Identity */}
                       <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
-                        <h3 className={sectionHeadClass}><Building2 size={16} /> 1. Hospital Identity</h3>
+                        <h3 className={sectionHeadClass}><Building2 size={16} /> 2. Hospital Identity</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div><label className={labelClass}>Hospital Name <span className="text-red-500">*</span></label><input type="text" name="hospitalName" required value={formData.hospitalName} onChange={handleChange} className={inputClass} placeholder="e.g. Apollo Hospital" /></div>
                           <div><label className={labelClass}>Ownership Type <span className="text-red-500">*</span></label>
@@ -710,7 +710,7 @@ const Register = () => {
 
                       {/* Section 2: Legal & Government Details */}
                       <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
-                        <h3 className={sectionHeadClass}><ShieldCheck size={16} /> 2. Legal & Compliance</h3>
+                        <h3 className={sectionHeadClass}><ShieldCheck size={16} /> 3. Legal & Compliance</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div><label className={labelClass}>Registration Authority <span className="text-red-500">*</span></label><input type="text" name="registrationAuthority" required value={formData.registrationAuthority} onChange={handleChange} className={inputClass} placeholder="State Medical Council" /></div>
                           <div><label className={labelClass}>License / Reg. Code <span className="text-red-500">*</span></label><input type="text" name="licenseCode" required value={formData.licenseCode} onChange={handleChange} className={inputClass} placeholder="Reg-123456" /></div>
@@ -724,7 +724,7 @@ const Register = () => {
                       {/* Section 3: Full Address & Contact */}
                       <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
                         <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-                            <h3 className={sectionHeadClass}><MapPin size={16} /> 3. Location & Official Contact</h3>
+                            <h3 className={sectionHeadClass}><MapPin size={16} /> 4. Location & Official Contact</h3>
                             <button type="button" onClick={handleGetCurrentLocation} disabled={locating} className="flex items-center gap-2 text-[10px] font-black text-primary-600 uppercase tracking-widest hover:text-primary-700 disabled:opacity-50 transition-all">
                                 <Navigation size={12} className={locating ? 'animate-pulse' : ''} /> {locating ? 'Auto-Locate' : 'Detect Location'}
                             </button>
@@ -749,7 +749,7 @@ const Register = () => {
 
                       {/* Section 4: Infrastructure & Capacity */}
                       <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
-                        <h3 className={sectionHeadClass}><Activity size={16} /> 4. Infrastructure & Services</h3>
+                        <h3 className={sectionHeadClass}><Activity size={16} /> 5. Infrastructure & Services</h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                             <div className="md:col-span-2"><label className={labelClass}>Total Number of Beds <span className="text-red-500">*</span></label><input type="number" name="totalBeds" required value={formData.totalBeds} onChange={handleChange} className={inputClass} placeholder="e.g. 150" /></div>
                             <div><label className={labelClass}>ICU Available</label><select name="icuAvailable" value={formData.icuAvailable} onChange={handleChange} className={inputClass}><option value="false">No</option><option value="true">Yes</option></select></div>
@@ -761,7 +761,7 @@ const Register = () => {
 
                       {/* Section 5: Administrator Details */}
                       <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
-                        <h3 className={sectionHeadClass}><User size={16} /> 5. Institutional Administrator</h3>
+                        <h3 className={sectionHeadClass}><User size={16} /> 6. Institutional Administrator</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div><label className={labelClass}>Admin Full Name <span className="text-red-500">*</span></label><input type="text" name="adminName" required value={formData.adminName} onChange={handleChange} className={inputClass} placeholder="John Doe" /></div>
                             <div><label className={labelClass}>Admin Role <span className="text-red-500">*</span></label>
@@ -777,7 +777,7 @@ const Register = () => {
 
                       {/* Section 6: Trust Factor & Verification */}
                       <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
-                        <h3 className={sectionHeadClass}><ClipboardList size={16} /> 6. Verification Documents</h3>
+                        <h3 className={sectionHeadClass}><ClipboardList size={16} /> 7. Verification Documents</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-4"><label className={labelClass}>Registration Certificate <span className="text-red-500">*</span></label><DocumentUpload onFileSelect={setRegistrationCertificate} label="Upload Certificate" /></div>
                             <div className="space-y-4"><label className={labelClass}>NABH / NABL (Optional)</label><DocumentUpload onFileSelect={setNabhCertificate} label="Upload NABH" /></div>
@@ -788,7 +788,7 @@ const Register = () => {
 
                       {/* Section 7: Compliance & Finalization */}
                       <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-6">
-                        <h3 className={sectionHeadClass}><Lock size={16} /> 7. Compliance & Security</h3>
+                        <h3 className={sectionHeadClass}><Lock size={16} /> 8. Compliance & Security</h3>
                         <div className="relative">
                             <label className={labelClass}>Set Administrator Password <span className="text-red-500">*</span></label>
                             <input type={showPassword ? 'text' : 'password'} name="password" required value={formData.password} onChange={handleChange} className={inputClass} placeholder="Access credentials for this hospital portal" />
