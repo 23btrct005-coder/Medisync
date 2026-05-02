@@ -26,15 +26,24 @@ public class Hospital {
     private String phone;
     private String contactEmail;
     private String logoUrl;
-    private String hospitalType;   // Government / Private / Trust / Charitable
+    private String hospitalType;   // Clinic / Multi-speciality / Super-speciality
+    private String ownershipType; // Private / Government / Trust / NGO
     private String website;
+    private String timezone;
+    private String workingHours;
     
     // ── 1. Legal & Compliance ──
     private String gstNumber;
     private String panNumber;
-    private String nabhId; // National Accreditation Board for Hospitals
+    private String registrationAuthority;
+    private String registrationDate;
+    private String licenseExpiryDate;
+    private String nabhId; 
     private String isoId;
     private String registrationCertificateUrl;
+    private String nabhCertificateUrl;
+    private String taxCertificateUrl;
+    private String addressProofUrl;
     
     // ── 2. Medical Infrastructure ──
     @Column(columnDefinition = "TEXT")
@@ -45,7 +54,11 @@ public class Hospital {
     private Integer ambulanceCount;
     private Integer nurseCount;
     private Integer generalStaffCount;
+    private Boolean icuAvailable = false;
+    private Boolean ambulanceAvailable = false;
     private Boolean emergencyServicesAvailable = true; // 24/7 services
+    private String officialEmergencyContact;
+    private String alternatePhone;
     
     // ── 4. Appointment & Scheduling ──
     private String consultationTimings; // e.g. "9:00 AM - 9:00 PM"
@@ -174,4 +187,43 @@ public class Hospital {
 
     public String getGalleryUrls() { return galleryUrls; }
     public void setGalleryUrls(String galleryUrls) { this.galleryUrls = galleryUrls; }
+
+    public String getOwnershipType() { return ownershipType; }
+    public void setOwnershipType(String ownershipType) { this.ownershipType = ownershipType; }
+
+    public String getTimezone() { return timezone; }
+    public void setTimezone(String timezone) { this.timezone = timezone; }
+
+    public String getWorkingHours() { return workingHours; }
+    public void setWorkingHours(String workingHours) { this.workingHours = workingHours; }
+
+    public String getRegistrationAuthority() { return registrationAuthority; }
+    public void setRegistrationAuthority(String registrationAuthority) { this.registrationAuthority = registrationAuthority; }
+
+    public String getRegistrationDate() { return registrationDate; }
+    public void setRegistrationDate(String registrationDate) { this.registrationDate = registrationDate; }
+
+    public String getLicenseExpiryDate() { return licenseExpiryDate; }
+    public void setLicenseExpiryDate(String licenseExpiryDate) { this.licenseExpiryDate = licenseExpiryDate; }
+
+    public String getNabhCertificateUrl() { return nabhCertificateUrl; }
+    public void setNabhCertificateUrl(String nabhCertificateUrl) { this.nabhCertificateUrl = nabhCertificateUrl; }
+
+    public String getTaxCertificateUrl() { return taxCertificateUrl; }
+    public void setTaxCertificateUrl(String taxCertificateUrl) { this.taxCertificateUrl = taxCertificateUrl; }
+
+    public String getAddressProofUrl() { return addressProofUrl; }
+    public void setAddressProofUrl(String addressProofUrl) { this.addressProofUrl = addressProofUrl; }
+
+    public Boolean getIcuAvailable() { return icuAvailable; }
+    public void setIcuAvailable(Boolean icuAvailable) { this.icuAvailable = icuAvailable; }
+
+    public Boolean getAmbulanceAvailable() { return ambulanceAvailable; }
+    public void setAmbulanceAvailable(Boolean ambulanceAvailable) { this.ambulanceAvailable = ambulanceAvailable; }
+
+    public String getOfficialEmergencyContact() { return officialEmergencyContact; }
+    public void setOfficialEmergencyContact(String officialEmergencyContact) { this.officialEmergencyContact = officialEmergencyContact; }
+
+    public String getAlternatePhone() { return alternatePhone; }
+    public void setAlternatePhone(String alternatePhone) { this.alternatePhone = alternatePhone; }
 }

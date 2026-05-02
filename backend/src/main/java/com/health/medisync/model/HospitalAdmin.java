@@ -20,6 +20,8 @@ public class HospitalAdmin {
     private String name;
     private String position;
     private String profilePictureUrl;
+    private String contactNumber;
+    private String idProofUrl;
     private boolean approved = false;
 
     // Getters & Setters
@@ -42,4 +44,10 @@ public class HospitalAdmin {
 
     public String getProfilePictureUrl() { return profilePictureUrl; }
     public void setProfilePictureUrl(String profilePictureUrl) { this.profilePictureUrl = profilePictureUrl; }
+
+    public String getContactNumber() { return contactNumber; }
+    public void setContactNumber(String contactNumber) { this.contactNumber = contactNumber; }
+
+    public String getIdProofUrl() { return idProofUrl; }
+    public void setIdProofUrl(String idProofUrl) { this.idProofUrl = idProofUrl; }
 }

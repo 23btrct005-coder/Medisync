@@ -104,6 +104,29 @@ const Register = () => {
     // Institutional
     licenseCode: '',
     hospitalType: '',
+    ownershipType: '',
+    registrationAuthority: '',
+    registrationDate: '',
+    hospitalLicenseExpiryDate: '',
+    gstNumber: '',
+    panNumber: '',
+    officialPhone: '',
+    officialAlternatePhone: '',
+    emergencyPhone: '',
+    adminName: '',
+    adminRole: '',
+    adminContact: '',
+    totalBeds: '',
+    icuAvailable: 'false',
+    ambulanceAvailable: 'false',
+    emergencyServices247: 'true',
+    timezone: 'Asia/Kolkata',
+    workingHours: '24/7',
+    websiteUrl: '',
+    googleMapsUrl: '',
+    termsAccepted: false,
+    privacyAccepted: false,
+    consentAccepted: false,
     departments: [],
   });
   
@@ -122,6 +145,10 @@ const Register = () => {
   const [hospitalLogo, setHospitalLogo] = useState(null);
   const [registrationCertificate, setRegistrationCertificate] = useState(null);
   const [licenseDocument, setLicenseDocument] = useState(null);
+  const [nabhCertificate, setNabhCertificate] = useState(null);
+  const [taxCertificate, setTaxCertificate] = useState(null);
+  const [addressProof, setAddressProof] = useState(null);
+  const [adminIdProof, setAdminIdProof] = useState(null);
 
   // Data
   const [hospitals, setHospitals] = useState([]);
@@ -325,6 +352,10 @@ const Register = () => {
       if (hospitalLogo) formDataToSend.append('hospitalLogo', hospitalLogo);
       if (registrationCertificate) formDataToSend.append('registrationCertificate', registrationCertificate);
       if (licenseDocument) formDataToSend.append('licenseDocument', licenseDocument);
+      if (nabhCertificate) formDataToSend.append('nabhCertificate', nabhCertificate);
+      if (taxCertificate) formDataToSend.append('taxCertificate', taxCertificate);
+      if (addressProof) formDataToSend.append('addressProof', addressProof);
+      if (adminIdProof) formDataToSend.append('adminIdProof', adminIdProof);
 
       await api.post(endpoint, formDataToSend, { headers: { 'Content-Type': 'multipart/form-data' } });
       setSuccess('Registration successful!');
@@ -630,25 +661,121 @@ const Register = () => {
                   )}
 
                   {role === 'ROLE_HOSPITAL_ADMIN' && (
-                    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                      
+                      {/* Section 1: Basic Identity */}
                       <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
-                        <h3 className={sectionHeadClass}><Building2 size={16} /> 3. Institutional Details</h3>
-                        <div className="grid grid-cols-2 gap-6">
-                          <div><label className={labelClass}>Hospital Name <span className="text-red-500">*</span></label><input type="text" name="hospitalName" required value={formData.hospitalName} onChange={handleChange} className={inputClass} placeholder="e.g. City Hospital" /></div>
-                          <div><label className={labelClass}>License Code <span className="text-red-500">*</span></label><input type="text" name="licenseCode" required value={formData.licenseCode} onChange={handleChange} className={inputClass} placeholder="Registration No" /></div>
+                        <h3 className={sectionHeadClass}><Building2 size={16} /> 1. Hospital Identity</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div><label className={labelClass}>Hospital Name <span className="text-red-500">*</span></label><input type="text" name="hospitalName" required value={formData.hospitalName} onChange={handleChange} className={inputClass} placeholder="e.g. Apollo Hospital" /></div>
+                          <div><label className={labelClass}>Ownership Type <span className="text-red-500">*</span></label>
+                            <select name="ownershipType" required value={formData.ownershipType} onChange={handleChange} className={inputClass}>
+                                <option value="">Select Ownership</option><option value="Private">Private</option><option value="Government">Government</option><option value="Trust">Trust</option><option value="NGO">NGO</option>
+                            </select>
+                          </div>
+                          <div><label className={labelClass}>Hospital Type <span className="text-red-500">*</span></label>
+                            <select name="hospitalType" required value={formData.hospitalType} onChange={handleChange} className={inputClass}>
+                                <option value="">Select Type</option><option value="Clinic">Clinic</option><option value="Multi-speciality">Multi-speciality</option><option value="Super-speciality">Super-speciality</option>
+                            </select>
+                          </div>
+                          <div><label className={labelClass}>Official Website</label><input type="url" name="websiteUrl" value={formData.websiteUrl} onChange={handleChange} className={inputClass} placeholder="https://www.hospital.com" /></div>
+                        </div>
+                        <div className="flex flex-col items-center gap-4 py-4"><label className={labelClass}>Hospital Logo</label><DocumentUpload onFileSelect={setHospitalLogo} label="Upload Logo" /></div>
+                      </div>
+
+                      {/* Section 2: Legal & Government Details */}
+                      <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
+                        <h3 className={sectionHeadClass}><ShieldCheck size={16} /> 2. Legal & Compliance</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div><label className={labelClass}>Registration Authority <span className="text-red-500">*</span></label><input type="text" name="registrationAuthority" required value={formData.registrationAuthority} onChange={handleChange} className={inputClass} placeholder="State Medical Council" /></div>
+                          <div><label className={labelClass}>License / Reg. Code <span className="text-red-500">*</span></label><input type="text" name="licenseCode" required value={formData.licenseCode} onChange={handleChange} className={inputClass} placeholder="Reg-123456" /></div>
+                          <div><label className={labelClass}>Registration Date <span className="text-red-500">*</span></label><input type="date" name="registrationDate" required value={formData.registrationDate} onChange={handleChange} className={inputClass} /></div>
+                          <div><label className={labelClass}>License Expiry Date <span className="text-red-500">*</span></label><input type="date" name="hospitalLicenseExpiryDate" required value={formData.hospitalLicenseExpiryDate} onChange={handleChange} className={inputClass} /></div>
+                          <div><label className={labelClass}>GST Number</label><input type="text" name="gstNumber" value={formData.gstNumber} onChange={handleChange} className={inputClass} placeholder="22AAAAA0000A1Z5" /></div>
+                          <div><label className={labelClass}>PAN Number (India)</label><input type="text" name="panNumber" value={formData.panNumber} onChange={handleChange} className={inputClass} placeholder="ABCDE1234F" /></div>
                         </div>
                       </div>
 
+                      {/* Section 3: Full Address & Contact */}
                       <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
-                        <h3 className={sectionHeadClass}><ShieldCheck size={16} /> 4. Verification Documents</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="space-y-4">
-                                <label className={labelClass}>Hospital Logo</label>
-                                <DocumentUpload onFileSelect={setHospitalLogo} label="Upload Logo" />
+                        <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+                            <h3 className={sectionHeadClass}><MapPin size={16} /> 3. Location & Official Contact</h3>
+                            <button type="button" onClick={handleGetCurrentLocation} disabled={locating} className="flex items-center gap-2 text-[10px] font-black text-primary-600 uppercase tracking-widest hover:text-primary-700 disabled:opacity-50 transition-all">
+                                <Navigation size={12} className={locating ? 'animate-pulse' : ''} /> {locating ? 'Auto-Locate' : 'Detect Location'}
+                            </button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="md:col-span-2"><label className={labelClass}>Full Postal Address <span className="text-red-500">*</span></label><input type="text" name="street" required value={formData.street} onChange={handleChange} className={inputClass} placeholder="Street, Building, Area" /></div>
+                            <div><label className={labelClass}>State <span className="text-red-500">*</span></label><select name="state" required value={formData.state} onChange={handleChange} className={inputClass}><option value="">Select State</option>{Object.keys(geographyData).sort().map(s => <option key={s} value={s}>{s}</option>)}</select></div>
+                            <div><label className={labelClass}>City / District <span className="text-red-500">*</span></label><select name="city" required value={formData.city} onChange={handleChange} className={inputClass} disabled={!formData.state}><option value="">Select District</option>{availableCities.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+                            <div><label className={labelClass}>PIN Code <span className="text-red-500">*</span></label><input type="text" name="pinCode" required value={formData.pinCode} onChange={handleChange} className={inputClass} placeholder="6-digit PIN" /></div>
+                            <div><label className={labelClass}>Google Maps URL</label><input type="url" name="googleMapsUrl" value={formData.googleMapsUrl} onChange={handleChange} className={inputClass} placeholder="Paste Maps link" /></div>
+                            
+                            <div className="md:col-span-2 pt-4 border-t border-slate-100">
+                                <label className={labelClass}>Official Contact Numbers</label>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div><label className={labelClass}>Official Phone <span className="text-red-500">*</span></label><input type="tel" name="officialPhone" required value={formData.officialPhone} onChange={handleChange} className={inputClass} placeholder="Primary" /></div>
+                                    <div><label className={labelClass}>Alternate Phone</label><input type="tel" name="officialAlternatePhone" value={formData.officialAlternatePhone} onChange={handleChange} className={inputClass} placeholder="Optional" /></div>
+                                    <div><label className={labelClass}>Emergency 24/7 <span className="text-red-500">*</span></label><input type="tel" name="emergencyPhone" required value={formData.emergencyPhone} onChange={handleChange} className={inputClass} placeholder="Critical Care" /></div>
+                                </div>
                             </div>
-                            <div className="space-y-4">
-                                <label className={labelClass}>Registration Certificate <span className="text-red-500">*</span></label>
-                                <DocumentUpload onFileSelect={setRegistrationCertificate} label="Upload Certificate" />
+                        </div>
+                      </div>
+
+                      {/* Section 4: Infrastructure & Capacity */}
+                      <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
+                        <h3 className={sectionHeadClass}><Activity size={16} /> 4. Infrastructure & Services</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            <div className="md:col-span-2"><label className={labelClass}>Total Number of Beds <span className="text-red-500">*</span></label><input type="number" name="totalBeds" required value={formData.totalBeds} onChange={handleChange} className={inputClass} placeholder="e.g. 150" /></div>
+                            <div><label className={labelClass}>ICU Available</label><select name="icuAvailable" value={formData.icuAvailable} onChange={handleChange} className={inputClass}><option value="false">No</option><option value="true">Yes</option></select></div>
+                            <div><label className={labelClass}>Ambulance</label><select name="ambulanceAvailable" value={formData.ambulanceAvailable} onChange={handleChange} className={inputClass}><option value="false">No</option><option value="true">Yes</option></select></div>
+                            <div className="md:col-span-2"><label className={labelClass}>Timezone</label><select name="timezone" value={formData.timezone} onChange={handleChange} className={inputClass}><option value="Asia/Kolkata">India (IST)</option><option value="UTC">UTC</option></select></div>
+                            <div className="md:col-span-2"><label className={labelClass}>Working Hours</label><input type="text" name="workingHours" value={formData.workingHours} onChange={handleChange} className={inputClass} placeholder="e.g. 24/7 or 9AM-9PM" /></div>
+                        </div>
+                      </div>
+
+                      {/* Section 5: Administrator Details */}
+                      <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
+                        <h3 className={sectionHeadClass}><User size={16} /> 5. Institutional Administrator</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div><label className={labelClass}>Admin Full Name <span className="text-red-500">*</span></label><input type="text" name="adminName" required value={formData.adminName} onChange={handleChange} className={inputClass} placeholder="John Doe" /></div>
+                            <div><label className={labelClass}>Admin Role <span className="text-red-500">*</span></label>
+                                <select name="adminRole" required value={formData.adminRole} onChange={handleChange} className={inputClass}>
+                                    <option value="">Select Role</option><option value="Owner">Owner</option><option value="Manager">Manager</option><option value="IT Admin">IT Admin</option>
+                                </select>
+                            </div>
+                            <div><label className={labelClass}>Admin Contact Number <span className="text-red-500">*</span></label><input type="tel" name="adminContact" required value={formData.adminContact} onChange={handleChange} className={inputClass} placeholder="Personal Phone" /></div>
+                            <div><label className={labelClass}>Admin ID Proof (Aadhar/PAN)</label><DocumentUpload onFileSelect={setAdminIdProof} label="Upload ID Proof" /></div>
+                        </div>
+                        <div className="flex flex-col items-center gap-4 py-4"><label className={labelClass}>Admin Profile Photo</label><ProfilePhotoUpload onFileSelect={setProfilePicture} /></div>
+                      </div>
+
+                      {/* Section 6: Trust Factor & Verification */}
+                      <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
+                        <h3 className={sectionHeadClass}><ClipboardList size={16} /> 6. Verification Documents</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-4"><label className={labelClass}>Registration Certificate <span className="text-red-500">*</span></label><DocumentUpload onFileSelect={setRegistrationCertificate} label="Upload Certificate" /></div>
+                            <div className="space-y-4"><label className={labelClass}>NABH / NABL (Optional)</label><DocumentUpload onFileSelect={setNabhCertificate} label="Upload NABH" /></div>
+                            <div className="space-y-4"><label className={labelClass}>Tax / GST Certificate</label><DocumentUpload onFileSelect={setTaxCertificate} label="Upload Tax Doc" /></div>
+                            <div className="space-y-4"><label className={labelClass}>Address Proof (Utility Bill)</label><DocumentUpload onFileSelect={setAddressProof} label="Upload Address Proof" /></div>
+                        </div>
+                      </div>
+
+                      {/* Section 7: Compliance & Finalization */}
+                      <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-6">
+                        <h3 className={sectionHeadClass}><Lock size={16} /> 7. Compliance & Security</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                          <div className="relative"><label className={labelClass}>Portal Password <span className="text-red-500">*</span></label><input type={showPassword ? 'text' : 'password'} name="password" required value={formData.password} onChange={handleChange} className={inputClass} /><button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-10 text-slate-400">{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button></div>
+                          <div className="relative"><label className={labelClass}>Confirm Password <span className="text-red-500">*</span></label><input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" required value={formData.confirmPassword} onChange={handleChange} className={inputClass} /><button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-10 text-slate-400">{showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button></div>
+                        </div>
+                        <div className="space-y-4 pt-4">
+                            <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <input type="checkbox" required checked={formData.termsAccepted} onChange={(e) => setFormData({...formData, termsAccepted: e.target.checked})} className="mt-1 h-5 w-5 rounded border-blue-200 text-primary-600" />
+                                <label className="text-xs text-slate-600 font-medium">I agree to the <span className="text-primary-600 underline">Terms & Conditions</span> and <span className="text-primary-600 underline">Privacy Policy</span> of MediSync. <span className="text-red-500">*</span></label>
+                            </div>
+                            <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <input type="checkbox" required checked={formData.consentAccepted} onChange={(e) => setFormData({...formData, consentAccepted: e.target.checked})} className="mt-1 h-5 w-5 rounded border-blue-200 text-primary-600" />
+                                <label className="text-xs text-slate-600 font-medium">I provide explicit consent for the handling and processing of institutional and clinical health data in accordance with digital health standards. <span className="text-red-500">*</span></label>
                             </div>
                         </div>
                       </div>

@@ -551,7 +551,11 @@ public class AuthController {
             @RequestPart("userData") String userDataJson,
             @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture,
             @RequestPart(value = "hospitalLogo", required = false) MultipartFile hospitalLogo,
-            @RequestPart(value = "registrationCertificate", required = false) MultipartFile registrationCertificate) throws IOException {
+            @RequestPart(value = "registrationCertificate", required = false) MultipartFile registrationCertificate,
+            @RequestPart(value = "nabhCertificate", required = false) MultipartFile nabhCertificate,
+            @RequestPart(value = "taxCertificate", required = false) MultipartFile taxCertificate,
+            @RequestPart(value = "addressProof", required = false) MultipartFile addressProof,
+            @RequestPart(value = "adminIdProof", required = false) MultipartFile adminIdProof) throws IOException {
 
         ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> request = mapper.readValue(userDataJson, Map.class);
@@ -602,51 +606,50 @@ public class AuthController {
         hospital.setStreet(request.get("street") != null ? String.valueOf(request.get("street")) : null);
         hospital.setPinCode(request.get("pinCode") != null ? String.valueOf(request.get("pinCode")) : null);
         hospital.setPhone(request.get("phone") != null ? String.valueOf(request.get("phone")) : null);
+        hospital.setAlternatePhone(request.get("alternatePhone") != null ? String.valueOf(request.get("alternatePhone")) : null);
         hospital.setContactEmail(request.get("email") != null ? String.valueOf(request.get("email")) : null);
+        hospital.setOfficialEmergencyContact(request.get("emergencyPhone") != null ? String.valueOf(request.get("emergencyPhone")) : null);
+        
         hospital.setHospitalType(request.get("hospitalType") != null ? String.valueOf(request.get("hospitalType")) : null);
+        hospital.setOwnershipType(request.get("ownershipType") != null ? String.valueOf(request.get("ownershipType")) : null);
         hospital.setWebsite(request.get("website") != null ? String.valueOf(request.get("website")) : null);
-        // Compose a human-readable location string
-        String city = request.get("city") != null ? String.valueOf(request.get("city")) : "";
-        String state = request.get("state") != null ? String.valueOf(request.get("state")) : "";
-        hospital.setLocation((city + ", " + state).trim().replaceAll("^,|,$", "").trim());
+        hospital.setGoogleMapsUrl(request.get("googleMapsUrl") != null ? String.valueOf(request.get("googleMapsUrl")) : null);
         
-        // Handle Logo
-        if (hospitalLogo != null && !hospitalLogo.isEmpty()) {
-            try {
-                String logoUrl = supabaseStorageService.uploadFile(hospitalLogo);
-                if (logoUrl != null) hospital.setLogoUrl(logoUrl);
-            } catch (Exception e) {
-                System.err.println("Failed to upload hospital logo: " + e.getMessage());
-            }
+        hospital.setGstNumber(request.get("gstNumber") != null ? String.valueOf(request.get("gstNumber")) : null);
+        hospital.setPanNumber(request.get("panNumber") != null ? String.valueOf(request.get("panNumber")) : null);
+        hospital.setRegistrationAuthority(request.get("registrationAuthority") != null ? String.valueOf(request.get("registrationAuthority")) : null);
+        hospital.setRegistrationDate(request.get("registrationDate") != null ? String.valueOf(request.get("registrationDate")) : null);
+        hospital.setLicenseExpiryDate(request.get("licenseExpiryDate") != null ? String.valueOf(request.get("licenseExpiryDate")) : null);
+        
+        if (request.get("totalBeds") != null && !String.valueOf(request.get("totalBeds")).isEmpty()) {
+            hospital.setTotalBeds(Integer.parseInt(String.valueOf(request.get("totalBeds"))));
         }
+        if (request.containsKey("icuAvailable")) hospital.setIcuAvailable(Boolean.parseBoolean(String.valueOf(request.get("icuAvailable"))));
+        if (request.containsKey("ambulanceAvailable")) hospital.setAmbulanceAvailable(Boolean.parseBoolean(String.valueOf(request.get("ambulanceAvailable"))));
+        if (request.containsKey("emergencyServicesAvailable")) hospital.setEmergencyServicesAvailable(Boolean.parseBoolean(String.valueOf(request.get("emergencyServicesAvailable"))));
         
-        // Handle Registration Certificate
-        if (registrationCertificate != null && !registrationCertificate.isEmpty()) {
-            try {
-                String certUrl = supabaseStorageService.uploadFile(registrationCertificate);
-                if (certUrl != null) hospital.setRegistrationCertificateUrl(certUrl);
-            } catch (Exception e) {
-                System.err.println("Failed to upload registration certificate: " + e.getMessage());
-            }
-        }
-        
+        hospital.setTimezone(request.get("timezone") != null ? String.valueOf(request.get("timezone")) : "Asia/Kolkata");
+        hospital.setWorkingHours(request.get("workingHours") != null ? String.valueOf(request.get("workingHours")) : "24/7");
+
+        // Handle File Uploads
+        if (hospitalLogo != null && !hospitalLogo.isEmpty()) hospital.setLogoUrl(supabaseStorageService.uploadFile(hospitalLogo));
+        if (registrationCertificate != null && !registrationCertificate.isEmpty()) hospital.setRegistrationCertificateUrl(supabaseStorageService.uploadFile(registrationCertificate));
+        if (nabhCertificate != null && !nabhCertificate.isEmpty()) hospital.setNabhCertificateUrl(supabaseStorageService.uploadFile(nabhCertificate));
+        if (taxCertificate != null && !taxCertificate.isEmpty()) hospital.setTaxCertificateUrl(supabaseStorageService.uploadFile(taxCertificate));
+        if (addressProof != null && !addressProof.isEmpty()) hospital.setAddressProofUrl(supabaseStorageService.uploadFile(addressProof));
+
         hospital = hospitalRepository.save(hospital);
 
         // 3. Create Admin Profile
         com.health.medisync.model.HospitalAdmin admin = new com.health.medisync.model.HospitalAdmin();
         admin.setUser(user);
         admin.setHospital(hospital);
-        admin.setName(request.get("name") != null ? String.valueOf(request.get("name")) : null);
-        admin.setPosition(request.get("position") != null ? String.valueOf(request.get("position")) : "Administrator");
-
-        if (profilePicture != null && !profilePicture.isEmpty()) {
-            try {
-                String adminPhotoUrl = supabaseStorageService.uploadFile(profilePicture);
-                if (adminPhotoUrl != null) admin.setProfilePictureUrl(adminPhotoUrl);
-            } catch (Exception e) {
-                System.err.println("Failed to upload admin photo: " + e.getMessage());
-            }
-        }
+        admin.setName(request.get("adminName") != null ? String.valueOf(request.get("adminName")) : null);
+        admin.setPosition(request.get("adminRole") != null ? String.valueOf(request.get("adminRole")) : "CHIEF_ADMIN");
+        admin.setContactNumber(request.get("adminContact") != null ? String.valueOf(request.get("adminContact")) : null);
+        
+        if (profilePicture != null && !profilePicture.isEmpty()) admin.setProfilePictureUrl(supabaseStorageService.uploadFile(profilePicture));
+        if (adminIdProof != null && !adminIdProof.isEmpty()) admin.setIdProofUrl(supabaseStorageService.uploadFile(adminIdProof));
 
         hospitalAdminRepository.save(admin);
 
