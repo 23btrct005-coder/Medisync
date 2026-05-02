@@ -50,7 +50,8 @@ const HospitalDashboard = () => {
         proceduresHandled: '',
         publications: '',
         treatmentFocus: '',
-        slotDuration: '15'
+        slotDuration: '15',
+        preferredPaymentMode: 'RAZORPAY'
     });
     const [submitting, setSubmitting] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
@@ -165,6 +166,7 @@ const HospitalDashboard = () => {
                 hospitalName: stats?.hospitalName || '',
                 razorpayAccountId: stats?.razorpayKeyId || '',
                 upiId: stats?.upiId || '',
+                preferredPaymentMode: onboardData.preferredPaymentMode || 'RAZORPAY',
                 // Advanced Professional Mapping
                 subSpecialties: onboardData.subSpecialties,
                 languagesSpoken: onboardData.languagesSpoken,
@@ -622,27 +624,47 @@ const HospitalDashboard = () => {
                                 </div>
                                 
                                 {/* Institutional Financial Sync */}
-                                <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-4">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <CreditCard size={14} className="text-primary" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-800">Payment Gateway Enforcement</span>
+                                <div className="p-8 bg-slate-50 rounded-[3rem] border border-slate-100 space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <CreditCard size={18} className="text-primary" />
+                                            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-800">Payout Configuration</span>
+                                        </div>
+                                        <div className="flex gap-2 p-1 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                                            {['RAZORPAY', 'UPI', 'BOTH'].map(mode => (
+                                                <button
+                                                    key={mode}
+                                                    type="button"
+                                                    onClick={() => setOnboardData({...onboardData, preferredPaymentMode: mode})}
+                                                    className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
+                                                        onboardData.preferredPaymentMode === mode
+                                                            ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                                                            : 'text-slate-400 hover:text-slate-600'
+                                                    }`}
+                                                >
+                                                    {mode}
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">Institutional Razorpay ID</label>
-                                            <div className="px-4 py-3 bg-white rounded-xl text-[10px] font-mono font-bold text-slate-600 border border-slate-100">
+
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div className="p-4 bg-white rounded-2xl border border-slate-100">
+                                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-2">Merchant ID</label>
+                                            <div className="text-[10px] font-mono font-bold text-slate-600 truncate">
                                                 {stats?.razorpayKeyId || 'NOT_CONFIGURED'}
                                             </div>
                                         </div>
-                                        <div>
-                                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">Institutional UPI ID</label>
-                                            <div className="px-4 py-3 bg-white rounded-xl text-[10px] font-mono font-bold text-slate-600 border border-slate-100">
+                                        <div className="p-4 bg-white rounded-2xl border border-slate-100">
+                                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-2">VPA / UPI ID</label>
+                                            <div className="text-[10px] font-mono font-bold text-slate-600 truncate">
                                                 {stats?.upiId || 'NOT_CONFIGURED'}
                                             </div>
                                         </div>
                                     </div>
-                                    <p className="text-[8px] font-bold text-primary uppercase leading-tight">
-                                        Locked: This physician will use institutional payment nodes for all clinical transactions.
+                                    
+                                    <p className="text-[9px] font-bold text-primary uppercase tracking-widest italic leading-relaxed">
+                                        Physician transactions will be routed through these institutional nodes based on the selected mode.
                                     </p>
                                 </div>
                             </div>

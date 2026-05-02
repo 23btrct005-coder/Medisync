@@ -200,11 +200,18 @@ public class HospitalController {
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         HospitalAdmin admin = hospitalService.getAdminByUser(user);
+        
+        if (request.get("patientId") == null || request.get("doctorId") == null || 
+            request.get("date") == null || request.get("slot") == null || request.get("type") == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Missing required appointment parameters"));
+        }
+
         Long patientId = Long.valueOf(request.get("patientId").toString());
         Long doctorId  = Long.valueOf(request.get("doctorId").toString());
         java.time.LocalDate date = java.time.LocalDate.parse(request.get("date").toString());
         String slot = request.get("slot").toString();
         String type = request.get("type").toString();
+        
         hospitalService.bookAppointment(patientId, doctorId, date, slot, type, admin.getHospital());
         return ResponseEntity.ok(Map.of("message", "Appointment synchronized successfully"));
     }

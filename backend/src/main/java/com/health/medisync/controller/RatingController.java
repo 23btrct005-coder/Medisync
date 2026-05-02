@@ -35,6 +35,9 @@ public class RatingController {
     @PostMapping
     public ResponseEntity<?> submitRating(Authentication authentication, @RequestBody Map<String, Object> request) {
         try {
+            if (request.get("appointmentId") == null || request.get("stars") == null) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Missing required rating parameters"));
+            }
             Long appointmentId = Long.valueOf(request.get("appointmentId").toString());
             Integer stars = Integer.valueOf(request.get("stars").toString());
             String comment = (String) request.get("comment");

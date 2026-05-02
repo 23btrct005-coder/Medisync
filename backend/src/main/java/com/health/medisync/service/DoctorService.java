@@ -264,7 +264,7 @@ public class DoctorService {
             }
         }
 
-        if (doctor.getOnlineConsultationFee() == null) {
+        if (doctor.getOnlineConsultationFee() == null && doctor.getConsultationFee() != null) {
            String numeric = doctor.getConsultationFee().replaceAll("[^0-9]", "");
            if (!numeric.isEmpty()) {
                try { 

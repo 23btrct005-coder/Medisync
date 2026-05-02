@@ -227,6 +227,7 @@ public class HospitalService {
         // Institutional Sync
         if (updates.containsKey("employeeId")) doctor.setEmployeeId(updates.get("employeeId") != null ? updates.get("employeeId").toString() : null);
         if (updates.containsKey("opdRoomNumber")) doctor.setOpdRoomNumber(updates.get("opdRoomNumber") != null ? updates.get("opdRoomNumber").toString() : null);
+        if (updates.containsKey("preferredPaymentMode")) doctor.setPreferredPaymentMode(updates.get("preferredPaymentMode") != null ? updates.get("preferredPaymentMode").toString() : "BOTH");
         
         // Auto-flag as institutional if updated through hospital context
         doctor.setInstitutional(true);

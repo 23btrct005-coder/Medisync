@@ -120,6 +120,9 @@ public class AppointmentController {
     @PostMapping("/verify-upi")
     public ResponseEntity<?> verifyUpiPayment(@RequestBody Map<String, Object> request) {
         try {
+            if (request.get("appointmentId") == null) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Missing appointmentId"));
+            }
             Long appointmentId = Long.valueOf(request.get("appointmentId").toString());
             appointmentService.verifyUpiPayment(appointmentId);
             return ResponseEntity.ok(Map.of("message", "Appointment confirmed via Direct UPI"));

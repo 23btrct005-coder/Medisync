@@ -71,7 +71,8 @@ const HospitalDoctorRoster = () => {
             const payload = {
                 ...editData,
                 workingDays,
-                consultationTimings
+                consultationTimings,
+                preferredPaymentMode: editData.preferredPaymentMode || 'RAZORPAY'
             };
 
             await api.post(`/hospital/update-doctor/${editingDoctor.id}`, payload);
@@ -358,12 +359,42 @@ const HospitalDoctorRoster = () => {
                                 </div>
                             </div>
 
+                            {/* Section 4: Settlement & Payouts */}
+                            <div className="space-y-8 pt-8 border-t border-slate-50">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                                    <h4 className="text-[11px] font-black text-orange-600 uppercase tracking-[0.3em]">4. Settlement & Payouts</h4>
+                                </div>
+                                <div className="p-6 bg-orange-50/50 rounded-[2rem] border border-orange-100/50">
+                                    <label className="text-[10px] font-black text-orange-800 uppercase tracking-[0.2em] ml-2 mb-4 block italic">Direct Payout Configuration</label>
+                                    <div className="flex items-center gap-2 p-1 bg-white rounded-2xl border border-orange-100 shadow-sm">
+                                        {['RAZORPAY', 'UPI', 'BOTH'].map(mode => (
+                                            <button
+                                                key={mode}
+                                                type="button"
+                                                onClick={() => setEditData({...editData, preferredPaymentMode: mode})}
+                                                className={`flex-1 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
+                                                    (editData.preferredPaymentMode || 'RAZORPAY') === mode
+                                                        ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
+                                                        : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
+                                                }`}
+                                            >
+                                                {mode}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <p className="mt-4 px-2 text-[9px] font-bold text-orange-400 uppercase tracking-widest leading-relaxed">
+                                        Institutional settlements are routed via hospital gateways. Select the preferred disbursement mode for this physician's revenue share.
+                                    </p>
+                                </div>
+                            </div>
+
                             {/* Section 4: Institutional Governance */}
                             <div className="space-y-8 pt-8 border-t border-slate-50">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                                        <h4 className="text-[11px] font-black text-blue-600 uppercase tracking-[0.3em]">4. Institutional Governance</h4>
+                                        <h4 className="text-[11px] font-black text-blue-600 uppercase tracking-[0.3em]">5. Institutional Governance</h4>
                                     </div>
                                     <div className="flex gap-4">
                                         <button type="button" onClick={() => { setEditingDoctor(null); navigate('/hospital-dashboard/appointments'); }} className="text-[9px] font-black text-blue-600 hover:underline uppercase tracking-widest flex items-center gap-1">
