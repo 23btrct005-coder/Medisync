@@ -48,8 +48,8 @@ public class HealthController {
             d -> {
                 result.put("doctor_found", true);
                 result.put("doctor_approved", d.isApproved());
-                result.put("doctor_hospital", d.getHospital());
-                result.put("doctor_hospital_id", d.getHospitalId());
+                result.put("doctor_hospital", d.getHospitalEntity() != null ? d.getHospitalEntity().getName() : d.getHospital());
+                result.put("doctor_hospital_id", d.getHospitalEntity() != null ? d.getHospitalEntity().getId() : null);
             },
             () -> result.put("doctor_found", false)
         );
