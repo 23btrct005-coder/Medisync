@@ -106,8 +106,24 @@ export const AuthProvider = ({ children }) => {
       return { success: true, role };
       
     } catch (error) {
-      console.error("Login failed:", error);
-      const message = error.response?.data?.message || (error.response?.status === 401 ? 'Invalid credentials. Please check your password.' : 'Invalid credentials or account not verified');
+      console.error("Login Error Details:", {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+      
+      let message = error.response?.data?.message;
+      
+      if (!message) {
+        if (error.response?.status === 401) {
+          message = 'Invalid credentials. Please check your password.';
+        } else if (error.response?.status === 403) {
+          message = 'Your account is pending institutional or administrative approval.';
+        } else {
+          message = 'Login service unavailable. Please verify your internet connection.';
+        }
+      }
+      
       return { success: false, message };
     }
   };
