@@ -631,6 +631,20 @@ const Register = () => {
                             ))}
                             <option value="other">Other / Not Listed</option>
                         </select>
+                        {formData.hospital === 'other' && (
+                            <div className="mt-4 animate-in slide-in-from-top-2 duration-300">
+                                <label className={labelClass}>Clinic / Hospital Name <span className="text-red-500">*</span></label>
+                                <input 
+                                    type="text" 
+                                    name="hospitalName" 
+                                    required={formData.hospital === 'other'} 
+                                    value={formData.hospitalName} 
+                                    onChange={handleChange} 
+                                    className={inputClass} 
+                                    placeholder="e.g. Apollo Clinic, City Hospital" 
+                                />
+                            </div>
+                        )}
                     </div>
                     <div>
                         <label className={labelClass}>Years of Experience</label>
