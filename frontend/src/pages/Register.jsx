@@ -1082,7 +1082,7 @@ const Register = () => {
                     {loading ? 'Finalizing Sync...' : (role === 'ROLE_DOCTOR' ? 'Complete Physician Enrollment' : (role === 'ROLE_PATIENT' ? 'Complete Patient Registration' : 'Complete Institutional Onboarding'))}
                   </button>
                 </div>
-              </div>>
+              </div>
               </form>
           </div>
         </div>
