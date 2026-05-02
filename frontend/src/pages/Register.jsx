@@ -130,19 +130,24 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  
+  // UI & Flow States
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [aiDisclaimerAccepted, setAiDisclaimerAccepted] = useState(false);
+  const [locating, setLocating] = useState(false);
+  
+  // Media & Documents
+  const [profilePicture, setProfilePicture] = useState(null);
   const [hospitalLogo, setHospitalLogo] = useState(null);
+  const [registrationCertificate, setRegistrationCertificate] = useState(null);
+  const [licenseDocument, setLicenseDocument] = useState(null);
+
+  // Data States
   const [fetchingHospitals, setFetchingHospitals] = useState(false);
   const [hospitals, setHospitals] = useState([]);
   const [geographyData, setGeographyData] = useState({});
-  const [locating, setLocating] = useState(false);
-
-  const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, totalSteps));
-  const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
-  const [profilePicture, setProfilePicture] = useState(null);
-  const [registrationCertificate, setRegistrationCertificate] = useState(null);
-  const [licenseDocument, setLicenseDocument] = useState(null);
+  const [availableCities, setAvailableCities] = useState([]);
 
   // Verification states
   const [otpSent, setOtpSent] = useState(false);
@@ -150,17 +155,8 @@ const Register = () => {
   const [otpCode, setOtpCode] = useState('');
   const [verifying, setVerifying] = useState(false);
 
-  // UI States
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [aiDisclaimerAccepted, setAiDisclaimerAccepted] = useState(false);
-  const [locating, setLocating] = useState(false);
-
-  const [geographyData, setGeographyData] = useState({});
-  const [availableCities, setAvailableCities] = useState([]);
-
-  const [hospitals, setHospitals] = useState([]);
-  const [fetchingHospitals, setFetchingHospitals] = useState(false);
+  const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+  const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
 
   useEffect(() => {
     const fetchGeo = async () => {
