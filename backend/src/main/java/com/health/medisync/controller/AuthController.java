@@ -410,8 +410,15 @@ public class AuthController {
             catch (NumberFormatException ignored) {}
         }
 
-        doctor.setRazorpayAccountId(request.get("razorpayAccountId") != null ? String.valueOf(request.get("razorpayAccountId")) : null);
-        doctor.setUpiId(request.get("upiId") != null ? String.valueOf(request.get("upiId")) : null);
+        // Financial Settlement Enforcement
+        if (doctor.getHospitalEntity() != null) {
+            doctor.setRazorpayAccountId(doctor.getHospitalEntity().getRazorpayKeyId());
+            doctor.setUpiId(doctor.getHospitalEntity().getUpiId());
+            doctor.setPreferredPaymentMode("BOTH");
+        } else {
+            doctor.setRazorpayAccountId(request.get("razorpayAccountId") != null ? String.valueOf(request.get("razorpayAccountId")) : null);
+            doctor.setUpiId(request.get("upiId") != null ? String.valueOf(request.get("upiId")) : null);
+        }
         
         if (request.get("yearsOfExperience") != null && !String.valueOf(request.get("yearsOfExperience")).isEmpty()) {
             try { doctor.setYearsOfExperience(Integer.parseInt(String.valueOf(request.get("yearsOfExperience")))); }

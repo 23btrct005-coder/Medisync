@@ -27,7 +27,7 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
     },
     { 
       name: isAdmin ? 'Hospital Ledger' : 'My Appointments', 
-      path: `${prefix}/appointments`, 
+      path: isAdmin ? `${prefix}/ledger` : `${prefix}/appointments`, 
       icon: <Calendar size={20} /> 
     },
     { 

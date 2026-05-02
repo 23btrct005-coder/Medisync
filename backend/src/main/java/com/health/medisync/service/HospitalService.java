@@ -78,6 +78,8 @@ public class HospitalService {
         stats.put("activeDepts", Math.max(deptCount, 12)); // Fallback for visualization if no depts created
         stats.put("totalRevenue", totalRevenue);
         stats.put("currency", "₹");
+        stats.put("upiId", hospital.getUpiId());
+        stats.put("razorpayKeyId", hospital.getRazorpayKeyId());
         
         // High-Fidelity Infrastructure Stats
         stats.put("totalBeds", hospital.getTotalBeds() != null ? hospital.getTotalBeds() : 0);

@@ -163,6 +163,11 @@ public class HospitalController {
             if (data.get("twitterUrl")    != null) hospital.setTwitterUrl(String.valueOf(data.get("twitterUrl")));
             if (data.get("instagramUrl")  != null) hospital.setInstagramUrl(String.valueOf(data.get("instagramUrl")));
 
+            // Financial Settlements
+            if (data.get("razorpayKeyId") != null)     hospital.setRazorpayKeyId(String.valueOf(data.get("razorpayKeyId")));
+            if (data.get("razorpayKeySecret") != null) hospital.setRazorpayKeySecret(String.valueOf(data.get("razorpayKeySecret")));
+            if (data.get("upiId") != null)             hospital.setUpiId(String.valueOf(data.get("upiId")));
+
             String city  = hospital.getCity()  != null ? hospital.getCity()  : "";
             String state = hospital.getState() != null ? hospital.getState() : "";
             hospital.setLocation((city + ", " + state).trim().replaceAll("^,\\s*|,\\s*$", "").trim());

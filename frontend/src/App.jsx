@@ -47,6 +47,7 @@ import HospitalAppointments from './pages/HospitalAppointments';
 import HospitalPatients from './pages/HospitalPatients';
 import HospitalProfile from './pages/HospitalProfile';
 import HospitalAnalytics from './pages/HospitalAnalytics';
+import HospitalLedger from './pages/HospitalLedger';
 import VerifyEmail from './pages/VerifyEmail';
 import PatientMessages from './pages/PatientMessages';
 import ClinicalError404 from './pages/ClinicalError404';
@@ -191,6 +192,7 @@ function App() {
                 }>
                   <Route index element={<HospitalDashboard />} />
                   <Route path="appointments" element={<HospitalAppointments />} />
+                  <Route path="ledger" element={<HospitalLedger />} />
                   <Route path="patients" element={<HospitalPatients />} />
                   <Route path="profile" element={<HospitalProfile />} />
                   <Route path="institutional-profile" element={<HospitalProfile />} />

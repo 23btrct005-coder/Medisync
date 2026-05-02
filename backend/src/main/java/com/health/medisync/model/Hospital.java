@@ -93,6 +93,8 @@ public class Hospital {
     private String bankAccountNumber;
     private String ifscCode;
     private String upiId;
+    private String razorpayKeyId;
+    private String razorpayKeySecret;
 
     // ── 8. Online Presence & Branding ──
     private String googleMapsUrl;
@@ -296,4 +298,10 @@ public class Hospital {
 
     public String getUpiId() { return upiId; }
     public void setUpiId(String upiId) { this.upiId = upiId; }
+
+    public String getRazorpayKeyId() { return razorpayKeyId; }
+    public void setRazorpayKeyId(String razorpayKeyId) { this.razorpayKeyId = razorpayKeyId; }
+
+    public String getRazorpayKeySecret() { return razorpayKeySecret; }
+    public void setRazorpayKeySecret(String razorpayKeySecret) { this.razorpayKeySecret = razorpayKeySecret; }
 }

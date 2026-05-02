@@ -55,7 +55,11 @@ const HospitalProfile = () => {
         instagramUrl: '',
         // Admin Profile
         adminName: '',
-        position: ''
+        position: '',
+        // Financial Settlements
+        razorpayKeyId: '',
+        razorpayKeySecret: '',
+        upiId: ''
     });
 
     useEffect(() => {
@@ -100,7 +104,10 @@ const HospitalProfile = () => {
                 twitterUrl: h.twitterUrl || '',
                 instagramUrl: h.instagramUrl || '',
                 adminName: adminData.name || '',
-                position: adminData.position || ''
+                position: adminData.position || '',
+                razorpayKeyId: h.razorpayKeyId || '',
+                razorpayKeySecret: h.razorpayKeySecret || '',
+                upiId: h.upiId || ''
             });
             if (h.logoUrl) setLogoPreview(h.logoUrl);
         } catch (err) {
@@ -447,7 +454,7 @@ const HospitalProfile = () => {
 
                     {/* Section 4: Billing & Online Branding */}
                     <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
-                        <div className="flex items-center gap-4 mb-8">
+                        <div className="flex items-center gap-4 mb-8 text-left">
                             <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
                                 <Globe size={24} />
                             </div>
@@ -483,6 +490,54 @@ const HospitalProfile = () => {
                                     placeholder="Star Health, HDFC Ergo, ICICI Lombard, etc."
                                 />
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Section 5: Financial Settlements */}
+                    <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
+                        <div className="flex items-center gap-4 mb-8 text-left">
+                            <div className="w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center text-primary">
+                                <CreditCard size={24} />
+                            </div>
+                            <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Financial <span className="not-italic text-primary">Settlements</span></h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Razorpay Key ID</label>
+                                <input 
+                                    type="text"
+                                    value={formData.razorpayKeyId}
+                                    onChange={(e) => setFormData({...formData, razorpayKeyId: e.target.value})}
+                                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 font-mono"
+                                    placeholder="rzp_live_XXXXXXXXXXXX"
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Razorpay Key Secret</label>
+                                <input 
+                                    type="password"
+                                    value={formData.razorpayKeySecret}
+                                    onChange={(e) => setFormData({...formData, razorpayKeySecret: e.target.value})}
+                                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
+                                    placeholder="••••••••••••••••"
+                                />
+                            </div>
+                            <div className="space-y-1 md:col-span-2">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Institutional UPI ID</label>
+                                <input 
+                                    type="text"
+                                    value={formData.upiId}
+                                    onChange={(e) => setFormData({...formData, upiId: e.target.value})}
+                                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 font-mono"
+                                    placeholder="hospital@okaxis"
+                                />
+                            </div>
+                        </div>
+                        <div className="mt-8 p-6 bg-blue-50/50 rounded-3xl border border-blue-100/50 flex items-center gap-4 text-left">
+                            <Shield className="text-primary" size={20} />
+                            <p className="text-[10px] font-bold text-slate-600 leading-relaxed uppercase">
+                                These credentials will be used as the <span className="text-primary font-black">exclusive payment gateway</span> for all staff members onboarded to this institution.
+                            </p>
                         </div>
                     </div>
                 </div>

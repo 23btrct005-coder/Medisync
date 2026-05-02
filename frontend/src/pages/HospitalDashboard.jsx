@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, Users, ClipboardCheck, TrendingUp, ShieldAlert, Shield, ChevronRight, UserPlus, Search, Activity, Calendar, GraduationCap, Briefcase, Mail, Phone, MapPin, Clock, DollarSign, Lock, X, Check } from 'lucide-react';
+import { Building2, Users, ClipboardCheck, TrendingUp, ShieldAlert, Shield, ChevronRight, UserPlus, Search, Activity, Calendar, GraduationCap, Briefcase, Mail, Phone, MapPin, Clock, DollarSign, CreditCard, Lock, X, Check } from 'lucide-react';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
 import DropZone from '../components/DropZone';
@@ -154,7 +154,9 @@ const HospitalDashboard = () => {
                 consultationTimings,
                 username: onboardData.email,
                 hospital: stats?.hospitalId != null ? String(stats.hospitalId) : '',
-                hospitalName: stats?.hospitalName || ''
+                hospitalName: stats?.hospitalName || '',
+                razorpayAccountId: stats?.razorpayKeyId || '',
+                upiId: stats?.upiId || ''
             };
             formDataToSend.append('userData', JSON.stringify(userData));
             
@@ -575,6 +577,31 @@ const HospitalDashboard = () => {
                                     <div><label className={labelClass}>Monthly Salary (₹)</label><input type="number" required value={onboardData.salary} onChange={(e) => setOnboardData({...onboardData, salary: e.target.value})} className={onboardInputClass} placeholder="150000" /></div>
                                     <div><label className={labelClass}>Revenue Share (%)</label><input type="number" value={onboardData.revenueSharePercentage} onChange={(e) => setOnboardData({...onboardData, revenueSharePercentage: e.target.value})} className={onboardInputClass} placeholder="0" /></div>
                                     <div><label className={labelClass}>OPD Fee (₹)</label><input type="number" required value={onboardData.consultationFee} onChange={(e) => setOnboardData({...onboardData, consultationFee: e.target.value})} className={onboardInputClass} placeholder="500" /></div>
+                                </div>
+                                
+                                {/* Institutional Financial Sync */}
+                                <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-4">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <CreditCard size={14} className="text-primary" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-800">Payment Gateway Enforcement</span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">Institutional Razorpay ID</label>
+                                            <div className="px-4 py-3 bg-white rounded-xl text-[10px] font-mono font-bold text-slate-600 border border-slate-100">
+                                                {stats?.razorpayKeyId || 'NOT_CONFIGURED'}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">Institutional UPI ID</label>
+                                            <div className="px-4 py-3 bg-white rounded-xl text-[10px] font-mono font-bold text-slate-600 border border-slate-100">
+                                                {stats?.upiId || 'NOT_CONFIGURED'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p className="text-[8px] font-bold text-primary uppercase leading-tight">
+                                        Locked: This physician will use institutional payment nodes for all clinical transactions.
+                                    </p>
                                 </div>
                             </div>
 
