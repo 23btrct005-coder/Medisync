@@ -98,9 +98,9 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
                     <div>
                         <h4 className="text-xs font-black uppercase tracking-tight leading-none">{receiverName}</h4>
                         <div className="flex items-center gap-1.5 mt-1">
-                            <div className={`w-1.5 h-1.5 rounded-full ${connected ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                            <div className={`w-1.5 h-1.5 rounded-full ${connected ? 'bg-emerald-500' : 'bg-slate-500'}`} />
                             <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">
-                                {connected ? 'Live Sync Active' : 'Connecting...'}
+                                {connected ? 'Online' : 'Last seen recently'}
                             </span>
                         </div>
                     </div>
