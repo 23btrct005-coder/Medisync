@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { 
   Users, Stethoscope, Camera, Calendar, ShieldCheck, Sparkles, 
   Search, Bell, UserPlus, ChevronRight, Activity, Target,
-  Zap, Globe, Database, ArrowUpRight, X, QrCode, AlertCircle, Star
+  Zap, Globe, Database, ArrowUpRight, X, QrCode, AlertCircle, Star, MessageSquare
 } from 'lucide-react';
 import api from '../api/axiosConfig';
 import { Html5Qrcode } from 'html5-qrcode';
