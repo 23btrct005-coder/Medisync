@@ -6,6 +6,7 @@ import com.health.medisync.model.Doctor;
 import com.health.medisync.model.PasswordResetToken;
 import com.health.medisync.model.User;
 import com.health.medisync.repository.*;
+import com.health.medisync.model.Hospital;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -223,7 +224,7 @@ public class AuthService {
             
             // Delete associated data
             appointmentRepository.deleteByDoctorId(doctor.getId());
-            prescriptionRepository.deleteAll(prescriptionRepository.findByDoctorId(doctor.getId()));
+            prescriptionRepository.deleteAll(prescriptionRepository.findByDoctorIdOrderByCreatedAtDesc(doctor.getId()));
             ratingRepository.deleteAll(ratingRepository.findByDoctorId(doctor.getId()));
             
             doctorRepository.delete(doctor);

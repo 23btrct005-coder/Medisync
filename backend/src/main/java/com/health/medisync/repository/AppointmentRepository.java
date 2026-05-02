@@ -18,6 +18,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<Appointment> findByDoctorId(Long doctorId);
     List<Appointment> findByDoctorIdAndStatus(Long doctorId, AppointmentStatus status);
     Optional<Appointment> findByRazorpayOrderId(String orderId);
+    void deleteByDoctorId(Long doctorId);
 
     List<Appointment> findByAppointmentDate(LocalDate date);
 
