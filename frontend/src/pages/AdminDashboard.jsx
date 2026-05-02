@@ -116,8 +116,8 @@ const AdminDashboard = () => {
     if (userInput === email) {
       setActionLoading(id);
       try {
-        const endpoint = type === 'doctors' ? `admin/doctors/${id}/purge` : `admin/hospitals/${id}/purge`;
-        await api.delete(endpoint);
+        const endpoint = type === 'doctors' ? `/admin/doctors/${id}/purge` : `/admin/hospitals/${id}/purge`;
+        await api.post(endpoint);
         toast.success("Account purged permanently from the registry.");
         setSelectedItem(null);
         fetchData(false);

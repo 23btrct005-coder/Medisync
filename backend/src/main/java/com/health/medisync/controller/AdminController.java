@@ -206,7 +206,7 @@ public class AdminController {
             return ResponseEntity.status(500).body(Map.of("message", "Wipe failed: " + e.getMessage()));
         }
     }
-    @DeleteMapping("/doctors/{id}/purge")
+    @PostMapping("/doctors/{id}/purge")
     @Transactional
     public ResponseEntity<?> purgeDoctor(@PathVariable Long id) {
         return doctorRepository.findById(id).map(doctor -> {
@@ -225,7 +225,7 @@ public class AdminController {
         }).orElse(ResponseEntity.status(404).body(Map.of("message", "Physician not found.")));
     }
 
-    @DeleteMapping("/hospitals/{id}/purge")
+    @PostMapping("/hospitals/{id}/purge")
     @Transactional
     public ResponseEntity<?> purgeHospital(@PathVariable Long id) {
         return hospitalAdminRepository.findById(id).map(admin -> {
