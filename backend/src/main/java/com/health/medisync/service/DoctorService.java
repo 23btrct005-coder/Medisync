@@ -14,6 +14,7 @@ import com.health.medisync.repository.PatientRepository;
 import com.health.medisync.repository.MedicalRecordRepository;
 import com.health.medisync.repository.ReportRepository;
 import com.health.medisync.repository.AccessRequestRepository;
+import com.health.medisync.service.DatabaseSchemaService;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
@@ -29,13 +30,15 @@ public class DoctorService {
     private final SupabaseStorageService supabaseStorageService;
     private final NotificationService notificationService;
     private final AuditLogService auditLogService;
+    private final DatabaseSchemaService databaseSchemaService;
 
     public DoctorService(DoctorRepository doctorRepository, UserRepository userRepository,
                          PatientRepository patientRepository, MedicalRecordRepository recordRepository,
                          ReportRepository reportRepository, AccessRequestRepository accessRequestRepository,
                          SupabaseStorageService supabaseStorageService,
                          NotificationService notificationService,
-                         AuditLogService auditLogService) {
+                         AuditLogService auditLogService,
+                         DatabaseSchemaService databaseSchemaService) {
         this.doctorRepository = doctorRepository;
         this.userRepository = userRepository;
         this.patientRepository = patientRepository;
@@ -45,9 +48,13 @@ public class DoctorService {
         this.supabaseStorageService = supabaseStorageService;
         this.notificationService = notificationService;
         this.auditLogService = auditLogService;
+        this.databaseSchemaService = databaseSchemaService;
     }
 
     public Doctor getDoctorProfile(String username) {
+        // Safety: Ensure schema is synchronized before fetching the complex Doctor entity
+        databaseSchemaService.selfHealSchema();
+        
         User user = userRepository.findByUsernameIgnoreCase(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
         return doctorRepository.findByUserId(user.getId())
