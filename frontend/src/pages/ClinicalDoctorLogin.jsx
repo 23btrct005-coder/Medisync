@@ -305,7 +305,7 @@ const DoctorRegisterForm = ({ onBack }) => {
                     <input type="text" name="name" required value={formData.name} onChange={handleChange}
                       className={inputCls} placeholder="Dr. John Smith" />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                     <div>
                       <label className={labelCls}>Gender <span className="text-red-500">*</span></label>
                       <select name="gender" required value={formData.gender} onChange={handleChange} className={inputCls}>
@@ -365,7 +365,7 @@ const DoctorRegisterForm = ({ onBack }) => {
               {/* 3. Contact Information */}
               <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
                 <h3 className={sectionCls}><Phone size={16} /> 3. Contact & Connectivity</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                   <div>
                     <label className={labelCls}>Mobile Number <span className="text-red-500">*</span></label>
                     <input type="tel" name="phone" required value={formData.phone} onChange={handleChange}
@@ -383,7 +383,7 @@ const DoctorRegisterForm = ({ onBack }) => {
               <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
                 <h3 className={sectionCls}><GraduationCap size={16} /> 4. Professional Qualifications</h3>
                 <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                     <div>
                       <label className={labelCls}>Medical Degree <span className="text-red-500">*</span></label>
                       <select name="medicalDegree" required value={formData.medicalDegree} onChange={handleChange} className={inputCls}>
@@ -423,7 +423,7 @@ const DoctorRegisterForm = ({ onBack }) => {
               <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
                 <h3 className={sectionCls}><ShieldCheck size={16} /> 5. License & Verification</h3>
                 <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                       <div>
                           <label className={labelCls}>Medical Council <span className="text-red-500">*</span></label>
                           <input type="text" name="medicalCouncil" required value={formData.medicalCouncil} onChange={handleChange}
@@ -485,7 +485,7 @@ const DoctorRegisterForm = ({ onBack }) => {
               <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-[350ms]">
                 <h3 className={sectionCls}><Activity size={16} /> 6. Clinical Expertise Depth</h3>
                 <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                       <div>
                           <label className={labelCls}>Sub-Specialties</label>
                           <input type="text" name="subSpecialties" value={formData.subSpecialties} onChange={handleChange}
@@ -518,7 +518,7 @@ const DoctorRegisterForm = ({ onBack }) => {
               {/* 7. Work Details */}
               <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-400">
                 <h3 className={sectionCls}><Building2 size={16} /> 7. Work Details</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                   <div className="md:col-span-2">
                     <label className={labelCls}>Affiliated Hospital / Clinic <span className="text-red-500">*</span></label>
                     <select name="hospital" required value={formData.hospital} onChange={handleChange} className={inputCls}>
@@ -554,7 +554,7 @@ const DoctorRegisterForm = ({ onBack }) => {
                   <input type="text" name="clinicAddress" value={formData.clinicAddress} onChange={handleChange}
                     className={inputCls} placeholder="e.g. Room 204, Alpha Plaza, MG Road" />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                   <div>
                     <label className={labelCls}>Consultation Fee (₹)</label>
                     <input type="number" name="onlineConsultationFee" value={formData.onlineConsultationFee} onChange={handleChange}
@@ -571,7 +571,7 @@ const DoctorRegisterForm = ({ onBack }) => {
               {/* 8. Availability */}
               <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
                 <h3 className={sectionCls}><Clock size={16} /> 8. Availability</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                   <div>
                     <label className={labelCls}>Working Days</label>
                     <input type="text" name="workingDaysText" value={formData.workingDays.join(', ')} readOnly
@@ -652,7 +652,7 @@ const DoctorRegisterForm = ({ onBack }) => {
                     <label className={labelCls}>Username / Doctor ID <span className="text-red-500">*</span></label>
                     <input type="text" value={formData.email} disabled className={`${inputCls} bg-blue-50 border-blue-100 text-blue-900 font-bold`} />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
                   <div className="relative">
                     <label className={labelCls}>Secure Password <span className="text-red-500">*</span></label>
                     <input type={showPassword ? 'text' : 'password'} name="password" required

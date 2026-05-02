@@ -487,7 +487,7 @@ const Register = () => {
                         <input type="text" name="name" required value={formData.name} onChange={handleChange}
                           className={inputClass} placeholder="Dr. John Smith" />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                         <div>
                             <label className={labelClass}>Gender <span className="text-red-500">*</span></label>
                             <select name="gender" required value={formData.gender} onChange={handleChange} className={inputClass}>
@@ -570,7 +570,7 @@ const Register = () => {
                   <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
                     <Phone size={16} /> 3. Contact & Connectivity
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                     <div>
                         <label className={labelClass}>Mobile Number <span className="text-red-500">*</span></label>
                         <input type="tel" name="phone" required value={formData.phone} onChange={handleChange}
@@ -624,7 +624,7 @@ const Register = () => {
                     <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
                       <MapPin size={16} /> 5. Residency & Emergency
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                         <div className="md:col-span-2">
                             <label className={labelClass}>Full Residential Address</label>
                             <input type="text" name="street" value={formData.street} onChange={handleChange} className={inputClass} placeholder="Street, Building, Area" />
@@ -648,7 +648,7 @@ const Register = () => {
                     <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
                       <ClipboardList size={16} /> 6. Clinical History
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                         <div>
                             <label className={labelClass}>Known Allergies</label>
                             <textarea name="allergies" value={formData.allergies} onChange={handleChange} className={`${inputClass} h-20 resize-none`} placeholder="e.g. Penicillin, Peanuts" />
@@ -689,7 +689,7 @@ const Register = () => {
                     <GraduationCap size={16} /> 4. Professional Qualifications
                   </h3>
                   <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                         <div>
                             <label className={labelClass}>Medical Degree <span className="text-red-500">*</span></label>
                             <select name="medicalDegree" required value={formData.medicalDegree} onChange={handleChange} className={inputClass}>
@@ -733,7 +733,7 @@ const Register = () => {
                     <ShieldCheck size={16} /> 5. License & Verification
                   </h3>
                   <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                         <div>
                             <label className={labelClass}>Medical Council <span className="text-red-500">*</span></label>
                             <input type="text" name="medicalCouncil" required value={formData.medicalCouncil} onChange={handleChange}
@@ -809,7 +809,7 @@ const Register = () => {
                     <Activity size={16} /> 6. Clinical Expertise Depth
                   </h3>
                   <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                         <div>
                             <label className={labelClass}>Sub-Specialties</label>
                             <input type="text" name="subSpecialties" value={formData.subSpecialties} onChange={handleChange}
@@ -846,7 +846,7 @@ const Register = () => {
                   <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
                     <Building2 size={16} /> 6. Work Details
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                     <div className="md:col-span-2">
                         <label className={labelClass}>Affiliated Hospital / Clinic <span className="text-red-500">*</span></label>
                         <select name="hospital" required value={formData.hospital} onChange={handleChange} className={inputClass}>
@@ -882,7 +882,7 @@ const Register = () => {
                         <input type="text" name="clinicAddress" value={formData.clinicAddress} onChange={handleChange}
                           className={inputClass} placeholder="e.g. Room 204, Alpha Plaza, MG Road" />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                     <div>
                         <label className={labelClass}>Consultation Fee (₹)</label>
                         <input type="number" name="onlineConsultationFee" value={formData.onlineConsultationFee} onChange={handleChange}
@@ -903,7 +903,7 @@ const Register = () => {
                   <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
                     <Activity size={16} /> 7. Availability
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                     <div>
                         <label className={labelClass}>Working Days</label>
                         <input type="text" name="workingDaysText" value={formData.workingDays.join(', ')} readOnly
@@ -1004,7 +1004,7 @@ const Register = () => {
                     <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
                       <Building2 size={16} /> 2. Institutional & Legal
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
                         <div className="flex flex-col items-center gap-6 p-4 bg-slate-50 rounded-2xl border border-slate-100 shadow-inner">
                            <div className="text-center">
                               <ProfilePhotoUpload onFileSelect={setHospitalLogo} />
@@ -1036,21 +1036,21 @@ const Register = () => {
                     <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
                       <ShieldCheck size={16} /> 3. Legal & Financial Compliance
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                         <div>
                             <label className={labelClass}>GST Number</label>
                             <input type="text" name="gstNumber" value={formData.gstNumber} onChange={handleChange} className={inputClass} placeholder="e.g. 22AAAAA0000A1Z5" />
                         </div>
                         <div>
-                            <label className={labelCls}>PAN Number</label>
+                            <label className={labelClass}>PAN Number</label>
                             <input type="text" name="panNumber" value={formData.panNumber} onChange={handleChange} className={inputClass} placeholder="e.g. ABCDE1234F" />
                         </div>
                         <div>
-                            <label className={labelCls}>NABH ID (Optional)</label>
+                            <label className={labelClass}>NABH ID (Optional)</label>
                             <input type="text" name="nabhId" value={formData.nabhId} onChange={handleChange} className={inputClass} placeholder="NABH Registration" />
                         </div>
                         <div>
-                            <label className={labelCls}>ISO Certification</label>
+                            <label className={labelClass}>ISO Certification</label>
                             <input type="text" name="isoId" value={formData.isoId} onChange={handleChange} className={inputClass} placeholder="ISO ID" />
                         </div>
                     </div>
@@ -1062,19 +1062,19 @@ const Register = () => {
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
-                            <label className={labelCls}>Total Beds</label>
+                            <label className={labelClass}>Total Beds</label>
                             <input type="number" name="totalBeds" value={formData.totalBeds} onChange={handleChange} className={inputClass} placeholder="0" />
                         </div>
                         <div>
-                            <label className={labelCls}>ICU Beds</label>
+                            <label className={labelClass}>ICU Beds</label>
                             <input type="number" name="icuBeds" value={formData.icuBeds} onChange={handleChange} className={inputClass} placeholder="0" />
                         </div>
                         <div>
-                            <label className={labelCls}>OT Count</label>
+                            <label className={labelClass}>OT Count</label>
                             <input type="number" name="operationTheatersCount" value={formData.operationTheatersCount} onChange={handleChange} className={inputClass} placeholder="0" />
                         </div>
                         <div>
-                            <label className={labelCls}>Ambulances</label>
+                            <label className={labelClass}>Ambulances</label>
                             <input type="number" name="ambulanceCount" value={formData.ambulanceCount} onChange={handleChange} className={inputClass} placeholder="0" />
                         </div>
                     </div>
@@ -1110,7 +1110,7 @@ const Register = () => {
                       <MapPin size={16} /> 6. Facility Location
                     </h3>
                     <div className="flex justify-between items-center mb-4">
-                        <p className={labelCls}>Geographic Coordinates</p>
+                        <p className={labelClass}>Geographic Coordinates</p>
                         <button type="button" onClick={handleGetCurrentLocation} className="text-[10px] font-black text-primary-600 uppercase flex items-center gap-2">
                            <Navigation size={12} className={locating ? 'animate-pulse' : ''} /> {locating ? 'Locating...' : 'Auto-Locate'}
                         </button>
@@ -1134,7 +1134,7 @@ const Register = () => {
                     <label className={labelClass}>Username / Doctor ID <span className="text-red-500">*</span></label>
                     <input type="text" value={formData.email} disabled className={`${inputClass} bg-blue-50 border-blue-100 text-blue-900 font-bold`} />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
                   <div className="relative">
                     <label className={labelClass}>Secure Password <span className="text-red-500">*</span></label>
                     <input type={showPassword ? 'text' : 'password'} name="password" required value={formData.password} onChange={handleChange} className={inputClass} />
