@@ -167,7 +167,7 @@ const Register = () => {
     const newDob = `${year}-${month}-${day}`;
     const updated = { ...formData, dateOfBirth: newDob };
 
-    if (year && month && day && role === 'ROLE_PATIENT') {
+    if (year && month && day && (role === 'ROLE_PATIENT' || role === 'ROLE_DOCTOR')) {
         const today = new Date();
         const dobObj = new Date(year, month - 1, day);
         let calculatedAge = today.getFullYear() - dobObj.getFullYear();
