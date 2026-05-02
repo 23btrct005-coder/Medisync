@@ -993,7 +993,8 @@ const Register = () => {
                     </div>
                   </div>
                 </div>
-              )}
+              </div>
+            )}
 
               {/* Institutional Registration Path (Legacy Support) */}
               {role === 'ROLE_HOSPITAL_ADMIN' && (
