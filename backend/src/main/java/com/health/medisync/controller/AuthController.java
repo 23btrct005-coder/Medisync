@@ -626,6 +626,15 @@ public class AuthController {
         hospital.setWebsite(request.get("website") != null ? String.valueOf(request.get("website")) : null);
         hospital.setGoogleMapsUrl(request.get("googleMapsUrl") != null ? String.valueOf(request.get("googleMapsUrl")) : null);
         
+        hospital.setFacilityId(request.get("facilityId") != null ? String.valueOf(request.get("facilityId")) : null);
+        hospital.setGovtRegistrationNumber(request.get("govtRegistrationNumber") != null ? String.valueOf(request.get("govtRegistrationNumber")) : null);
+        hospital.setCinNumber(request.get("cinNumber") != null ? String.valueOf(request.get("cinNumber")) : null);
+        
+        hospital.setMedicalDirectorName(request.get("medicalDirectorName") != null ? String.valueOf(request.get("medicalDirectorName")) : null);
+        hospital.setMedicalDirectorQualification(request.get("medicalDirectorQualification") != null ? String.valueOf(request.get("medicalDirectorQualification")) : null);
+        hospital.setMedicalDirectorRegNumber(request.get("medicalDirectorRegNumber") != null ? String.valueOf(request.get("medicalDirectorRegNumber")) : null);
+        hospital.setMedicalDirectorEmail(request.get("medicalDirectorEmail") != null ? String.valueOf(request.get("medicalDirectorEmail")) : null);
+        
         hospital.setGstNumber(request.get("gstNumber") != null ? String.valueOf(request.get("gstNumber")) : null);
         hospital.setPanNumber(request.get("panNumber") != null ? String.valueOf(request.get("panNumber")) : null);
         hospital.setRegistrationAuthority(request.get("registrationAuthority") != null ? String.valueOf(request.get("registrationAuthority")) : null);
@@ -635,9 +644,29 @@ public class AuthController {
         if (request.get("totalBeds") != null && !String.valueOf(request.get("totalBeds")).isEmpty()) {
             hospital.setTotalBeds(Integer.parseInt(String.valueOf(request.get("totalBeds"))));
         }
+        if (request.get("doctorCount") != null && !String.valueOf(request.get("doctorCount")).isEmpty()) {
+            hospital.setDoctorCount(Integer.parseInt(String.valueOf(request.get("doctorCount"))));
+        }
+        if (request.get("nurseCount") != null && !String.valueOf(request.get("nurseCount")).isEmpty()) {
+            hospital.setNurseCount(Integer.parseInt(String.valueOf(request.get("nurseCount"))));
+        }
+        if (request.get("generalStaffCount") != null && !String.valueOf(request.get("generalStaffCount")).isEmpty()) {
+            hospital.setGeneralStaffCount(Integer.parseInt(String.valueOf(request.get("generalStaffCount"))));
+        }
+
         if (request.containsKey("icuAvailable")) hospital.setIcuAvailable(Boolean.parseBoolean(String.valueOf(request.get("icuAvailable"))));
         if (request.containsKey("ambulanceAvailable")) hospital.setAmbulanceAvailable(Boolean.parseBoolean(String.valueOf(request.get("ambulanceAvailable"))));
         if (request.containsKey("emergencyServicesAvailable")) hospital.setEmergencyServicesAvailable(Boolean.parseBoolean(String.valueOf(request.get("emergencyServicesAvailable"))));
+        
+        if (request.containsKey("hasEhr")) hospital.setHasEhr(Boolean.parseBoolean(String.valueOf(request.get("hasEhr"))));
+        if (request.containsKey("hasPacs")) hospital.setHasPacs(Boolean.parseBoolean(String.valueOf(request.get("hasPacs"))));
+        if (request.containsKey("hasLabIntegration")) hospital.setHasLabIntegration(Boolean.parseBoolean(String.valueOf(request.get("hasLabIntegration"))));
+        if (request.containsKey("telemedicineEnabled")) hospital.setTelemedicineEnabled(Boolean.parseBoolean(String.valueOf(request.get("telemedicineEnabled"))));
+        
+        hospital.setBankName(request.get("bankName") != null ? String.valueOf(request.get("bankName")) : null);
+        hospital.setBankAccountNumber(request.get("bankAccountNumber") != null ? String.valueOf(request.get("bankAccountNumber")) : null);
+        hospital.setIfscCode(request.get("ifscCode") != null ? String.valueOf(request.get("ifscCode")) : null);
+        hospital.setUpiId(request.get("upiId") != null ? String.valueOf(request.get("upiId")) : null);
         
         hospital.setTimezone(request.get("timezone") != null ? String.valueOf(request.get("timezone")) : "Asia/Kolkata");
         hospital.setWorkingHours(request.get("workingHours") != null ? String.valueOf(request.get("workingHours")) : "24/7");

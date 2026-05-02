@@ -44,6 +44,15 @@ public class Hospital {
     private String nabhCertificateUrl;
     private String taxCertificateUrl;
     private String addressProofUrl;
+    private String facilityId; // ABDM Facility ID
+    private String govtRegistrationNumber;
+    private String cinNumber; // For corporate hospitals
+    
+    // ── 1b. Medical Authority (Director) ──
+    private String medicalDirectorName;
+    private String medicalDirectorQualification;
+    private String medicalDirectorRegNumber;
+    private String medicalDirectorEmail;
     
     // ── 2. Medical Infrastructure ──
     @Column(columnDefinition = "TEXT")
@@ -59,6 +68,13 @@ public class Hospital {
     private Boolean emergencyServicesAvailable = true; // 24/7 services
     private String officialEmergencyContact;
     private String alternatePhone;
+    private Integer doctorCount;
+    
+    // ── 3. Digital Capabilities ──
+    private Boolean hasEhr = false;
+    private Boolean hasPacs = false;
+    private Boolean hasLabIntegration = false;
+    private Boolean telemedicineEnabled = false;
     
     // ── 4. Appointment & Scheduling ──
     private String consultationTimings; // e.g. "9:00 AM - 9:00 PM"
@@ -71,6 +87,12 @@ public class Hospital {
     private String consultationFees; // JSON mapping department -> fee
     private String billingContactEmail;
     private String billingContactPhone;
+    
+    // ── 5b. Financial Settlement ──
+    private String bankName;
+    private String bankAccountNumber;
+    private String ifscCode;
+    private String upiId;
 
     // ── 8. Online Presence & Branding ──
     private String googleMapsUrl;
@@ -226,4 +248,52 @@ public class Hospital {
 
     public String getAlternatePhone() { return alternatePhone; }
     public void setAlternatePhone(String alternatePhone) { this.alternatePhone = alternatePhone; }
+
+    public String getFacilityId() { return facilityId; }
+    public void setFacilityId(String facilityId) { this.facilityId = facilityId; }
+
+    public String getGovtRegistrationNumber() { return govtRegistrationNumber; }
+    public void setGovtRegistrationNumber(String govtRegistrationNumber) { this.govtRegistrationNumber = govtRegistrationNumber; }
+
+    public String getCinNumber() { return cinNumber; }
+    public void setCinNumber(String cinNumber) { this.cinNumber = cinNumber; }
+
+    public String getMedicalDirectorName() { return medicalDirectorName; }
+    public void setMedicalDirectorName(String medicalDirectorName) { this.medicalDirectorName = medicalDirectorName; }
+
+    public String getMedicalDirectorQualification() { return medicalDirectorQualification; }
+    public void setMedicalDirectorQualification(String medicalDirectorQualification) { this.medicalDirectorQualification = medicalDirectorQualification; }
+
+    public String getMedicalDirectorRegNumber() { return medicalDirectorRegNumber; }
+    public void setMedicalDirectorRegNumber(String medicalDirectorRegNumber) { this.medicalDirectorRegNumber = medicalDirectorRegNumber; }
+
+    public String getMedicalDirectorEmail() { return medicalDirectorEmail; }
+    public void setMedicalDirectorEmail(String medicalDirectorEmail) { this.medicalDirectorEmail = medicalDirectorEmail; }
+
+    public Integer getDoctorCount() { return doctorCount; }
+    public void setDoctorCount(Integer doctorCount) { this.doctorCount = doctorCount; }
+
+    public Boolean getHasEhr() { return hasEhr; }
+    public void setHasEhr(Boolean hasEhr) { this.hasEhr = hasEhr; }
+
+    public Boolean getHasPacs() { return hasPacs; }
+    public void setHasPacs(Boolean hasPacs) { this.hasPacs = hasPacs; }
+
+    public Boolean getHasLabIntegration() { return hasLabIntegration; }
+    public void setHasLabIntegration(Boolean hasLabIntegration) { this.hasLabIntegration = hasLabIntegration; }
+
+    public Boolean getTelemedicineEnabled() { return telemedicineEnabled; }
+    public void setTelemedicineEnabled(Boolean telemedicineEnabled) { this.telemedicineEnabled = telemedicineEnabled; }
+
+    public String getBankName() { return bankName; }
+    public void setBankName(String bankName) { this.bankName = bankName; }
+
+    public String getBankAccountNumber() { return bankAccountNumber; }
+    public void setBankAccountNumber(String bankAccountNumber) { this.bankAccountNumber = bankAccountNumber; }
+
+    public String getIfscCode() { return ifscCode; }
+    public void setIfscCode(String ifscCode) { this.ifscCode = ifscCode; }
+
+    public String getUpiId() { return upiId; }
+    public void setUpiId(String upiId) { this.upiId = upiId; }
 }

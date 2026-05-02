@@ -125,6 +125,24 @@ const Register = () => {
     workingHours: '24/7',
     websiteUrl: '',
     googleMapsUrl: '',
+    facilityId: '',
+    govtRegistrationNumber: '',
+    cinNumber: '',
+    medicalDirectorName: '',
+    medicalDirectorQualification: '',
+    medicalDirectorRegNumber: '',
+    medicalDirectorEmail: '',
+    doctorCount: '',
+    nurseCount: '',
+    generalStaffCount: '',
+    hasEhr: false,
+    hasPacs: false,
+    hasLabIntegration: false,
+    telemedicineEnabled: false,
+    bankName: '',
+    bankAccountNumber: '',
+    ifscCode: '',
+    upiId: '',
     termsAccepted: false,
     privacyAccepted: false,
     consentAccepted: false,
@@ -705,6 +723,9 @@ const Register = () => {
                             </select>
                           </div>
                           <div><label className={labelClass}>Official Website</label><input type="url" name="websiteUrl" value={formData.websiteUrl} onChange={handleChange} className={inputClass} placeholder="https://www.hospital.com" /></div>
+                          <div><label className={labelClass}>National Facility ID (ABDM) <span className="text-red-500">*</span></label><input type="text" name="facilityId" required value={formData.facilityId} onChange={handleChange} className={inputClass} placeholder="IN12345678" /></div>
+                          <div><label className={labelClass}>Govt Registration No <span className="text-red-500">*</span></label><input type="text" name="govtRegistrationNumber" required value={formData.govtRegistrationNumber} onChange={handleChange} className={inputClass} placeholder="HOSP-REG-99" /></div>
+                          <div><label className={labelClass}>TIN / CIN (Corporate)</label><input type="text" name="cinNumber" value={formData.cinNumber} onChange={handleChange} className={inputClass} placeholder="U12345DL2024PTC123456" /></div>
                         </div>
                         <div className="flex flex-col items-center gap-4 py-4"><label className={labelClass}>Hospital Logo</label><DocumentUpload onFileSelect={setHospitalLogo} label="Upload Logo" /></div>
                       </div>
@@ -748,15 +769,30 @@ const Register = () => {
                         </div>
                       </div>
 
-                      {/* Section 4: Infrastructure & Capacity */}
+                      {/* Section 4: Infrastructure & Authority */}
                       <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
-                        <h3 className={sectionHeadClass}><Activity size={16} /> 5. Infrastructure & Services</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                            <div className="md:col-span-2"><label className={labelClass}>Total Number of Beds <span className="text-red-500">*</span></label><input type="number" name="totalBeds" required value={formData.totalBeds} onChange={handleChange} className={inputClass} placeholder="e.g. 150" /></div>
-                            <div><label className={labelClass}>ICU Available</label><select name="icuAvailable" value={formData.icuAvailable} onChange={handleChange} className={inputClass}><option value="false">No</option><option value="true">Yes</option></select></div>
-                            <div><label className={labelClass}>Ambulance</label><select name="ambulanceAvailable" value={formData.ambulanceAvailable} onChange={handleChange} className={inputClass}><option value="false">No</option><option value="true">Yes</option></select></div>
+                        <h3 className={sectionHeadClass}><Activity size={16} /> 5. Medical Authority & Infrastructure</h3>
+                        
+                        <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 space-y-6">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Medical Director Details</p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div><label className={labelClass}>Director Full Name <span className="text-red-500">*</span></label><input type="text" name="medicalDirectorName" required value={formData.medicalDirectorName} onChange={handleChange} className={inputClass} placeholder="Chief Medical Officer" /></div>
+                                <div><label className={labelClass}>Highest Qualification <span className="text-red-500">*</span></label><input type="text" name="medicalDirectorQualification" required value={formData.medicalDirectorQualification} onChange={handleChange} className={inputClass} placeholder="MD, FRCS, etc." /></div>
+                                <div><label className={labelClass}>Medical Reg Number <span className="text-red-500">*</span></label><input type="text" name="medicalDirectorRegNumber" required value={formData.medicalDirectorRegNumber} onChange={handleChange} className={inputClass} placeholder="State Council Reg" /></div>
+                                <div><label className={labelClass}>Authority Email <span className="text-red-500">*</span></label><input type="email" name="medicalDirectorEmail" required value={formData.medicalDirectorEmail} onChange={handleChange} className={inputClass} placeholder="director@hospital.com" /></div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-4">
+                            <div><label className={labelClass}>Total Beds <span className="text-red-500">*</span></label><input type="number" name="totalBeds" required value={formData.totalBeds} onChange={handleChange} className={inputClass} /></div>
+                            <div><label className={labelClass}>Doctor Count <span className="text-red-500">*</span></label><input type="number" name="doctorCount" required value={formData.doctorCount} onChange={handleChange} className={inputClass} /></div>
+                            <div><label className={labelClass}>Nurses <span className="text-red-500">*</span></label><input type="number" name="nurseCount" required value={formData.nurseCount} onChange={handleChange} className={inputClass} /></div>
+                            <div><label className={labelClass}>Support Staff <span className="text-red-500">*</span></label><input type="number" name="generalStaffCount" required value={formData.generalStaffCount} onChange={handleChange} className={inputClass} /></div>
+                            
+                            <div className="md:col-span-2 pt-4"><label className={labelClass}>ICU Available</label><select name="icuAvailable" value={formData.icuAvailable} onChange={handleChange} className={inputClass}><option value="false">No</option><option value="true">Yes</option></select></div>
+                            <div className="md:col-span-2 pt-4"><label className={labelClass}>Ambulance</label><select name="ambulanceAvailable" value={formData.ambulanceAvailable} onChange={handleChange} className={inputClass}><option value="false">No</option><option value="true">Yes</option></select></div>
                             <div className="md:col-span-2"><label className={labelClass}>Timezone</label><select name="timezone" value={formData.timezone} onChange={handleChange} className={inputClass}><option value="Asia/Kolkata">India (IST)</option><option value="UTC">UTC</option></select></div>
-                            <div className="md:col-span-2"><label className={labelClass}>Working Hours</label><input type="text" name="workingHours" value={formData.workingHours} onChange={handleChange} className={inputClass} placeholder="e.g. 24/7 or 9AM-9PM" /></div>
+                            <div className="md:col-span-2"><label className={labelClass}>Working Hours</label><input type="text" name="workingHours" value={formData.workingHours} onChange={handleChange} className={inputClass} placeholder="e.g. 24/7" /></div>
                         </div>
                       </div>
 
@@ -787,9 +823,40 @@ const Register = () => {
                         </div>
                       </div>
 
+                      {/* Section 7: Digital Capabilities & Financials */}
+                      <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
+                        <h3 className={sectionHeadClass}><Globe size={16} /> 8. Capabilities & Settlement</h3>
+                        
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {[
+                                    { name: 'hasEhr', label: 'EHR System' },
+                                    { name: 'hasPacs', label: 'PACS (X-Ray)' },
+                                    { name: 'hasLabIntegration', label: 'Lab Integration' },
+                                    { name: 'telemedicineEnabled', label: 'Telemedicine' }
+                                ].map(tech => (
+                                    <label key={tech.name} className="flex flex-col items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 cursor-pointer hover:bg-primary-50 transition-colors">
+                                        <input type="checkbox" name={tech.name} checked={formData[tech.name]} onChange={(e) => setFormData({...formData, [tech.name]: e.target.checked})} className="h-5 w-5 rounded border-slate-200 text-primary-600" />
+                                        <span className="text-[10px] font-black uppercase text-slate-500 text-center">{tech.label}</span>
+                                    </label>
+                                ))}
+                            </div>
+
+                            <div className="pt-6 border-t border-slate-100 space-y-6">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Banking & Automated Payouts</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div><label className={labelClass}>Bank Name <span className="text-red-500">*</span></label><input type="text" name="bankName" required value={formData.bankName} onChange={handleChange} className={inputClass} placeholder="e.g. HDFC Bank" /></div>
+                                    <div><label className={labelClass}>Account Number <span className="text-red-500">*</span></label><input type="text" name="bankAccountNumber" required value={formData.bankAccountNumber} onChange={handleChange} className={inputClass} placeholder="0000 0000 0000" /></div>
+                                    <div><label className={labelClass}>IFSC Code <span className="text-red-500">*</span></label><input type="text" name="ifscCode" required value={formData.ifscCode} onChange={handleChange} className={inputClass} placeholder="HDFC0001234" /></div>
+                                    <div><label className={labelClass}>Primary UPI ID</label><input type="text" name="upiId" value={formData.upiId} onChange={handleChange} className={inputClass} placeholder="hospital@upi" /></div>
+                                </div>
+                            </div>
+                        </div>
+                      </div>
+
                       {/* Section 8: Final Compliance & Account Security */}
                       <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
-                        <h3 className={sectionHeadClass}><Lock size={16} /> 8. Compliance & Account Security</h3>
+                        <h3 className={sectionHeadClass}><Lock size={16} /> 9. Compliance & Account Security</h3>
                         
                         <div className="space-y-6">
                             <div>

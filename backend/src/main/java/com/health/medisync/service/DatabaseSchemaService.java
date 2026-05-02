@@ -25,6 +25,24 @@ public class DatabaseSchemaService {
             // Hospital Admin Table Updates
             jdbcTemplate.execute("ALTER TABLE hospital_admins ADD COLUMN IF NOT EXISTS approved BOOLEAN DEFAULT FALSE");
             jdbcTemplate.execute("ALTER TABLE hospitals ADD COLUMN IF NOT EXISTS registration_certificate_url TEXT");
+            jdbcTemplate.execute("ALTER TABLE hospitals ADD COLUMN IF NOT EXISTS facility_id TEXT");
+            jdbcTemplate.execute("ALTER TABLE hospitals ADD COLUMN IF NOT EXISTS govt_registration_number TEXT");
+            jdbcTemplate.execute("ALTER TABLE hospitals ADD COLUMN IF NOT EXISTS cin_number TEXT");
+            jdbcTemplate.execute("ALTER TABLE hospitals ADD COLUMN IF NOT EXISTS medical_director_name TEXT");
+            jdbcTemplate.execute("ALTER TABLE hospitals ADD COLUMN IF NOT EXISTS medical_director_qualification TEXT");
+            jdbcTemplate.execute("ALTER TABLE hospitals ADD COLUMN IF NOT EXISTS medical_director_reg_number TEXT");
+            jdbcTemplate.execute("ALTER TABLE hospitals ADD COLUMN IF NOT EXISTS medical_director_email TEXT");
+            jdbcTemplate.execute("ALTER TABLE hospitals ADD COLUMN IF NOT EXISTS doctor_count INTEGER");
+            jdbcTemplate.execute("ALTER TABLE hospitals ADD COLUMN IF NOT EXISTS nurse_count INTEGER");
+            jdbcTemplate.execute("ALTER TABLE hospitals ADD COLUMN IF NOT EXISTS general_staff_count INTEGER");
+            jdbcTemplate.execute("ALTER TABLE hospitals ADD COLUMN IF NOT EXISTS has_ehr BOOLEAN DEFAULT FALSE");
+            jdbcTemplate.execute("ALTER TABLE hospitals ADD COLUMN IF NOT EXISTS has_pacs BOOLEAN DEFAULT FALSE");
+            jdbcTemplate.execute("ALTER TABLE hospitals ADD COLUMN IF NOT EXISTS has_lab_integration BOOLEAN DEFAULT FALSE");
+            jdbcTemplate.execute("ALTER TABLE hospitals ADD COLUMN IF NOT EXISTS telemedicine_enabled BOOLEAN DEFAULT FALSE");
+            jdbcTemplate.execute("ALTER TABLE hospitals ADD COLUMN IF NOT EXISTS bank_name TEXT");
+            jdbcTemplate.execute("ALTER TABLE hospitals ADD COLUMN IF NOT EXISTS bank_account_number TEXT");
+            jdbcTemplate.execute("ALTER TABLE hospitals ADD COLUMN IF NOT EXISTS ifsc_code TEXT");
+            jdbcTemplate.execute("ALTER TABLE hospitals ADD COLUMN IF NOT EXISTS upi_id TEXT");
 
             // Doctor Table Updates - Core Legitimacy
             jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS approved BOOLEAN DEFAULT FALSE");
