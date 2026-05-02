@@ -16,12 +16,31 @@ const HospitalDepartments = [
   "Psychiatry", "Emergency Medicine", "Radiology", "General Surgery"
 ];
 
+const StepIndicator = ({ currentStep, totalSteps }) => (
+  <div className="flex items-center justify-between mb-8 max-w-sm mx-auto">
+    {[...Array(totalSteps)].map((_, i) => (
+      <React.Fragment key={i}>
+        <div className={`relative flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-500 ${i + 1 <= currentStep ? 'bg-primary-600 border-primary-600 text-white' : 'bg-white border-slate-200 text-slate-300'}`}>
+          {i + 1 < currentStep ? <CheckCircle size={20} /> : <span className="font-black text-sm">{i + 1}</span>}
+          {i + 1 === currentStep && <div className="absolute inset-0 bg-primary-600/30 blur-lg rounded-full animate-pulse" />}
+        </div>
+        {i < totalSteps - 1 && (
+          <div className={`flex-1 h-0.5 mx-2 transition-all duration-500 ${i + 1 < currentStep ? 'bg-primary-600' : 'bg-slate-100'}`} />
+        )}
+      </React.Fragment>
+    ))}
+  </div>
+);
+
 const Register = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const context = searchParams.get('context') || 'patient'; // patient or professional
   
   const [role, setRole] = useState(context === 'professional' ? 'ROLE_HOSPITAL_ADMIN' : 'ROLE_PATIENT');
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 6;
+  
   const [formData, setFormData] = useState({
     // Identity
     email: '',
@@ -32,9 +51,6 @@ const Register = () => {
     gender: '',
     dateOfBirth: '',
     age: '',
-    // Contact
-    phone: '',
-    alternatePhone: '',
     // Detailed Patient Profile
     nationalId: '',
     maritalStatus: '',
@@ -42,13 +58,23 @@ const Register = () => {
     height: '',
     weight: '',
     hasDisability: 'false',
+    disabilityDetails: '',
+    // Contact
+    phone: '',
+    alternatePhone: '',
     emergencyContactName: '',
-    emergencyContactPhone: '',
     emergencyContactRelationship: '',
+    emergencyContactPhone: '',
+    altEmergencyPhone: '',
+    // Clinical History
     allergies: '',
     existingDiseases: '',
+    currentMedications: '',
+    pastSurgeries: '',
+    // Lifestyle
     smokingStatus: '',
     alcoholStatus: '',
+    exerciseFrequency: '',
     organDonorStatus: 'Undecided',
     // Clinical (Doctor)
     specialization: '',
@@ -104,8 +130,17 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [profilePicture, setProfilePicture] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [hospitalLogo, setHospitalLogo] = useState(null);
+  const [fetchingHospitals, setFetchingHospitals] = useState(false);
+  const [hospitals, setHospitals] = useState([]);
+  const [geographyData, setGeographyData] = useState({});
+  const [locating, setLocating] = useState(false);
+
+  const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+  const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
+  const [profilePicture, setProfilePicture] = useState(null);
   const [registrationCertificate, setRegistrationCertificate] = useState(null);
   const [licenseDocument, setLicenseDocument] = useState(null);
 
