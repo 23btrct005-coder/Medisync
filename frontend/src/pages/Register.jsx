@@ -542,20 +542,7 @@ const Register = () => {
                         <input type="text" name="age" disabled value={formData.age ? `${formData.age} Years` : 'From DOB'}
                           className="block w-full rounded-xl border-slate-100 bg-slate-50 sm:text-sm px-4 py-3.5 border text-slate-400 font-medium" />
                     </div>
-                    {role === 'ROLE_PATIENT' && (
-                        <>
-                            <div>
-                                <label className={labelClass}>Marital Status</label>
-                                <select name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} className={inputClass}>
-                                    <option value="">Select Status</option>
-                                    <option value="Single">Single</option>
-                                    <option value="Married">Married</option>
-                                    <option value="Divorced">Divorced</option>
-                                    <option value="Widowed">Widowed</option>
-                                </select>
-                            </div>
-                        </>
-                    )}
+
                   </div>
                 </div>
               )}
@@ -1148,7 +1135,7 @@ const Register = () => {
                 </h3>
                 <div className="mb-6">
                     <label className={labelClass}>
-                        {role === 'ROLE_PATIENT' ? 'Patient ID / Registered Email' : role === 'ROLE_DOCTOR' ? 'Doctor ID' : 'Administrative ID'} <span className="text-red-500">*</span>
+                        {role === 'ROLE_PATIENT' ? 'Patient ID' : role === 'ROLE_DOCTOR' ? 'Doctor ID' : 'Administrative ID'} <span className="text-red-500">*</span>
                     </label>
                     <input 
                         type="text" 
