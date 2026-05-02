@@ -86,6 +86,15 @@ const Register = () => {
     yearsOfExperience: '',
     onlineConsultationFee: '',
     clinicAddress: '',
+    clinicStreet: '',
+    clinicCity: '',
+    clinicState: '',
+    clinicPinCode: '',
+    subSpecialties: '',
+    proceduresHandled: '',
+    treatmentFocus: '',
+    languagesSpoken: '',
+    publications: '',
     upiId: '',
     workingDays: [],
     startTime: '09:00',
@@ -163,6 +172,15 @@ const Register = () => {
         setAvailableCities([]);
       }
     }
+    
+    if (name === 'clinicState') {
+      if (geographyData[value]) {
+        setAvailableCities(geographyData[value]);
+        updated.clinicCity = '';
+      } else {
+        setAvailableCities([]);
+      }
+    }
 
     setFormData(updated);
   };
@@ -216,15 +234,23 @@ const Register = () => {
           const detectedState = address.state || '';
           const detectedCity = address.city || address.town || address.village || address.district || '';
           const detectedPin = address.postcode || '';
-          const detectedStreet = data.display_name || '';
+          const detectedStreet = data.road || data.suburb || data.display_name || '';
 
           const updated = {
             ...formData,
-            state: detectedState,
-            city: detectedCity,
-            pinCode: detectedPin,
-            street: detectedStreet,
           };
+
+          if (role === 'ROLE_PATIENT') {
+              updated.state = detectedState;
+              updated.city = detectedCity;
+              updated.pinCode = detectedPin;
+              updated.street = detectedStreet;
+          } else {
+              updated.clinicState = detectedState;
+              updated.clinicCity = detectedCity;
+              updated.clinicPinCode = detectedPin;
+              updated.clinicStreet = detectedStreet;
+          }
 
           if (detectedState && geographyData[detectedState]) {
             setAvailableCities(geographyData[detectedState]);
@@ -291,6 +317,7 @@ const Register = () => {
         ...formData,
         username: formData.email,
         role: role,
+        clinicAddress: role === 'ROLE_DOCTOR' ? `${formData.clinicStreet}, ${formData.clinicCity}, ${formData.clinicState} - ${formData.clinicPinCode}` : formData.clinicAddress,
         consultationTimings: `${formData.startTime} - ${formData.endTime}`
       }));
       
@@ -554,8 +581,9 @@ const Register = () => {
                           <select name="specialization" required value={formData.specialization} onChange={handleChange} className={inputClass}><option value="">Specialization</option>{HospitalDepartments.map(d => <option key={d} value={d}>{d}</option>)}</select>
                         </div>
                       </div>
+
                       <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
-                        <h3 className={sectionHeadClass}><ShieldCheck size={16} /> 4. License</h3>
+                        <h3 className={sectionHeadClass}><ShieldCheck size={16} /> 4. License & Certification</h3>
                         <div className="grid grid-cols-2 gap-6">
                           <input type="text" name="medicalCouncil" required value={formData.medicalCouncil} onChange={handleChange} className={inputClass} placeholder="Council" />
                           <input type="text" name="medicalLicenseNumber" required value={formData.medicalLicenseNumber} onChange={handleChange} className={inputClass} placeholder="License No" />
@@ -563,6 +591,39 @@ const Register = () => {
                         <div>
                           <label className={labelClass}>Medical License Document <span className="text-red-500">*</span></label>
                           <DocumentUpload onFileSelect={setLicenseDocument} label="Upload Medical License" />
+                        </div>
+                      </div>
+
+                      <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
+                        <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+                            <h3 className={sectionHeadClass}><Building2 size={16} /> 5. Work & Clinic Details</h3>
+                            <button type="button" onClick={handleGetCurrentLocation} disabled={locating} 
+                                className="flex items-center gap-2 text-[10px] font-black text-blue-600 uppercase tracking-widest hover:text-blue-700 disabled:opacity-50 transition-all">
+                                <Navigation size={12} className={locating ? 'animate-pulse' : ''} /> {locating ? 'Locating...' : 'Auto-Locate'}
+                            </button>
+                        </div>
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-2 gap-6">
+                                <div><label className={labelClass}>Years of Experience <span className="text-red-500">*</span></label><input type="number" name="yearsOfExperience" required value={formData.yearsOfExperience} onChange={handleChange} className={inputClass} placeholder="e.g. 10" /></div>
+                                <div><label className={labelClass}>Consultation Fee (₹) <span className="text-red-500">*</span></label><input type="number" name="onlineConsultationFee" required value={formData.onlineConsultationFee} onChange={handleChange} className={inputClass} placeholder="e.g. 500" /></div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                                <div className="md:col-span-2"><label className={labelClass}>Clinic Address (Street/Area) <span className="text-red-500">*</span></label><input type="text" name="clinicStreet" required value={formData.clinicStreet} onChange={handleChange} className={inputClass} placeholder="Street, Building" /></div>
+                                <div><label className={labelClass}>State <span className="text-red-500">*</span></label><select name="clinicState" required value={formData.clinicState} onChange={handleChange} className={inputClass}><option value="">Select State</option>{Object.keys(geographyData).sort().map(s => <option key={s} value={s}>{s}</option>)}</select></div>
+                                <div><label className={labelClass}>City <span className="text-red-500">*</span></label><select name="clinicCity" required value={formData.clinicCity} onChange={handleChange} className={inputClass} disabled={!formData.clinicState}><option value="">Select City</option>{availableCities.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+                                <div><label className={labelClass}>PIN Code <span className="text-red-500">*</span></label><input type="text" name="clinicPinCode" required value={formData.clinicPinCode} onChange={handleChange} className={inputClass} placeholder="6 Digits" /></div>
+                            </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
+                        <h3 className={sectionHeadClass}><Activity size={16} /> 6. Clinical Information</h3>
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-2 gap-6">
+                                <div><label className={labelClass}>Sub-Specialties</label><input type="text" name="subSpecialties" value={formData.subSpecialties} onChange={handleChange} className={inputClass} placeholder="e.g. Diabetes" /></div>
+                                <div><label className={labelClass}>Languages</label><input type="text" name="languagesSpoken" value={formData.languagesSpoken} onChange={handleChange} className={inputClass} placeholder="e.g. English, Hindi" /></div>
+                            </div>
+                            <div><label className={labelClass}>Procedures & Publications</label><textarea name="proceduresHandled" value={formData.proceduresHandled} onChange={handleChange} className={`${inputClass} h-24`} placeholder="Procedures handled..." /></div>
                         </div>
                       </div>
                     </div>
