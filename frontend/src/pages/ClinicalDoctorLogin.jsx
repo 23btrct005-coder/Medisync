@@ -649,7 +649,7 @@ const DoctorRegisterForm = ({ onBack }) => {
               <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-700">
                 <h3 className={sectionCls}><ShieldCheck size={16} /> 9. Account Security</h3>
                 <div className="mb-6">
-                    <label className={labelCls}>Username / Doctor ID <span className="text-red-500">*</span></label>
+                    <label className={labelCls}>Doctor ID <span className="text-red-500">*</span></label>
                     <input type="text" value={formData.email} disabled className={`${inputCls} bg-blue-50 border-blue-100 text-blue-900 font-bold`} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">

@@ -1131,7 +1131,9 @@ const Register = () => {
                   <Lock size={16} /> {role === 'ROLE_DOCTOR' ? '8. Account Security' : (role === 'ROLE_PATIENT' ? '7. Account Security' : '4. Account Security')}
                 </h3>
                 <div className="mb-6">
-                    <label className={labelClass}>Username / Doctor ID <span className="text-red-500">*</span></label>
+                    <label className={labelClass}>
+                        {role === 'ROLE_PATIENT' ? 'Patient ID' : role === 'ROLE_DOCTOR' ? 'Doctor ID' : 'Administrative ID'} <span className="text-red-500">*</span>
+                    </label>
                     <input type="text" value={formData.email} disabled className={`${inputClass} bg-blue-50 border-blue-100 text-blue-900 font-bold`} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
