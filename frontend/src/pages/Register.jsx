@@ -263,24 +263,32 @@ const Register = () => {
           const detectedPin = address.postcode || '';
           const detectedStreet = data.road || data.suburb || data.display_name || '';
 
-          const updated = {
-            ...formData,
-          };
-
-          if (role === 'ROLE_PATIENT') {
+          const updated = { ...formData };
+          
+          if (role === 'ROLE_PATIENT' || role === 'ROLE_HOSPITAL_ADMIN') {
               updated.state = detectedState;
               updated.city = detectedCity;
               updated.pinCode = detectedPin;
               updated.street = detectedStreet;
-          } else {
+          } else if (role === 'ROLE_DOCTOR') {
               updated.clinicState = detectedState;
               updated.clinicCity = detectedCity;
               updated.clinicPinCode = detectedPin;
               updated.clinicStreet = detectedStreet;
           }
 
-          if (detectedState && geographyData[detectedState]) {
-            setAvailableCities(geographyData[detectedState]);
+          updated.googleMapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+          // Case-insensitive state matching for cascading dropdowns
+          const matchingStateKey = Object.keys(geographyData).find(
+            s => s.toLowerCase() === detectedState.toLowerCase()
+          );
+
+          if (matchingStateKey) {
+            if (role === 'ROLE_PATIENT' || role === 'ROLE_HOSPITAL_ADMIN') updated.state = matchingStateKey;
+            else updated.clinicState = matchingStateKey;
+            
+            setAvailableCities(geographyData[matchingStateKey]);
           }
 
           setFormData(updated);
