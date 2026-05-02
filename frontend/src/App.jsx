@@ -179,6 +179,7 @@ function App() {
                 }>
                   <Route index element={<AdminDashboard />} />
                   <Route path="pending" element={<AdminDashboard />} />
+                  <Route path="registry" element={<AdminDashboard />} />
                   <Route path="settings" element={<Settings />} />
                 </Route>
 

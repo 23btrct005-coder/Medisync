@@ -26,8 +26,11 @@ const AdminDashboard = () => {
   const [previewImage, setPreviewImage] = useState(null);
 
   useEffect(() => {
+    // Derive viewMode from URL
+    const mode = location.pathname.includes('registry') ? 'registry' : 'pending';
+    setViewMode(mode);
     fetchData();
-  }, [viewMode, subTab]);
+  }, [location.pathname, subTab]);
 
   // AUTO-SYNC: Refresh every 30 seconds
   useEffect(() => {
@@ -35,7 +38,7 @@ const AdminDashboard = () => {
       fetchData(false); // background fetch
     }, 30000);
     return () => clearInterval(interval);
-  }, [viewMode, subTab]);
+  }, [location.pathname, subTab]);
 
   const fetchData = async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -675,55 +678,25 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Two-Tiered Navigation Switcher */}
-      <div className="flex flex-col gap-6">
-        <div className="flex p-1.5 bg-slate-100 rounded-[2rem] w-full max-w-md shadow-inner">
+      {/* Secondary Entity Switcher (Doctors vs. Hospitals) */}
+      <div className="flex gap-2 p-1.5 bg-slate-100 rounded-2xl w-fit">
+        {[
+          { id: 'doctors', label: 'Physicians', icon: Stethoscope },
+          { id: 'hospitals', label: 'Institutions', icon: Building2 },
+        ].map(tab => (
           <button
-            onClick={() => { setViewMode('pending'); setSelectedItem(null); }}
-            className={`flex-1 py-4 rounded-[1.5rem] text-xs font-black uppercase tracking-[0.15em] transition-all duration-500 flex items-center justify-center gap-2 ${
-              viewMode === 'pending' 
-                ? 'bg-white text-slate-900 shadow-xl shadow-slate-200/50 translate-y-[-2px]' 
-                : 'text-slate-400 hover:text-slate-600'
+            key={tab.id}
+            onClick={() => { setSubTab(tab.id); setSelectedItem(null); }}
+            className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
+              subTab === tab.id 
+                ? 'bg-white text-slate-900 shadow-sm shadow-slate-200/50' 
+                : 'text-slate-500 hover:text-slate-700'
             }`}
           >
-            <AlertCircle size={14} className={viewMode === 'pending' ? 'text-amber-500' : 'text-slate-300'} />
-            Pending Registers
-            { (pendingDoctors.length + pendingHospitals.length) > 0 && (
-              <span className="ml-1 px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-[9px]">{pendingDoctors.length + pendingHospitals.length}</span>
-            )}
+            <tab.icon size={14} />
+            {tab.label}
           </button>
-          <button
-            onClick={() => { setViewMode('registry'); setSelectedItem(null); }}
-            className={`flex-1 py-4 rounded-[1.5rem] text-xs font-black uppercase tracking-[0.15em] transition-all duration-500 flex items-center justify-center gap-2 ${
-              viewMode === 'registry' 
-                ? 'bg-white text-slate-900 shadow-xl shadow-slate-200/50 translate-y-[-2px]' 
-                : 'text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            <ShieldCheck size={14} className={viewMode === 'registry' ? 'text-primary-500' : 'text-slate-300'} />
-            Approved Profiles
-          </button>
-        </div>
-
-        <div className="flex gap-2">
-          {[
-            { id: 'doctors', label: 'Physicians', icon: Stethoscope },
-            { id: 'hospitals', label: 'Institutions', icon: Building2 },
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => { setSubTab(tab.id); setSelectedItem(null); }}
-              className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border flex items-center gap-2 ${
-                subTab === tab.id 
-                  ? 'bg-slate-900 text-white border-slate-900 shadow-lg' 
-                  : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
-              }`}
-            >
-              <tab.icon size={14} />
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        ))}
       </div>
 
       {/* Pending List Table/Cards */}

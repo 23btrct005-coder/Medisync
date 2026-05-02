@@ -10,7 +10,8 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
 
   const navItems = [
     { name: 'Overview', path: '/admin-dashboard', icon: LayoutDashboard },
-    { name: 'Pending Doctors', path: '/admin-dashboard/pending', icon: UserCheck },
+    { name: 'Pending Registers', path: '/admin-dashboard/pending', icon: AlertCircle },
+    { name: 'Approved Registry', path: '/admin-dashboard/registry', icon: ShieldCheck },
     { name: 'Settings', path: '/admin-dashboard/settings', icon: Settings },
   ];
 
