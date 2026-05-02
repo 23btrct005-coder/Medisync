@@ -63,6 +63,13 @@ public class DatabaseSchemaService {
             jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS employee_id TEXT");
             jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS opd_room_number TEXT");
 
+            // Audit Log Table Updates
+            try {
+                jdbcTemplate.execute("ALTER TABLE audit_logs ALTER COLUMN target_patient_id DROP NOT NULL");
+            } catch (Exception e) {
+                // Ignore if column doesn't exist yet or other schema issues
+            }
+
             System.out.println("INFO: Database Schema Self-Heal completed successfully.");
         } catch (Exception e) {
             System.err.println("WARNING: Database Schema Self-Heal skipped or partially failed: " + e.getMessage());
