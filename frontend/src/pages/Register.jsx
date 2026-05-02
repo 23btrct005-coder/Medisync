@@ -630,16 +630,33 @@ const Register = () => {
                             <label className={labelClass}>Full Residential Address</label>
                             <input type="text" name="street" value={formData.street} onChange={handleChange} className={inputClass} placeholder="Street, Building, Area" />
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
-                            <input type="text" name="city" value={formData.city} onChange={handleChange} className={inputClass} placeholder="City" />
-                            <input type="text" name="pinCode" value={formData.pinCode} onChange={handleChange} className={inputClass} placeholder="PIN" />
+                        <div className="space-y-4">
+                            <label className={labelClass}>City & PIN</label>
+                            <div className="grid grid-cols-2 gap-3">
+                                <input type="text" name="city" value={formData.city} onChange={handleChange} className={inputClass} placeholder="City" />
+                                <input type="text" name="pinCode" value={formData.pinCode} onChange={handleChange} className={inputClass} placeholder="PIN" />
+                            </div>
                         </div>
-                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Emergency Contact</p>
+                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 shadow-inner">
+                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Emergency Contact Details</p>
                            <div className="space-y-3">
                                <input type="text" name="emergencyContactName" value={formData.emergencyContactName} onChange={handleChange} className={inputClass} placeholder="Contact Name" />
                                <div className="grid grid-cols-2 gap-3">
-                                   <input type="text" name="emergencyContactRelationship" value={formData.emergencyContactRelationship} onChange={handleChange} className={inputClass} placeholder="Relationship (e.g. Spouse)" />
+                                   <select 
+                                       name="emergencyContactRelationship" 
+                                       value={formData.emergencyContactRelationship} 
+                                       onChange={handleChange} 
+                                       className={inputClass}
+                                   >
+                                       <option value="">Relationship</option>
+                                       <option value="Father">Father</option>
+                                       <option value="Mother">Mother</option>
+                                       <option value="Spouse">Spouse</option>
+                                       <option value="Sibling">Sibling</option>
+                                       <option value="Guardian">Guardian</option>
+                                       <option value="Friend">Friend</option>
+                                       <option value="Other">Other</option>
+                                   </select>
                                    <input type="tel" name="emergencyContactPhone" value={formData.emergencyContactPhone} onChange={handleChange} className={inputClass} placeholder="Contact Phone" />
                                </div>
                            </div>
