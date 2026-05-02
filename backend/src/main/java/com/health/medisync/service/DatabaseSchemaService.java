@@ -24,6 +24,7 @@ public class DatabaseSchemaService {
 
             // Hospital Admin Table Updates
             jdbcTemplate.execute("ALTER TABLE hospital_admins ADD COLUMN IF NOT EXISTS approved BOOLEAN DEFAULT FALSE");
+            jdbcTemplate.execute("ALTER TABLE hospitals ADD COLUMN IF NOT EXISTS registration_certificate_url TEXT");
 
             // Doctor Table Updates - Core Legitimacy
             jdbcTemplate.execute("ALTER TABLE doctors ADD COLUMN IF NOT EXISTS approved BOOLEAN DEFAULT FALSE");

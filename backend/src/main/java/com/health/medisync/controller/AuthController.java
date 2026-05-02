@@ -517,7 +517,8 @@ public class AuthController {
     public ResponseEntity<?> registerHospitalAdmin(
             @RequestPart("userData") String userDataJson,
             @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture,
-            @RequestPart(value = "hospitalLogo", required = false) MultipartFile hospitalLogo) throws IOException {
+            @RequestPart(value = "hospitalLogo", required = false) MultipartFile hospitalLogo,
+            @RequestPart(value = "registrationCertificate", required = false) MultipartFile registrationCertificate) throws IOException {
 
         ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> request = mapper.readValue(userDataJson, Map.class);
@@ -583,6 +584,16 @@ public class AuthController {
                 if (logoUrl != null) hospital.setLogoUrl(logoUrl);
             } catch (Exception e) {
                 System.err.println("Failed to upload hospital logo: " + e.getMessage());
+            }
+        }
+        
+        // Handle Registration Certificate
+        if (registrationCertificate != null && !registrationCertificate.isEmpty()) {
+            try {
+                String certUrl = supabaseStorageService.uploadFile(registrationCertificate);
+                if (certUrl != null) hospital.setRegistrationCertificateUrl(certUrl);
+            } catch (Exception e) {
+                System.err.println("Failed to upload registration certificate: " + e.getMessage());
             }
         }
         
