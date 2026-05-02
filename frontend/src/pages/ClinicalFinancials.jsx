@@ -11,6 +11,7 @@ import {
 import api from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 const ClinicalFinancials = () => {
   const { user } = useAuth();
@@ -22,11 +23,26 @@ const ClinicalFinancials = () => {
     try {
       const res = await api.get('doctor/analytics/revenue');
       setRevenueData(res.data);
+      if (res.data) toast.success("Financial telemetry synced");
     } catch (err) {
       console.error("Failed to fetch revenue analytics", err);
+      toast.error("Financial sync failed");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePlaceholderAction = (action) => {
+    toast.success(`${action} module is being initialized for your clinical node`, {
+        icon: '🚀',
+        style: {
+            borderRadius: '1rem',
+            background: '#0A1A1A',
+            color: '#fff',
+            fontSize: '12px',
+            fontWeight: 'bold'
+        }
+    });
   };
 
   useEffect(() => {
@@ -68,7 +84,10 @@ const ClinicalFinancials = () => {
           </div>
 
           <div className="flex items-center gap-3 relative z-10">
-              <button className="flex items-center gap-2 px-5 py-3 bg-white/5 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/10 hover:bg-white/10 transition-all">
+              <button 
+                onClick={() => handlePlaceholderAction('Export')}
+                className="flex items-center gap-2 px-5 py-3 bg-white/5 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/10 hover:bg-white/10 transition-all"
+              >
                   <Download size={14} /> Export Report
               </button>
               <button 
@@ -116,7 +135,10 @@ const ClinicalFinancials = () => {
                   <p className="text-[10px] text-emerald-400/60 font-bold uppercase tracking-widest mb-1">Settlement Status</p>
                   <h4 className="text-2xl font-black text-white">Pending Payout</h4>
                   <p className="text-emerald-400 text-3xl font-black mt-2 tracking-tighter">₹{(revenueData?.total * 0.15).toLocaleString()}</p>
-                  <button className="mt-6 w-full py-4 bg-emerald-500 text-[#0A1A1A] rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-400 transition-all">
+                  <button 
+                    onClick={() => handlePlaceholderAction('Withdrawal')}
+                    className="mt-6 w-full py-4 bg-emerald-500 text-[#0A1A1A] rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-400 transition-all"
+                  >
                     Initiate Withdrawal
                   </button>
               </div>
@@ -137,40 +159,47 @@ const ClinicalFinancials = () => {
                         </div>
                       </div>
                   </div>
-                  <div className="h-[300px] w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={chartData}>
-                              <defs>
-                                  <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                                  </linearGradient>
-                              </defs>
-                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                              <XAxis 
-                                  dataKey="month" 
-                                  axisLine={false} 
-                                  tickLine={false} 
-                                  tick={{fontSize: 9, fontWeight: 700, fill: '#64748b'}}
-                                  tickFormatter={(str) => {
-                                      const [y, m] = str.split('-');
-                                      const date = new Date(y, m-1);
-                                      return date.toLocaleString('default', { month: 'short' });
-                                  }}
-                              />
-                              <YAxis 
-                                  axisLine={false} 
-                                  tickLine={false} 
-                                  tick={{fontSize: 9, fontWeight: 700, fill: '#64748b'}}
-                                  tickFormatter={(value) => `₹${value >= 1000 ? value/1000 + 'k' : value}`}
-                              />
-                              <Tooltip 
-                                  contentStyle={{ borderRadius: '1.5rem', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', fontSize: '10px', fontWeight: 800 }}
-                                  formatter={(value) => [`₹${value.toLocaleString()}`, 'Earnings']}
-                              />
-                              <Area type="monotone" dataKey="value" stroke="#10b981" strokeWidth={4} fillOpacity={1} fill="url(#colorValue)" />
-                          </AreaChart>
-                      </ResponsiveContainer>
+                  <div className="h-[300px] w-full relative">
+                      {chartData.length === 0 ? (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-100">
+                              <TrendingUp size={48} className="text-slate-200 mb-4" />
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No historical revenue data detected</p>
+                          </div>
+                      ) : (
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={chartData}>
+                                <defs>
+                                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                <XAxis 
+                                    dataKey="month" 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{fontSize: 9, fontWeight: 700, fill: '#64748b'}}
+                                    tickFormatter={(str) => {
+                                        const [y, m] = str.split('-');
+                                        const date = new Date(y, m-1);
+                                        return date.toLocaleString('default', { month: 'short' });
+                                    }}
+                                />
+                                <YAxis 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{fontSize: 9, fontWeight: 700, fill: '#64748b'}}
+                                    tickFormatter={(value) => `₹${value >= 1000 ? value/1000 + 'k' : value}`}
+                                />
+                                <Tooltip 
+                                    contentStyle={{ borderRadius: '1.5rem', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', fontSize: '10px', fontWeight: 800 }}
+                                    formatter={(value) => [`₹${value.toLocaleString()}`, 'Earnings']}
+                                />
+                                <Area type="monotone" dataKey="value" stroke="#10b981" strokeWidth={4} fillOpacity={1} fill="url(#colorValue)" />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                      )}
                   </div>
               </div>
 
@@ -210,7 +239,10 @@ const ClinicalFinancials = () => {
                       <p className="text-xs text-slate-500 font-medium leading-relaxed">
                         All clinical payments are processed through our secure gateway. Settlements are initiated every Monday at 00:00 UTC.
                       </p>
-                      <button className="mt-6 flex items-center gap-2 text-emerald-600 text-[10px] font-black uppercase tracking-widest hover:underline">
+                      <button 
+                        onClick={() => handlePlaceholderAction('Ledger')}
+                        className="mt-6 flex items-center gap-2 text-emerald-600 text-[10px] font-black uppercase tracking-widest hover:underline"
+                      >
                         View Detailed Ledger <ChevronRight size={14} />
                       </button>
                   </div>
