@@ -22,6 +22,10 @@ public class DoctorDTO {
     private Double offlineConsultationFee;
     private Boolean onlineConsultation;
     private String clinicAddress;
+    private String clinicStreet;
+    private String clinicCity;
+    private String clinicState;
+    private String clinicPinCode;
     private Double averageRating;
     private Long ratingCount;
     private String upiId;
@@ -92,6 +96,10 @@ public class DoctorDTO {
         this.offlineConsultationFee = d.getOfflineConsultationFee();
         this.onlineConsultation = d.getOnlineConsultation();
         this.clinicAddress = d.getClinicAddress();
+        this.clinicStreet = d.getClinicStreet();
+        this.clinicCity = d.getClinicCity();
+        this.clinicState = d.getClinicState();
+        this.clinicPinCode = d.getClinicPinCode();
         
         // License & Verification
         this.medicalCouncil = d.getMedicalCouncil();
@@ -250,6 +258,18 @@ public class DoctorDTO {
 
     public String getClinicAddress() { return clinicAddress; }
     public void setClinicAddress(String clinicAddress) { this.clinicAddress = clinicAddress; }
+
+    public String getClinicStreet() { return clinicStreet; }
+    public void setClinicStreet(String clinicStreet) { this.clinicStreet = clinicStreet; }
+
+    public String getClinicCity() { return clinicCity; }
+    public void setClinicCity(String clinicCity) { this.clinicCity = clinicCity; }
+
+    public String getClinicState() { return clinicState; }
+    public void setClinicState(String clinicState) { this.clinicState = clinicState; }
+
+    public String getClinicPinCode() { return clinicPinCode; }
+    public void setClinicPinCode(String clinicPinCode) { this.clinicPinCode = clinicPinCode; }
 
     public Double getAverageRating() { return averageRating; }
     public void setAverageRating(Double averageRating) { this.averageRating = averageRating; }

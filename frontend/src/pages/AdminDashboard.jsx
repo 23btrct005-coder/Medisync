@@ -279,6 +279,60 @@ const AdminDashboard = () => {
                     )}
                   </div>
 
+                  {selectedItem.licenseDocumentUrl && (
+                    <div className="pt-2">
+                        <a 
+                          href={selectedItem.licenseDocumentUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-2 w-full py-4 bg-primary-50 text-primary-600 font-black text-[10px] uppercase tracking-widest rounded-2xl border border-primary-100 hover:bg-primary-100 transition-all shadow-sm"
+                        >
+                          <FileText size={16} /> View Verified Medical License Document
+                        </a>
+                    </div>
+                  )}
+
+                  <div className="space-y-4">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Clinic Location & Contact</p>
+                    <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100 flex items-start gap-4">
+                        <div className="p-3 bg-white rounded-2xl shadow-sm text-primary-500">
+                            <MapPin size={20} />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-sm font-bold text-slate-900 truncate">{selectedItem.clinicStreet || selectedItem.clinicAddress || "Independent Practice"}</p>
+                            <p className="text-xs text-slate-500 mt-0.5">
+                                {selectedItem.clinicCity || "N/A"}, {selectedItem.clinicState || "N/A"} {selectedItem.clinicPinCode || ""}
+                            </p>
+                        </div>
+                    </div>
+                  </div>
+
+                  {(selectedItem.subSpecialties || selectedItem.proceduresHandled || selectedItem.publications) && (
+                    <div className="space-y-4">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Clinical Expertise & Research</p>
+                        <div className="grid grid-cols-1 gap-3">
+                            {selectedItem.subSpecialties && (
+                                <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100">
+                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Sub-Specialties</p>
+                                    <p className="text-xs font-medium text-slate-900 leading-relaxed">{selectedItem.subSpecialties}</p>
+                                </div>
+                            )}
+                            {selectedItem.proceduresHandled && (
+                                <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100">
+                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Procedures & Surgical Expertise</p>
+                                    <p className="text-xs font-medium text-slate-900 leading-relaxed">{selectedItem.proceduresHandled}</p>
+                                </div>
+                            )}
+                            {selectedItem.publications && (
+                                <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100">
+                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Medical Research & Publications</p>
+                                    <p className="text-xs font-medium text-slate-900 leading-relaxed italic">{selectedItem.publications}</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                  )}
+
                   <div className="p-4 bg-primary-50 rounded-2xl border border-primary-100 flex justify-between items-center">
                     <div>
                         <p className="text-[9px] font-black text-primary-600 uppercase tracking-widest">UPI Payment ID</p>
