@@ -46,6 +46,7 @@ const Register = () => {
     // Identity
     email: '',
     password: '',
+    confirmPassword: '',
     // Basic Details
     name: '',
     gender: '',
@@ -135,6 +136,7 @@ const Register = () => {
   
   // UI States
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [aiDisclaimerAccepted, setAiDisclaimerAccepted] = useState(false);
   const [locating, setLocating] = useState(false);
   
@@ -338,6 +340,7 @@ const Register = () => {
     e.preventDefault();
     if (!emailVerified) { setError('Verify your email first.'); return; }
     if (role === 'ROLE_PATIENT' && !aiDisclaimerAccepted) { setError('Accept the AI Clinical Disclaimer.'); return; }
+    if (formData.password !== formData.confirmPassword) { setError('Passwords do not match.'); return; }
     if (formData.password.length < 6) { setError('Password must be at least 6 characters.'); return; }
 
     setLoading(true);
@@ -546,24 +549,15 @@ const Register = () => {
                         <div className="flex items-center gap-3 pb-3 border-b border-blue-100"><Lock size={18} className="text-blue-600" /><h4 className="text-[10px] font-black text-blue-900 uppercase tracking-widest">Account Security</h4></div>
                         <div><label className={labelClass}>Generated Patient ID</label><input type="text" disabled value={isAddressComplete ? formData.email : 'Complete Step 4 for ID generation'} className={`${inputClass} font-bold ${!isAddressComplete ? 'italic text-slate-400' : 'text-blue-900 bg-white'}`} /></div>
                         <div className="grid grid-cols-2 gap-5">
-                          <div className="relative md:col-span-2">
+                          <div className="relative">
                             <label className={labelClass}>Create Password <span className="text-red-500">*</span></label>
-                            <input 
-                              type={showPassword ? 'text' : 'password'} 
-                              name="password" 
-                              required 
-                              value={formData.password} 
-                              onChange={handleChange} 
-                              className={inputClass} 
-                              placeholder="Minimum 6 characters"
-                            />
-                            <button 
-                              type="button" 
-                              onClick={() => setShowPassword(!showPassword)} 
-                              className="absolute right-3 top-10 text-slate-400"
-                            >
-                              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                            </button>
+                            <input type={showPassword ? 'text' : 'password'} name="password" required value={formData.password} onChange={handleChange} className={inputClass} placeholder="Minimum 6 characters" />
+                            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-10 text-slate-400">{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+                          </div>
+                          <div className="relative">
+                            <label className={labelClass}>Confirm Password <span className="text-red-500">*</span></label>
+                            <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" required value={formData.confirmPassword} onChange={handleChange} className={inputClass} />
+                            <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-10 text-slate-400">{showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>
                           </div>
                         </div>
                       </div>
@@ -786,55 +780,61 @@ const Register = () => {
                         </div>
                       </div>
 
-                      {/* Section 7: Compliance & Finalization */}
-                      <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-6">
-                        <h3 className={sectionHeadClass}><Lock size={16} /> 8. Compliance & Security</h3>
-                        <div className="relative">
-                            <label className={labelClass}>Set Administrator Password <span className="text-red-500">*</span></label>
-                            <input type={showPassword ? 'text' : 'password'} name="password" required value={formData.password} onChange={handleChange} className={inputClass} placeholder="Access credentials for this hospital portal" />
-                            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-10 text-slate-400">{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+                      {/* Section 8: Final Compliance & Account Security */}
+                      <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
+                        <h3 className={sectionHeadClass}><Lock size={16} /> 8. Compliance & Account Security</h3>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="relative">
+                                <label className={labelClass}>Set Administrator Password <span className="text-red-500">*</span></label>
+                                <input type={showPassword ? 'text' : 'password'} name="password" required value={formData.password} onChange={handleChange} className={inputClass} placeholder="Access credentials" />
+                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-10 text-slate-400">{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+                            </div>
+                            <div className="relative">
+                                <label className={labelClass}>Confirm Password <span className="text-red-500">*</span></label>
+                                <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" required value={formData.confirmPassword} onChange={handleChange} className={inputClass} />
+                                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-10 text-slate-400">{showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+                            </div>
                         </div>
-                        <div className="space-y-4 pt-4">
+
+                        <div className="space-y-4 pt-4 border-t border-slate-100">
                             <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                 <input type="checkbox" required checked={formData.termsAccepted} onChange={(e) => setFormData({...formData, termsAccepted: e.target.checked})} className="mt-1 h-5 w-5 rounded border-blue-200 text-primary-600" />
-                                <label className="text-xs text-slate-600 font-medium">I agree to the <span className="text-primary-600 underline">Terms & Conditions</span> and <span className="text-primary-600 underline">Privacy Policy</span> of MediSync. <span className="text-red-500">*</span></label>
+                                <label className="text-xs text-slate-600 font-medium">I agree to the <span className="text-primary-600 underline">Terms & Conditions</span> and <span className="text-primary-600 underline">Privacy Policy</span>. <span className="text-red-500">*</span></label>
                             </div>
                             <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                 <input type="checkbox" required checked={formData.consentAccepted} onChange={(e) => setFormData({...formData, consentAccepted: e.target.checked})} className="mt-1 h-5 w-5 rounded border-blue-200 text-primary-600" />
-                                <label className="text-xs text-slate-600 font-medium">I provide explicit consent for the handling and processing of institutional and clinical health data in accordance with digital health standards. <span className="text-red-500">*</span></label>
+                                <label className="text-xs text-slate-600 font-medium">I provide explicit consent for clinical data processing in accordance with digital health standards. <span className="text-red-500">*</span></label>
                             </div>
                         </div>
+
+                        <button type="submit" disabled={loading} className="w-full bg-primary-600 text-white py-5 rounded-[2rem] font-black uppercase tracking-widest hover:bg-primary-700 shadow-2xl shadow-primary-200 transition-all active:scale-95 disabled:opacity-50">
+                            {loading ? 'Finalizing Enrollment...' : 'Complete Institutional Registration'}
+                        </button>
                       </div>
                     </div>
                   )}
 
-                  <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
-                    <h3 className={sectionHeadClass}><Lock size={16} /> Account Security</h3>
-                    <div className="mb-4">
-                        <label className={labelClass}>Clinical User ID</label>
-                        <input type="text" disabled value={formData.email || 'Email required'} className={`${inputClass} font-bold text-primary-600 bg-primary-50/30`} />
-                    </div>
-                    <div className="relative">
-                      <label className={labelClass}>Create Clinical Access Password <span className="text-red-500">*</span></label>
-                      <input 
-                        type={showPassword ? 'text' : 'password'} 
-                        name="password" 
-                        required 
-                        value={formData.password} 
-                        onChange={handleChange} 
-                        className={inputClass} 
-                        placeholder="Secure your professional node"
-                      />
-                      <button 
-                        type="button" 
-                        onClick={() => setShowPassword(!showPassword)} 
-                        className="absolute right-3 top-10 text-slate-400"
-                      >
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {role === 'ROLE_DOCTOR' && (
+                    <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
+                      <h3 className={sectionHeadClass}><Lock size={16} /> 7. Account Security & Finalization</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="relative">
+                          <label className={labelClass}>Create Password <span className="text-red-500">*</span></label>
+                          <input type={showPassword ? 'text' : 'password'} name="password" required value={formData.password} onChange={handleChange} className={inputClass} placeholder="Secure your professional node" />
+                          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-10 text-slate-400">{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+                        </div>
+                        <div className="relative">
+                          <label className={labelClass}>Confirm Password <span className="text-red-500">*</span></label>
+                          <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" required value={formData.confirmPassword} onChange={handleChange} className={inputClass} />
+                          <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-10 text-slate-400">{showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+                        </div>
+                      </div>
+                      <button type="submit" disabled={loading} className="w-full bg-primary-600 text-white py-5 rounded-[2rem] font-black uppercase tracking-widest hover:bg-primary-700 shadow-2xl shadow-primary-200 transition-all active:scale-95 disabled:opacity-50">
+                        {loading ? 'Completing Enrollment...' : 'Finalize Physician Registration'}
                       </button>
                     </div>
-                    <button type="submit" disabled={loading} className="w-full bg-primary-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-primary-700 shadow-xl transition-all">{loading ? 'Processing...' : 'Complete Enrollment'}</button>
-                  </div>
+                  )}
                 </div>
               )}
             </form>
