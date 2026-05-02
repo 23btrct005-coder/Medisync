@@ -321,6 +321,10 @@ public class AuthController {
         doctor.setEmail(email);
         doctor.setGender(request.get("gender") != null ? String.valueOf(request.get("gender")) : null);
         doctor.setDateOfBirth(request.get("dateOfBirth") != null ? String.valueOf(request.get("dateOfBirth")) : null);
+        if (request.get("age") != null && !String.valueOf(request.get("age")).isEmpty()) {
+            try { doctor.setAge(Integer.parseInt(String.valueOf(request.get("age")))); }
+            catch (NumberFormatException ignored) {}
+        }
         doctor.setPhone(request.get("phone") != null ? String.valueOf(request.get("phone")) : null);
         doctor.setAlternatePhone(request.get("alternatePhone") != null ? String.valueOf(request.get("alternatePhone")) : null);
         doctor.setSpecialization(request.get("specialization") != null ? String.valueOf(request.get("specialization")) : null);
@@ -353,6 +357,14 @@ public class AuthController {
             } catch (NumberFormatException ignored) {}
         }
         doctor.setHospital(request.get("hospitalName") != null ? String.valueOf(request.get("hospitalName")) : hospitalIdStr);
+        if (hospitalIdStr != null && !hospitalIdStr.isEmpty()) {
+            doctor.setInstitutional(true);
+        }
+        
+        if (request.get("yearsOfExperience") != null && !String.valueOf(request.get("yearsOfExperience")).isEmpty()) {
+            try { doctor.setYearsOfExperience(Integer.parseInt(String.valueOf(request.get("yearsOfExperience")))); }
+            catch (NumberFormatException ignored) {}
+        }
         
         doctor.setEmployeeId(request.get("employeeId") != null ? String.valueOf(request.get("employeeId")) : null);
         doctor.setOpdRoomNumber(request.get("opdRoomNumber") != null ? String.valueOf(request.get("opdRoomNumber")) : null);

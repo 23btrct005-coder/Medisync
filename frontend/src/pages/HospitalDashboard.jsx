@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, Users, ClipboardCheck, TrendingUp, ShieldAlert, Shield, ChevronRight, UserPlus, Search, Activity, Calendar } from 'lucide-react';
+import { Building2, Users, ClipboardCheck, TrendingUp, ShieldAlert, Shield, ChevronRight, UserPlus, Search, Activity, Calendar, GraduationCap, Briefcase, Mail, Phone, MapPin, Clock, DollarSign, Lock } from 'lucide-react';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
+import DropZone from '../components/DropZone';
+import PremiumDropdown from '../components/PremiumDropdown';
 
 const HospitalDashboard = () => {
     const navigate = useNavigate();
@@ -190,14 +192,8 @@ const HospitalDashboard = () => {
         }
     };
 
-    if (loading) return (
-        <div className="flex items-center justify-center h-screen bg-slate-50">
-            <div className="flex flex-col items-center gap-4">
-                <Activity className="animate-spin text-primary" size={48} />
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Syncing Institutional Node...</p>
-            </div>
-        </div>
-    );
+    const onboardInputClass = "w-full px-6 py-4 bg-slate-50 border-none rounded-3xl text-xs font-bold focus:ring-2 ring-primary/20 transition-all placeholder:text-slate-300";
+    const labelClass = "text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2 mb-2 block";
 
     return (
         <div className="max-w-7xl mx-auto p-4 md:p-8 animate-in fade-in duration-700">
@@ -414,413 +410,235 @@ const HospitalDashboard = () => {
                     </table>
                 </div>
             </div>
-            
-            {/* Onboard Staff Modal */}
+                     {/* Onboard Staff Modal */}
             {showOnboardModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-white rounded-[3rem] w-full max-w-lg shadow-2xl overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-300">
-                        <div className="p-10 border-b border-slate-50 bg-slate-900 text-white rounded-t-[3.5rem] relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-48 h-48 bg-primary/20 -mr-16 -mt-16 rounded-full blur-3xl" />
-                            <h3 className="text-2xl font-black uppercase tracking-tight italic relative z-10">Onboard <span className="not-italic text-primary">New Staff</span></h3>
-                            <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1 relative z-10">Register a new physician to your institution</p>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-500">
+                    <div className="bg-white rounded-[3.5rem] w-full max-w-2xl shadow-[0_32px_64px_-15px_rgba(0,0,0,0.3)] overflow-hidden border border-slate-100 animate-in zoom-in-95 slide-in-from-bottom-8 duration-500 flex flex-col max-h-[90vh]">
+                        
+                        {/* Modal Header & Portrait DropZone */}
+                        <div className="p-12 bg-slate-900 text-white relative overflow-hidden shrink-0">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 -mr-32 -mt-32 rounded-full blur-[80px]" />
+                            <div className="flex justify-between items-start relative z-10">
+                                <div>
+                                    <h3 className="text-3xl font-black uppercase tracking-tight italic">Onboard <span className="not-italic text-primary">New Physician</span></h3>
+                                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2">Register a new medical professional to your institution</p>
+                                </div>
+                                <button onClick={() => setShowOnboardModal(false)} className="p-3 hover:bg-white/10 rounded-full transition-colors text-slate-400 hover:text-white">
+                                    <X size={24} />
+                                </button>
+                            </div>
                             
-                            {/* Profile Photo Upload */}
-                            <div className="mt-8 flex items-center gap-6 relative z-10">
-                                <div className="w-20 h-20 rounded-[2rem] bg-white/5 border-2 border-dashed border-white/10 flex items-center justify-center overflow-hidden group hover:border-primary/50 transition-all">
-                                    {selectedFile ? (
-                                        <img src={URL.createObjectURL(selectedFile)} alt="Preview" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <UserPlus className="text-white/20 group-hover:text-primary/50 transition-colors" size={32} />
-                                    )}
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Identity Portrait</label>
-                                    <input 
-                                        type="file" 
-                                        id="staff-photo"
-                                        className="hidden" 
-                                        accept="image/*"
-                                        onChange={(e) => setSelectedFile(e.target.files[0])}
-                                    />
-                                    <button 
-                                        type="button"
-                                        onClick={() => document.getElementById('staff-photo').click()}
-                                        className="px-4 py-2 bg-white/10 hover:bg-primary text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all"
-                                    >
-                                        {selectedFile ? 'Change Photo' : 'Upload Portrait'}
-                                    </button>
-                                </div>
+                            <div className="mt-10">
+                                <DropZone 
+                                    onFileSelect={setSelectedFile}
+                                    label="Identity Portrait"
+                                    type="portrait"
+                                    accept="image/*"
+                                />
                             </div>
                         </div>
-                        <form onSubmit={handleOnboardStaff} className="p-8 space-y-6 overflow-y-auto max-h-[75vh]">
-                            <div className="space-y-6">
-                                {/* Section 1: Basic Identity */}
-                                <div className="space-y-4">
-                                    <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] border-b border-primary/10 pb-2">1. Basic Identity</h4>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="col-span-2 sm:col-span-1">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Full Name</label>
-                                            <input 
-                                                type="text" required
-                                                value={onboardData.name}
-                                                onChange={(e) => setOnboardData({...onboardData, name: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                                placeholder="Dr. Alexander Wright"
-                                            />
-                                        </div>
-                                        <div className="col-span-2 sm:col-span-1">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Work Email</label>
-                                            <input 
-                                                type="email" required
-                                                value={onboardData.email}
-                                                onChange={(e) => setOnboardData({...onboardData, email: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                                placeholder="a.wright@hospital.com"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-3 gap-4">
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Gender</label>
-                                            <select 
-                                                value={onboardData.gender}
-                                                onChange={(e) => setOnboardData({...onboardData, gender: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 appearance-none"
+
+                        {/* Form Content */}
+                        <form onSubmit={handleOnboardStaff} className="p-12 space-y-12 overflow-y-auto custom-scrollbar flex-1 bg-white">
+                            
+                            {/* Section 1: Basic Identity */}
+                            <div className="space-y-8">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                    <h4 className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">1. Basic Identity</h4>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div><label className={labelClass}>Full Name</label><input type="text" required value={onboardData.name} onChange={(e) => setOnboardData({...onboardData, name: e.target.value})} className={onboardInputClass} placeholder="Dr. Alexander Wright" /></div>
+                                    <div><label className={labelClass}>Work Email</label><input type="email" required value={onboardData.email} onChange={(e) => setOnboardData({...onboardData, email: e.target.value})} className={onboardInputClass} placeholder="a.wright@hospital.com" /></div>
+                                </div>
+                                <div className="grid grid-cols-3 gap-6">
+                                    <PremiumDropdown 
+                                        label="Gender"
+                                        options={['Male', 'Female', 'Other']}
+                                        value={onboardData.gender}
+                                        onChange={(val) => setOnboardData({...onboardData, gender: val})}
+                                    />
+                                    <div><label className={labelClass}>Age</label><input type="number" value={onboardData.age} onChange={(e) => setOnboardData({...onboardData, age: e.target.value})} className={onboardInputClass} placeholder="35" /></div>
+                                    <div><label className={labelClass}>Date of Birth</label><input type="date" value={onboardData.dateOfBirth} onChange={(e) => setOnboardData({...onboardData, dateOfBirth: e.target.value})} className={onboardInputClass} /></div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div><label className={labelClass}>Primary Phone</label><input type="tel" required value={onboardData.phone} onChange={(e) => setOnboardData({...onboardData, phone: e.target.value})} className={onboardInputClass} placeholder="+91 98765 43210" /></div>
+                                    <div><label className={labelClass}>Alt Phone (Optional)</label><input type="tel" value={onboardData.alternatePhone} onChange={(e) => setOnboardData({...onboardData, alternatePhone: e.target.value})} className={onboardInputClass} placeholder="Alternate contact" /></div>
+                                </div>
+                            </div>
+
+                            {/* Section 2: Clinical Credentials */}
+                            <div className="space-y-8">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                    <h4 className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">2. Clinical Credentials</h4>
+                                </div>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <PremiumDropdown 
+                                        label="Medical Degree"
+                                        options={['MBBS', 'MD', 'MS', 'DM', 'MCh', 'DNB', 'PhD']}
+                                        value={onboardData.medicalDegree}
+                                        onChange={(val) => setOnboardData({...onboardData, medicalDegree: val})}
+                                        placeholder="Select Degree"
+                                        icon={<GraduationCap size={16} />}
+                                    />
+                                    <PremiumDropdown 
+                                        label="Specialization"
+                                        options={['Cardiology', 'Neurology', 'Oncology', 'Pediatrics', 'Orthopedics', 'Psychiatry', 'Gastroenterology']}
+                                        value={onboardData.specialization}
+                                        onChange={(val) => setOnboardData({...onboardData, specialization: val})}
+                                        placeholder="Select Specialization"
+                                        searchable={true}
+                                        icon={<Activity size={16} />}
+                                    />
+                                </div>
+                                <div><label className={labelClass}>Medical College / Alma Mater</label><input type="text" value={onboardData.college} onChange={(e) => setOnboardData({...onboardData, college: e.target.value})} className={onboardInputClass} placeholder="AIIMS Delhi" /></div>
+                                <div><label className={labelClass}>Additional Certifications (Comma Separated)</label><textarea value={onboardData.additionalCertifications} onChange={(e) => setOnboardData({...onboardData, additionalCertifications: e.target.value})} className={`${onboardInputClass} min-h-[80px] resize-none`} placeholder="Fellow of the American College of Cardiology, etc." /></div>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div><label className={labelClass}>Medical Council</label><input type="text" required value={onboardData.medicalCouncil} onChange={(e) => setOnboardData({...onboardData, medicalCouncil: e.target.value})} className={onboardInputClass} placeholder="National Medical Commission" /></div>
+                                    <div><label className={labelClass}>License Expiry</label><input type="date" required value={onboardData.licenseExpiryDate} onChange={(e) => setOnboardData({...onboardData, licenseExpiryDate: e.target.value})} className={onboardInputClass} /></div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div><label className={labelClass}>License Number</label><input type="text" required value={onboardData.medicalLicenseNumber} onChange={(e) => setOnboardData({...onboardData, medicalLicenseNumber: e.target.value})} className={`${onboardInputClass} font-mono`} placeholder="MC-99281-Z" /></div>
+                                    <div><label className={labelClass}>Experience (Yrs)</label><input type="number" required value={onboardData.yearsOfExperience} onChange={(e) => setOnboardData({...onboardData, yearsOfExperience: e.target.value})} className={onboardInputClass} placeholder="12" /></div>
+                                </div>
+                            </div>
+
+                            {/* Section 3: Institutional Mapping */}
+                            <div className="space-y-8">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                    <h4 className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">3. Institutional Mapping</h4>
+                                </div>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div><label className={labelClass}>Employee ID</label><input type="text" required value={onboardData.employeeId} onChange={(e) => setOnboardData({...onboardData, employeeId: e.target.value})} className={onboardInputClass} placeholder="ST-2026-001" /></div>
+                                    <div><label className={labelClass}>OPD Room No.</label><input type="text" required value={onboardData.opdRoomNumber} onChange={(e) => setOnboardData({...onboardData, opdRoomNumber: e.target.value})} className={onboardInputClass} placeholder="OPD-204" /></div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <PremiumDropdown 
+                                        label="Role Type"
+                                        options={['Full-time Employee', 'Visiting Consultant', 'Resident Physician', 'Medical Intern']}
+                                        value={onboardData.contractType === 'PERMANENT' ? 'Full-time Employee' : onboardData.contractType}
+                                        onChange={(val) => setOnboardData({...onboardData, contractType: val === 'Full-time Employee' ? 'PERMANENT' : val})}
+                                        icon={<Briefcase size={16} />}
+                                    />
+                                    <div><label className={labelClass}>Max Patients/Day</label><input type="number" required value={onboardData.maxPatientsPerDay} onChange={(e) => setOnboardData({...onboardData, maxPatientsPerDay: e.target.value})} className={onboardInputClass} placeholder="30" /></div>
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Working Days</label>
+                                    <div className="flex flex-wrap gap-3">
+                                        {daysOfWeek.map(day => (
+                                            <button
+                                                key={day}
+                                                type="button"
+                                                onClick={() => handleDayToggle(day)}
+                                                className={`px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.1em] transition-all duration-300 ${
+                                                    onboardData.workingDaysArray.includes(day)
+                                                        ? 'bg-primary text-white shadow-lg shadow-primary/25 scale-105'
+                                                        : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+                                                }`}
                                             >
-                                                <option value="Male">Male</option>
-                                                <option value="Female">Female</option>
-                                                <option value="Other">Other</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Age</label>
-                                            <input 
-                                                type="number"
-                                                value={onboardData.age}
-                                                onChange={(e) => setOnboardData({...onboardData, age: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                                placeholder="35"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Date of Birth</label>
-                                            <input 
-                                                type="date"
-                                                value={onboardData.dateOfBirth}
-                                                onChange={(e) => setOnboardData({...onboardData, dateOfBirth: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Primary Phone</label>
-                                            <input 
-                                                type="tel" required
-                                                value={onboardData.phone}
-                                                onChange={(e) => setOnboardData({...onboardData, phone: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                                placeholder="+91 98765 43210"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Alt Phone (Optional)</label>
-                                            <input 
-                                                type="tel"
-                                                value={onboardData.alternatePhone}
-                                                onChange={(e) => setOnboardData({...onboardData, alternatePhone: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                                placeholder="Alternate contact"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Section 2: Clinical Credentials */}
-                                <div className="space-y-4">
-                                    <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] border-b border-primary/10 pb-2">2. Clinical Credentials</h4>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Medical Degree</label>
-                                            <input 
-                                                type="text" required
-                                                value={onboardData.medicalDegree}
-                                                onChange={(e) => setOnboardData({...onboardData, medicalDegree: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                                placeholder="MBBS, MD (Cardiology)"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Specialization</label>
-                                            <input 
-                                                type="text" required
-                                                value={onboardData.specialization}
-                                                onChange={(e) => setOnboardData({...onboardData, specialization: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                                placeholder="Interventional Cardiology"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Medical College / Alma Mater</label>
-                                        <input 
-                                            type="text" 
-                                            value={onboardData.college}
-                                            onChange={(e) => setOnboardData({...onboardData, college: e.target.value})}
-                                            className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                            placeholder="AIIMS Delhi"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Additional Certifications (Comma Separated)</label>
-                                        <textarea 
-                                            value={onboardData.additionalCertifications}
-                                            onChange={(e) => setOnboardData({...onboardData, additionalCertifications: e.target.value})}
-                                            className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 min-h-[60px]"
-                                            placeholder="Fellow of the American College of Cardiology, etc."
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Medical Council</label>
-                                            <input 
-                                                type="text" required
-                                                value={onboardData.medicalCouncil}
-                                                onChange={(e) => setOnboardData({...onboardData, medicalCouncil: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                                placeholder="National Medical Commission"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">License Expiry</label>
-                                            <input 
-                                                type="date" required
-                                                value={onboardData.licenseExpiryDate}
-                                                onChange={(e) => setOnboardData({...onboardData, licenseExpiryDate: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">License Number</label>
-                                            <input 
-                                                type="text" required
-                                                value={onboardData.medicalLicenseNumber}
-                                                onChange={(e) => setOnboardData({...onboardData, medicalLicenseNumber: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 font-mono"
-                                                placeholder="MC-99281-Z"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Experience (Yrs)</label>
-                                            <input 
-                                                type="number" required
-                                                value={onboardData.yearsOfExperience}
-                                                onChange={(e) => setOnboardData({...onboardData, yearsOfExperience: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                                placeholder="12"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Section 3: Hospital Mapping & Work Schedule */}
-                                <div className="space-y-4">
-                                    <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] border-b border-primary/10 pb-2">3. Institutional Mapping</h4>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Employee ID</label>
-                                            <input 
-                                                type="text" required
-                                                value={onboardData.employeeId}
-                                                onChange={(e) => setOnboardData({...onboardData, employeeId: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                                placeholder="ST-2026-001"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">OPD Room No.</label>
-                                            <input 
-                                                type="text" required
-                                                value={onboardData.opdRoomNumber}
-                                                onChange={(e) => setOnboardData({...onboardData, opdRoomNumber: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                                placeholder="OPD-204"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Role Type</label>
-                                            <select 
-                                                value={onboardData.contractType}
-                                                onChange={(e) => setOnboardData({...onboardData, contractType: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 appearance-none"
-                                            >
-                                                <option value="PERMANENT">Full-time Employee</option>
-                                                <option value="VISITING">Visiting Consultant</option>
-                                                <option value="RESIDENT">Resident Physician</option>
-                                                <option value="INTERN">Medical Intern</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Max Patients/Day</label>
-                                            <input 
-                                                type="number" required
-                                                value={onboardData.maxPatientsPerDay}
-                                                onChange={(e) => setOnboardData({...onboardData, maxPatientsPerDay: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                                placeholder="30"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Working Days</label>
-                                        <div className="flex flex-wrap gap-2">
-                                            {daysOfWeek.map(day => (
-                                                <button
-                                                    key={day}
-                                                    type="button"
-                                                    onClick={() => handleDayToggle(day)}
-                                                    className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                                                        onboardData.workingDaysArray.includes(day)
-                                                            ? 'bg-primary text-white shadow-md shadow-primary/20'
-                                                            : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
-                                                    }`}
-                                                >
-                                                    {day}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-3 gap-4">
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Shift Starts</label>
-                                            <input 
-                                                type="time" required
-                                                value={onboardData.startTime}
-                                                onChange={(e) => setOnboardData({...onboardData, startTime: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Shift Ends</label>
-                                            <input 
-                                                type="time" required
-                                                value={onboardData.endTime}
-                                                onChange={(e) => setOnboardData({...onboardData, endTime: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Break Timings</label>
-                                            <input 
-                                                type="text" required
-                                                value={onboardData.breakTimings}
-                                                onChange={(e) => setOnboardData({...onboardData, breakTimings: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                                placeholder="13:00 - 14:00"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Section 4: Financial Governance */}
-                                <div className="space-y-4">
-                                    <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] border-b border-primary/10 pb-2">4. Financial Governance</h4>
-                                    <div className="grid grid-cols-3 gap-4">
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Monthly Salary (₹)</label>
-                                            <input 
-                                                type="number" required
-                                                value={onboardData.salary}
-                                                onChange={(e) => setOnboardData({...onboardData, salary: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                                placeholder="150000"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Revenue Share (%)</label>
-                                            <input 
-                                                type="number"
-                                                value={onboardData.revenueSharePercentage}
-                                                onChange={(e) => setOnboardData({...onboardData, revenueSharePercentage: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                                placeholder="15"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">OPD Fee (₹)</label>
-                                            <input 
-                                                type="number" required
-                                                value={onboardData.consultationFee}
-                                                onChange={(e) => setOnboardData({...onboardData, consultationFee: e.target.value})}
-                                                className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                                placeholder="500"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Section 5: Permissions Matrix (RBAC) */}
-                                <div className="space-y-4">
-                                    <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] border-b border-primary/10 pb-2">5. Permissions Matrix</h4>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {[
-                                            { key: 'canPrescribe', label: 'Prescribe Medication' },
-                                            { key: 'canEditPatientData', label: 'Edit Patient Data' },
-                                            { key: 'canAccessReports', label: 'Access Medical Reports' },
-                                            { key: 'canManageAppointments', label: 'Modify Schedule' },
-                                        ].map(perm => (
-                                            <label key={perm.key} className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl cursor-pointer hover:bg-slate-100 transition-colors">
-                                                <input 
-                                                    type="checkbox"
-                                                    checked={onboardData[perm.key]}
-                                                    onChange={(e) => setOnboardData({...onboardData, [perm.key]: e.target.checked})}
-                                                    className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/20"
-                                                />
-                                                <span className="text-[10px] font-bold text-slate-700 uppercase tracking-tight">{perm.label}</span>
-                                            </label>
+                                                {day}
+                                            </button>
                                         ))}
                                     </div>
                                 </div>
+                                <div className="grid grid-cols-3 gap-6">
+                                    <div><label className={labelClass}>Shift Starts</label><input type="time" required value={onboardData.startTime} onChange={(e) => setOnboardData({...onboardData, startTime: e.target.value})} className={onboardInputClass} /></div>
+                                    <div><label className={labelClass}>Shift Ends</label><input type="time" required value={onboardData.endTime} onChange={(e) => setOnboardData({...onboardData, endTime: e.target.value})} className={onboardInputClass} /></div>
+                                    <div><label className={labelClass}>Break Timings</label><input type="text" required value={onboardData.breakTimings} onChange={(e) => setOnboardData({...onboardData, breakTimings: e.target.value})} className={onboardInputClass} placeholder="13:00 - 14:00" /></div>
+                                </div>
                             </div>
 
-                            <div className="p-6 bg-blue-50/50 rounded-[2rem] border border-blue-100/50">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <Shield size={16} className="text-blue-600" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-blue-600">Initial Access Keys</span>
+                            {/* Section 4: Financial Governance */}
+                            <div className="space-y-8">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                    <h4 className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">4. Financial Governance</h4>
                                 </div>
-                                <div className="flex justify-between items-center">
+                                <div className="grid grid-cols-3 gap-6">
+                                    <div><label className={labelClass}>Monthly Salary (₹)</label><input type="number" required value={onboardData.salary} onChange={(e) => setOnboardData({...onboardData, salary: e.target.value})} className={onboardInputClass} placeholder="150000" /></div>
+                                    <div><label className={labelClass}>Revenue Share (%)</label><input type="number" value={onboardData.revenueSharePercentage} onChange={(e) => setOnboardData({...onboardData, revenueSharePercentage: e.target.value})} className={onboardInputClass} placeholder="0" /></div>
+                                    <div><label className={labelClass}>OPD Fee (₹)</label><input type="number" required value={onboardData.consultationFee} onChange={(e) => setOnboardData({...onboardData, consultationFee: e.target.value})} className={onboardInputClass} placeholder="500" /></div>
+                                </div>
+                            </div>
+
+                            {/* Section 5: Permissions Matrix */}
+                            <div className="space-y-8">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                    <h4 className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">5. Permissions Matrix</h4>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    {[
+                                        { key: 'canPrescribe', label: 'Prescribe Medication' },
+                                        { key: 'canEditPatientData', label: 'Edit Patient Data' },
+                                        { key: 'canAccessReports', label: 'Access Medical Reports' },
+                                        { key: 'canManageAppointments', label: 'Modify Schedule' },
+                                    ].map(perm => (
+                                        <label key={perm.key} className={`flex items-center gap-4 p-5 rounded-[2rem] cursor-pointer transition-all duration-300 border-2
+                                            ${onboardData[perm.key] 
+                                                ? 'bg-primary/5 border-primary/10' 
+                                                : 'bg-slate-50 border-transparent hover:bg-slate-100'}
+                                        `}>
+                                            <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-300
+                                                ${onboardData[perm.key] ? 'bg-primary border-primary text-white' : 'bg-white border-slate-200'}
+                                            `}>
+                                                {onboardData[perm.key] && <Check size={14} strokeWidth={4} />}
+                                            </div>
+                                            <input 
+                                                type="checkbox"
+                                                className="hidden"
+                                                checked={onboardData[perm.key]}
+                                                onChange={(e) => setOnboardData({...onboardData, [perm.key]: e.target.checked})}
+                                            />
+                                            <span className="text-[11px] font-black text-slate-800 uppercase tracking-tight">{perm.label}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Final Footer Details */}
+                            <div className="p-10 bg-blue-50/50 rounded-[3rem] border border-blue-100/50 space-y-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-primary">
+                                        <Shield size={24} />
+                                    </div>
                                     <div>
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase">Default Password</p>
-                                        <p className="text-sm font-black text-slate-800 tracking-tight">Password@123</p>
+                                        <h5 className="text-[11px] font-black uppercase tracking-widest text-primary">Initial Access Keys</h5>
+                                        <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">System-generated credentials for first login</p>
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-end">
+                                    <div>
+                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Default Password</p>
+                                        <p className="text-xl font-black text-slate-900 tracking-tight">Password@123</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase">Login Via</p>
-                                        <p className="text-sm font-black text-slate-800 tracking-tight">Work Email</p>
+                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Login Via</p>
+                                        <p className="text-xl font-black text-slate-900 tracking-tight italic">Work Email</p>
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div className="flex gap-4 pt-4 sticky bottom-0 bg-white pb-2">
-                                <button 
-                                    type="button"
-                                    onClick={() => setShowOnboardModal(false)}
-                                    className="flex-1 py-4 bg-slate-50 text-slate-400 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all"
-                                >
-                                    Cancel
-                                </button>
-                                <button 
-                                    type="submit"
-                                    disabled={submitting}
-                                    className="flex-[2] py-4 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
-                                >
-                                    {submitting ? 'Processing...' : 'Authorize & Onboard'}
-                                </button>
-                            </div>
                         </form>
+
+                        {/* Modal Actions */}
+                        <div className="p-12 border-t border-slate-50 bg-slate-50/30 shrink-0 flex gap-4">
+                            <button 
+                                type="button"
+                                onClick={() => setShowOnboardModal(false)}
+                                className="flex-1 py-5 bg-white border border-slate-200 text-slate-400 text-[11px] font-black uppercase tracking-[0.2em] rounded-3xl hover:bg-slate-100 transition-all active:scale-95 shadow-sm"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={handleOnboardStaff}
+                                disabled={submitting}
+                                className="flex-[2] py-5 bg-primary text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-3xl hover:bg-primary/90 transition-all active:scale-95 shadow-xl shadow-primary/20 disabled:opacity-50"
+                            >
+                                {submitting ? 'Authorizing...' : 'Authorize & Onboard'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
