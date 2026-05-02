@@ -1155,7 +1155,20 @@ const Register = () => {
                     <label className={labelClass}>
                         {role === 'ROLE_PATIENT' ? 'Patient ID' : role === 'ROLE_DOCTOR' ? 'Doctor ID' : 'Administrative ID'} <span className="text-red-500">*</span>
                     </label>
-                    <input type="text" value={formData.email} disabled className={`${inputClass} bg-blue-50 border-blue-100 text-blue-900 font-bold`} />
+                    <input 
+                        type="text" 
+                        value={
+                            role === 'ROLE_PATIENT' && (!formData.street || !formData.city || !formData.pinCode)
+                                ? 'Address required for ID generation'
+                                : formData.email
+                        } 
+                        disabled 
+                        className={`${inputClass} ${
+                            role === 'ROLE_PATIENT' && (!formData.street || !formData.city || !formData.pinCode)
+                                ? 'bg-slate-50 border-slate-100 text-slate-400 italic font-medium'
+                                : 'bg-blue-50 border-blue-100 text-blue-900 font-bold'
+                        }`} 
+                    />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
                   <div className="relative">
