@@ -206,4 +206,43 @@ public class AdminController {
             return ResponseEntity.status(500).body(Map.of("message", "Wipe failed: " + e.getMessage()));
         }
     }
+    @DeleteMapping("/doctors/{id}/purge")
+    @Transactional
+    public ResponseEntity<?> purgeDoctor(@PathVariable Long id) {
+        return doctorRepository.findById(id).map(doctor -> {
+            User user = doctor.getUser();
+            
+            // Cleanup related clinical data
+            jdbcTemplate.update("DELETE FROM appointments WHERE doctor_id = ?", id);
+            jdbcTemplate.update("DELETE FROM prescriptions WHERE doctor_id = ?", id);
+            jdbcTemplate.update("DELETE FROM ratings WHERE doctor_id = ?", id);
+            
+            doctorRepository.delete(doctor);
+            if (user != null) {
+                userRepository.delete(user);
+            }
+            return ResponseEntity.ok(Map.of("message", "Physician record and all associated clinical data purged."));
+        }).orElse(ResponseEntity.status(404).body(Map.of("message", "Physician not found.")));
+    }
+
+    @DeleteMapping("/hospitals/{id}/purge")
+    @Transactional
+    public ResponseEntity<?> purgeHospital(@PathVariable Long id) {
+        return hospitalAdminRepository.findById(id).map(admin -> {
+            User user = admin.getUser();
+            com.health.medisync.model.Hospital hospital = admin.getHospital();
+            
+            hospitalAdminRepository.delete(admin);
+            if (hospital != null) {
+                // This usually cascades if configured, but let's be safe
+                jdbcTemplate.update("DELETE FROM hospital_admins WHERE hospital_id = ?", hospital.getId());
+                jdbcTemplate.update("DELETE FROM doctors WHERE hospital_id = ?", hospital.getId());
+                jdbcTemplate.update("DELETE FROM hospitals WHERE id = ?", hospital.getId());
+            }
+            if (user != null) {
+                userRepository.delete(user);
+            }
+            return ResponseEntity.ok(Map.of("message", "Institutional record and administrative node purged."));
+        }).orElse(ResponseEntity.status(404).body(Map.of("message", "Hospital Admin not found.")));
+    }
 }
