@@ -545,11 +545,6 @@ const Register = () => {
                     {role === 'ROLE_PATIENT' && (
                         <>
                             <div>
-                                <label className={labelClass}>National ID Number <span className="text-red-500">*</span></label>
-                                <input type="text" name="nationalId" required value={formData.nationalId} onChange={handleChange}
-                                className={inputClass} placeholder="UIDAI / Passport / Voter ID" />
-                            </div>
-                            <div>
                                 <label className={labelClass}>Marital Status</label>
                                 <select name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} className={inputClass}>
                                     <option value="">Select Status</option>
@@ -1153,7 +1148,7 @@ const Register = () => {
                 </h3>
                 <div className="mb-6">
                     <label className={labelClass}>
-                        {role === 'ROLE_PATIENT' ? 'Patient ID' : role === 'ROLE_DOCTOR' ? 'Doctor ID' : 'Administrative ID'} <span className="text-red-500">*</span>
+                        {role === 'ROLE_PATIENT' ? 'Patient ID / Registered Email' : role === 'ROLE_DOCTOR' ? 'Doctor ID' : 'Administrative ID'} <span className="text-red-500">*</span>
                     </label>
                     <input 
                         type="text" 
