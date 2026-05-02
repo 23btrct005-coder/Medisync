@@ -604,27 +604,29 @@ const Register = () => {
                       )}
                   </div>
 
-                  <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <h3 className={sectionHeadClass}><User size={16} /> 2. Personal Details</h3>
-                    <div className="flex flex-col items-center gap-4 py-4"><ProfilePhotoUpload onFileSelect={setProfilePicture} /></div>
-                    <div className="space-y-6">
-                        <div><label className={labelClass}>Full Name <span className="text-red-500">*</span></label><input type="text" name="name" required value={formData.name} onChange={handleChange} className={inputClass} placeholder="Dr. John Smith" /></div>
-                        <div className="grid grid-cols-2 gap-6">
-                            <div><label className={labelClass}>Gender <span className="text-red-500">*</span></label>
-                              <select name="gender" required value={formData.gender} onChange={handleChange} className={inputClass}>
-                                <option value="">Select Gender</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option>
-                              </select>
-                            </div>
-                            <div><label className={labelClass}>Date of Birth <span className="text-red-500">*</span></label>
-                              <div className="grid grid-cols-3 gap-2">
-                                <select className={inputClass} value={formData.dateOfBirth ? formData.dateOfBirth.split('-')[2] : ''} onChange={(e) => handleDateChange('day', e.target.value)} required><option value="">Day</option>{Array.from({length: 31}, (_, i) => String(i+1).padStart(2, '0')).map(d => <option key={d} value={d}>{d}</option>)}</select>
-                                <select className={inputClass} value={formData.dateOfBirth ? formData.dateOfBirth.split('-')[1] : ''} onChange={(e) => handleDateChange('month', e.target.value)} required><option value="">Month</option>{['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => <option key={m} value={String(i+1).padStart(2, '0')}>{m}</option>)}</select>
-                                <select className={inputClass} value={formData.dateOfBirth ? formData.dateOfBirth.split('-')[0] : ''} onChange={(e) => handleDateChange('year', e.target.value)} required><option value="">Year</option>{Array.from({length: 100}, (_, i) => new Date().getFullYear() - i).map(y => <option key={y} value={y}>{y}</option>)}</select>
+                  {role === 'ROLE_DOCTOR' && (
+                    <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                      <h3 className={sectionHeadClass}><User size={16} /> 2. Personal Details</h3>
+                      <div className="flex flex-col items-center gap-4 py-4"><ProfilePhotoUpload onFileSelect={setProfilePicture} /></div>
+                      <div className="space-y-6">
+                          <div><label className={labelClass}>Full Name <span className="text-red-500">*</span></label><input type="text" name="name" required value={formData.name} onChange={handleChange} className={inputClass} placeholder="Dr. John Smith" /></div>
+                          <div className="grid grid-cols-2 gap-6">
+                              <div><label className={labelClass}>Gender <span className="text-red-500">*</span></label>
+                                <select name="gender" required value={formData.gender} onChange={handleChange} className={inputClass}>
+                                  <option value="">Select Gender</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option>
+                                </select>
                               </div>
-                            </div>
-                        </div>
+                              <div><label className={labelClass}>Date of Birth <span className="text-red-500">*</span></label>
+                                <div className="grid grid-cols-3 gap-2">
+                                  <select className={inputClass} value={formData.dateOfBirth ? formData.dateOfBirth.split('-')[2] : ''} onChange={(e) => handleDateChange('day', e.target.value)} required><option value="">Day</option>{Array.from({length: 31}, (_, i) => String(i+1).padStart(2, '0')).map(d => <option key={d} value={d}>{d}</option>)}</select>
+                                  <select className={inputClass} value={formData.dateOfBirth ? formData.dateOfBirth.split('-')[1] : ''} onChange={(e) => handleDateChange('month', e.target.value)} required><option value="">Month</option>{['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => <option key={m} value={String(i+1).padStart(2, '0')}>{m}</option>)}</select>
+                                  <select className={inputClass} value={formData.dateOfBirth ? formData.dateOfBirth.split('-')[0] : ''} onChange={(e) => handleDateChange('year', e.target.value)} required><option value="">Year</option>{Array.from({length: 100}, (_, i) => new Date().getFullYear() - i).map(y => <option key={y} value={y}>{y}</option>)}</select>
+                                </div>
+                              </div>
+                          </div>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {role === 'ROLE_DOCTOR' && (
                     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
