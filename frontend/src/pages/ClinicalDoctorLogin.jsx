@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import api from '../api/axiosConfig';
 import ProfilePhotoUpload from '../components/ProfilePhotoUpload';
+import DocumentUpload from '../components/DocumentUpload';
 import LegalFooter from '../components/LegalFooter';
 
 const HospitalDepartments = [
@@ -65,6 +66,7 @@ const DoctorRegisterForm = ({ onBack }) => {
     maxPatientsPerDay: '30',
   });
   const [profilePicture, setProfilePicture] = useState(null);
+  const [licenseDocument, setLicenseDocument] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -169,6 +171,9 @@ const DoctorRegisterForm = ({ onBack }) => {
       }));
       if (profilePicture) {
         formDataToSend.append('profilePicture', profilePicture);
+      }
+      if (licenseDocument) {
+        formDataToSend.append('licenseDocument', licenseDocument);
       }
 
       await api.post('auth/register/doctor', formDataToSend, {
@@ -477,6 +482,10 @@ const DoctorRegisterForm = ({ onBack }) => {
                           <input type="text" name="medicalLicenseNumber" required value={formData.medicalLicenseNumber} onChange={handleChange}
                               className={inputCls} placeholder="e.g. MCI-12345678" />
                       </div>
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-slate-50">
+                      <label className={labelCls}>Medical License / Degree Certificate <span className="text-red-500">*</span></label>
+                      <DocumentUpload onFileSelect={setLicenseDocument} label="Upload License Certificate" />
                   </div>
                 </div>
               </div>
