@@ -703,8 +703,9 @@ const Register = () => {
                             <div><label className={labelClass}>Procedures & Publications</label><textarea name="proceduresHandled" value={formData.proceduresHandled} onChange={handleChange} className={`${inputClass} h-24`} placeholder="Procedures handled..." /></div>
                         </div>
                       </div>
-                    </>
-                  )}
+                    </div>
+                  </>
+                )}
 
                   {role === 'ROLE_HOSPITAL_ADMIN' && (
                     <>
@@ -920,8 +921,9 @@ const Register = () => {
                             {loading ? 'Finalizing Enrollment...' : 'Complete Institutional Registration'}
                         </button>
                       </div>
-                    </>
-                  )}
+                    </div>
+                  </>
+                )}
 
                   {role === 'ROLE_DOCTOR' && (
                     <>
@@ -982,6 +984,7 @@ const Register = () => {
                       <button type="submit" disabled={loading} className="w-full bg-primary-600 text-white py-5 rounded-[2rem] font-black uppercase tracking-widest hover:bg-primary-700 shadow-2xl shadow-primary-200 transition-all active:scale-95 disabled:opacity-50">
                         {loading ? 'Completing Enrollment...' : 'Finalize Physician Registration'}
                       </button>
+                      </div>
                     </>
                   )}
                 </div>
