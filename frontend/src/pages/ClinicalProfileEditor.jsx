@@ -415,6 +415,7 @@ const EditDoctorProfile = () => {
   const sectionClass = "bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100 space-y-6";
   const labelClass = "block text-xs font-bold text-slate-500 uppercase mb-2 ml-1 tracking-wide";
   const inputClass = "block w-full rounded-xl border-slate-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-4 py-3 border transition-all bg-slate-50/50 hover:bg-white focus:bg-white";
+  const readOnlyInputClass = "block w-full rounded-xl border-slate-100 shadow-none text-sm px-4 py-3 border transition-all bg-slate-100/50 text-slate-500 cursor-not-allowed font-medium";
   const sectionTitleClass = "flex items-center gap-2 text-md font-bold text-slate-800 border-b border-slate-100 pb-4 mb-2";
 
   const isAffiliated = !!user?.institutional;
@@ -487,7 +488,7 @@ const EditDoctorProfile = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className={labelClass}>Medical Specialization</label>
-              <input type="text" name="specialization" value={formData.specialization} onChange={handleChange} className={inputClass} placeholder="e.g. Cardiologist" required />
+              <input type="text" name="specialization" value={formData.specialization} readOnly className={readOnlyInputClass} placeholder="e.g. Cardiologist" />
             </div>
             <div>
               <label className={labelClass}>Sub-Specialties</label>
@@ -495,11 +496,11 @@ const EditDoctorProfile = () => {
             </div>
             <div>
               <label className={labelClass}>Medical Degree</label>
-              <input type="text" name="medicalDegree" value={formData.medicalDegree} onChange={handleChange} className={inputClass} placeholder="e.g. MBBS, MD" required />
+              <input type="text" name="medicalDegree" value={formData.medicalDegree} readOnly className={readOnlyInputClass} placeholder="e.g. MBBS, MD" />
             </div>
             <div>
               <label className={labelClass}>Years of Experience</label>
-              <input type="number" name="yearsOfExperience" value={formData.yearsOfExperience} onChange={handleChange} className={inputClass} placeholder="e.g. 12" required />
+              <input type="number" name="yearsOfExperience" value={formData.yearsOfExperience} readOnly className={readOnlyInputClass} placeholder="e.g. 12" />
             </div>
             
             <div className="md:col-span-2 pt-4 border-t border-slate-50">
@@ -507,15 +508,15 @@ const EditDoctorProfile = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label className={labelClass}>Medical Council</label>
-                        <input type="text" name="medicalCouncil" value={formData.medicalCouncil} onChange={handleChange} className={inputClass} placeholder="e.g. KMC" required />
+                        <input type="text" name="medicalCouncil" value={formData.medicalCouncil} readOnly className={readOnlyInputClass} placeholder="e.g. KMC" />
                     </div>
                     <div>
                         <label className={labelClass}>License Number</label>
-                        <input type="text" name="medicalLicenseNumber" value={formData.medicalLicenseNumber} onChange={handleChange} className={inputClass} placeholder="e.g. REG-552311" required />
+                        <input type="text" name="medicalLicenseNumber" value={formData.medicalLicenseNumber} readOnly className={readOnlyInputClass} placeholder="e.g. REG-552311" />
                     </div>
                     <div>
                         <label className={labelClass}>License Expiry</label>
-                        <input type="date" name="licenseExpiryDate" value={formData.licenseExpiryDate} onChange={handleChange} className={inputClass} required />
+                        <input type="date" name="licenseExpiryDate" value={formData.licenseExpiryDate} readOnly className={readOnlyInputClass} />
                     </div>
                 </div>
             </div>
@@ -550,16 +551,14 @@ const EditDoctorProfile = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
               <label className={labelClass}>
-                Primary Hospital / Clinic Name (Search for your facility)
-                {(formData.appointmentsEnabled || formData.onlineConsultation) && <span className="text-red-500 ml-1 font-bold">*</span>}
+                Primary Hospital / Clinic Name
               </label>
               <input 
-                ref={hospitalInputRef}
                 type="text" 
                 name="hospital" 
                 value={formData.hospital} 
-                onChange={handleChange} 
-                className={inputClass} 
+                readOnly
+                className={readOnlyInputClass} 
                 placeholder="e.g. Apollo Hospital, City Clinic" 
               />
             </div>
@@ -690,27 +689,17 @@ const EditDoctorProfile = () => {
             </div>
             <div className="md:col-span-2">
               <label className={labelClass}>
-                Clinic Address (Search or use current location) 
-                {formData.appointmentsEnabled && <span className="text-red-500 ml-1 font-bold">*</span>}
+                Clinic Address
               </label>
               <div className="relative group/addr">
                 <input 
-                  ref={addressInputRef}
                   type="text" 
                   name="clinicAddress" 
                   value={formData.clinicAddress} 
-                  onChange={handleChange} 
-                  className={`${inputClass} pr-14`} 
-                  placeholder="Start typing your clinic address..." 
+                  readOnly 
+                  className={readOnlyInputClass} 
+                  placeholder="Clinical address not set" 
                 />
-                <button 
-                  type="button"
-                  onClick={handleGetLocation}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl transition-all shadow-sm active:scale-90 flex items-center justify-center group/loc"
-                  title="Detect my current location"
-                >
-                  <Target size={18} className="group-hover/loc:animate-pulse" />
-                </button>
               </div>
             </div>
             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -784,7 +773,7 @@ const EditDoctorProfile = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className={labelClass}>Full Name</label>
-              <input type="text" name="name" value={formData.name} onChange={handleChange} className={inputClass} />
+              <input type="text" name="name" value={formData.name} readOnly className={readOnlyInputClass} />
             </div>
             <div>
               <label className={labelClass}>Email (Read-only)</label>
@@ -792,11 +781,11 @@ const EditDoctorProfile = () => {
             </div>
             <div>
                 <label className={labelClass}>Phone Number</label>
-                <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className={inputClass} maxLength="10" />
+                <input type="tel" name="phone" value={formData.phone} readOnly className={readOnlyInputClass} />
             </div>
             <div>
                 <label className={labelClass}>Alternate Phone</label>
-                <input type="tel" name="alternatePhone" value={formData.alternatePhone} onChange={handleChange} className={inputClass} maxLength="10" />
+                <input type="tel" name="alternatePhone" value={formData.alternatePhone} readOnly className={readOnlyInputClass} />
             </div>
           </div>
         </div>
