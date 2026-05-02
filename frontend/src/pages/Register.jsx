@@ -44,6 +44,7 @@ const Register = () => {
     hasDisability: 'false',
     emergencyContactName: '',
     emergencyContactPhone: '',
+    emergencyContactRelationship: '',
     allergies: '',
     existingDiseases: '',
     smokingStatus: '',
@@ -637,7 +638,10 @@ const Register = () => {
                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Emergency Contact</p>
                            <div className="space-y-3">
                                <input type="text" name="emergencyContactName" value={formData.emergencyContactName} onChange={handleChange} className={inputClass} placeholder="Contact Name" />
-                               <input type="tel" name="emergencyContactPhone" value={formData.emergencyContactPhone} onChange={handleChange} className={inputClass} placeholder="Contact Phone" />
+                               <div className="grid grid-cols-2 gap-3">
+                                   <input type="text" name="emergencyContactRelationship" value={formData.emergencyContactRelationship} onChange={handleChange} className={inputClass} placeholder="Relationship (e.g. Spouse)" />
+                                   <input type="tel" name="emergencyContactPhone" value={formData.emergencyContactPhone} onChange={handleChange} className={inputClass} placeholder="Contact Phone" />
+                               </div>
                            </div>
                         </div>
                     </div>
