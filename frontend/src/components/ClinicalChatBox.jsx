@@ -12,14 +12,19 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(true);
     const [connected, setConnected] = useState(false);
+    const [isReceiverOnline, setIsReceiverOnline] = useState(false);
     const stompClient = useRef(null);
     const scrollRef = useRef(null);
 
     useEffect(() => {
         fetchHistory();
         connectWebSocket();
+        checkReceiverStatus();
+
+        const statusInterval = setInterval(checkReceiverStatus, 15000); // Check every 15s
 
         return () => {
+            clearInterval(statusInterval);
             if (stompClient.current) {
                 stompClient.current.disconnect();
             }
@@ -41,6 +46,15 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
             await api.post(`/chat/mark-read/${receiverId}`);
         } catch (err) {
             console.error("Chat history fetch failed", err);
+        }
+    };
+
+    const checkReceiverStatus = async () => {
+        try {
+            const res = await api.get(`/chat/status/${receiverId}`);
+            setIsReceiverOnline(res.data.online);
+        } catch (err) {
+            console.error("Failed to fetch receiver status", err);
         }
     };
 
@@ -101,9 +115,9 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
                     <div>
                         <h4 className="text-xs font-black uppercase tracking-tight leading-none">{receiverName}</h4>
                         <div className="flex items-center gap-1.5 mt-1">
-                            <div className={`w-1.5 h-1.5 rounded-full ${connected ? 'bg-emerald-500' : 'bg-slate-500'}`} />
+                            <div className={`w-1.5 h-1.5 rounded-full ${isReceiverOnline ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]' : 'bg-slate-500'}`} />
                             <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">
-                                {connected ? 'Online' : 'Last seen recently'}
+                                {isReceiverOnline ? 'Online' : 'Last seen recently'}
                             </span>
                         </div>
                     </div>

@@ -19,10 +19,13 @@ public class ChatController {
 
     private final ChatService chatService;
     private final UserRepository userRepository;
+    private final com.health.medisync.service.PresenceService presenceService;
 
-    public ChatController(ChatService chatService, UserRepository userRepository) {
+    public ChatController(ChatService chatService, UserRepository userRepository, 
+                          com.health.medisync.service.PresenceService presenceService) {
         this.chatService = chatService;
         this.userRepository = userRepository;
+        this.presenceService = presenceService;
     }
 
     @GetMapping("/conversation/{receiverId}")
@@ -59,5 +62,11 @@ public class ChatController {
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return ResponseEntity.ok(chatService.getUnreadCounts(user.getId()));
+    }
+
+    @GetMapping("/status/{userId}")
+    public ResponseEntity<java.util.Map<String, Object>> getUserStatus(@PathVariable Long userId) {
+        boolean online = presenceService.isUserOnline(userId);
+        return ResponseEntity.ok(java.util.Map.of("online", online));
     }
 }
