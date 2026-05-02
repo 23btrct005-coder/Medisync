@@ -297,18 +297,16 @@ public class AuthController {
             }
         }
         
-        // Professional accounts are enabled by default since email is verified via OTP
-        // Their 'approved' status in the Doctor entity controls institutional access
+        // Professional accounts are enabled and email-verified by default 
+        // since email is pre-verified via OTP before registration in Step 1
         user.setEnabled(true); 
-        user.setEmailVerified(request.containsKey("otp")); 
+        user.setEmailVerified(true); 
         user = userRepository.save(user);
 
         Doctor doctor = new Doctor();
         doctor.setUser(user);
         
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_HOSPITAL_ADMIN"));
-        doctor.setApproved(isAdmin); // Must be approved by admin, unless created by one
+        doctor.setApproved(true); // Self-registered doctors are approved immediately
         doctor.setName(request.get("name") != null ? String.valueOf(request.get("name")) : null);
         doctor.setEmail(email);
         doctor.setGender(request.get("gender") != null ? String.valueOf(request.get("gender")) : null);
@@ -480,6 +478,7 @@ public class AuthController {
         }
         
         user.setEnabled(verified);
+        user.setEmailVerified(true); // Default to verified since handled in frontend
         user = userRepository.save(user);
 
         Patient patient = new Patient();
