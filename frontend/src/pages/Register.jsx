@@ -714,10 +714,10 @@ const Register = () => {
               {role === 'ROLE_DOCTOR' && (
                 <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-400">
                   <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
-                    <Building2 size={16} /> 7. Work Details
+                    <Building2 size={16} /> 6. Work Details
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
+                    <div className="md:col-span-2">
                         <label className={labelClass}>Affiliated Hospital / Clinic <span className="text-red-500">*</span></label>
                         <select name="hospital" required value={formData.hospital} onChange={handleChange} className={inputClass}>
                             <option value="">Select Institution</option>
@@ -754,17 +754,12 @@ const Register = () => {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label className={labelClass}>Online Consultation Fee (₹)</label>
+                        <label className={labelClass}>Consultation Fee (₹)</label>
                         <input type="number" name="onlineConsultationFee" value={formData.onlineConsultationFee} onChange={handleChange}
                           className={inputClass} placeholder="e.g. 500" />
                     </div>
                     <div>
-                        <label className={labelClass}>Offline Consultation Fee (₹)</label>
-                        <input type="number" name="offlineConsultationFee" value={formData.offlineConsultationFee} onChange={handleChange}
-                          className={inputClass} placeholder="e.g. 800" />
-                    </div>
-                    <div className="md:col-span-2">
-                        <label className={labelClass}>UPI ID (for direct payments)</label>
+                        <label className={labelClass}>UPI ID (for payments)</label>
                         <input type="text" name="upiId" value={formData.upiId} onChange={handleChange}
                           className={inputClass} placeholder="e.g. doctor@upi" />
                     </div>
@@ -776,11 +771,31 @@ const Register = () => {
               {role === 'ROLE_DOCTOR' && (
                 <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
                   <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
-                    <Activity size={16} /> 8. Advanced Availability
+                    <Activity size={16} /> 7. Availability
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label className={labelClass}>Working Days</label>
+                        <input type="text" name="workingDaysText" value={formData.workingDays.join(', ')} readOnly
+                          className={`${inputClass} bg-slate-50 cursor-default`} placeholder="e.g. Mon-Fri, Mon-Sat" />
+                    </div>
+                    <div>
+                        <label className={labelClass}>Consultation Timings</label>
+                        <input type="text" name="timingsText" value={`${formData.startTime} - ${formData.endTime}`} readOnly
+                          className={`${inputClass} bg-slate-50 cursor-default`} placeholder="e.g. 9:00 AM - 6:00 PM" />
+                    </div>
+                    <div className="md:col-span-2">
+                        <label className={labelClass}>Online Consultation</label>
+                        <select name="onlineConsultation" className={inputClass} value={formData.onlineConsultationFee > 0 ? 'Available' : 'Not Available'} onChange={(e) => {
+                            if(e.target.value === 'Not Available') setFormData({...formData, onlineConsultationFee: ''});
+                        }}>
+                            <option value="Available">Available</option>
+                            <option value="Not Available">Not Available</option>
+                        </select>
+                    </div>
+                    <div className="md:col-span-2">
+                        <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">Adjust Working Schedule</p>
                         <div className="flex flex-wrap gap-2 pt-2">
                             {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
                                 <button
@@ -909,8 +924,12 @@ const Register = () => {
               {/* Step 9/4: Account Security (Universal) */}
               <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-700">
                 <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
-                  <Lock size={16} /> {role === 'ROLE_DOCTOR' ? '9. Account Security' : (role === 'ROLE_PATIENT' ? '4. Account Security' : '4. Account Security')}
+                  <Lock size={16} /> {role === 'ROLE_DOCTOR' ? '8. Account Security' : (role === 'ROLE_PATIENT' ? '4. Account Security' : '4. Account Security')}
                 </h3>
+                <div className="mb-6">
+                    <label className={labelClass}>Username / Doctor ID <span className="text-red-500">*</span></label>
+                    <input type="text" value={formData.email} disabled className={`${inputClass} bg-blue-50 border-blue-100 text-blue-900 font-bold`} />
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="relative">
                     <label className={labelClass}>Secure Password <span className="text-red-500">*</span></label>
