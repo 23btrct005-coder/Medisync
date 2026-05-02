@@ -456,11 +456,11 @@ const Register = () => {
                   )}
               </div>
 
-              {/* Step 2: Basic Details (Doctor Only) */}
-              {role === 'ROLE_DOCTOR' && (
+              {/* Step 2: Basic Details (Doctor & Patient) */}
+              {(role === 'ROLE_DOCTOR' || role === 'ROLE_PATIENT') && (
                 <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                   <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
-                    <User size={16} /> 2. Basic Details
+                    <User size={16} /> 2. Basic Clinical Details
                   </h3>
                   
                   <div className="flex flex-col items-center gap-4 py-4">
@@ -531,11 +531,11 @@ const Register = () => {
                 </div>
               )}
 
-              {/* Step 3: Contact Information (Doctor Only) */}
-              {role === 'ROLE_DOCTOR' && (
+              {/* Step 3: Contact Information (Doctor & Patient) */}
+              {(role === 'ROLE_DOCTOR' || role === 'ROLE_PATIENT') && (
                 <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
                   <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
-                    <Phone size={16} /> 3. Contact Information
+                    <Phone size={16} /> 3. Contact & Connectivity
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -909,7 +909,7 @@ const Register = () => {
               {/* Step 9/4: Account Security (Universal) */}
               <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-700">
                 <h3 className="flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100">
-                  <Lock size={16} /> {role === 'ROLE_DOCTOR' ? '9. Account Security' : '4. Account Security'}
+                  <Lock size={16} /> {role === 'ROLE_DOCTOR' ? '9. Account Security' : (role === 'ROLE_PATIENT' ? '4. Account Security' : '4. Account Security')}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="relative">
@@ -931,7 +931,7 @@ const Register = () => {
                 <div className="pt-6">
                   <button type="submit" disabled={loading}
                     className={`w-full flex justify-center items-center gap-2 py-4 px-4 rounded-2xl shadow-xl text-xs font-black uppercase tracking-widest text-white bg-blue-600 hover:bg-blue-700 transition-all ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01] shadow-blue-200'}`}>
-                    {loading ? 'Finalizing Sync...' : (role === 'ROLE_DOCTOR' ? 'Complete Physician Enrollment' : 'Complete Institutional Onboarding')}
+                    {loading ? 'Finalizing Sync...' : (role === 'ROLE_DOCTOR' ? 'Complete Physician Enrollment' : (role === 'ROLE_PATIENT' ? 'Complete Patient Registration' : 'Complete Institutional Onboarding'))}
                   </button>
                 </div>
               </div>>
