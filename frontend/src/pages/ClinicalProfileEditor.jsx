@@ -575,7 +575,7 @@ const EditDoctorProfile = () => {
                 </div>
                 <div>
                     <label className={labelClass}>Max Daily Patients</label>
-                    <input type="number" name="maxPatientsPerDay" value={formData.maxPatientsPerDay} onChange={handleChange} className={inputClass} placeholder="e.g. 40" />
+                    <input type="number" name="maxPatientsPerDay" value={formData.maxPatientsPerDay} onChange={handleChange} className={inputClass} placeholder="e.g. 40" min="0" />
                 </div>
                 <div>
                     <label className={labelClass}>Break Timings</label>
@@ -681,11 +681,11 @@ const EditDoctorProfile = () => {
             </div>
             <div>
               <label className={labelClass}>Online Consultation Fee (INR)</label>
-              <input type="number" name="onlineConsultationFee" value={formData.onlineConsultationFee} onChange={handleChange} className={inputClass} placeholder="e.g. 500" />
+              <input type="number" name="onlineConsultationFee" value={formData.onlineConsultationFee} onChange={handleChange} className={inputClass} placeholder="e.g. 500" min="0" />
             </div>
             <div>
               <label className={labelClass}>Offline Consultation Fee (INR)</label>
-              <input type="number" name="offlineConsultationFee" value={formData.offlineConsultationFee} onChange={handleChange} className={inputClass} placeholder="e.g. 800" />
+              <input type="number" name="offlineConsultationFee" value={formData.offlineConsultationFee} onChange={handleChange} className={inputClass} placeholder="e.g. 800" min="0" />
             </div>
             <div className="md:col-span-2">
               <label className={labelClass}>
