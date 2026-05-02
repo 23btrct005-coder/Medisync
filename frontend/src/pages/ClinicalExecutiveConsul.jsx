@@ -11,7 +11,7 @@ import {
 } from 'recharts';
 import api from '../api/axiosConfig';
 import { Html5Qrcode } from 'html5-qrcode';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useNotifications } from '../context/NotificationContext';
 import ProfileCompletionBanner from '../components/ProfileCompletionBanner';
 import StatCardPro from '../components/StatCard';
@@ -33,6 +33,7 @@ const DoctorDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [revenueData, setRevenueData] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
  
   useEffect(() => {
     const fetchData = async () => {
@@ -45,6 +46,15 @@ const DoctorDashboard = () => {
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (location.hash === '#revenue' && !loading) {
+      const element = document.getElementById('revenue-hub');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }, [location, loading]);
  
   const fetchRequests = async () => {
     try {
@@ -271,7 +281,7 @@ const DoctorDashboard = () => {
         
         {/* Financial Intelligence Hub (Non-Institutional Only) */}
         {!user?.institutional && (
-          <section className="space-y-6">
+          <section id="revenue-hub" className="space-y-6 pt-8 scroll-mt-20">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-[#0A1A1A] p-6 rounded-[2rem] border border-white/5">
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl">

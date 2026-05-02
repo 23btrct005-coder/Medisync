@@ -61,7 +61,7 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
     ...(!isAdmin && !user?.institutional ? [
       {
         name: 'Financials',
-        path: prefix,
+        path: `${prefix}#revenue`,
         icon: <TrendingUp size={20} />
       }
     ] : []),
