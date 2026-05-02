@@ -11,6 +11,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     Optional<Doctor> findByEmail(String email);
     Optional<Doctor> findFirstByMedicalLicenseNumber(String medicalLicenseNumber);
     java.util.List<Doctor> findByApprovedFalse();
+    Optional<Doctor> findFirstByEmployeeId(String employeeId);
 
     @org.springframework.data.jpa.repository.Query(value = "SELECT * FROM doctors WHERE approved = false", nativeQuery = true)
     List<Doctor> findPendingHardened();

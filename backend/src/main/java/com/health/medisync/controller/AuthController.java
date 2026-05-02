@@ -103,21 +103,51 @@ public class AuthController {
             
             System.out.println("DEBUG: Login attempt for " + normalizedUsername);
 
-            // SMART RESOLVER: Ensure we find the primary username even if they login with email
+            // SMART RESOLVER: Support Login via Username, Email, Doctor ID (Employee ID/License), or Patient ID
             final String effectiveUsername;
             var userOpt = userRepository.findByUsernameIgnoreCase(normalizedUsername);
+            
             if (userOpt.isPresent()) {
                 effectiveUsername = userOpt.get().getUsername();
-            } else if (normalizedUsername != null && normalizedUsername.contains("@")) {
-                System.out.println("DEBUG: Username not found, attempting email lookup for " + normalizedUsername);
-                effectiveUsername = doctorRepository.findFirstByEmail(normalizedUsername)
-                    .map(d -> d.getUser() != null ? d.getUser().getUsername() : normalizedUsername)
-                    .orElseGet(() -> patientRepository.findByEmail(normalizedUsername)
-                        .map(p -> p.getUser() != null ? p.getUser().getUsername() : normalizedUsername)
-                        .orElse(normalizedUsername));
-                System.out.println("DEBUG: Resolved effective username: " + effectiveUsername);
             } else {
-                effectiveUsername = normalizedUsername;
+                System.out.println("DEBUG: Direct username lookup failed, attempting multi-channel resolution for: " + normalizedUsername);
+                
+                // 1. Try Email Lookup
+                String resolvedByEmail = doctorRepository.findFirstByEmail(normalizedUsername)
+                    .map(d -> d.getUser() != null ? d.getUser().getUsername() : null)
+                    .orElseGet(() -> patientRepository.findByEmail(normalizedUsername)
+                        .map(p -> p.getUser() != null ? p.getUser().getUsername() : null)
+                        .orElse(null));
+
+                if (resolvedByEmail != null) {
+                    effectiveUsername = resolvedByEmail;
+                    System.out.println("DEBUG: Resolved by Email -> " + effectiveUsername);
+                } else {
+                    // 2. Try Doctor ID (Employee ID or Medical License)
+                    String resolvedByDoctorId = doctorRepository.findFirstByEmployeeId(normalizedUsername)
+                        .map(d -> d.getUser() != null ? d.getUser().getUsername() : null)
+                        .orElseGet(() -> doctorRepository.findFirstByMedicalLicenseNumber(normalizedUsername)
+                            .map(d -> d.getUser() != null ? d.getUser().getUsername() : null)
+                            .orElse(null));
+                    
+                    if (resolvedByDoctorId != null) {
+                        effectiveUsername = resolvedByDoctorId;
+                        System.out.println("DEBUG: Resolved by Doctor ID -> " + effectiveUsername);
+                    } else {
+                        // 3. Try Patient ID
+                        String resolvedByPatientId = patientRepository.findByPatientId(normalizedUsername)
+                            .map(p -> p.getUser() != null ? p.getUser().getUsername() : null)
+                            .orElse(null);
+                        
+                        if (resolvedByPatientId != null) {
+                            effectiveUsername = resolvedByPatientId;
+                            System.out.println("DEBUG: Resolved by Patient ID -> " + effectiveUsername);
+                        } else {
+                            // Fallback to original input
+                            effectiveUsername = normalizedUsername;
+                        }
+                    }
+                }
             }
             
             // SCHEMA SELF-HEAL: Centralized check via DatabaseSchemaService
@@ -667,6 +697,32 @@ public class AuthController {
 
             authService.generateAndSendOtp(email);
             return ResponseEntity.ok(Map.of("message", "Verification code sent to " + email));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/request-deletion-otp")
+    public ResponseEntity<?> requestDeletionOtp(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email") != null ? request.get("email").toLowerCase() : null;
+            if (email == null) throw new RuntimeException("Email is required");
+            authService.generateAndSendDeletionOtp(email);
+            return ResponseEntity.ok(Map.of("message", "High-security deletion code sent to " + email));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/confirm-account-deletion")
+    public ResponseEntity<?> confirmAccountDeletion(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email") != null ? request.get("email").toLowerCase() : null;
+            String otp = request.get("otp");
+            if (email == null || otp == null) throw new RuntimeException("Email and OTP are required");
+            
+            authService.permanentlyDeleteAccount(email, otp);
+            return ResponseEntity.ok(Map.of("message", "Your account and all associated data have been permanently removed."));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }

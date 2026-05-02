@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Building2, Shield, CreditCard, Globe, MapPin, Phone, Mail, FileText, Camera, CheckCircle, AlertCircle, Save, Loader2, Activity } from 'lucide-react';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const HospitalProfile = () => {
     const [profile, setProfile] = useState(null);
@@ -9,6 +11,14 @@ const HospitalProfile = () => {
     const [saving, setSaving] = useState(false);
     const [logo, setLogo] = useState(null);
     const [logoPreview, setLogoPreview] = useState(null);
+    const { logout } = useAuth();
+    const navigate = useNavigate();
+
+    // Deletion State
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deletionStep, setDeletionStep] = useState(1); // 1: Request, 2: Verify
+    const [deletionOtp, setDeletionOtp] = useState('');
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const [formData, setFormData] = useState({
         hospitalName: '',
@@ -127,6 +137,36 @@ const HospitalProfile = () => {
             toast.error(err.response?.data?.message || "Sync failed");
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleRequestDeletion = async () => {
+        try {
+            await api.post('/auth/request-deletion-otp', { email: profile?.email });
+            toast.success("Security code sent to your administrative email");
+            setDeletionStep(2);
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Failed to initiate deletion");
+        }
+    };
+
+    const handleConfirmDeletion = async () => {
+        if (!deletionOtp) return toast.error("Please enter the verification code");
+        setIsDeleting(true);
+        try {
+            await api.post('/auth/confirm-account-deletion', { 
+                email: profile?.email, 
+                otp: deletionOtp 
+            });
+            toast.success("Account permanently removed. Redirecting...");
+            setTimeout(() => {
+                logout();
+                navigate('/');
+            }, 2000);
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Verification failed");
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -447,6 +487,100 @@ const HospitalProfile = () => {
                     </div>
                 </div>
             </form>
+
+            {/* Danger Zone */}
+            <div className="mt-16 pt-12 border-t border-slate-100">
+                <div className="bg-red-50 rounded-[3.5rem] p-10 border border-red-100 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/5 -mr-32 -mt-32 rounded-full blur-3xl" />
+                    <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                        <div className="text-left">
+                            <h3 className="text-2xl font-black text-red-900 uppercase tracking-tight italic">Permanent <span className="not-italic">Deletion Zone</span></h3>
+                            <p className="text-sm text-red-700/70 font-medium mt-2 max-w-xl">
+                                Once initiated, your hospital profile, staff roster, clinical archives, and administrative access will be <span className="font-bold underline">permanently wiped</span> from the MediSync network. This action is irreversible.
+                            </p>
+                        </div>
+                        <button 
+                            onClick={() => setShowDeleteModal(true)}
+                            className="px-10 py-5 bg-red-600 text-white rounded-3xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-red-500/20 hover:bg-red-700 transition-all hover:scale-105 active:scale-95"
+                        >
+                            Initiate Permanent Deletion
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Deletion Modal */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+                    <div className="bg-white rounded-[3rem] w-full max-w-md shadow-2xl overflow-hidden border border-red-100 animate-in zoom-in-95 duration-300">
+                        <div className="p-10 text-center">
+                            <div className="w-20 h-20 bg-red-100 text-red-600 rounded-[2rem] flex items-center justify-center mx-auto mb-8">
+                                <AlertCircle size={40} />
+                            </div>
+                            
+                            {deletionStep === 1 ? (
+                                <>
+                                    <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight italic mb-4">Security <span className="not-italic text-red-600">Verification</span></h3>
+                                    <p className="text-sm text-slate-500 font-medium mb-8 leading-relaxed">
+                                        To protect against unauthorized deletion, we must send a high-security verification code to: <br/>
+                                        <span className="font-bold text-slate-900">{profile?.email}</span>
+                                    </p>
+                                    <div className="flex gap-4">
+                                        <button 
+                                            onClick={() => setShowDeleteModal(false)}
+                                            className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button 
+                                            onClick={handleRequestDeletion}
+                                            className="flex-1 py-4 bg-red-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all"
+                                        >
+                                            Send Code
+                                        </button>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight italic mb-4">Confirm <span className="not-italic text-red-600">Identity</span></h3>
+                                    <p className="text-sm text-slate-500 font-medium mb-8">Enter the 6-digit verification code sent to your email.</p>
+                                    
+                                    <input 
+                                        type="text"
+                                        maxLength="6"
+                                        value={deletionOtp}
+                                        onChange={(e) => setDeletionOtp(e.target.value)}
+                                        className="w-full text-center text-4xl font-black tracking-[0.5em] py-5 bg-slate-50 border-none rounded-3xl mb-8 focus:ring-2 ring-red-100"
+                                        placeholder="000000"
+                                    />
+
+                                    <div className="flex gap-4">
+                                        <button 
+                                            onClick={() => { setDeletionStep(1); setShowDeleteModal(false); }}
+                                            className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
+                                        >
+                                            Back
+                                        </button>
+                                        <button 
+                                            onClick={handleConfirmDeletion}
+                                            disabled={isDeleting}
+                                            className="flex-1 py-4 bg-red-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all disabled:opacity-50"
+                                        >
+                                            {isDeleting ? 'Wiping Node...' : 'Delete Permanently'}
+                                        </button>
+                                    </div>
+                                    <button 
+                                        onClick={handleRequestDeletion}
+                                        className="mt-6 text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-primary transition-colors"
+                                    >
+                                        Resend Code
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

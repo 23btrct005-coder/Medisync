@@ -542,12 +542,12 @@ const DoctorLogin = () => {
           )}
 
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1 tracking-wide">Doctor ID / Username</label>
+            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1 tracking-wide">Doctor ID / Email</label>
             <div className="relative">
               <User size={18} className="absolute left-3 top-3.5 text-slate-400" />
               <input name="username" type="text" required value={formData.username} onChange={handleChange}
                 className="pl-10 block w-full rounded-xl border-slate-200 px-4 py-3 border text-sm focus:ring-blue-500 focus:border-blue-500 transition"
-                placeholder="Your username or email" />
+                placeholder="Email, Employee ID or License" />
             </div>
           </div>
 

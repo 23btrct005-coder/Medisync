@@ -75,7 +75,7 @@ const Login = () => {
                 type="text"
                 required
                 className="appearance-none rounded-xl relative block w-full pl-10 px-3 py-3 border border-slate-300 placeholder-slate-400 text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm transition-all"
-                placeholder="Username (e.g. john@example.com)"
+                placeholder="Email or Patient ID (e.g. MS-1234)"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />

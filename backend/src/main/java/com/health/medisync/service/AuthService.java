@@ -207,6 +207,40 @@ public class AuthService {
         emailVerificationOtpRepository.delete(verificationOtp);
     }
 
+    @Transactional
+    public void permanentlyDeleteAccount(String email, String otp) {
+        String normalizedEmail = email != null ? email.toLowerCase() : null;
+        verifyOtpStandalone(normalizedEmail, otp);
+
+        User user = userRepository.findByUsername(normalizedEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String role = user.getRole();
+
+        if ("ROLE_DOCTOR".equals(role)) {
+            Doctor doctor = doctorRepository.findByUserId(user.getId())
+                    .orElseThrow(() -> new RuntimeException("Doctor profile not found"));
+            
+            // Delete associated data
+            appointmentRepository.deleteByDoctorId(doctor.getId());
+            prescriptionRepository.deleteAll(prescriptionRepository.findByDoctorId(doctor.getId()));
+            ratingRepository.deleteAll(ratingRepository.findByDoctorId(doctor.getId()));
+            
+            doctorRepository.delete(doctor);
+        } else if ("ROLE_HOSPITAL_ADMIN".equals(role)) {
+            hospitalAdminRepository.findByUserId(user.getId()).ifPresent(admin -> {
+                Hospital hospital = admin.getHospital();
+                if (hospital != null) {
+                    // This will cascade to doctors if configured, but let's be explicit if needed
+                    hospitalRepository.delete(hospital);
+                }
+                hospitalAdminRepository.delete(admin);
+            });
+        }
+
+        userRepository.delete(user);
+    }
+
     /**
      * CRITICAL: Clears all institutional, professional, and patient data.
      * Deletes in reverse order of dependencies to avoid FK constraints.
