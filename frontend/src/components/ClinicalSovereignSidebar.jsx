@@ -25,15 +25,24 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
       path: prefix, 
       icon: <LayoutDashboard size={20} /> 
     },
-    { 
-      name: isAdmin ? 'Hospital Ledger' : 'My Appointments', 
-      path: isAdmin ? `${prefix}/ledger` : `${prefix}/appointments`, 
-      icon: <Calendar size={20} /> 
-    },
+    ...(!isAdmin && user?.canManageAppointments !== false ? [
+      { 
+        name: 'My Appointments', 
+        path: `${prefix}/appointments`, 
+        icon: <Calendar size={20} /> 
+      }
+    ] : isAdmin ? [
+      { 
+        name: 'Hospital Ledger', 
+        path: `${prefix}/ledger`, 
+        icon: <Calendar size={20} /> 
+      }
+    ] : []),
     { 
       name: isAdmin ? 'Staff Roster' : 'Patient Directory', 
       path: isAdmin ? `${prefix}/staff` : `${prefix}/patients`, 
-      icon: <Users size={20} /> 
+      icon: <Users size={20} />,
+      hidden: !isAdmin && user?.canAccessReports === false
     },
     { 
       name: 'Messages', 
@@ -58,7 +67,7 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
         icon: <Building2 size={20} />
       }
     ] : []),
-    ...(!isAdmin && !user?.institutional ? [
+    ...(!isAdmin ? [
       {
         name: 'Financials',
         path: `${prefix}/financials`,
@@ -121,7 +130,7 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
         </div>
 
         <nav className="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
-          {navItems.map((item) => (
+          {navItems.filter(item => !item.hidden).map((item) => (
             <NavItem key={item.name} item={item} end={item.path === prefix} />
           ))}
         </nav>

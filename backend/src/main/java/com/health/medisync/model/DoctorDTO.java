@@ -70,6 +70,7 @@ public class DoctorDTO {
     private boolean canEditPatientData;
     private boolean canAccessReports;
     private boolean canManageAppointments;
+    private String preferredPaymentMode;
 
     // Constructors
     public DoctorDTO() {}
@@ -142,6 +143,7 @@ public class DoctorDTO {
         this.canEditPatientData = d.isCanEditPatientData();
         this.canAccessReports = d.isCanAccessReports();
         this.canManageAppointments = d.isCanManageAppointments();
+        this.preferredPaymentMode = d.getPreferredPaymentMode();
     }
 
     // Getters and Setters
@@ -309,4 +311,7 @@ public class DoctorDTO {
 
     public boolean isCanManageAppointments() { return canManageAppointments; }
     public void setCanManageAppointments(boolean canManageAppointments) { this.canManageAppointments = canManageAppointments; }
+
+    public String getPreferredPaymentMode() { return preferredPaymentMode; }
+    public void setPreferredPaymentMode(String preferredPaymentMode) { this.preferredPaymentMode = preferredPaymentMode; }
 }

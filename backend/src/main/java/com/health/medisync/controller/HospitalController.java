@@ -167,6 +167,7 @@ public class HospitalController {
             if (data.get("razorpayKeyId") != null)     hospital.setRazorpayKeyId(String.valueOf(data.get("razorpayKeyId")));
             if (data.get("razorpayKeySecret") != null) hospital.setRazorpayKeySecret(String.valueOf(data.get("razorpayKeySecret")));
             if (data.get("upiId") != null)             hospital.setUpiId(String.valueOf(data.get("upiId")));
+            if (data.get("preferredPaymentMode") != null) hospital.setPreferredPaymentMode(String.valueOf(data.get("preferredPaymentMode")));
 
             String city  = hospital.getCity()  != null ? hospital.getCity()  : "";
             String state = hospital.getState() != null ? hospital.getState() : "";

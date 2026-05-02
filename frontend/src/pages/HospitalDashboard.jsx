@@ -43,10 +43,18 @@ const HospitalDashboard = () => {
         canAccessReports: true,
         canManageAppointments: true,
         age: '',
-        password: 'Password@123' 
+        password: 'Password@123',
+        // Advanced Professional Fields
+        subSpecialties: '',
+        languagesSpoken: '',
+        proceduresHandled: '',
+        publications: '',
+        treatmentFocus: '',
+        slotDuration: '15'
     });
     const [submitting, setSubmitting] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
+    const [licenseFile, setLicenseFile] = useState(null);
 
     const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -156,13 +164,19 @@ const HospitalDashboard = () => {
                 hospital: stats?.hospitalId != null ? String(stats.hospitalId) : '',
                 hospitalName: stats?.hospitalName || '',
                 razorpayAccountId: stats?.razorpayKeyId || '',
-                upiId: stats?.upiId || ''
+                upiId: stats?.upiId || '',
+                // Advanced Professional Mapping
+                subSpecialties: onboardData.subSpecialties,
+                languagesSpoken: onboardData.languagesSpoken,
+                proceduresHandled: onboardData.proceduresHandled,
+                publications: onboardData.publications,
+                treatmentFocus: onboardData.treatmentFocus,
+                slotDuration: onboardData.slotDuration
             };
             formDataToSend.append('userData', JSON.stringify(userData));
             
-            if (selectedFile) {
-                formDataToSend.append('profilePicture', selectedFile);
-            }
+            if (selectedFile) formDataToSend.append('profilePicture', selectedFile);
+            if (licenseFile) formDataToSend.append('licenseDocument', licenseFile);
             
             await api.post('/auth/register/doctor', formDataToSend);
             toast.success("Staff member onboarded and is now active for booking!");
@@ -429,11 +443,11 @@ const HospitalDashboard = () => {
             </div>
             {/* Onboard Staff Modal */}
             {showOnboardModal && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-500">
-                    <div className="bg-white rounded-[3.5rem] w-full max-w-2xl shadow-[0_32px_64px_-15px_rgba(0,0,0,0.3)] overflow-hidden border border-slate-100 animate-in zoom-in-95 slide-in-from-bottom-8 duration-500 flex flex-col max-h-[85vh]">
+                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-500">
+                    <div className="bg-white rounded-[3.5rem] w-full max-w-2xl shadow-[0_32px_64px_-15px_rgba(0,0,0,0.3)] overflow-hidden border border-slate-100 animate-in zoom-in-95 slide-in-from-bottom-8 duration-500 flex flex-col max-h-[90vh]">
                         
                         {/* Modal Header & Portrait DropZone */}
-                        <div className="p-12 bg-slate-900 text-white relative overflow-hidden shrink-0">
+                        <div className="p-10 bg-slate-900 text-white relative overflow-hidden shrink-0">
                             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 -mr-32 -mt-32 rounded-full blur-[80px]" />
                             <div className="flex justify-between items-start relative z-10">
                                 <div>
@@ -456,7 +470,7 @@ const HospitalDashboard = () => {
                         </div>
 
                         {/* Form Content */}
-                        <form onSubmit={handleOnboardStaff} className="p-12 space-y-12 overflow-y-auto custom-scrollbar flex-1 bg-white">
+                        <form onSubmit={handleOnboardStaff} className="p-10 space-y-10 overflow-y-auto custom-scrollbar flex-1 bg-white">
                             
                             {/* Section 1: Basic Identity */}
                             <div className="space-y-8">
@@ -516,9 +530,36 @@ const HospitalDashboard = () => {
                                     <div><label className={labelClass}>License Expiry</label><input type="date" required value={onboardData.licenseExpiryDate} onChange={(e) => setOnboardData({...onboardData, licenseExpiryDate: e.target.value})} className={onboardInputClass} /></div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-6">
-                                    <div><label className={labelClass}>License Number</label><input type="text" required value={onboardData.medicalLicenseNumber} onChange={(e) => setOnboardData({...onboardData, medicalLicenseNumber: e.target.value})} className={`${onboardInputClass} font-mono`} placeholder="MC-99281-Z" /></div>
+                                    <div><label className={labelClass}>Medical License Number</label><input type="text" required value={onboardData.medicalLicenseNumber} onChange={(e) => setOnboardData({...onboardData, medicalLicenseNumber: e.target.value})} className={`${onboardInputClass} font-mono`} placeholder="MC-99281-Z" /></div>
                                     <div><label className={labelClass}>Experience (Yrs)</label><input type="number" required value={onboardData.yearsOfExperience} onChange={(e) => setOnboardData({...onboardData, yearsOfExperience: e.target.value})} className={onboardInputClass} placeholder="12" /></div>
                                 </div>
+                                
+                                <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                                    <label className={labelClass}>Medical License Document (PDF/Image)</label>
+                                    <DropZone 
+                                        onFileSelect={setLicenseFile}
+                                        label="Upload Credentials"
+                                        type="document"
+                                        accept=".pdf,image/*"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Section 3: Professional Depth */}
+                            <div className="space-y-8">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                    <h4 className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">3. Professional Depth</h4>
+                                </div>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div><label className={labelClass}>Sub-Specialties</label><input type="text" value={onboardData.subSpecialties} onChange={(e) => setOnboardData({...onboardData, subSpecialties: e.target.value})} className={onboardInputClass} placeholder="Diabetology, Hypertension" /></div>
+                                    <div><label className={labelClass}>Languages Spoken</label><input type="text" value={onboardData.languagesSpoken} onChange={(e) => setOnboardData({...onboardData, languagesSpoken: e.target.value})} className={onboardInputClass} placeholder="English, Hindi, Spanish" /></div>
+                                </div>
+                                <div className="grid grid-cols-1 gap-6">
+                                    <div><label className={labelClass}>Treatment Focus</label><input type="text" value={onboardData.treatmentFocus} onChange={(e) => setOnboardData({...onboardData, treatmentFocus: e.target.value})} className={onboardInputClass} placeholder="Evidence-based Cardiology" /></div>
+                                </div>
+                                <div><label className={labelClass}>Procedures Handled</label><textarea value={onboardData.proceduresHandled} onChange={(e) => setOnboardData({...onboardData, proceduresHandled: e.target.value})} className={`${onboardInputClass} min-h-[80px] resize-none`} placeholder="Angioplasty, Echo, Stress Test" /></div>
+                                <div><label className={labelClass}>Scientific Publications</label><textarea value={onboardData.publications} onChange={(e) => setOnboardData({...onboardData, publications: e.target.value})} className={`${onboardInputClass} min-h-[80px] resize-none`} placeholder="Journal articles, Research papers..." /></div>
                             </div>
 
                             {/* Section 3: Institutional Mapping */}
@@ -528,10 +569,10 @@ const HospitalDashboard = () => {
                                     <h4 className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">3. Institutional Mapping</h4>
                                 </div>
                                 <div className="grid grid-cols-2 gap-6">
-                                    <div><label className={labelClass}>Employee ID</label><input type="text" required value={onboardData.employeeId} onChange={(e) => setOnboardData({...onboardData, employeeId: e.target.value})} className={onboardInputClass} placeholder="ST-2026-001" /></div>
-                                    <div><label className={labelClass}>OPD Room No.</label><input type="text" required value={onboardData.opdRoomNumber} onChange={(e) => setOnboardData({...onboardData, opdRoomNumber: e.target.value})} className={onboardInputClass} placeholder="OPD-204" /></div>
+                                    <div><label className={labelClass}>Employee ID</label><input type="text" required value={onboardData.employeeId} onChange={(e) => setOnboardData({...onboardData, employeeId: e.target.value})} className="w-full px-6 py-4 bg-blue-50/50 border-none rounded-3xl text-xs font-bold focus:ring-2 ring-blue-100 transition-all text-blue-700 placeholder:text-blue-200" placeholder="ST-2026-001" /></div>
+                                    <div><label className={labelClass}>OPD Room No.</label><input type="text" required value={onboardData.opdRoomNumber} onChange={(e) => setOnboardData({...onboardData, opdRoomNumber: e.target.value})} className="w-full px-6 py-4 bg-emerald-50/50 border-none rounded-3xl text-xs font-bold focus:ring-2 ring-emerald-100 transition-all text-emerald-700 placeholder:text-emerald-200" placeholder="OPD-204" /></div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-6">
+                                <div className="grid grid-cols-3 gap-6">
                                     <PremiumDropdown 
                                         label="Role Type"
                                         options={['Full-time Employee', 'Visiting Consultant', 'Resident Physician', 'Medical Intern']}
@@ -540,6 +581,7 @@ const HospitalDashboard = () => {
                                         icon={<Briefcase size={16} />}
                                     />
                                     <div><label className={labelClass}>Max Patients/Day</label><input type="number" required value={onboardData.maxPatientsPerDay} onChange={(e) => setOnboardData({...onboardData, maxPatientsPerDay: e.target.value})} className={onboardInputClass} placeholder="30" /></div>
+                                    <div><label className={labelClass}>Slot Duration (Min)</label><input type="number" required value={onboardData.slotDuration} onChange={(e) => setOnboardData({...onboardData, slotDuration: e.target.value})} className={onboardInputClass} placeholder="15" /></div>
                                 </div>
                                 <div>
                                     <label className={labelClass}>Working Days</label>
@@ -574,9 +616,9 @@ const HospitalDashboard = () => {
                                     <h4 className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">4. Financial Governance</h4>
                                 </div>
                                 <div className="grid grid-cols-3 gap-6">
-                                    <div><label className={labelClass}>Monthly Salary (₹)</label><input type="number" required value={onboardData.salary} onChange={(e) => setOnboardData({...onboardData, salary: e.target.value})} className={onboardInputClass} placeholder="150000" /></div>
-                                    <div><label className={labelClass}>Revenue Share (%)</label><input type="number" value={onboardData.revenueSharePercentage} onChange={(e) => setOnboardData({...onboardData, revenueSharePercentage: e.target.value})} className={onboardInputClass} placeholder="0" /></div>
-                                    <div><label className={labelClass}>OPD Fee (₹)</label><input type="number" required value={onboardData.consultationFee} onChange={(e) => setOnboardData({...onboardData, consultationFee: e.target.value})} className={onboardInputClass} placeholder="500" /></div>
+                                    <div><label className={labelClass}>Monthly Salary (₹)</label><input type="number" required value={onboardData.salary} onChange={(e) => setOnboardData({...onboardData, salary: e.target.value})} className="w-full px-6 py-4 bg-blue-50/50 border-none rounded-3xl text-xs font-bold focus:ring-2 ring-blue-100 transition-all text-blue-700 placeholder:text-blue-200" placeholder="150000" /></div>
+                                    <div><label className={labelClass}>Revenue Share (%)</label><input type="number" value={onboardData.revenueSharePercentage} onChange={(e) => setOnboardData({...onboardData, revenueSharePercentage: e.target.value})} className="w-full px-6 py-4 bg-blue-50/50 border-none rounded-3xl text-xs font-bold focus:ring-2 ring-blue-100 transition-all text-blue-700 placeholder:text-blue-200" placeholder="0" /></div>
+                                    <div><label className={labelClass}>OPD Fee (₹)</label><input type="number" required value={onboardData.consultationFee} onChange={(e) => setOnboardData({...onboardData, consultationFee: e.target.value})} className="w-full px-6 py-4 bg-emerald-50/50 border-none rounded-3xl text-xs font-bold focus:ring-2 ring-emerald-100 transition-all text-emerald-700 placeholder:text-emerald-200" placeholder="500" /></div>
                                 </div>
                                 
                                 {/* Institutional Financial Sync */}
@@ -665,7 +707,7 @@ const HospitalDashboard = () => {
                         </form>
 
                         {/* Modal Actions */}
-                        <div className="p-12 border-t border-slate-50 bg-slate-50/30 shrink-0 flex gap-4">
+                        <div className="p-10 border-t border-slate-50 bg-slate-50/30 shrink-0 flex gap-4">
                             <button 
                                 type="button"
                                 onClick={() => setShowOnboardModal(false)}

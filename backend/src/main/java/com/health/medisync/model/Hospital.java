@@ -95,6 +95,7 @@ public class Hospital {
     private String upiId;
     private String razorpayKeyId;
     private String razorpayKeySecret;
+    private String preferredPaymentMode; // RAZORPAY, UPI, BOTH
 
     // ── 8. Online Presence & Branding ──
     private String googleMapsUrl;
@@ -304,4 +305,7 @@ public class Hospital {
 
     public String getRazorpayKeySecret() { return razorpayKeySecret; }
     public void setRazorpayKeySecret(String razorpayKeySecret) { this.razorpayKeySecret = razorpayKeySecret; }
+
+    public String getPreferredPaymentMode() { return preferredPaymentMode; }
+    public void setPreferredPaymentMode(String preferredPaymentMode) { this.preferredPaymentMode = preferredPaymentMode; }
 }

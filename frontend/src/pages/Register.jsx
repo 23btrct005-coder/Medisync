@@ -143,6 +143,7 @@ const Register = () => {
     bankAccountNumber: '',
     ifscCode: '',
     upiId: '',
+    preferredPaymentMode: 'RAZORPAY',
     termsAccepted: false,
     privacyAccepted: false,
     consentAccepted: false,
@@ -849,6 +850,30 @@ const Register = () => {
                                     <div><label className={labelClass}>Account Number <span className="text-red-500">*</span></label><input type="text" name="bankAccountNumber" required value={formData.bankAccountNumber} onChange={handleChange} className={inputClass} placeholder="0000 0000 0000" /></div>
                                     <div><label className={labelClass}>IFSC Code <span className="text-red-500">*</span></label><input type="text" name="ifscCode" required value={formData.ifscCode} onChange={handleChange} className={inputClass} placeholder="HDFC0001234" /></div>
                                     <div><label className={labelClass}>Primary UPI ID</label><input type="text" name="upiId" value={formData.upiId} onChange={handleChange} className={inputClass} placeholder="hospital@upi" /></div>
+                                    <div className="md:col-span-2 space-y-4">
+                                        <label className={labelClass}>Preferred Institutional Payout Mode</label>
+                                        <div className="grid grid-cols-3 gap-4">
+                                            {[
+                                                { id: 'RAZORPAY', label: 'Razorpay', icon: CreditCard },
+                                                { id: 'UPI', label: 'Direct UPI', icon: Activity },
+                                                { id: 'BOTH', label: 'Dual Mode', icon: CheckCircle }
+                                            ].map(mode => (
+                                                <button
+                                                    key={mode.id}
+                                                    type="button"
+                                                    onClick={() => setFormData({...formData, preferredPaymentMode: mode.id})}
+                                                    className={`flex flex-col items-center gap-3 p-5 rounded-3xl border-2 transition-all duration-300 ${
+                                                        formData.preferredPaymentMode === mode.id
+                                                            ? 'bg-primary-50/50 border-primary-500 text-primary-600 shadow-lg shadow-primary-500/10'
+                                                            : 'bg-slate-50 border-transparent text-slate-400 hover:bg-slate-100'
+                                                    }`}
+                                                >
+                                                    <mode.icon size={20} />
+                                                    <span className="text-[10px] font-black uppercase tracking-widest">{mode.label}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -899,7 +924,41 @@ const Register = () => {
 
                   {role === 'ROLE_DOCTOR' && (
                     <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
-                      <h3 className={sectionHeadClass}><Lock size={16} /> 7. Account Security & Finalization</h3>
+                      <h3 className={sectionHeadClass}><CreditCard size={16} /> 7. Banking & Settlement</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div><label className={labelClass}>Bank Name <span className="text-red-500">*</span></label><input type="text" name="bankName" required value={formData.bankName} onChange={handleChange} className={inputClass} placeholder="e.g. HDFC Bank" /></div>
+                        <div><label className={labelClass}>Account Number <span className="text-red-500">*</span></label><input type="text" name="bankAccountNumber" required value={formData.bankAccountNumber} onChange={handleChange} className={inputClass} placeholder="0000 0000 0000" /></div>
+                        <div><label className={labelClass}>IFSC Code <span className="text-red-500">*</span></label><input type="text" name="ifscCode" required value={formData.ifscCode} onChange={handleChange} className={inputClass} placeholder="HDFC0001234" /></div>
+                        <div><label className={labelClass}>Primary UPI ID</label><input type="text" name="upiId" value={formData.upiId} onChange={handleChange} className={inputClass} placeholder="doctor@upi" /></div>
+                        <div className="md:col-span-2 space-y-4">
+                          <label className={labelClass}>Preferred Payout Rail</label>
+                          <div className="grid grid-cols-3 gap-4">
+                            {[
+                              { id: 'RAZORPAY', label: 'Razorpay', icon: CreditCard },
+                              { id: 'UPI', label: 'Direct UPI', icon: Activity },
+                              { id: 'BOTH', label: 'Dual Mode', icon: CheckCircle }
+                            ].map(mode => (
+                              <button
+                                key={mode.id}
+                                type="button"
+                                onClick={() => setFormData({...formData, preferredPaymentMode: mode.id})}
+                                className={`flex flex-col items-center gap-3 p-5 rounded-3xl border-2 transition-all duration-300 ${
+                                  formData.preferredPaymentMode === mode.id
+                                    ? 'bg-blue-50/50 border-blue-500 text-blue-600 shadow-lg shadow-blue-500/10'
+                                    : 'bg-slate-50 border-transparent text-slate-400 hover:bg-slate-100'
+                                }`}
+                              >
+                                <mode.icon size={20} />
+                                <span className="text-[10px] font-black uppercase tracking-widest">{mode.label}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
+                      <h3 className={sectionHeadClass}><Lock size={16} /> 8. Account Security & Finalization</h3>
                       <div className="space-y-6">
                         <div>
                           <label className={labelClass}>Username / Clinical Access ID <span className="text-red-500">*</span></label>

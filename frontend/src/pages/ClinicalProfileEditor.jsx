@@ -438,10 +438,10 @@ const EditDoctorProfile = () => {
                 <AlertCircle size={24} />
             </div>
             <div>
-                <h4 className="font-black text-amber-900 uppercase tracking-tight italic">Institutional Lockdown Active</h4>
+                <h4 className="font-black text-amber-900 uppercase tracking-tight italic">Institutional Governance Active</h4>
                 <p className="text-sm text-amber-700 font-medium mt-1">
-                    Your professional profile is currently managed by <span className="font-bold underline">{user.hospital}</span>. 
-                    Manual updates are restricted to ensure institutional data integrity. Please contact your Hospital Administrator for any modifications.
+                    Your core credentials (ID, Phone, Degree) are managed by <span className="font-bold underline">{user.hospital}</span>. 
+                    However, you retain full sovereignty over your <span className="font-bold">Clinical Depth</span> and <span className="font-bold">Research Publications</span>.
                 </p>
             </div>
         </div>
@@ -454,7 +454,7 @@ const EditDoctorProfile = () => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className={`space-y-8 ${isAffiliated ? 'opacity-60 pointer-events-none' : ''}`}>
+      <form onSubmit={handleSubmit} className={`space-y-8`}>
         
         {/* ── Photo Section ── */}
         <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 flex flex-col items-center">
@@ -582,7 +582,7 @@ const EditDoctorProfile = () => {
                     <input type="text" name="breakTimings" value={formData.breakTimings} onChange={handleChange} className={inputClass} placeholder="e.g. 13:00 - 14:00" />
                 </div>
             </div>
-            <div>
+            <div className={isAffiliated ? 'opacity-50 pointer-events-none' : ''}>
               <label className={labelClass}>
                 Working Days
                 {(formData.appointmentsEnabled || formData.onlineConsultation) && <span className="text-red-500 ml-1 font-bold">*</span>}
@@ -604,7 +604,7 @@ const EditDoctorProfile = () => {
                 ))}
               </div>
             </div>
-            <div className="md:col-span-2">
+            <div className={`md:col-span-2 ${isAffiliated ? 'opacity-50 pointer-events-none' : ''}`}>
               <label className={labelClass}>
                 Consultation Timings
                 {(formData.appointmentsEnabled || formData.onlineConsultation) && <span className="text-red-500 ml-1 font-bold">*</span>}
@@ -709,14 +709,14 @@ const EditDoctorProfile = () => {
                 </div>
                 <div>
                     <label className={labelClass}>Personal UPI ID (VPA)</label>
-                    <input type="text" name="upiId" value={formData.upiId} onChange={handleChange} className={inputClass} placeholder="doctor@okaxis" />
+                    <input type="text" name="upiId" value={formData.upiId} onChange={handleChange} className={isAffiliated ? readOnlyInputClass : inputClass} readOnly={isAffiliated} placeholder="doctor@okaxis" />
                 </div>
                 <p className="md:col-span-2 text-[10px] text-slate-400 mt-1 ml-1 flex items-center gap-2">
                     <AlertCircle size={12} />
                     Payments will be routed based on your preferred channel. Razorpay requires account verification.
                 </p>
             </div>
-            <div className="md:col-span-2">
+            <div className={`md:col-span-2 ${isAffiliated ? 'opacity-50 pointer-events-none' : ''}`}>
                 <label className="flex items-center gap-3 cursor-pointer p-4 bg-blue-50/50 rounded-2xl border border-blue-100 hover:bg-blue-100/50 transition-colors shadow-sm">
                     <input 
                         type="checkbox" 

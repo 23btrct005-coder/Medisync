@@ -414,10 +414,13 @@ public class AuthController {
         if (doctor.getHospitalEntity() != null) {
             doctor.setRazorpayAccountId(doctor.getHospitalEntity().getRazorpayKeyId());
             doctor.setUpiId(doctor.getHospitalEntity().getUpiId());
-            doctor.setPreferredPaymentMode("BOTH");
+            doctor.setPreferredPaymentMode(doctor.getHospitalEntity().getPreferredPaymentMode() != null ? 
+                                           doctor.getHospitalEntity().getPreferredPaymentMode() : "BOTH");
         } else {
             doctor.setRazorpayAccountId(request.get("razorpayAccountId") != null ? String.valueOf(request.get("razorpayAccountId")) : null);
             doctor.setUpiId(request.get("upiId") != null ? String.valueOf(request.get("upiId")) : null);
+            doctor.setPreferredPaymentMode(request.get("preferredPaymentMode") != null ? 
+                                           String.valueOf(request.get("preferredPaymentMode")) : "RAZORPAY");
         }
         
         if (request.get("yearsOfExperience") != null && !String.valueOf(request.get("yearsOfExperience")).isEmpty()) {
@@ -431,6 +434,13 @@ public class AuthController {
             try { doctor.setAge(Integer.parseInt(String.valueOf(request.get("age")))); }
             catch (NumberFormatException ignored) {}
         }
+
+        // Advanced Clinical Depth Mapping
+        doctor.setSubSpecialties(request.get("subSpecialties") != null ? String.valueOf(request.get("subSpecialties")) : null);
+        doctor.setProceduresHandled(request.get("proceduresHandled") != null ? String.valueOf(request.get("proceduresHandled")) : null);
+        doctor.setTreatmentFocus(request.get("treatmentFocus") != null ? String.valueOf(request.get("treatmentFocus")) : null);
+        doctor.setLanguagesSpoken(request.get("languagesSpoken") != null ? String.valueOf(request.get("languagesSpoken")) : null);
+        doctor.setPublications(request.get("publications") != null ? String.valueOf(request.get("publications")) : null);
 
         if (profilePicture != null && !profilePicture.isEmpty()) {
             String photoUrl = supabaseStorageService.uploadFile(profilePicture);

@@ -59,7 +59,8 @@ const HospitalProfile = () => {
         // Financial Settlements
         razorpayKeyId: '',
         razorpayKeySecret: '',
-        upiId: ''
+        upiId: '',
+        preferredPaymentMode: 'RAZORPAY'
     });
 
     useEffect(() => {
@@ -107,7 +108,8 @@ const HospitalProfile = () => {
                 position: adminData.position || '',
                 razorpayKeyId: h.razorpayKeyId || '',
                 razorpayKeySecret: h.razorpayKeySecret || '',
-                upiId: h.upiId || ''
+                upiId: h.upiId || '',
+                preferredPaymentMode: h.preferredPaymentMode || 'RAZORPAY'
             });
             if (h.logoUrl) setLogoPreview(h.logoUrl);
         } catch (err) {
@@ -533,10 +535,35 @@ const HospitalProfile = () => {
                                 />
                             </div>
                         </div>
-                        <div className="mt-8 p-6 bg-blue-50/50 rounded-3xl border border-blue-100/50 flex items-center gap-4 text-left">
+                        <div className="md:col-span-2 space-y-4">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Preferred Institutional Payout Mode</label>
+                            <div className="grid grid-cols-3 gap-4">
+                                {[
+                                    { id: 'RAZORPAY', label: 'Razorpay', icon: CreditCard },
+                                    { id: 'UPI', label: 'Direct UPI', icon: Activity },
+                                    { id: 'BOTH', label: 'Dual Mode', icon: CheckCircle }
+                                ].map(mode => (
+                                    <button
+                                        key={mode.id}
+                                        type="button"
+                                        onClick={() => setFormData({...formData, preferredPaymentMode: mode.id})}
+                                        className={`flex flex-col items-center gap-3 p-5 rounded-3xl border-2 transition-all duration-300 ${
+                                            formData.preferredPaymentMode === mode.id
+                                                ? 'bg-primary/5 border-primary text-primary shadow-lg shadow-primary/10'
+                                                : 'bg-slate-50 border-transparent text-slate-400 hover:bg-slate-100'
+                                        }`}
+                                    >
+                                        <mode.icon size={24} />
+                                        <span className="text-[10px] font-black uppercase tracking-widest">{mode.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="mt-8 p-6 bg-blue-50/50 rounded-[2rem] border border-blue-100/50 flex items-center gap-4 text-left md:col-span-2">
                             <Shield className="text-primary" size={20} />
                             <p className="text-[10px] font-bold text-slate-600 leading-relaxed uppercase">
-                                These credentials will be used as the <span className="text-primary font-black">exclusive payment gateway</span> for all staff members onboarded to this institution.
+                                The selected <span className="text-primary font-black">{formData.preferredPaymentMode}</span> mode will be enforced as the <span className="text-primary font-black">exclusive payout rail</span> for all onboarded staff members.
                             </p>
                         </div>
                     </div>
