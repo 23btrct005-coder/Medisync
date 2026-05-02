@@ -58,6 +58,13 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
         icon: <Building2 size={20} />
       }
     ] : []),
+    ...(!isAdmin && !user?.institutional ? [
+      {
+        name: 'Financials',
+        path: prefix,
+        icon: <TrendingUp size={20} />
+      }
+    ] : []),
     { 
       name: 'My Profile', 
       path: `${prefix}/profile`, 
