@@ -221,24 +221,26 @@ const AdminDashboard = () => {
                     </div>
                   </div>
 
-                  <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100 grid grid-cols-2 gap-6">
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Employee ID / OPD</p>
-                      <p className="font-bold text-slate-900">{selectedItem.employeeId || "N/A"} | {selectedItem.opdRoomNumber || "N/A"}</p>
+                  {(selectedItem.hospital && selectedItem.hospital !== "Independent / Other") && (
+                    <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100 grid grid-cols-2 gap-6">
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Employee ID / OPD</p>
+                        <p className="font-bold text-slate-900">{selectedItem.employeeId || "N/A"} | {selectedItem.opdRoomNumber || "N/A"}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Role / Contract</p>
+                        <p className="font-bold text-slate-900">{selectedItem.contractType}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Monthly Salary</p>
+                        <p className="font-bold text-emerald-600">₹{selectedItem.salary || "0"}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Revenue Share</p>
+                        <p className="font-bold text-emerald-600">{selectedItem.revenueSharePercentage || "0"}%</p>
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Role / Contract</p>
-                      <p className="font-bold text-slate-900">{selectedItem.contractType}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Monthly Salary</p>
-                      <p className="font-bold text-emerald-600">₹{selectedItem.salary || "0"}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Revenue Share</p>
-                      <p className="font-bold text-emerald-600">{selectedItem.revenueSharePercentage || "0"}%</p>
-                    </div>
-                  </div>
+                  )}
 
                   <div className="space-y-3">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Permissions Matrix</p>
@@ -433,6 +435,16 @@ const AdminDashboard = () => {
                   >
                     {selectedItem.enabled ? 'Revoke System Access' : 'Grant System Access'}
                   </button>
+
+                  {/* Edit Access ONLY for non-institutional doctors */}
+                  {activeTab.includes('doctors') && (!selectedItem.hospital || selectedItem.hospital === "Independent / Other") && (
+                    <button
+                        onClick={() => toast.error("Live Editing Module is currently in read-only audit mode.")}
+                        className="w-full py-4 bg-primary-50 text-primary-600 font-black text-xs uppercase tracking-widest rounded-2xl border border-primary-100 hover:bg-primary-100 transition-all active:scale-95 flex items-center justify-center gap-2"
+                    >
+                        <FileText size={16} /> Edit Professional Profile
+                    </button>
+                  )}
                   <button
                     onClick={() => handlePermanentDelete(selectedItem.id, selectedItem.email || selectedItem.contactEmail || selectedItem.contact_email, activeTab.includes('doctors') ? 'doctors' : 'hospitals')}
                     className="w-full py-3 bg-white border border-red-100 text-red-500 font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl hover:bg-red-50 transition-all active:scale-95 flex items-center justify-center gap-2"
