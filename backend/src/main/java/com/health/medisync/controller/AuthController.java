@@ -178,16 +178,20 @@ public class AuthController {
                     }
                 }
             } else if ("ROLE_HOSPITAL_ADMIN".equals(user.getRole())) {
+                // Institutional Identity Verification Gate
+                if (!user.isEmailVerified()) {
+                    System.out.println("DEBUG: Unverified hospital admin detected. Dispatching security OTP to " + user.getUsername());
+                    try {
+                        authService.generateAndSendOtp(user.getUsername());
+                    } catch (Exception e) {
+                        System.err.println("CRITICAL: Failed to dispatch admin verification OTP: " + e.getMessage());
+                    }
+                }
                 hospitalAdminRepository.findByUserId(user.getId()).ifPresent(admin -> {
                     if (!admin.isApproved()) {
                         throw new org.springframework.security.authentication.DisabledException("Your institutional portal access is pending global administrative approval.");
                     }
                 });
-                // Proactive Auto-Verify for existing accounts
-                if (!user.isEmailVerified()) {
-                    user.setEmailVerified(true);
-                    userRepository.save(user);
-                }
             }
 
             String jwt = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole());
