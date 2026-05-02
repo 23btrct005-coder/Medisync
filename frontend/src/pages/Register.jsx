@@ -45,6 +45,7 @@ const Register = () => {
   const [formData, setFormData] = useState({
     // Identity
     email: '',
+    username: '',
     password: '',
     confirmPassword: '',
     // Basic Details
@@ -186,6 +187,12 @@ const Register = () => {
     fetchGeo();
     fetchHospitals();
   }, []);
+
+  useEffect(() => {
+    if (emailVerified && !formData.username) {
+        setFormData(prev => ({ ...prev, username: prev.email }));
+    }
+  }, [emailVerified]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -784,16 +791,24 @@ const Register = () => {
                       <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
                         <h3 className={sectionHeadClass}><Lock size={16} /> 8. Compliance & Account Security</h3>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="relative">
-                                <label className={labelClass}>Set Administrator Password <span className="text-red-500">*</span></label>
-                                <input type={showPassword ? 'text' : 'password'} name="password" required value={formData.password} onChange={handleChange} className={inputClass} placeholder="Access credentials" />
-                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-10 text-slate-400">{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+                        <div className="space-y-6">
+                            <div>
+                                <label className={labelClass}>Username / Clinical ID <span className="text-red-500">*</span></label>
+                                <input type="text" name="username" required value={formData.username} onChange={handleChange} className={`${inputClass} font-bold text-primary-600 bg-primary-50/30`} placeholder="Your unique access ID" />
+                                <p className="text-[9px] text-slate-400 mt-1 uppercase font-bold tracking-widest">This will be your primary identifier for portal access</p>
                             </div>
-                            <div className="relative">
-                                <label className={labelClass}>Confirm Password <span className="text-red-500">*</span></label>
-                                <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" required value={formData.confirmPassword} onChange={handleChange} className={inputClass} />
-                                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-10 text-slate-400">{showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="relative">
+                                    <label className={labelClass}>Set Administrator Password <span className="text-red-500">*</span></label>
+                                    <input type={showPassword ? 'text' : 'password'} name="password" required value={formData.password} onChange={handleChange} className={inputClass} placeholder="Access credentials" />
+                                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-10 text-slate-400">{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+                                </div>
+                                <div className="relative">
+                                    <label className={labelClass}>Confirm Password <span className="text-red-500">*</span></label>
+                                    <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" required value={formData.confirmPassword} onChange={handleChange} className={inputClass} />
+                                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-10 text-slate-400">{showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+                                </div>
                             </div>
                         </div>
 
@@ -818,16 +833,22 @@ const Register = () => {
                   {role === 'ROLE_DOCTOR' && (
                     <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
                       <h3 className={sectionHeadClass}><Lock size={16} /> 7. Account Security & Finalization</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="relative">
-                          <label className={labelClass}>Create Password <span className="text-red-500">*</span></label>
-                          <input type={showPassword ? 'text' : 'password'} name="password" required value={formData.password} onChange={handleChange} className={inputClass} placeholder="Secure your professional node" />
-                          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-10 text-slate-400">{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+                      <div className="space-y-6">
+                        <div>
+                          <label className={labelClass}>Username / Clinical Access ID <span className="text-red-500">*</span></label>
+                          <input type="text" name="username" required value={formData.username} onChange={handleChange} className={`${inputClass} font-bold text-primary-600 bg-primary-50/30`} />
                         </div>
-                        <div className="relative">
-                          <label className={labelClass}>Confirm Password <span className="text-red-500">*</span></label>
-                          <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" required value={formData.confirmPassword} onChange={handleChange} className={inputClass} />
-                          <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-10 text-slate-400">{showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="relative">
+                            <label className={labelClass}>Create Password <span className="text-red-500">*</span></label>
+                            <input type={showPassword ? 'text' : 'password'} name="password" required value={formData.password} onChange={handleChange} className={inputClass} placeholder="Secure your professional node" />
+                            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-10 text-slate-400">{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+                          </div>
+                          <div className="relative">
+                            <label className={labelClass}>Confirm Password <span className="text-red-500">*</span></label>
+                            <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" required value={formData.confirmPassword} onChange={handleChange} className={inputClass} />
+                            <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-10 text-slate-400">{showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+                          </div>
                         </div>
                       </div>
                       <button type="submit" disabled={loading} className="w-full bg-primary-600 text-white py-5 rounded-[2rem] font-black uppercase tracking-widest hover:bg-primary-700 shadow-2xl shadow-primary-200 transition-all active:scale-95 disabled:opacity-50">
