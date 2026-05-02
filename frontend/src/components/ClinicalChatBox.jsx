@@ -45,27 +45,30 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
     };
 
     const connectWebSocket = () => {
-        const socket = new SockJS(`${api.defaults.baseURL}/ws`);
+        // Use rawBaseURL to avoid /api/api double prefixing and ensure /ws endpoint
+        const socket = new SockJS(`${rawBaseURL}/ws`);
         stompClient.current = Stomp.over(socket);
-        stompClient.current.debug = null; // Disable debug logs
+        stompClient.current.debug = null; 
 
         const headers = {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
         };
 
         stompClient.current.connect(headers, () => {
+            console.log("Chat Socket Connected");
             setConnected(true);
             stompClient.current.subscribe(`/user/queue/messages`, (msg) => {
                 const newMessage = JSON.parse(msg.body);
                 if (String(newMessage.senderId) === String(receiverId)) {
                     setMessages(prev => [...prev, newMessage]);
-                    // Mark as read immediately if chat is open
                     api.post(`/chat/mark-read/${receiverId}`);
                 }
             });
         }, (err) => {
+            setConnected(false);
             console.error("WS Connection Error:", err);
-            setTimeout(connectWebSocket, 5000); // Retry
+            // Exponential backoff or simple retry
+            setTimeout(connectWebSocket, 5000);
         });
     };
 
