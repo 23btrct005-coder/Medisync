@@ -145,7 +145,7 @@ public class ReportService {
                 Map<String, Object> monaiResults = monaiService.analyzeXray(fileData, report.getFileName());
                 if (monaiResults != null && !monaiResults.containsKey("error")) {
                     report.setMonaiDiagnosis((String) monaiResults.get("diagnosis"));
-                    if (monaiResults.containsKey("confidence")) {
+                    if (monaiResults.containsKey("confidence") && monaiResults.get("confidence") != null) {
                         report.setMonaiConfidence(Double.valueOf(monaiResults.get("confidence").toString()));
                     }
                 }

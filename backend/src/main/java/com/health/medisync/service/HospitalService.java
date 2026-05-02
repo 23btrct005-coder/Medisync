@@ -184,7 +184,7 @@ public class HospitalService {
         if (updates.containsKey("alternatePhone")) doctor.setAlternatePhone(updates.get("alternatePhone") != null ? updates.get("alternatePhone").toString() : null);
         if (updates.containsKey("additionalCertifications")) doctor.setAdditionalCertifications(updates.get("additionalCertifications") != null ? updates.get("additionalCertifications").toString() : null);
         if (updates.containsKey("college")) doctor.setCollege(updates.get("college") != null ? updates.get("college").toString() : null);
-        if (updates.containsKey("onlineConsultation")) {
+        if (updates.containsKey("onlineConsultation") && updates.get("onlineConsultation") != null) {
             doctor.setOnlineConsultation(Boolean.parseBoolean(updates.get("onlineConsultation").toString()));
         }
         if (updates.containsKey("razorpayAccountId")) doctor.setRazorpayAccountId(updates.get("razorpayAccountId") != null ? updates.get("razorpayAccountId").toString() : null);
