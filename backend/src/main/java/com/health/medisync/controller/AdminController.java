@@ -252,21 +252,30 @@ public class AdminController {
     @PostMapping("/hospitals/{id}/purge")
     @Transactional
     public ResponseEntity<?> purgeHospital(@PathVariable Long id) {
-        return hospitalAdminRepository.findById(id).map(admin -> {
-            User user = admin.getUser();
-            com.health.medisync.model.Hospital hospital = admin.getHospital();
+        return hospitalRepository.findById(id).map(hospital -> {
+            // Find associated users via admins to clean up user accounts
+            List<Long> adminUserIds = jdbcTemplate.queryForList(
+                "SELECT user_id FROM hospital_admins WHERE hospital_id = ?", Long.class, id);
             
-            hospitalAdminRepository.delete(admin);
-            if (hospital != null) {
-                // This usually cascades if configured, but let's be safe
-                jdbcTemplate.update("DELETE FROM hospital_admins WHERE hospital_id = ?", hospital.getId());
-                jdbcTemplate.update("DELETE FROM doctors WHERE hospital_id = ?", hospital.getId());
-                jdbcTemplate.update("DELETE FROM hospitals WHERE id = ?", hospital.getId());
+            // 1. Cleanup related clinical data via doctors in this hospital
+            jdbcTemplate.update("DELETE FROM appointments WHERE doctor_id IN (SELECT id FROM doctors WHERE hospital_id = ?)", id);
+            jdbcTemplate.update("DELETE FROM prescriptions WHERE doctor_id IN (SELECT id FROM doctors WHERE hospital_id = ?)", id);
+            
+            // 2. Cleanup staff roster
+            jdbcTemplate.update("DELETE FROM doctors WHERE hospital_id = ?", id);
+            jdbcTemplate.update("DELETE FROM hospital_admins WHERE hospital_id = ?", id);
+            
+            // 3. Purge Institutional entity
+            jdbcTemplate.update("DELETE FROM hospitals WHERE id = ?", id);
+            
+            // 4. Purge User accounts for admins (since they are now orphans)
+            if (!adminUserIds.isEmpty()) {
+                for (Long userId : adminUserIds) {
+                    jdbcTemplate.update("DELETE FROM users WHERE id = ?", userId);
+                }
             }
-            if (user != null) {
-                userRepository.delete(user);
-            }
-            return ResponseEntity.ok(Map.of("message", "Institutional record and administrative node purged."));
-        }).orElse(ResponseEntity.status(404).body(Map.of("message", "Hospital Admin not found.")));
+            
+            return ResponseEntity.ok(Map.of("message", "Institutional record and all associated administrative/staff data purged."));
+        }).orElse(ResponseEntity.status(404).body(Map.of("message", "Hospital record not found.")));
     }
 }
