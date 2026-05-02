@@ -151,8 +151,8 @@ const AdminDashboard = () => {
     else if (activeTab === 'all_hospitals') data = allHospitals;
 
     return data.filter(item => {
-      const name = (item.name || item.hospital_name || "").toLowerCase();
-      const email = (item.email || "").toLowerCase();
+      const name = (item.name || item.hospital_name || item.hospitalName || "").toLowerCase();
+      const email = (item.email || item.contactEmail || item.contact_email || "").toLowerCase();
       const license = (item.medicalLicenseNumber || item.license_code || "").toLowerCase();
       const search = searchTerm.toLowerCase();
       return name.includes(search) || email.includes(search) || license.includes(search);
@@ -434,7 +434,7 @@ const AdminDashboard = () => {
                     {selectedItem.enabled ? 'Revoke System Access' : 'Grant System Access'}
                   </button>
                   <button
-                    onClick={() => handlePermanentDelete(selectedItem.id, selectedItem.email, activeTab.includes('doctors') ? 'doctors' : 'hospitals')}
+                    onClick={() => handlePermanentDelete(selectedItem.id, selectedItem.email || selectedItem.contactEmail || selectedItem.contact_email, activeTab.includes('doctors') ? 'doctors' : 'hospitals')}
                     className="w-full py-3 bg-white border border-red-100 text-red-500 font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl hover:bg-red-50 transition-all active:scale-95 flex items-center justify-center gap-2"
                   >
                     <XCircle size={14} /> Permanently Purge Account
