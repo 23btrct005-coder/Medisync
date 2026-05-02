@@ -60,7 +60,9 @@ const Register = () => {
     clinicAddress: '',
     upiId: '',
     // Availability
-    workingDays: '',
+    workingDays: [],
+    startTime: '09:00',
+    endTime: '18:00',
     consultationTimings: '',
     slotDuration: '15',
     maxPatientsPerDay: '30',
@@ -138,26 +140,30 @@ const Register = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const updated = { ...formData, [name]: value };
+    setFormData(updated);
+  };
 
-    if (name === 'state') {
-      if (geographyData[value]) {
-        setAvailableCities(geographyData[value]);
-        updated.city = '';
-      } else {
-        setAvailableCities([]);
-      }
+  const handleDateChange = (type, value) => {
+    const dob = formData.dateOfBirth ? formData.dateOfBirth.split('-') : ['', '', ''];
+    let year = dob[0];
+    let month = dob[1];
+    let day = dob[2];
+
+    if (type === 'year') year = value;
+    if (type === 'month') month = value;
+    if (type === 'day') day = value;
+
+    const newDob = `${year}-${month}-${day}`;
+    const updated = { ...formData, dateOfBirth: newDob };
+
+    if (year && month && day && role === 'ROLE_PATIENT') {
+        const today = new Date();
+        const dobObj = new Date(year, month - 1, day);
+        let calculatedAge = today.getFullYear() - dobObj.getFullYear();
+        const m = today.getMonth() - dobObj.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < dobObj.getDate())) calculatedAge--;
+        updated.age = calculatedAge > 0 ? String(calculatedAge) : '';
     }
-
-    if (name === 'dateOfBirth' && value && role === 'ROLE_PATIENT') {
-      const today = new Date();
-      const dob = new Date(value);
-      let calculatedAge = today.getFullYear() - dob.getFullYear();
-      const m = today.getMonth() - dob.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) calculatedAge--;
-      updated.age = calculatedAge > 0 ? String(calculatedAge) : '';
-    }
-
     setFormData(updated);
   };
 
@@ -281,6 +287,8 @@ const Register = () => {
       
       formDataToSend.append('userData', JSON.stringify({
         ...formData,
+        workingDays: formData.workingDays.join(', '),
+        consultationTimings: `${formData.startTime} - ${formData.endTime}`,
         username: formData.email,
         role: role
       }));
@@ -456,8 +464,41 @@ const Register = () => {
                         </div>
                         <div>
                             <label className={labelClass}>Date of Birth <span className="text-red-500">*</span></label>
-                            <input type="date" name="dateOfBirth" required value={formData.dateOfBirth} onChange={handleChange}
-                              className={inputClass} />
+                            <div className="grid grid-cols-3 gap-2">
+                                <select 
+                                    className={inputClass}
+                                    value={formData.dateOfBirth ? formData.dateOfBirth.split('-')[2] : ''}
+                                    onChange={(e) => handleDateChange('day', e.target.value)}
+                                    required
+                                >
+                                    <option value="">Day</option>
+                                    {Array.from({length: 31}, (_, i) => String(i + 1).padStart(2, '0')).map(d => (
+                                        <option key={d} value={d}>{d}</option>
+                                    ))}
+                                </select>
+                                <select 
+                                    className={inputClass}
+                                    value={formData.dateOfBirth ? formData.dateOfBirth.split('-')[1] : ''}
+                                    onChange={(e) => handleDateChange('month', e.target.value)}
+                                    required
+                                >
+                                    <option value="">Month</option>
+                                    {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => (
+                                        <option key={m} value={String(i + 1).padStart(2, '0')}>{m}</option>
+                                    ))}
+                                </select>
+                                <select 
+                                    className={inputClass}
+                                    value={formData.dateOfBirth ? formData.dateOfBirth.split('-')[0] : ''}
+                                    onChange={(e) => handleDateChange('year', e.target.value)}
+                                    required
+                                >
+                                    <option value="">Year</option>
+                                    {Array.from({length: 100}, (_, i) => new Date().getFullYear() - i).map(y => (
+                                        <option key={y} value={y}>{y}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div>
@@ -686,13 +727,57 @@ const Register = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label className={labelClass}>Working Days</label>
-                        <input type="text" name="workingDays" value={formData.workingDays} onChange={handleChange}
-                          className={inputClass} placeholder="e.g. Mon–Fri, Mon–Sat" />
+                        <div className="flex flex-wrap gap-2 pt-2">
+                            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                                <button
+                                    key={day}
+                                    type="button"
+                                    onClick={() => {
+                                        const days = formData.workingDays.includes(day)
+                                            ? formData.workingDays.filter(d => d !== day)
+                                            : [...formData.workingDays, day];
+                                        setFormData({ ...formData, workingDays: days });
+                                    }}
+                                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${
+                                        formData.workingDays.includes(day)
+                                            ? 'bg-primary-600 border-primary-600 text-white shadow-lg'
+                                            : 'bg-white border-slate-100 text-slate-400 hover:border-primary-200'
+                                    }`}
+                                >
+                                    {day}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                     <div>
                         <label className={labelClass}>Consultation Timings</label>
-                        <input type="text" name="consultationTimings" value={formData.consultationTimings} onChange={handleChange}
-                          className={inputClass} placeholder="e.g. 9:00 AM – 6:00 PM" />
+                        <div className="flex items-center gap-3">
+                            <select 
+                                name="startTime" 
+                                value={formData.startTime} 
+                                onChange={handleChange} 
+                                className={inputClass}
+                            >
+                                {Array.from({length: 24}, (_, i) => String(i).padStart(2, '0')).map(h => (
+                                    ['00', '30'].map(m => (
+                                        <option key={`${h}:${m}`} value={`${h}:${m}`}>{`${h}:${m}`}</option>
+                                    ))
+                                ))}
+                            </select>
+                            <span className="text-slate-300 font-bold">to</span>
+                            <select 
+                                name="endTime" 
+                                value={formData.endTime} 
+                                onChange={handleChange} 
+                                className={inputClass}
+                            >
+                                {Array.from({length: 24}, (_, i) => String(i).padStart(2, '0')).map(h => (
+                                    ['00', '30'].map(m => (
+                                        <option key={`${h}:${m}`} value={`${h}:${m}`}>{`${h}:${m}`}</option>
+                                    ))
+                                ))}
+                            </select>
+                        </div>
                     </div>
                     <div>
                         <label className={labelClass}>Slot Duration (Minutes)</label>
