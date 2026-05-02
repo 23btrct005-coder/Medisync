@@ -104,6 +104,21 @@ const HospitalDashboard = () => {
         };
     }, []);
 
+    useEffect(() => {
+        if (onboardData.dateOfBirth) {
+            const birthDate = new Date(onboardData.dateOfBirth);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            if (!isNaN(age) && age >= 0) {
+                setOnboardData(prev => ({ ...prev, age: String(age) }));
+            }
+        }
+    }, [onboardData.dateOfBirth]);
+
     const approveDoctor = async (id) => {
         try {
             await api.post(`/hospital/approve-doctor/${id}`);
