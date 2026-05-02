@@ -44,7 +44,13 @@ public class AdminController {
     @Transactional(readOnly = true)
     public ResponseEntity<?> getPendingHospitals() {
         try {
-            String sql = "SELECT ha.id, ha.name as admin_name, ha.position, h.name as hospital_name, h.license_code, h.city, h.state, h.street, h.pin_code, h.phone, h.contact_email, h.logo_url, h.registration_certificate_url, ha.approved " +
+            String sql = "SELECT ha.id, ha.name as admin_name, ha.position, ha.contact_number as admin_phone, ha.profile_picture_url, ha.id_proof_url, " +
+                         "h.name as hospital_name, h.license_code, h.city, h.state, h.street, h.pin_code, h.phone, h.contact_email, " +
+                         "h.hospital_type, h.ownership_type, h.website, h.google_maps_url, h.gst_number, h.pan_number, " +
+                         "h.registration_authority, h.registration_date, h.license_expiry_date, h.total_beds, " +
+                         "h.icu_available, h.ambulance_available, h.emergency_services_available, " +
+                         "h.logo_url, h.registration_certificate_url, h.nabh_certificate_url, h.tax_certificate_url, h.address_proof_url, " +
+                         "ha.approved " +
                          "FROM hospital_admins ha JOIN hospitals h ON ha.hospital_id = h.id WHERE ha.approved = false";
             List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
             return ResponseEntity.ok(rows);
@@ -130,7 +136,13 @@ public class AdminController {
     @Transactional(readOnly = true)
     public ResponseEntity<?> getAllHospitals() {
         try {
-            String sql = "SELECT ha.id, ha.name as admin_name, ha.position, h.name as hospital_name, h.license_code, h.city, h.state, h.street, h.pin_code, h.phone, h.contact_email, h.logo_url, h.registration_certificate_url, ha.approved, u.enabled, u.id as user_id " +
+            String sql = "SELECT ha.id, ha.name as admin_name, ha.position, ha.contact_number as admin_phone, ha.profile_picture_url, ha.id_proof_url, " +
+                         "h.name as hospital_name, h.license_code, h.city, h.state, h.street, h.pin_code, h.phone, h.contact_email, " +
+                         "h.hospital_type, h.ownership_type, h.website, h.google_maps_url, h.gst_number, h.pan_number, " +
+                         "h.registration_authority, h.registration_date, h.license_expiry_date, h.total_beds, " +
+                         "h.icu_available, h.ambulance_available, h.emergency_services_available, " +
+                         "h.logo_url, h.registration_certificate_url, h.nabh_certificate_url, h.tax_certificate_url, h.address_proof_url, " +
+                         "ha.approved, u.enabled, u.id as user_id " +
                          "FROM hospital_admins ha " +
                          "JOIN hospitals h ON ha.hospital_id = h.id " +
                          "LEFT JOIN users u ON ha.user_id = u.id";

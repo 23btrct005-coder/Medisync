@@ -22,6 +22,7 @@ const AdminDashboard = () => {
   const [message, setMessage] = useState({ type: '', text: '' });
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -163,6 +164,24 @@ const AdminDashboard = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 relative">
+      {/* Image Preview Overlay */}
+      {previewImage && (
+        <div 
+          className="fixed inset-0 z-[200] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-8 animate-in fade-in duration-300"
+          onClick={() => setPreviewImage(null)}
+        >
+          <button className="absolute top-8 right-8 text-white hover:text-primary-400 transition-colors">
+            <X size={40} />
+          </button>
+          <img 
+            src={previewImage} 
+            alt="Preview" 
+            className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl animate-in zoom-in-95 duration-300"
+            onClick={e => e.stopPropagation()}
+          />
+        </div>
+      )}
+
       {/* Details Modal */}
       {selectedItem && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
@@ -187,6 +206,28 @@ const AdminDashboard = () => {
             <div className="flex-1 overflow-y-auto p-8 space-y-8">
               {activeTab.includes('doctors') ? (
                 <>
+                  <div className="flex items-center gap-6 pb-6 border-b border-slate-100">
+                    <div className="w-24 h-24 bg-slate-50 rounded-[32px] overflow-hidden border-4 border-white shadow-lg shrink-0">
+                      <img 
+                        src={selectedItem.profilePictureUrl || "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=200"} 
+                        className="w-full h-full object-cover cursor-pointer hover:scale-110 transition-transform" 
+                        onClick={() => setPreviewImage(selectedItem.profilePictureUrl)}
+                      />
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-black text-slate-900 leading-tight">{selectedItem.name}</h4>
+                      <p className="text-xs font-bold text-primary-600 mt-1 uppercase tracking-widest">{selectedItem.specialization} | {selectedItem.medicalDegree}</p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="px-3 py-1 bg-primary-50 text-primary-600 text-[9px] font-black uppercase rounded-full border border-primary-100">
+                          {selectedItem.contractType || "PERMANENT"}
+                        </span>
+                        <span className="px-3 py-1 bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase rounded-full border border-emerald-100">
+                          Exp: {selectedItem.yearsOfExperience}y
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-1">
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Specialization</p>
@@ -205,9 +246,9 @@ const AdminDashboard = () => {
                       <div className="flex items-center gap-2">
                         <p className="font-bold text-red-500 font-mono">{selectedItem.licenseExpiryDate || "N/A"}</p>
                         {selectedItem.licenseDocumentUrl && (
-                            <a href={selectedItem.licenseDocumentUrl} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:text-primary-700">
-                                <FileText size={14} />
-                            </a>
+                            <button onClick={() => setPreviewImage(selectedItem.licenseDocumentUrl)} className="text-primary-600 hover:text-primary-700 transition-transform hover:scale-110">
+                                <FileText size={16} />
+                            </button>
                         )}
                       </div>
                     </div>
@@ -283,14 +324,12 @@ const AdminDashboard = () => {
 
                   {selectedItem.licenseDocumentUrl && (
                     <div className="pt-2">
-                        <a 
-                          href={selectedItem.licenseDocumentUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
+                        <button 
+                          onClick={() => setPreviewImage(selectedItem.licenseDocumentUrl)}
                           className="flex items-center justify-center gap-2 w-full py-4 bg-primary-50 text-primary-600 font-black text-[10px] uppercase tracking-widest rounded-2xl border border-primary-100 hover:bg-primary-100 transition-all shadow-sm"
                         >
-                          <FileText size={16} /> View Verified Medical License Document
-                        </a>
+                          <ShieldCheck size={16} /> Preview Verified Medical License
+                        </button>
                     </div>
                   )}
 
@@ -359,53 +398,149 @@ const AdminDashboard = () => {
                 </>
               ) : (
                 <>
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Admin Name</p>
-                      <p className="font-bold text-slate-900">{selectedItem.admin_name}</p>
+                  <div className="flex items-center gap-6 pb-6 border-b border-slate-100">
+                    <div className="w-24 h-24 bg-slate-50 rounded-[32px] overflow-hidden border-4 border-white shadow-lg shrink-0">
+                      <img 
+                        src={selectedItem.logo_url || "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=200"} 
+                        className="w-full h-full object-cover cursor-pointer hover:scale-110 transition-transform" 
+                        onClick={() => setPreviewImage(selectedItem.logo_url)}
+                      />
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Position</p>
-                      <p className="font-bold text-slate-900">{selectedItem.position}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hospital License</p>
-                      <p className="font-bold text-indigo-600 font-mono">{selectedItem.license_code}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Location</p>
-                      <p className="font-bold text-slate-900">{selectedItem.city}, {selectedItem.state}</p>
-                      <p className="text-[9px] text-slate-400">{selectedItem.street} - {selectedItem.pin_code}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Contact Registry</p>
-                      <div className="flex flex-col gap-0.5">
-                        <p className="text-xs font-bold text-slate-700">{selectedItem.contact_email}</p>
-                        <p className="text-xs font-bold text-slate-700">{selectedItem.phone}</p>
-                      </div>
-                    </div>
-                    {selectedItem.registration_certificate_url && (
-                      <div className="col-span-2">
-                        <a 
-                          href={selectedItem.registration_certificate_url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-[10px] font-black text-primary-600 uppercase tracking-widest hover:underline"
-                        >
-                          <ShieldCheck size={14} /> View Registration Certificate
+                    <div>
+                      <h4 className="text-xl font-black text-slate-900 leading-tight">{selectedItem.hospital_name}</h4>
+                      <p className="text-xs font-bold text-primary-600 mt-1 uppercase tracking-widest">{selectedItem.hospital_type} | {selectedItem.ownership_type}</p>
+                      {selectedItem.website && (
+                        <a href={selectedItem.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-slate-400 font-bold mt-2 hover:text-primary-500 transition-colors">
+                          <Globe size={12} /> {selectedItem.website.replace(/^https?:\/\//, '')}
                         </a>
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-6 bg-indigo-50/50 rounded-3xl border border-indigo-100">
-                    <div className="flex items-center gap-3 text-indigo-900 font-black text-xs uppercase tracking-widest mb-4">
-                      <ShieldCheck size={16} /> Institutional Profile
+                      )}
                     </div>
-                    <p className="text-sm text-indigo-900/70 font-medium leading-relaxed">
-                      This facility has applied for full MediSync integration. 
-                      Once verified, the Chief Administrator will be able to manage staff rosters 
-                      and view regional health analytics for {selectedItem.hospital_name}.
-                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-8">
+                    <div className="space-y-4">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Administrator Credentials</p>
+                      <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-3xl border border-slate-100">
+                        <div className="w-12 h-12 bg-white rounded-2xl overflow-hidden shadow-sm shrink-0">
+                          <img 
+                            src={selectedItem.profile_picture_url || "https://images.unsplash.com/photo-1559839734-2b71f1536783?w=100"} 
+                            className="w-full h-full object-cover cursor-pointer" 
+                            onClick={() => setPreviewImage(selectedItem.profile_picture_url)}
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-black text-slate-900 truncate">{selectedItem.admin_name}</p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{selectedItem.position}</p>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-3 ml-1">
+                        <div className="flex items-center gap-3 text-sm font-bold text-slate-600">
+                          <Mail size={16} className="text-slate-300" /> {selectedItem.contact_email}
+                        </div>
+                        <div className="flex items-center gap-3 text-sm font-bold text-slate-600">
+                          <Phone size={16} className="text-slate-300" /> {selectedItem.phone}
+                        </div>
+                        {selectedItem.admin_phone && (
+                          <div className="flex items-center gap-3 text-sm font-bold text-slate-600">
+                            <Info size={16} className="text-slate-300" /> {selectedItem.admin_phone} (Direct)
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Institutional Logistics</p>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hospital License</p>
+                        <p className="font-bold text-indigo-600 font-mono text-sm">{selectedItem.license_code}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Location Registry</p>
+                        <p className="font-bold text-slate-900 text-sm leading-tight">{selectedItem.street}</p>
+                        <p className="text-xs text-slate-500 font-medium">{selectedItem.city}, {selectedItem.state} {selectedItem.pin_code}</p>
+                      </div>
+                      {selectedItem.google_maps_url && (
+                        <a href={selectedItem.google_maps_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-indigo-100 transition-all">
+                          <MapPin size={12} /> View Location Matrix
+                        </a>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Capacity & Infrastructure</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div className="p-4 bg-slate-50 rounded-3xl border border-slate-100 text-center">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Beds</p>
+                        <p className="text-xl font-black text-slate-900 tracking-tighter">{selectedItem.total_beds || "N/A"}</p>
+                      </div>
+                      {[
+                        { label: 'ICU', value: selectedItem.icu_available },
+                        { label: 'Ambulance', value: selectedItem.ambulance_available },
+                        { label: 'Emergency', value: selectedItem.emergency_services_available },
+                      ].map(service => (
+                        <div key={service.label} className={`p-4 rounded-3xl border text-center ${service.value ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-slate-50 border-slate-100 text-slate-300'}`}>
+                          <p className="text-[9px] font-black uppercase tracking-widest mb-1">{service.label}</p>
+                          <p className="text-xs font-black uppercase">{service.value ? "Active" : "None"}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Legal & Compliance Documentation</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-5 bg-indigo-50/30 rounded-3xl border border-indigo-100/50">
+                        <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-2">Government IDs</p>
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="text-slate-500 font-bold">GST Number</span>
+                            <span className="text-slate-900 font-mono font-bold">{selectedItem.gst_number || "N/A"}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="text-slate-500 font-bold">PAN Number</span>
+                            <span className="text-slate-900 font-mono font-bold">{selectedItem.pan_number || "N/A"}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-5 bg-primary-50/30 rounded-3xl border border-primary-100/50">
+                        <p className="text-[9px] font-black text-primary-400 uppercase tracking-widest mb-2">Registration Authority</p>
+                        <p className="text-xs font-bold text-slate-900 leading-tight">{selectedItem.registration_authority || "Local Medical Council"}</p>
+                        <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase">Date: {selectedItem.registration_date || "N/A"}</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {[
+                        { label: 'License Cert', url: selectedItem.registration_certificate_url, icon: ShieldCheck },
+                        { label: 'NABH Cert', url: selectedItem.nabh_certificate_url, icon: Award },
+                        { label: 'Tax Proof', url: selectedItem.tax_certificate_url, icon: FileText },
+                        { label: 'Addr Proof', url: selectedItem.address_proof_url, icon: MapPin },
+                        { label: 'Admin ID', url: selectedItem.id_proof_url, icon: UserCheck },
+                      ].map((doc, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => doc.url && setPreviewImage(doc.url)}
+                          disabled={!doc.url}
+                          className={`flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border transition-all ${doc.url ? 'bg-white border-slate-200 hover:border-primary-500 hover:shadow-lg group' : 'bg-slate-50 border-slate-100 opacity-40 cursor-not-allowed'}`}
+                        >
+                          <doc.icon size={20} className={doc.url ? 'text-primary-500 group-hover:scale-110 transition-transform' : 'text-slate-300'} />
+                          <span className="text-[9px] font-black uppercase tracking-tight text-slate-600">{doc.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="p-6 bg-indigo-50/50 rounded-[40px] border border-indigo-100 relative overflow-hidden">
+                    <div className="relative z-10">
+                      <div className="flex items-center gap-3 text-indigo-900 font-black text-xs uppercase tracking-[0.2em] mb-4">
+                        <ShieldCheck size={16} /> Global Verification Note
+                      </div>
+                      <p className="text-sm text-indigo-900/70 font-medium leading-relaxed">
+                        Full MediSync integration pending manual document review. Once verified, {selectedItem.admin_name} will gain chief administrative control over the {selectedItem.hospital_name} node.
+                      </p>
+                    </div>
+                    <Building2 size={120} className="absolute -bottom-10 -right-10 text-indigo-500/10 -rotate-12" />
                   </div>
                 </>
               )}
