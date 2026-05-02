@@ -363,7 +363,7 @@ const DoctorRegisterForm = ({ onBack }) => {
               <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
                 <h3 className={sectionCls}><Building2 size={16} />6. Work Details</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div>
+                  <div className="md:col-span-2">
                     <label className={labelCls}>Affiliated Hospital / Clinic <span className="text-red-500">*</span></label>
                     <select name="hospital" required value={formData.hospital} onChange={handleChange} className={inputCls}>
                         <option value="">Select Institution</option>
@@ -405,7 +405,7 @@ const DoctorRegisterForm = ({ onBack }) => {
                     <input type="text" name="consultationTimings" value={formData.consultationTimings} onChange={handleChange}
                       className={inputCls} placeholder="e.g. 9:00 AM – 6:00 PM" />
                   </div>
-                  <div>
+                  <div className="md:col-span-2">
                     <label className={labelCls}>Online Consultation</label>
                     <select name="onlineConsultation" value={formData.onlineConsultation} onChange={handleChange} className={inputCls}>
                       <option value="false">Not Available</option>
@@ -421,8 +421,7 @@ const DoctorRegisterForm = ({ onBack }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="md:col-span-2">
                     <label className={labelCls}>Username / Doctor ID <span className="text-red-500">*</span></label>
-                    <input type="text" name="username" value={formData.username} onChange={handleChange}
-                      className={inputCls} placeholder="Leave blank to use your email" />
+                    <input type="text" value={formData.email} disabled className={`${inputCls} bg-blue-50 border-blue-100 text-blue-900 font-bold`} />
                   </div>
                   <div className="relative">
                     <label className={labelCls}>Password <span className="text-red-500">*</span></label>
