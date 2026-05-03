@@ -29,6 +29,9 @@ const EditDoctorProfile = () => {
     name: '',
     phone: '',
     alternatePhone: '',
+    gender: '',
+    dateOfBirth: '',
+    age: '',
     specialization: '',
     medicalDegree: '',
     medicalLicenseNumber: '',
@@ -84,6 +87,9 @@ const EditDoctorProfile = () => {
         name: user.name || '',
         phone: user.phone || '',
         alternatePhone: user.alternatePhone || '',
+        gender: user.gender || '',
+        dateOfBirth: user.dateOfBirth || '',
+        age: user.age || '',
         specialization: user.specialization || '',
         medicalDegree: user.medicalDegree || '',
         medicalLicenseNumber: user.medicalLicenseNumber || '',
@@ -767,24 +773,43 @@ const EditDoctorProfile = () => {
           </div>
         </div>
 
-        {/* ── Section 4: Contact (Sync) ── */}
+        {/* ── Section 4: Clinical Identity (Read-only) ── */}
         <div className={sectionClass}>
-          <h3 className={sectionTitleClass}><User className="text-slate-600" size={20} /> General Information</h3>
+          <h3 className={sectionTitleClass}><User className="text-slate-600" size={20} /> Clinical Identity</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className={labelClass}>Full Name</label>
+              <label className={labelClass}>Legal Name</label>
               <input type="text" name="name" value={formData.name} readOnly className={readOnlyInputClass} />
             </div>
             <div>
-              <label className={labelClass}>Email (Read-only)</label>
-              <input type="text" value={user?.email || ''} readOnly className={`${inputClass} bg-slate-100 cursor-not-allowed`} />
+              <label className={labelClass}>Gender Representation</label>
+              <input type="text" name="gender" value={formData.gender} readOnly className={readOnlyInputClass} />
             </div>
             <div>
-                <label className={labelClass}>Phone Number</label>
+              <label className={labelClass}>Date of Birth</label>
+              <input type="date" name="dateOfBirth" value={formData.dateOfBirth} readOnly className={readOnlyInputClass} />
+            </div>
+            <div>
+              <label className={labelClass}>Biological Age</label>
+              <input type="text" value={formData.age ? `${formData.age} Years` : 'Not Specified'} readOnly className={readOnlyInputClass} />
+            </div>
+          </div>
+        </div>
+
+        {/* ── Section 5: Communication Node (Read-only) ── */}
+        <div className={sectionClass}>
+          <h3 className={sectionTitleClass}><Mail className="text-slate-600" size={20} /> Communication Node</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className={labelClass}>Primary Interface (Email)</label>
+              <input type="text" value={user?.email || ''} readOnly className={readOnlyInputClass} />
+            </div>
+            <div>
+                <label className={labelClass}>Emergency Contact (Phone)</label>
                 <input type="tel" name="phone" value={formData.phone} readOnly className={readOnlyInputClass} />
             </div>
             <div>
-                <label className={labelClass}>Alternate Phone</label>
+                <label className={labelClass}>Secondary Terminal (Alt. Phone)</label>
                 <input type="tel" name="alternatePhone" value={formData.alternatePhone} readOnly className={readOnlyInputClass} />
             </div>
           </div>
