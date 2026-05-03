@@ -275,6 +275,7 @@ const HospitalProfile = () => {
                     { id: 'identity', label: 'Identity', icon: Building2 },
                     { id: 'compliance', label: 'Compliance', icon: Shield },
                     { id: 'operations', label: 'Operations', icon: Activity },
+                    { id: 'location', label: 'Location', icon: MapPin },
                     { id: 'environment', label: 'Environment', icon: Globe },
                     { id: 'governance', label: 'Governance', icon: User },
                     { id: 'settlements', label: 'Settlements', icon: CreditCard },
@@ -522,14 +523,14 @@ const HospitalProfile = () => {
                         </div>
                     )}
 
-                    {activeTab === 'environment' && (
+                    {activeTab === 'location' && (
                         <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="flex items-center gap-4 mb-8">
                                 <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
-                                    <Globe size={24} />
+                                    <MapPin size={24} />
                                 </div>
                                 <div className="flex-1">
-                                    <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Environmental <span className="not-italic text-indigo-600">Presence</span></h3>
+                                    <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Geographic <span className="not-italic text-indigo-600">Positioning</span></h3>
                                 </div>
                                 <button 
                                     type="button" 
@@ -540,6 +541,43 @@ const HospitalProfile = () => {
                                     <Navigation size={14} className={locating ? 'animate-pulse' : ''} />
                                     {locating ? 'Locating...' : 'Detect Current Location'}
                                 </button>
+                            </div>
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Street Address</label>
+                                        <input type="text" value={formData.street} onChange={(e) => setFormData({...formData, street: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" placeholder="Building, Street, Area" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">City / Region</label>
+                                        <input type="text" value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">State</label>
+                                        <input type="text" value={formData.state} onChange={(e) => setFormData({...formData, state: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">PIN Code</label>
+                                        <input type="text" value={formData.pinCode} onChange={(e) => setFormData({...formData, pinCode: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" />
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Google Maps URL</label>
+                                    <input type="url" value={formData.googleMapsUrl} onChange={(e) => setFormData({...formData, googleMapsUrl: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" placeholder="https://maps.google.com/..." />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'environment' && (
+                        <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
+                                    <Globe size={24} />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Institutional <span className="not-italic text-indigo-600">Environment</span></h3>
+                                </div>
                             </div>
                             <div className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -559,25 +597,7 @@ const HospitalProfile = () => {
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Emergency 24/7 (ER)</label>
                                         <input type="text" value={formData.emergencyPhone} onChange={(e) => setFormData({...formData, emergencyPhone: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" />
                                     </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">City / Region</label>
-                                        <input type="text" value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">State</label>
-                                        <input type="text" value={formData.state} onChange={(e) => setFormData({...formData, state: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" />
-                                    </div>
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Street Address</label>
-                                    <input type="text" value={formData.street} onChange={(e) => setFormData({...formData, street: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" />
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-50">
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Google Maps URL</label>
-                                        <input type="url" value={formData.googleMapsUrl} onChange={(e) => setFormData({...formData, googleMapsUrl: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" />
-                                    </div>
-                                    <div className="space-y-1">
+                                    <div className="space-y-1 md:col-span-2">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Insurance Providers</label>
                                         <input type="text" value={formData.insuranceProviders} onChange={(e) => setFormData({...formData, insuranceProviders: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" placeholder="Star, HDFC, etc." />
                                     </div>
