@@ -12,6 +12,7 @@ const HospitalLedger = () => {
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedAudit, setSelectedAudit] = useState(null);
 
     const fetchLedgerData = async () => {
         try {
@@ -129,8 +130,9 @@ const HospitalLedger = () => {
                                 <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Patient Node</th>
                                 <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Physician Affiliate</th>
                                 <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Clinical Fee</th>
-                                <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Gateway</th>
-                                <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Status</th>
+                                <th className="p-6 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Gateway</th>
+                                <th className="p-6 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                                <th className="p-6 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -170,14 +172,6 @@ const HospitalLedger = () => {
                                             }`}>
                                                 {(tx.status === 'BOOKED' || tx.status === 'COMPLETED') ? 'SETTLED' : (tx.status || 'SCHEDULED')}
                                             </span>
-                                            {tx.status === 'AWAITING_VERIFICATION' && (
-                                                <button 
-                                                    onClick={() => handleVerify(tx.id)}
-                                                    className="p-1.5 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-all active:scale-90 shadow-lg shadow-slate-900/10"
-                                                    title="Verify Payment"
-                                                >
-                                                    <ShieldCheck size={12} />
-                                                </button>
                                             )}
                                         </div>
                                     </td>
@@ -225,6 +219,63 @@ const HospitalLedger = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Audit Modal */}
+            {selectedAudit && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setSelectedAudit(null)} />
+                    <div className="bg-white rounded-[2.5rem] w-full max-w-md relative z-10 overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+                        <div className="p-8 bg-slate-900 text-white flex items-center justify-between">
+                            <div>
+                                <h3 className="text-xl font-black uppercase italic tracking-tight">Clinical <span className="text-primary">Audit</span></h3>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Manual Settlement Verification</p>
+                            </div>
+                            <button onClick={() => setSelectedAudit(null)} className="p-2 hover:bg-white/10 rounded-full transition-all">
+                                <Search size={20} className="rotate-45" />
+                            </button>
+                        </div>
+                        
+                        <div className="p-8 space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Patient VPA</p>
+                                    <p className="text-[11px] font-bold text-slate-800 break-all">{selectedAudit.patientUpiId || 'NOT_FOUND'}</p>
+                                </div>
+                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Txn Reference</p>
+                                    <p className="text-[11px] font-black text-primary uppercase break-all">{selectedAudit.transactionId || 'NOT_FOUND'}</p>
+                                </div>
+                            </div>
+
+                            <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100/50">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <ShieldCheck size={16} className="text-amber-600" />
+                                    <p className="text-[10px] font-black text-amber-900 uppercase tracking-widest">Verification Protocol</p>
+                                </div>
+                                <p className="text-[9px] font-medium text-amber-700/80 leading-relaxed uppercase tracking-tight">
+                                    By authorizing this transaction, you confirm that the clinical fee has been successfully credited to the institutional UPI account.
+                                </p>
+                            </div>
+
+                            {selectedAudit.status === 'AWAITING_VERIFICATION' ? (
+                                <button 
+                                    onClick={() => {
+                                        handleVerify(selectedAudit.id);
+                                        setSelectedAudit(null);
+                                    }}
+                                    className="w-full py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-slate-900/20 active:scale-95 transition-all"
+                                >
+                                    Authorize Settlement
+                                </button>
+                            ) : (
+                                <div className="w-full py-4 bg-emerald-50 text-emerald-600 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-center border border-emerald-100">
+                                    Protocol Verified
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
