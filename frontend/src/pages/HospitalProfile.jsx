@@ -476,6 +476,7 @@ const HospitalProfile = () => {
                                     type="button"
                                     onClick={() => setFormData(prev => ({...prev, emergencyServicesAvailable: !prev.emergencyServicesAvailable}))}
                                     className={`w-12 h-6 rounded-full relative transition-all ${formData.emergencyServicesAvailable ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                                >
                                     <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.emergencyServicesAvailable ? 'right-1' : 'left-1'}`} />
                                 </button>
                             </div>
