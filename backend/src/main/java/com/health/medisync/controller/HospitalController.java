@@ -99,12 +99,61 @@ public class HospitalController {
     }
 
     @GetMapping("/profile")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<?> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         HospitalAdmin admin = hospitalService.getAdminByUser(user);
-        System.out.println("DEBUG: Fetching profile for Admin: " + admin.getName() + " (Hospital: " + (admin.getHospital() != null ? admin.getHospital().getName() : "NULL") + ")");
-        return ResponseEntity.ok(admin);
+        Hospital hospital = admin.getHospital();
+
+        Map<String, Object> response = new java.util.HashMap<>();
+        // Admin Fields
+        response.put("id", admin.getId());
+        response.put("name", admin.getName());
+        response.put("position", admin.getPosition());
+        response.put("contactNumber", admin.getContactNumber());
+        response.put("profilePictureUrl", admin.getProfilePictureUrl());
+        response.put("idProofUrl", admin.getIdProofUrl());
+        response.put("approved", admin.isApproved());
+        
+        // Hospital Fields (Flattened or nested)
+        if (hospital != null) {
+            Map<String, Object> hMap = new java.util.HashMap<>();
+            hMap.put("id", hospital.getId());
+            hMap.put("name", hospital.getName());
+            hMap.put("licenseCode", hospital.getLicenseCode());
+            hMap.put("hospitalType", hospital.getHospitalType());
+            hMap.put("ownershipType", hospital.getOwnershipType());
+            hMap.put("website", hospital.getWebsite());
+            hMap.put("phone", hospital.getPhone());
+            hMap.put("contactEmail", hospital.getContactEmail());
+            hMap.put("state", hospital.getState());
+            hMap.put("city", hospital.getCity());
+            hMap.put("pinCode", hospital.getPinCode());
+            hMap.put("street", hospital.getStreet());
+            hMap.put("logoUrl", hospital.getLogoUrl());
+            hMap.put("gstNumber", hospital.getGstNumber());
+            hMap.put("panNumber", hospital.getPanNumber());
+            hMap.put("nabhId", hospital.getNabhId());
+            hMap.put("isoId", hospital.getIsoId());
+            hMap.put("facilityId", hospital.getFacilityId());
+            hMap.put("govtRegistrationNumber", hospital.getGovtRegistrationNumber());
+            hMap.put("cinNumber", hospital.getCinNumber());
+            hMap.put("totalBeds", hospital.getTotalBeds());
+            hMap.put("doctorCount", hospital.getDoctorCount());
+            hMap.put("nurseCount", hospital.getNurseCount());
+            hMap.put("generalStaffCount", hospital.getGeneralStaffCount());
+            hMap.put("icuAvailable", hospital.getIcuAvailable());
+            hMap.put("ambulanceAvailable", hospital.getAmbulanceAvailable());
+            hMap.put("emergencyServicesAvailable", hospital.getEmergencyServicesAvailable());
+            hMap.put("medicalDirectorName", hospital.getMedicalDirectorName());
+            hMap.put("medicalDirectorEmail", hospital.getMedicalDirectorEmail());
+            
+            response.put("hospital", hMap);
+        }
+
+        System.out.println("DEBUG: Returning explicit profile map for Admin: " + admin.getName());
+        return ResponseEntity.ok(response);
     }
 
     /** Update hospital profile & admin identity from the dashboard */
