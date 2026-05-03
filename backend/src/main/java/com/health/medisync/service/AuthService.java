@@ -175,7 +175,7 @@ public class AuthService {
         String normalizedEmail = email != null ? email.toLowerCase() : null;
         verifyOtpStandalone(normalizedEmail, otp);
         
-        User user = userRepository.findByUsername(normalizedEmail).orElse(null);
+        User user = userRepository.findFirstByUsernameIgnoreCase(normalizedEmail).orElse(null);
         if (user == null) {
             user = patientRepository.findByUserUsernameIgnoreCase(normalizedEmail)
                     .map(Patient::getUser)
@@ -214,7 +214,7 @@ public class AuthService {
         String normalizedEmail = email != null ? email.toLowerCase() : null;
         verifyOtpStandalone(normalizedEmail, otp);
 
-        User user = userRepository.findByUsername(normalizedEmail)
+        User user = userRepository.findFirstByUsernameIgnoreCase(normalizedEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         String role = user.getRole();

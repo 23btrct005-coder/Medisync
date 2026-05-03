@@ -237,25 +237,27 @@ public class AuthController {
         final String finalUsername = (username == null || username.isEmpty()) ? email : username;
 
         try {
-            // Check for existing user by username/email
-            userRepository.findByUsernameIgnoreCase(finalUsername).ifPresent(existing -> {
-                if (existing.isEnabled()) {
+            // Check for existing user by username/email — handle duplicates defensively
+            List<User> existingUsers = userRepository.findAllByUsernameIgnoreCase(finalUsername);
+            if (!existingUsers.isEmpty()) {
+                // If any existing account is enabled, we must stop
+                if (existingUsers.stream().anyMatch(User::isEnabled)) {
                     throw new RuntimeException("Error: This account is already registered and verified. Please log in.");
                 }
                 
-                // Protection: Don't allow overwriting a pending doctor/admin with a different role
-                boolean hasAdminProfile = hospitalAdminRepository.findByUserId(existing.getId()).isPresent();
-                if (hasAdminProfile) {
-                    throw new RuntimeException("Error: This email is already associated with a hospital administrator account.");
+                // Otherwise, they are all unverified/ghost accounts — purge them all to start fresh
+                System.out.println("DEBUG: Purging " + existingUsers.size() + " duplicate unverified accounts for " + finalUsername);
+                for (User existing : existingUsers) {
+                    passwordResetTokenRepository.deleteByUserId(existing.getId());
+                    doctorRepository.findByUserId(existing.getId()).ifPresent(doctorRepository::delete);
+                    patientRepository.findByUserId(existing.getId()).ifPresent(patientRepository::delete);
+                    hospitalAdminRepository.findByUserId(existing.getId()).ifPresent(hospitalAdminRepository::delete);
+                    userRepository.delete(existing);
                 }
+                userRepository.flush();
+            }
+                
 
-                // Delete unverified user and ALL linked data so registration can proceed cleanly
-                passwordResetTokenRepository.deleteByUserId(existing.getId());
-                doctorRepository.findByUserId(existing.getId()).ifPresent(doctorRepository::delete);
-                patientRepository.findByUserId(existing.getId()).ifPresent(patientRepository::delete);
-                hospitalAdminRepository.findByUserId(existing.getId()).ifPresent(hospitalAdminRepository::delete);
-                userRepository.delete(existing);
-            });
 
             // Check for existing doctor by email directly (if username was different)
             if (email != null) {
@@ -764,7 +766,7 @@ public class AuthController {
             String otp = request.get("otp");
             authService.verifyOtpStandalone(email, otp);
             
-            userRepository.findByUsernameIgnoreCase(email).ifPresent(user -> {
+            userRepository.findFirstByUsernameIgnoreCase(email).ifPresent(user -> {
                 user.setEmailVerified(true);
                 userRepository.save(user);
             });
@@ -792,15 +794,16 @@ public class AuthController {
         try {
             String email = request.get("email") != null ? request.get("email").toLowerCase() : null;
 
-            // Only block if user already exists AND is fully enabled (active account)
-            userRepository.findByUsername(email).ifPresent(existingUser -> {
-                if (existingUser.isEnabled()) {
+            // Defensive check for duplicates
+            List<User> existingUsers = userRepository.findAllByUsernameIgnoreCase(email);
+            if (!existingUsers.isEmpty()) {
+                if (existingUsers.stream().anyMatch(User::isEnabled)) {
                     throw new RuntimeException("This email is already registered. Please log in instead.");
                 } else {
-                    // Ghost/unverified account — clean it up so a fresh registration can proceed
-                    System.out.println("INFO: Cleaning up unverified ghost account for: " + email);
+                    // Ghost/unverified account — cleanup will happen during registration
+                    System.out.println("INFO: Found " + existingUsers.size() + " unverified ghost accounts for: " + email);
                 }
-            });
+            }
 
             authService.generateAndSendOtp(email);
             return ResponseEntity.ok(Map.of("message", "Verification code sent to " + email));
