@@ -133,7 +133,7 @@ public class AiService {
                 "1. NO PARAGRAPHS. NO GREETINGS. NO DISCLAIMERS.\n" +
                 "2. PROVIDE DEEP CLINICAL INSIGHTS. Act as a board-certified MD.\n" +
                 "3. Use Markdown headers (###) and Bullet Points (-) for EVERYTHING.\n" +
-                "4. NAVIGATION: Always provide a detailed street address when mentioning a hospital.\n" +
+                "4. NAVIGATION: Provide ONLY the location name or coordinates. DO NOT provide text-based directions. Let the system render the map.\n" +
                 "5. GROUNDING: Reference the Institutional Registry below:\n" +
                 "   HOSPITALS:\n" + hospitalList + "\n" +
                 "   DOCTORS:\n" + doctorList + "\n\n" +

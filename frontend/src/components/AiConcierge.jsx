@@ -232,23 +232,34 @@ const AiConcierge = () => {
                                             // Styled Lists or Proactive Point Conversion for long lines
                                             if (line.startsWith('-') || line.startsWith('•') || line.length > 60) {
                                                 const isLocation = line.toLowerCase().includes('location') || line.toLowerCase().includes('address') || line.toLowerCase().includes('hospital');
+                                                const hasCoords = line.match(/-?\d+\.\d+,\s*-?\d+\.\d+/);
                                                 
                                                 return (
-                                                    <div key={li} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                                        <div style={{ display: 'flex', gap: '10px', paddingLeft: '8px', marginBottom: '4px', alignItems: 'flex-start' }}>
+                                                    <div key={li} style={{ display: 'flex', flexDirection: 'column', gap: '12px', margin: '8px 0' }}>
+                                                        <div style={{ display: 'flex', gap: '10px', paddingLeft: '8px', alignItems: 'flex-start' }}>
                                                             <div style={{ marginTop: '8px', width: '5px', height: '5px', borderRadius: '50%', backgroundColor: m.role === 'user' ? 'white' : '#94a3b8', flexShrink: 0 }}></div>
                                                             <span style={{ fontWeight: '500' }}>{line.startsWith('-') || line.startsWith('•') ? line.substring(1).trim() : line}</span>
                                                         </div>
-                                                        {isLocation && (
-                                                            <button 
-                                                                onClick={() => {
-                                                                    const searchStr = encodeURIComponent(line.replace(/#|-|•/g, '').trim());
-                                                                    window.open(`https://www.google.com/maps/search/?api=1&query=${searchStr}`, '_blank');
-                                                                }}
-                                                                style={{ marginLeft: '25px', padding: '8px 16px', borderRadius: '10px', backgroundColor: '#f0f9ff', border: '1px solid #bae6fd', color: '#0369a1', fontSize: '10px', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', width: 'fit-content' }}
-                                                            >
-                                                                📍 VIEW DIRECTIONS ON MAP
-                                                            </button>
+                                                        {(isLocation || hasCoords) && (
+                                                            <div style={{ borderRadius: '20px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', marginLeft: '15px' }}>
+                                                                <iframe 
+                                                                    width="100%" 
+                                                                    height="200" 
+                                                                    style={{ border: 0 }} 
+                                                                    loading="lazy" 
+                                                                    allowFullScreen 
+                                                                    src={`https://www.google.com/maps/embed/v1/place?key=REPLACE_WITH_YOUR_GOOGLE_MAPS_API_KEY&q=${encodeURIComponent(line.replace(/#|-|•/g, '').trim())}`}
+                                                                ></iframe>
+                                                                {/* Fallback if no API key is provided - simple search link style map */}
+                                                                {!line.includes('API_KEY') && (
+                                                                    <iframe 
+                                                                        width="100%" 
+                                                                        height="200" 
+                                                                        style={{ border: 0 }} 
+                                                                        src={`https://maps.google.com/maps?q=${encodeURIComponent(line.replace(/#|-|•/g, '').trim())}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
+                                                                    ></iframe>
+                                                                )}
+                                                            </div>
                                                         )}
                                                     </div>
                                                 );
