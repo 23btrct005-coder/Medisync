@@ -302,14 +302,37 @@ const DoctorAppointmentCard = ({ appt, onClick, active, historical }) => {
                                      Awaiting Admin Auth
                                  </div>
                              )}
-                             {appt.consultationType === 'ONLINE' && appt.meetLink && appt.status === 'BOOKED' && (
-                                <button 
-                                    onClick={(e) => { e.stopPropagation(); window.open(appt.meetLink, '_blank'); }}
-                                    className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-emerald-500 transition-all shadow-md active:scale-95 flex items-center gap-2"
-                                >
-                                    <Video size={14} /> Enter Call
-                                </button>
-                             )}
+                             {appt.consultationType === 'ONLINE' && appt.meetLink && appt.status === 'BOOKED' && (() => {
+                                 const isExpired = (() => {
+                                     try {
+                                         const [time, period] = appt.timeSlot.split(' ');
+                                         const [hours, minutes] = time.split(':').map(Number);
+                                         let h = hours % 12;
+                                         if (period === 'PM') h += 12;
+                                         
+                                         const apptDate = new Date(appt.appointmentDate);
+                                         apptDate.setHours(h, minutes, 0);
+                                         
+                                         const now = new Date();
+                                         const expiryTime = new Date(apptDate.getTime() + (60 * 60 * 1000)); // 60 min buffer
+                                         return now > expiryTime;
+                                     } catch (e) { return false; }
+                                 })();
+
+                                 return (
+                                    <button 
+                                        disabled={isExpired}
+                                        onClick={(e) => { e.stopPropagation(); window.open(appt.meetLink, '_blank'); }}
+                                        className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-md active:scale-95 flex items-center gap-2 ${
+                                            isExpired 
+                                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed grayscale' 
+                                            : 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-emerald-200'
+                                        }`}
+                                    >
+                                        <Video size={14} /> {isExpired ? 'Session Concluded' : 'Enter Call'}
+                                    </button>
+                                 );
+                             })()}
                             <button className="px-6 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary transition-all shadow-md active:scale-95">
                                 Open File
                             </button>

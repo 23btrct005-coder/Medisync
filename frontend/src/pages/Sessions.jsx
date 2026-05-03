@@ -233,20 +233,45 @@ const SessionDetailModal = ({ appt, onClose, canEnter }) => {
                     </div>
 
                     <div className="mt-8 pt-6 border-t border-slate-100 flex gap-3">
-                        {appt.status === 'BOOKED' && appt.consultationType === 'ONLINE' && appt.status !== 'FAILED' && appt.meetLink && (
-                            canEnter ? (
+                        {appt.status === 'BOOKED' && appt.consultationType === 'ONLINE' && appt.status !== 'FAILED' && appt.meetLink && (() => {
+                            const now = new Date();
+                            const [time, period] = appt.timeSlot.split(' ');
+                            let [hours, minutes] = time.split(':').map(Number);
+                            if (period === 'PM' && hours !== 12) hours += 12;
+                            if (period === 'AM' && hours === 12) hours = 0;
+                            
+                            const sessionTime = new Date(appt.appointmentDate);
+                            sessionTime.setHours(hours, minutes, 0);
+                            
+                            const diffMinutes = (sessionTime - now) / (1000 * 60);
+                            const isTooEarly = diffMinutes > 10;
+                            const isExpired = diffMinutes < -60;
+
+                            if (isExpired) {
+                                return (
+                                    <div className="flex-1 bg-slate-100 text-slate-400 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center text-center p-3 border border-slate-200">
+                                        Session Concluded
+                                    </div>
+                                );
+                            }
+
+                            if (isTooEarly) {
+                                return (
+                                    <div className="flex-1 bg-slate-100 text-slate-400 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center text-center p-3 border border-slate-200">
+                                        Link activates 10m before
+                                    </div>
+                                );
+                            }
+
+                            return (
                                 <button 
                                     onClick={() => window.open(appt.meetLink, '_blank')}
                                     className="flex-1 btn-premium bg-emerald-600 text-white shadow-xl hover:bg-emerald-700 text-sm py-3 flex items-center justify-center gap-2 border-none"
                                 >
                                     <Video size={16} /> Enter Call
                                 </button>
-                            ) : (
-                                <div className="flex-1 bg-slate-100 text-slate-400 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center text-center p-3">
-                                    Link activates 10m before
-                                </div>
-                            )
-                        )}
+                            );
+                        })()}
                         <button onClick={onClose} className="flex-1 btn-premium bg-slate-900 text-white shadow-xl hover:bg-slate-800 border-none text-sm py-3">
                             Acknowledge
                         </button>
