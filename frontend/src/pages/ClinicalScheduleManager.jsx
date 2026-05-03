@@ -260,7 +260,24 @@ const DoctorAppointmentCard = ({ appt, onClick, active, historical }) => {
                             ))}
                         </div>
                         <div className="flex gap-2">
-                             {appt.consultationType === 'ONLINE' && appt.meetLink && (
+                             {appt.status === 'AWAITING_VERIFICATION' && (
+                                <button 
+                                    onClick={async (e) => { 
+                                        e.stopPropagation(); 
+                                        try {
+                                            await api.post('appointments/confirm-upi', { appointmentId: appt.id });
+                                            toast.success("Payment verified. Appointment booked.");
+                                            fetchAppointments();
+                                        } catch (err) {
+                                            toast.error("Verification failed.");
+                                        }
+                                    }}
+                                    className="px-6 py-2.5 bg-amber-600 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-amber-500 transition-all shadow-md active:scale-95 flex items-center gap-2"
+                                >
+                                    <ShieldCheck size={14} /> Verify Payment
+                                </button>
+                             )}
+                             {appt.consultationType === 'ONLINE' && appt.meetLink && appt.status === 'BOOKED' && (
                                 <button 
                                     onClick={(e) => { e.stopPropagation(); window.open(appt.meetLink, '_blank'); }}
                                     className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-emerald-500 transition-all shadow-md active:scale-95 flex items-center gap-2"

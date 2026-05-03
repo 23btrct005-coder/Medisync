@@ -44,7 +44,7 @@ public class Appointment {
     private java.time.LocalDateTime createdAt = java.time.LocalDateTime.now();
 
     public enum ConsultationType { ONLINE, OFFLINE }
-    public enum AppointmentStatus { PENDING, BOOKED, FAILED, EXPIRED, COMPLETED, CANCELLED }
+    public enum AppointmentStatus { PENDING, BOOKED, FAILED, EXPIRED, COMPLETED, CANCELLED, AWAITING_VERIFICATION }
 
     // Getters & Setters
     public Long getId() { return id; }

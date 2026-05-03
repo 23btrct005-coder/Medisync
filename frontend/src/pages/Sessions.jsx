@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import api from '../api/axiosConfig';
-import { Calendar, Clock, ChevronRight, Video, MapPin, X, Loader2, AlertCircle, History as HistoryIcon } from 'lucide-react';
+import { Calendar, Clock, ChevronRight, Video, MapPin, X, Loader2, AlertCircle, History as HistoryIcon, ShieldCheck } from 'lucide-react';
 import ClinicMap from '../components/ClinicMap';
 
 /* --- SUBCOMPONENTS --- */
@@ -53,6 +53,11 @@ const SessionCard = ({ appt, onClick, active, historical, canEnter, onRate }) =>
                     {appt.status === 'PENDING' && (
                         <p className="text-[10px] font-black uppercase tracking-widest text-amber-500 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-100">
                            Awaiting Confirmation
+                        </p>
+                    )}
+                    {appt.status === 'AWAITING_VERIFICATION' && (
+                        <p className="text-[10px] font-black uppercase tracking-widest text-blue-500 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-100">
+                           Awaiting Verification
                         </p>
                     )}
                 </div>
@@ -187,7 +192,11 @@ const SessionDetailModal = ({ appt, onClose, canEnter }) => {
                                 <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1 flex items-center gap-1"><Video size={10} /> Modality</p>
                                 <p className="text-sm font-extrabold text-slate-800">{appt.consultationType}</p>
                                 <p className="text-xs font-black uppercase tracking-widest mt-1">
-                                    <span className={appt.status === 'PENDING' ? 'text-amber-500' : 'text-emerald-500'}>{appt.status}</span>
+                                    <span className={
+                                        appt.status === 'PENDING' ? 'text-amber-500' : 
+                                        appt.status === 'AWAITING_VERIFICATION' ? 'text-blue-500' : 
+                                        'text-emerald-500'
+                                    }>{appt.status.replace(/_/g, ' ')}</span>
                                 </p>
                             </div>
                         </div>
@@ -212,6 +221,13 @@ const SessionDetailModal = ({ appt, onClose, canEnter }) => {
                                <AlertCircle size={24} className="text-amber-500 mx-auto" />
                                <p className="text-sm font-bold text-slate-800">Payment Pending</p>
                                <p className="text-xs text-slate-500 font-medium leading-relaxed">Exact session coordinates and communication links will activate immediately upon clinical confirmation.</p>
+                           </div>
+                        )}
+                        {appt.status === 'AWAITING_VERIFICATION' && (
+                           <div className="bg-blue-50 border border-blue-100 p-6 rounded-3xl text-center space-y-2">
+                               <ShieldCheck size={24} className="text-blue-500 mx-auto" />
+                               <p className="text-sm font-bold text-slate-800">Awaiting Physician Verification</p>
+                               <p className="text-xs text-slate-500 font-medium leading-relaxed">Your UPI payment has been registered. The attending physician will verify the transaction and confirm your slot shortly.</p>
                            </div>
                         )}
                     </div>
@@ -304,7 +320,7 @@ const Sessions = () => {
     
     // Status Segregation Tier 1: Split into active vs pending
     const activeAppts = safeAppointments.filter(a => a.status === 'BOOKED');
-    const pendingAppointments = safeAppointments.filter(a => a.status === 'PENDING');
+    const pendingAppointments = safeAppointments.filter(a => a.status === 'PENDING' || a.status === 'AWAITING_VERIFICATION');
     
     const todaysAppointments = activeAppts.filter(a => a.appointmentDate === todayString);
     const pastAppointments = activeAppts.filter(a => a.appointmentDate < todayString);

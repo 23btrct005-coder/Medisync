@@ -19,6 +19,7 @@ const Booking = () => {
   
   const [showUpiModal, setShowUpiModal] = useState(false);
   const [upiOrderData, setUpiOrderData] = useState(null);
+  const [upiConfirmed, setUpiConfirmed] = useState(false);
 
   const date = new Date();
   const localToday = [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
@@ -157,7 +158,7 @@ const Booking = () => {
         await api.post('appointments/verify-upi', {
             appointmentId: upiOrderData.appointmentId
         });
-        toast.success("Transaction Initiated! Session Synchronized.");
+        toast.success("Transaction Registered! Awaiting Clinical Verification.");
         navigate('/dashboard/sessions', { state: { autoOpenApptId: upiOrderData.appointmentId } });
     } catch (err) {
         toast.error("Failed to sync UPI transaction.");
@@ -562,15 +563,33 @@ const Booking = () => {
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-4">
+                    <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <input 
+                            type="checkbox" 
+                            id="upiConfirm"
+                            className="mt-1 w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary"
+                            checked={upiConfirmed}
+                            onChange={(e) => setUpiConfirmed(e.target.checked)}
+                        />
+                        <label htmlFor="upiConfirm" className="text-[10px] font-black text-slate-500 uppercase tracking-tight leading-relaxed">
+                            I confirm that I have transferred ₹{upiOrderData.amount} to {upiOrderData.upiId} and have the transaction ID ready.
+                        </label>
+                    </div>
+
                     <button 
                         onClick={handleUpiSuccess}
-                        className="w-full btn-premium bg-slate-900 text-white py-5 text-sm font-black shadow-xl shadow-slate-900/20 active:scale-95"
+                        disabled={isBooking || !upiConfirmed}
+                        className={`w-full py-5 rounded-[2rem] text-sm font-black uppercase tracking-widest transition-all shadow-xl active:scale-95 ${
+                            upiConfirmed 
+                            ? 'bg-slate-900 text-white shadow-slate-900/20' 
+                            : 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'
+                        }`}
                     >
-                        I've completed the payment
+                        {isBooking ? "Registering Protocol..." : "I've completed the payment"}
                     </button>
-                    <p className="text-[10px] text-center text-slate-400 font-medium leading-relaxed px-4">
-                        Please pay the exact amount using any UPI app. Once done, click above to synchronize your session.
+                    <p className="text-[10px] text-center text-slate-400 font-bold leading-relaxed px-4 uppercase tracking-tighter">
+                        Verification required by physician before slot confirmation.
                     </p>
                 </div>
               </div>

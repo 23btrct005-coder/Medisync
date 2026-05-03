@@ -125,7 +125,21 @@ public class AppointmentController {
             }
             Long appointmentId = Long.valueOf(request.get("appointmentId").toString());
             appointmentService.verifyUpiPayment(appointmentId);
-            return ResponseEntity.ok(Map.of("message", "Appointment confirmed via Direct UPI"));
+            return ResponseEntity.ok(Map.of("message", "Appointment initiated. Awaiting doctor verification."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/confirm-upi")
+    public ResponseEntity<?> confirmUpiPayment(Authentication authentication, @RequestBody Map<String, Object> request) {
+        try {
+            if (request.get("appointmentId") == null) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Missing appointmentId"));
+            }
+            Long appointmentId = Long.valueOf(request.get("appointmentId").toString());
+            appointmentService.confirmUpiPayment(authentication.getName(), appointmentId);
+            return ResponseEntity.ok(Map.of("message", "Payment verified and appointment booked."));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }

@@ -334,7 +334,7 @@ public class AppointmentService {
         Appointment appointment = appointmentRepository.findById(appointmentId)
             .orElseThrow(() -> new RuntimeException("Appointment not found: " + appointmentId));
 
-        appointment.setStatus(AppointmentStatus.BOOKED);
+        appointment.setStatus(AppointmentStatus.AWAITING_VERIFICATION);
         appointment.setCreatedAt(LocalDateTime.now());
         Appointment booked = appointmentRepository.save(appointment);
 
@@ -343,7 +343,7 @@ public class AppointmentService {
             booked.getDoctor().getUser().getId(),
             "APPOINTMENT",
             "New Clinical Session (Direct UPI)",
-             booked.getPatient().getName() + " has scheduled an appointment via Direct UPI on " + booked.getAppointmentDate(),
+             booked.getPatient().getName() + " has initiated an appointment via Direct UPI on " + booked.getAppointmentDate() + ". Please verify payment receipt.",
             "/doctor-dashboard/appointments",
             "Open Schedule"
         );
@@ -353,7 +353,31 @@ public class AppointmentService {
             booked.getPatient().getUser().getId(),
             "APPOINTMENT",
             "Session Confirmed (Direct UPI)",
-            "Your direct UPI appointment with Dr. " + booked.getDoctor().getName() + " is confirmed.",
+            "Your direct UPI appointment with Dr. " + booked.getDoctor().getName() + " is currently awaiting payment verification by the physician.",
+            "/dashboard/sessions",
+            "View Details"
+        );
+    }
+
+    @Transactional
+    public void confirmUpiPayment(String doctorEmail, Long appointmentId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+            .orElseThrow(() -> new RuntimeException("Appointment not found: " + appointmentId));
+        
+        if (!appointment.getDoctor().getUser().getUsername().equalsIgnoreCase(doctorEmail)) {
+            throw new RuntimeException("Unauthorized: This appointment does not belong to your clinical node.");
+        }
+
+        appointment.setStatus(AppointmentStatus.BOOKED);
+        appointment.setCreatedAt(LocalDateTime.now());
+        Appointment booked = appointmentRepository.save(appointment);
+
+        // Notify Patient
+        notificationService.sendNotification(
+            booked.getPatient().getUser().getId(),
+            "APPOINTMENT",
+            "Payment Verified & Session Booked",
+            "Dr. " + booked.getDoctor().getName() + " has verified your UPI payment. Your session is now officially booked.",
             "/dashboard/sessions",
             "View Details"
         );
@@ -382,7 +406,8 @@ public class AppointmentService {
             .orElseThrow(() -> new RuntimeException("User not found"));
         Doctor doctor = doctorRepository.findByUserId(user.getId())
             .orElseThrow(() -> new RuntimeException("Doctor profile not found"));
-        List<Appointment> appts = appointmentRepository.findByDoctorIdAndStatus(doctor.getId(), Appointment.AppointmentStatus.BOOKED);
+        List<Appointment.AppointmentStatus> statuses = Arrays.asList(Appointment.AppointmentStatus.BOOKED, Appointment.AppointmentStatus.AWAITING_VERIFICATION);
+        List<Appointment> appts = appointmentRepository.findByDoctorIdAndStatusIn(doctor.getId(), statuses);
         
         // 🚀 FIX N+1: Sync 'rated' status for doctor history in batch
         if (!appts.isEmpty()) {
