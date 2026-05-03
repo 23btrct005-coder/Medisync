@@ -20,8 +20,6 @@ import com.razorpay.Utils;
 import org.json.JSONObject;
 import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -53,7 +51,7 @@ public class AppointmentService {
                               UserRepository userRepository,
                               NotificationService notificationService,
                               RatingRepository ratingRepository,
-                              AiService aiService) {
+                              @Lazy AiService aiService) {
         this.appointmentRepository = appointmentRepository;
         this.doctorRepository = doctorRepository;
         this.patientRepository = patientRepository;
