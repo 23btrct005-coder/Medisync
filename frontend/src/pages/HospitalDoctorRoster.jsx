@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Users, Activity, Search, ShieldAlert, ChevronRight, UserPlus, 
-  Filter, Calendar, X, Trash2, Edit3, Settings, Check, 
-  GraduationCap, Briefcase, Shield, Mail, Phone, Camera
+  Users, Search, UserPlus, Filter, Trash2, Edit3, 
+  ChevronRight, Activity, X, Check, Save, Clock, 
+  MapPin, Settings, AlertCircle
 } from 'lucide-react';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
-import DropZone from '../components/DropZone';
 import PremiumDropdown from '../components/PremiumDropdown';
 
 const HospitalDoctorRoster = () => {
@@ -15,39 +14,16 @@ const HospitalDoctorRoster = () => {
     const [doctors, setDoctors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [submitting, setSubmitting] = useState(false);
-
-    // Modal States
-    const [showOnboardModal, setShowOnboardModal] = useState(false);
     const [editingDoctor, setEditingDoctor] = useState(null);
     const [editData, setEditData] = useState({});
-
-    // Onboarding Form State
-    const [onboardData, setOnboardData] = useState({
-        name: '', email: '', gender: 'Male', age: '', dateOfBirth: '',
-        phone: '', alternatePhone: '', medicalDegree: '', specialization: '',
-        college: '', additionalCertifications: '', medicalCouncil: '',
-        licenseExpiryDate: '', medicalLicenseNumber: '', yearsOfExperience: '',
-        subSpecialties: '', languagesSpoken: '', treatmentFocus: '',
-        proceduresHandled: '', publications: '', employeeId: '',
-        opdRoomNumber: '', contractType: 'PERMANENT', maxPatientsPerDay: '30',
-        slotDuration: '15', workingDaysArray: [], startTime: '09:00',
-        endTime: '17:00', breakTimings: '13:00 - 14:00',
-        onlineConsultationFee: '', offlineConsultationFee: '',
-        onlineConsultation: true, appointmentsEnabled: true,
-        canPrescribe: true, canEditPatientData: false, 
-        canAccessReports: true, canManageAppointments: true
-    });
-
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [licenseFile, setLicenseFile] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
 
     const fetchRoster = async () => {
         try {
             const res = await api.get('/hospital/doctors');
             setDoctors(res.data);
         } catch (err) {
-            toast.error("Failed to sync physician roster");
+            toast.error("Failed to load institutional roster");
         } finally {
             setLoading(false);
         }
@@ -57,57 +33,14 @@ const HospitalDoctorRoster = () => {
         fetchRoster();
     }, []);
 
-    const approveDoctor = async (id) => {
-        try {
-            await api.post(`/hospital/approve-doctor/${id}`);
-            toast.success("Physician credentials verified and approved");
-            fetchRoster();
-        } catch (err) {
-            toast.error("Institutional approval failed");
-        }
-    };
-
     const handleDeleteDoctor = async (id) => {
-        if (!window.confirm("Are you sure you want to decommission this personnel profile? This action is irreversible.")) return;
+        if (!window.confirm("CRITICAL: Purging this record will permanently revoke institutional access. Continue?")) return;
         try {
-            await api.delete(`/hospital/delete-doctor/${id}`);
-            toast.success("Personnel record purged from institution");
-            fetchRoster();
+            await api.delete(`/api/hospital/delete-doctor/${id}`);
+            toast.success("Physician record purged successfully");
+            setDoctors(doctors.filter(d => d.id !== id));
         } catch (err) {
-            toast.error("Decommissioning failed");
-        }
-    };
-
-    const handleOnboardStaff = async (e) => {
-        e.preventDefault();
-        setSubmitting(true);
-        try {
-            const formData = new FormData();
-            const workingDays = onboardData.workingDaysArray.join(', ');
-            const consultationTimings = `${onboardData.startTime} - ${onboardData.endTime}`;
-            
-            const doctorData = { 
-                ...onboardData, 
-                workingDays, 
-                consultationTimings,
-                onlineConsultation: onboardData.onlineConsultation === 'BOTH' ? true : onboardData.onlineConsultation
-            };
-            
-            formData.append('doctor', JSON.stringify(doctorData));
-            if (selectedFile) formData.append('profilePicture', selectedFile);
-            if (licenseFile) formData.append('licenseFile', licenseFile);
-
-            await api.post('/hospital/onboard-doctor', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-            
-            toast.success("New physician onboarded successfully");
-            setShowOnboardModal(false);
-            fetchRoster();
-        } catch (err) {
-            toast.error(err.response?.data?.message || "Onboarding failed");
-        } finally {
-            setSubmitting(false);
+            toast.error("Failed to purge physician record");
         }
     };
 
@@ -116,7 +49,11 @@ const HospitalDoctorRoster = () => {
         setSubmitting(true);
         try {
             const workingDays = editData.workingDaysArray?.join(', ') || '';
-            const payload = { ...editData, workingDays };
+            const payload = { 
+                ...editData, 
+                workingDays,
+                consultationTimings: `${editData.startTime} - ${editData.endTime}`
+            };
             await api.post(`/hospital/update-doctor/${editingDoctor.id}`, payload);
             toast.success("Physician profile synchronized");
             setEditingDoctor(null);
@@ -139,41 +76,34 @@ const HospitalDoctorRoster = () => {
         });
     };
 
-    const handleDayToggle = (day, isEdit = false) => {
-        if (isEdit) {
-            const current = editData.workingDaysArray || [];
-            const next = current.includes(day) ? current.filter(d => d !== day) : [...current, day];
-            setEditData({ ...editData, workingDaysArray: next });
-        } else {
-            const current = onboardData.workingDaysArray;
-            const next = current.includes(day) ? current.filter(d => d !== day) : [...current, day];
-            setOnboardData({ ...onboardData, workingDaysArray: next });
-        }
+    const handleDayToggle = (day) => {
+        const current = editData.workingDaysArray || [];
+        const next = current.includes(day) ? current.filter(d => d !== day) : [...current, day];
+        setEditData({ ...editData, workingDaysArray: next });
     };
 
-    const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const labelClass = "block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1";
-    const inputClass = "w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-3xl text-sm font-bold focus:ring-2 ring-primary/10 transition-all placeholder:text-slate-300";
-
     const filteredDoctors = doctors.filter(d => 
-        d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        d.specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        d.employeeId?.toLowerCase().includes(searchTerm.toLowerCase())
+        d.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        d.specialization?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const labelClass = "block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1";
+    const inputClass = "w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold focus:ring-4 ring-primary/5 transition-all outline-none";
+
     if (loading) return (
-        <div className="h-screen flex items-center justify-center bg-slate-50">
-            <Activity className="animate-spin text-primary" size={48} />
+        <div className="h-64 flex items-center justify-center">
+            <Activity className="animate-spin text-primary" size={32} />
         </div>
     );
 
     return (
-        <div className="max-w-7xl mx-auto py-12 px-6 space-y-12">
-            {/* Header Area */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+        <div className="p-8 lg:p-12 space-y-12 animate-in fade-in duration-700">
+            {/* Header */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
                 <div>
-                    <h1 className="text-4xl font-black text-slate-900 tracking-tight italic uppercase">Staff<span className="not-italic text-primary">Roster</span></h1>
-                    <p className="text-slate-400 text-xs font-black uppercase tracking-[0.3em] mt-2">Institutional Physician Management & Verification</p>
+                    <h1 className="text-4xl font-black text-slate-900 tracking-tighter italic uppercase">Staff<span className="not-italic text-primary">Roster</span></h1>
+                    <p className="text-slate-400 text-xs font-black uppercase tracking-[0.3em] mt-2">Managing {doctors.length} Clinical Professionals</p>
                 </div>
                 <div className="flex items-center gap-4">
                     <div className="relative group">
@@ -187,7 +117,7 @@ const HospitalDoctorRoster = () => {
                         />
                     </div>
                     <button 
-                        onClick={() => setShowOnboardModal(true)}
+                        onClick={() => navigate('/hospital-dashboard/staff/onboard')}
                         className="px-8 py-5 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-[2rem] shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
                     >
                         <UserPlus size={18} />
@@ -248,33 +178,25 @@ const HospitalDoctorRoster = () => {
                                             </span>
                                         ) : (
                                             <span className="flex items-center gap-2 text-amber-600 text-[10px] font-black uppercase tracking-widest">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-amber-500" /> Registry Pending
+                                                <AlertCircle size={12} /> Pending Approval
                                             </span>
                                         )}
                                     </td>
                                     <td className="px-8 py-6 text-right">
-                                        <div className="flex items-center justify-end gap-2">
-                                            {!doctor.approved && (
-                                                <button 
-                                                    onClick={() => approveDoctor(doctor.id)}
-                                                    className="px-4 py-2 bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all"
-                                                >
-                                                    Authorize
-                                                </button>
-                                            )}
+                                        <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button 
-                                                 onClick={() => startEditing(doctor)}
-                                                 className="p-2.5 bg-slate-100 text-slate-500 hover:bg-slate-900 hover:text-white rounded-xl transition-all shadow-sm"
-                                                 title="Configure Clinical Settings"
-                                             >
-                                                <Activity size={18} />
+                                                onClick={() => startEditing(doctor)}
+                                                className="p-3 bg-white border border-slate-100 text-slate-400 hover:text-primary hover:border-primary/20 rounded-xl transition-all hover:scale-110"
+                                                title="Quick Config"
+                                            >
+                                                <Settings size={16} />
                                             </button>
                                             <button 
-                                                 onClick={() => handleDeleteDoctor(doctor.id)}
-                                                 className="p-2.5 bg-slate-50 text-slate-400 hover:bg-red-500 hover:text-white rounded-xl transition-all shadow-sm"
-                                                 title="Purge Personnel Record"
-                                             >
-                                                <Trash2 size={18} />
+                                                onClick={() => handleDeleteDoctor(doctor.id)}
+                                                className="p-3 bg-white border border-slate-100 text-slate-400 hover:text-red-500 hover:border-red-100 rounded-xl transition-all hover:scale-110"
+                                                title="Purge Record"
+                                            >
+                                                <Trash2 size={16} />
                                             </button>
                                         </div>
                                     </td>
@@ -284,106 +206,6 @@ const HospitalDoctorRoster = () => {
                     </table>
                 </div>
             </div>
-
-            {/* Onboard Modal */}
-            {showOnboardModal && (
-                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-500">
-                    <div className="bg-white rounded-[3.5rem] w-full max-w-2xl shadow-[0_32px_64px_-15px_rgba(0,0,0,0.3)] overflow-hidden border border-slate-100 animate-in zoom-in-95 slide-in-from-bottom-8 duration-500 flex flex-col max-h-[90vh]">
-                        <div className="p-10 bg-slate-900 text-white relative overflow-hidden shrink-0">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 -mr-32 -mt-32 rounded-full blur-[80px]" />
-                            <div className="flex justify-between items-start relative z-10">
-                                <div>
-                                    <h3 className="text-3xl font-black uppercase tracking-tight italic">Onboard <span className="not-italic text-primary">New Physician</span></h3>
-                                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2">Register a new medical professional</p>
-                                </div>
-                                <button onClick={() => setShowOnboardModal(false)} className="p-3 hover:bg-white/10 rounded-full transition-colors text-slate-400 hover:text-white">
-                                    <X size={24} />
-                                </button>
-                            </div>
-                            <div className="mt-10">
-                                <DropZone onFileSelect={setSelectedFile} label="Identity Portrait" type="portrait" accept="image/*" />
-                            </div>
-                        </div>
-
-                        <form onSubmit={handleOnboardStaff} className="p-10 space-y-10 overflow-y-auto custom-scrollbar flex-1 bg-white">
-                            <div className="space-y-8">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                                    <h4 className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">1. Basic Identity</h4>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div><label className={labelClass}>Full Name</label><input type="text" required value={onboardData.name} onChange={(e) => setOnboardData({...onboardData, name: e.target.value})} className={inputClass} /></div>
-                                    <div><label className={labelClass}>Work Email</label><input type="email" required value={onboardData.email} onChange={(e) => setOnboardData({...onboardData, email: e.target.value})} className={inputClass} /></div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div><label className={labelClass}>Phone</label><input type="tel" required value={onboardData.phone} onChange={(e) => setOnboardData({...onboardData, phone: e.target.value})} className={inputClass} /></div>
-                                    <PremiumDropdown label="Gender" options={['Male', 'Female', 'Other']} value={onboardData.gender} onChange={(val) => setOnboardData({...onboardData, gender: val})} />
-                                </div>
-                            </div>
-
-                            <div className="space-y-8">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                                    <h4 className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">2. Clinical Credentials</h4>
-                                </div>
-                                <div className="grid grid-cols-2 gap-6">
-                                    <PremiumDropdown label="Medical Degree" options={['MBBS', 'MD', 'MS', 'DM', 'MCh']} value={onboardData.medicalDegree} onChange={(val) => setOnboardData({...onboardData, medicalDegree: val})} />
-                                    <PremiumDropdown label="Specialization" options={['Cardiology', 'Neurology', 'Oncology', 'Pediatrics']} value={onboardData.specialization} onChange={(val) => setOnboardData({...onboardData, specialization: val})} searchable={true} />
-                                </div>
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div><label className={labelClass}>License Number</label><input type="text" required value={onboardData.medicalLicenseNumber} onChange={(e) => setOnboardData({...onboardData, medicalLicenseNumber: e.target.value})} className={inputClass} /></div>
-                                    <div><label className={labelClass}>Experience (Yrs)</label><input type="number" required value={onboardData.yearsOfExperience} onChange={(e) => setOnboardData({...onboardData, yearsOfExperience: e.target.value})} className={inputClass} /></div>
-                                </div>
-                                <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100">
-                                    <label className={labelClass}>License Document</label>
-                                    <DropZone onFileSelect={setLicenseFile} label="Upload Credentials" type="document" accept=".pdf,image/*" />
-                                </div>
-                            <div className="space-y-8">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                                    <h4 className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">3. Institutional Mapping</h4>
-                                </div>
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div><label className={labelClass}>Employee ID</label><input type="text" required value={onboardData.employeeId} onChange={(e) => setOnboardData({...onboardData, employeeId: e.target.value})} className={inputClass} placeholder="EMP-2026-001" /></div>
-                                    <div><label className={labelClass}>OPD Room No.</label><input type="text" required value={onboardData.opdRoomNumber} onChange={(e) => setOnboardData({...onboardData, opdRoomNumber: e.target.value})} className={inputClass} placeholder="OPD-204" /></div>
-                                </div>
-                                <div className="space-y-6">
-                                    <label className={labelClass}>Working Days</label>
-                                    <div className="flex flex-wrap gap-3">
-                                        {daysOfWeek.map(day => (
-                                            <button
-                                                key={day}
-                                                type="button"
-                                                onClick={() => handleDayToggle(day)}
-                                                className={`px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.1em] transition-all duration-300 ${
-                                                    onboardData.workingDaysArray.includes(day)
-                                                        ? 'bg-primary text-white shadow-lg'
-                                                        : 'bg-slate-50 text-slate-400'
-                                                }`}
-                                            >
-                                                {day}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                    <div><label className={labelClass}>Shift Starts</label><input type="time" required value={onboardData.startTime} onChange={(e) => setOnboardData({...onboardData, startTime: e.target.value})} className={inputClass} /></div>
-                                    <div><label className={labelClass}>Shift Ends</label><input type="time" required value={onboardData.endTime} onChange={(e) => setOnboardData({...onboardData, endTime: e.target.value})} className={inputClass} /></div>
-                                    <div><label className={labelClass}>Break Time</label><input type="text" required value={onboardData.breakTimings} onChange={(e) => setOnboardData({...onboardData, breakTimings: e.target.value})} className={inputClass} placeholder="13:00 - 14:00" /></div>
-                                    <div><label className={labelClass}>Slot (Min)</label><input type="number" required value={onboardData.slotDuration} onChange={(e) => setOnboardData({...onboardData, slotDuration: e.target.value})} className={inputClass} /></div>
-                                </div>
-                            </div>
-                        </form>
-
-                        <div className="p-10 border-t border-slate-50 bg-slate-50/30 shrink-0 flex gap-4">
-                            <button onClick={() => setShowOnboardModal(false)} className="flex-1 py-5 bg-white border border-slate-200 text-slate-400 text-[11px] font-black uppercase tracking-[0.2em] rounded-3xl hover:bg-slate-100 transition-all">Cancel</button>
-                            <button onClick={handleOnboardStaff} disabled={submitting} className="flex-[2] py-5 bg-primary text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-3xl hover:bg-primary/90 transition-all shadow-xl disabled:opacity-50">
-                                {submitting ? 'Authorizing...' : 'Authorize & Onboard'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Quick Config Modal */}
             {editingDoctor && (
@@ -466,7 +288,7 @@ const HospitalDoctorRoster = () => {
                                                 <button
                                                     key={day}
                                                     type="button"
-                                                    onClick={() => handleDayToggle(day, true)}
+                                                    onClick={() => handleDayToggle(day)}
                                                     className={`px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.1em] transition-all duration-300 ${
                                                         isActive ? 'bg-primary text-white shadow-lg' : 'bg-slate-50 text-slate-400'
                                                     }`}
@@ -482,7 +304,7 @@ const HospitalDoctorRoster = () => {
 
                         <div className="p-10 border-t border-slate-50 bg-slate-50/30 shrink-0 flex items-center gap-4">
                             <button type="button" onClick={() => { setEditingDoctor(null); navigate(`/hospital-dashboard/staff/edit/${editingDoctor.id}`); }} className="flex-1 py-5 bg-white border border-slate-200 text-primary text-[11px] font-black uppercase tracking-[0.2em] rounded-3xl hover:bg-primary/5 transition-all flex items-center justify-center gap-2">
-                                <Edit3 size={14} /> Edit Profile
+                                <Edit3 size={14} /> Edit Full Profile
                             </button>
                             <div className="flex-[2] flex gap-4">
                                 <button type="button" onClick={() => setEditingDoctor(null)} className="flex-1 py-5 bg-white border border-slate-200 text-slate-400 text-[11px] font-black uppercase tracking-[0.2em] rounded-3xl hover:bg-slate-100 transition-all">Cancel</button>
