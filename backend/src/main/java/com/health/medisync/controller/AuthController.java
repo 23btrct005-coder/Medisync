@@ -365,7 +365,6 @@ public class AuthController {
         }
         
         // Institutional Linkage
-        String hospitalIdStr = request.get("hospital") != null ? String.valueOf(request.get("hospital")) : null;
         if (hospitalIdStr != null && !hospitalIdStr.isEmpty() && !hospitalIdStr.equals("other")) {
             try {
                 Long hospitalId = Long.parseLong(hospitalIdStr);
