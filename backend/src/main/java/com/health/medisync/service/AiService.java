@@ -57,7 +57,7 @@ public class AiService {
         String mappedSpecialty = mapSymptomToSpecialty(lowerQuery);
         if (mappedSpecialty != null) {
             List<Doctor> specialists = allDoctors.stream()
-                .filter(d -> d.getApproved() && (d.getSpecialization().toLowerCase().contains(mappedSpecialty) || 
+                .filter(d -> d.isApproved() && (d.getSpecialization().toLowerCase().contains(mappedSpecialty) || 
                                                 (d.getSubSpecialties() != null && d.getSubSpecialties().toLowerCase().contains(mappedSpecialty))))
                 .collect(Collectors.toList());
 
@@ -91,11 +91,11 @@ public class AiService {
         // Handle "Nearby" / "Hospital" queries
         if (lowerQuery.contains("hospital") || lowerQuery.contains("near") || lowerQuery.contains("where")) {
             StringBuilder sb = new StringBuilder("I found the following medical institutions in our network:\n\n");
-            for (Hospital h : allHospitals) {
-                sb.append("🏥 **").append(h.getName()).append("**\n");
-                sb.append("   Location: ").append(h.getAddress()).append(", ").append(h.getCity()).append("\n");
-                if (h.getServices() != null && !h.getServices().isEmpty()) {
-                    sb.append("   Services: ").append(h.getServices()).append("\n");
+            for (Hospital h : allHospitals.stream().limit(3).collect(Collectors.toList())) {
+                sb.append("🏥 **").append(h.getName()).append("** (").append(h.getHospitalType()).append(")\n");
+                sb.append("   📍 ").append(h.getCity()).append(", ").append(h.getState()).append("\n");
+                if (h.getServices() != null) {
+                    sb.append("   🔬 ").append(h.getServices()).append("\n");
                 }
                 sb.append("\n");
             }
@@ -105,7 +105,7 @@ public class AiService {
         // Handle "Doctor" / "Specialist" / "ENT" / "Heart" etc.
         if (lowerQuery.contains("doctor") || lowerQuery.contains("specialist") || lowerQuery.contains("find") || lowerQuery.contains("help")) {
             List<Doctor> matches = allDoctors.stream()
-                .filter(d -> d.getApproved())
+                .filter(d -> d.isApproved())
                 .filter(d -> {
                     String data = (d.getSpecialization() + " " + d.getTreatmentFocus() + " " + d.getSubSpecialties()).toLowerCase();
                     return data.contains(extractKeyword(lowerQuery)) || lowerQuery.contains(d.getSpecialization().toLowerCase());
