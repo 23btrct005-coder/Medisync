@@ -304,24 +304,29 @@ public class AuthController {
         user.setPassword(passwordEncoder.encode(String.valueOf(request.get("password"))));
         user.setRole("ROLE_DOCTOR");
         
-        // In the new flow, email is pre-verified via /verify-otp before registration
-        boolean verified = true; // Default to enabled since email was pre-verified
-        if (request.containsKey("otp")) {
+        // Security Policy: Institutional (onboarded) staff must verify their Gmail on 1st login.
+        // Self-registered doctors are pre-verified via OTP in Step 1.
+        String hospitalIdStr = request.get("hospital") != null ? String.valueOf(request.get("hospital")) : null;
+        
+        // Detection: If called by an authenticated Hospital Admin, it's definitely institutional onboarding
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isCalledByAdmin = auth != null && auth.isAuthenticated() && 
+                                 auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_HOSPITAL_ADMIN"));
+        
+        boolean isInstitutional = isCalledByAdmin || (hospitalIdStr != null && !hospitalIdStr.isEmpty() && !hospitalIdStr.equals("other"));
+        
+        // Validation for self-registered doctors
+        if (!isInstitutional && request.containsKey("otp")) {
             try {
-                authService.verifyOtpStandalone(String.valueOf(request.get("email")), String.valueOf(request.get("otp")));
-                verified = true;
+                authService.verifyOtpStandalone(email, String.valueOf(request.get("otp")));
             } catch (Exception e) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Invalid or expired verification code."));
             }
         }
-        
-        // Security Policy: Institutional (onboarded) staff must verify their Gmail on 1st login.
-        // Self-registered doctors are pre-verified via OTP in Step 1.
-        String hospitalIdStr = request.get("hospital") != null ? String.valueOf(request.get("hospital")) : null;
-        boolean isInstitutional = hospitalIdStr != null && !hospitalIdStr.isEmpty() && !hospitalIdStr.equals("other");
-        
+
         user.setEnabled(true); 
         user.setEmailVerified(!isInstitutional); 
+        System.out.println("DEBUG: RegisterDoctor - isInstitutional: " + isInstitutional + ", emailVerified: " + user.isEmailVerified() + ", hospital: " + hospitalIdStr);
         user = userRepository.save(user);
 
         Doctor doctor = new Doctor();
@@ -640,7 +645,7 @@ public class AuthController {
         user.setPassword(passwordEncoder.encode(String.valueOf(request.get("password"))));
         user.setRole("ROLE_HOSPITAL_ADMIN");
         user.setEnabled(true); 
-        user.setEmailVerified(true); // Assuming email pre-verified via OTP in frontend
+        user.setEmailVerified(false); // Mandate verification on first login for institutional security
         user = userRepository.save(user);
 
         // 2. Create or Find Hospital

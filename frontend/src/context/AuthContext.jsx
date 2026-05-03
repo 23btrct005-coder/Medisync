@@ -73,6 +73,7 @@ export const AuthProvider = ({ children }) => {
 
       const response = await api.get(endpoint);
       const profileData = { ...response.data, role };
+      console.log(`DEBUG: fetchUserProfile (${role})`, profileData);
       
       // Extract emailVerified from nested user object if it exists (Doctor/HospitalAdmin)
       const verified = profileData.user ? profileData.user.emailVerified : profileData.emailVerified;
@@ -94,6 +95,7 @@ export const AuthProvider = ({ children }) => {
     
     try {
       const response = await api.post('auth/login', { username, password });
+      console.log("DEBUG: login response", response.data);
       const { token, role, emailVerified } = response.data;
       
       localStorage.setItem('token', token);

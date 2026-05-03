@@ -68,9 +68,22 @@ const ProtectedRoute = ({ children, allowedRole }) => {
 
   // Mandatory Email Verification Gate for Professionals
   const isProfessional = userRole === 'ROLE_DOCTOR' || userRole === 'ROLE_HOSPITAL_ADMIN';
-  const emailVerified = user?.user ? user.user.emailVerified : user?.emailVerified;
   
+  // Extract emailVerified from nested user object or direct profile object
+  // If undefined, we assume false to be safe (redirect to verification)
+  const emailVerified = user?.emailVerified === true || user?.user?.emailVerified === true;
+  
+  console.log("DEBUG: ProtectedRoute", { 
+    userRole, 
+    isProfessional, 
+    emailVerified, 
+    userObject: !!user,
+    directVerified: user?.emailVerified,
+    nestedVerified: user?.user?.emailVerified
+  });
+
   if (isProfessional && !emailVerified) {
+    console.log("DEBUG: Redirecting to /verify-email");
     return <Navigate to="/verify-email" />;
   }
 
