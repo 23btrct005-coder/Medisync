@@ -33,7 +33,7 @@ const StaffOnboarding = () => {
         
         // 4. Institutional Logistics
         employeeId: '', opdRoomNumber: '', contractType: 'PERMANENT', 
-        maxPatientsPerDay: '30', slotDuration: '15', workingDaysArray: [], 
+        maxPatientsPerDay: '30', slotDuration: '15', slotBuffer: '0', workingDaysArray: [], 
         startTime: '09:00', endTime: '17:00', breakTimings: '13:00 - 14:00',
         onlineConsultationFee: '', offlineConsultationFee: '',
         onlineConsultation: true, appointmentsEnabled: true,
@@ -260,7 +260,16 @@ const StaffOnboarding = () => {
                         <div><label className={labelClass}>Shift Alpha</label><input type="time" required value={onboardData.startTime} onChange={(e) => setOnboardData({...onboardData, startTime: e.target.value})} className={inputClass} /></div>
                         <div><label className={labelClass}>Shift Omega</label><input type="time" required value={onboardData.endTime} onChange={(e) => setOnboardData({...onboardData, endTime: e.target.value})} className={inputClass} /></div>
                         <div><label className={labelClass}>Clinical Break</label><input type="text" required value={onboardData.breakTimings} onChange={(e) => setOnboardData({...onboardData, breakTimings: e.target.value})} className={inputClass} placeholder="13:00 - 14:00" /></div>
-                        <div><label className={labelClass}>Slot Duration</label><input type="number" required value={onboardData.slotDuration} onChange={(e) => setOnboardData({...onboardData, slotDuration: e.target.value})} className={inputClass} /></div>
+                        <div><label className={labelClass}>Slot (Min)</label><input type="number" required value={onboardData.slotDuration} onChange={(e) => setOnboardData({...onboardData, slotDuration: e.target.value})} className={inputClass} /></div>
+                        <div>
+                            <label className={labelClass}>Buffer (Gap)</label>
+                            <select value={onboardData.slotBuffer} onChange={(e) => setOnboardData({...onboardData, slotBuffer: e.target.value})} className={inputClass}>
+                                <option value="0">No Gap</option>
+                                <option value="5">5 Mins</option>
+                                <option value="10">10 Mins</option>
+                                <option value="15">15 Mins</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-10 relative z-10">

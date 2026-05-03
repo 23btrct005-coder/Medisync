@@ -53,6 +53,7 @@ const StaffProfileEditor = () => {
         startTime: '09:00',
         endTime: '17:00',
         slotDuration: '15',
+        slotBuffer: '0',
         maxPatientsPerDay: '30',
         breakTimings: '13:00 - 14:00'
     });
@@ -275,6 +276,15 @@ const StaffProfileEditor = () => {
                             <div><label className={labelClass}>Shift End</label><input type="time" name="endTime" value={formData.endTime} onChange={handleChange} className={inputClass} /></div>
                             <div><label className={labelClass}>Break Timings</label><input type="text" name="breakTimings" value={formData.breakTimings} onChange={handleChange} className={inputClass} placeholder="13:00 - 14:00" /></div>
                             <div><label className={labelClass}>Slot Duration (Min)</label><input type="number" name="slotDuration" value={formData.slotDuration} onChange={handleChange} className={inputClass} /></div>
+                            <div>
+                                <label className={labelClass}>Clinical Buffer (Gap)</label>
+                                <select name="slotBuffer" value={formData.slotBuffer} onChange={handleChange} className={inputClass}>
+                                    <option value="0">No Gap</option>
+                                    <option value="5">5 Mins</option>
+                                    <option value="10">10 Mins</option>
+                                    <option value="15">15 Mins</option>
+                                </select>
+                            </div>
                             <div><label className={labelClass}>Max Patients/Day</label><input type="number" name="maxPatientsPerDay" value={formData.maxPatientsPerDay} onChange={handleChange} className={inputClass} /></div>
                         </div>
                     </div>

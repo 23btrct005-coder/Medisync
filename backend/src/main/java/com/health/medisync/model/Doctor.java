@@ -67,6 +67,7 @@ public class Doctor {
 
     // Advanced Availability
     private Integer slotDuration = 15; // default 15 mins
+    private Integer slotBuffer = 0; // default 0 mins (gap between slots)
     private Integer maxPatientsPerDay;
     private String breakTimings;
     private String workingDays;
@@ -177,6 +178,9 @@ public class Doctor {
 
     public Integer getSlotDuration() { return slotDuration != null ? slotDuration : 15; }
     public void setSlotDuration(Integer slotDuration) { this.slotDuration = slotDuration; }
+    
+    public Integer getSlotBuffer() { return slotBuffer != null ? slotBuffer : 0; }
+    public void setSlotBuffer(Integer slotBuffer) { this.slotBuffer = slotBuffer; }
 
     public Integer getMaxPatientsPerDay() { return maxPatientsPerDay; }
     public void setMaxPatientsPerDay(Integer maxPatientsPerDay) { this.maxPatientsPerDay = maxPatientsPerDay; }

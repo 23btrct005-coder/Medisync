@@ -279,11 +279,20 @@ const HospitalDoctorRoster = () => {
 
                                 <div className="space-y-4">
                                     <label className={labelClass}>Shift Timing Slots</label>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                    <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
                                         <div><label className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-2 block">Starts</label><input type="time" value={editData.startTime} onChange={(e) => setEditData({...editData, startTime: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold" /></div>
                                         <div><label className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-2 block">Ends</label><input type="time" value={editData.endTime} onChange={(e) => setEditData({...editData, endTime: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold" /></div>
-                                        <div><label className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-2 block">Break (e.g. 1-2PM)</label><input type="text" value={editData.breakTimings || ''} onChange={(e) => setEditData({...editData, breakTimings: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold" placeholder="13:00 - 14:00" /></div>
+                                        <div><label className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-2 block">Break</label><input type="text" value={editData.breakTimings || ''} onChange={(e) => setEditData({...editData, breakTimings: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold" placeholder="13:00 - 14:00" /></div>
                                         <div><label className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-2 block">Slot (Min)</label><input type="number" value={editData.slotDuration || '15'} onChange={(e) => setEditData({...editData, slotDuration: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold" /></div>
+                                        <div>
+                                            <label className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-2 block">Buffer (Gap)</label>
+                                            <select value={editData.slotBuffer || '0'} onChange={(e) => setEditData({...editData, slotBuffer: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold">
+                                                <option value="0">0m</option>
+                                                <option value="5">5m</option>
+                                                <option value="10">10m</option>
+                                                <option value="15">15m</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
 

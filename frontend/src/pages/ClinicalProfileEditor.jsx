@@ -48,6 +48,7 @@ const EditDoctorProfile = () => {
     workingDays: '',
     consultationTimings: '',
     slotDuration: 15,
+    slotBuffer: 0,
     maxPatientsPerDay: '',
     breakTimings: '',
     onlineConsultation: false,
@@ -106,6 +107,7 @@ const EditDoctorProfile = () => {
         workingDays: user.workingDays || '',
         consultationTimings: user.consultationTimings || '',
         slotDuration: user.slotDuration || 15,
+        slotBuffer: user.slotBuffer || 0,
         maxPatientsPerDay: user.maxPatientsPerDay || '',
         breakTimings: user.breakTimings || '',
         onlineConsultation: user.onlineConsultation || false,
@@ -577,6 +579,15 @@ const EditDoctorProfile = () => {
                         <option value={15}>15 Minutes</option>
                         <option value={30}>30 Minutes</option>
                         <option value={60}>60 Minutes</option>
+                    </select>
+                </div>
+                <div>
+                    <label className={labelClass}>Clinical Buffer (Gap)</label>
+                    <select name="slotBuffer" value={formData.slotBuffer} onChange={handleChange} disabled={isAffiliated} className={isAffiliated ? readOnlyInputClass : inputClass}>
+                        <option value={0}>No Gap (Back-to-Back)</option>
+                        <option value={5}>5 Minutes</option>
+                        <option value={10}>10 Minutes</option>
+                        <option value={15}>15 Minutes</option>
                     </select>
                 </div>
                 <div>

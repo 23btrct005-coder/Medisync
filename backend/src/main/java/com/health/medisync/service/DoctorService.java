@@ -310,6 +310,12 @@ public class DoctorService {
             }
         }
         if (updates.containsKey("breakTimings")) doctor.setBreakTimings((String) updates.get("breakTimings"));
+        if (updates.containsKey("slotBuffer")) {
+            Object buffer = updates.get("slotBuffer");
+            if (buffer != null && !buffer.toString().isEmpty()) {
+                doctor.setSlotBuffer(Integer.parseInt(buffer.toString()));
+            }
+        }
 
         return doctorRepository.save(doctor);
     }
@@ -454,6 +460,7 @@ public class DoctorService {
     private List<String> parseSlots(Doctor doctor) {
         String timings = doctor.getConsultationTimings();
         int duration = (doctor.getSlotDuration() != null && doctor.getSlotDuration() > 0) ? doctor.getSlotDuration() : 15;
+        int buffer = (doctor.getSlotBuffer() != null) ? doctor.getSlotBuffer() : 0;
         
         if (timings == null || timings.trim().isEmpty() || !timings.contains("-")) {
             return Collections.emptyList();
@@ -478,7 +485,7 @@ public class DoctorService {
             int i = 0;
             while (current.isBefore(endTime) && i < maxIterations) {
                 slots.add(current.format(displayFormatter));
-                current = current.plusMinutes(duration);
+                current = current.plusMinutes(duration + buffer);
                 i++;
             }
             return slots;
