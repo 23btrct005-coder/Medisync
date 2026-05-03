@@ -1027,12 +1027,29 @@ public class AuthController {
             jdbcTemplate.update("DELETE FROM email_verification_otps WHERE email = ?", email);
             
             // Profile Deletion
-            jdbcTemplate.update("DELETE FROM patients WHERE user_id = ?", uid);
-            jdbcTemplate.update("DELETE FROM doctors WHERE user_id = ?", uid);
-            jdbcTemplate.update("DELETE FROM hospital_admins WHERE user_id = ?", uid);
-            
-            // Finally the User
-            userRepository.delete(user);
+            if ("ROLE_HOSPITAL_ADMIN".equals(user.getRole())) {
+                hospitalAdminRepository.findByUserId(uid).ifPresent(admin -> {
+                    Hospital hospital = admin.getHospital();
+                    if (hospital != null) {
+                        // Wipe institutional data first to clear FK constraints
+                        Long hid = hospital.getId();
+                        jdbcTemplate.update("DELETE FROM appointments WHERE doctor_id IN (SELECT id FROM doctors WHERE hospital_id = ?)", hid);
+                        jdbcTemplate.update("DELETE FROM access_requests WHERE doctor_id IN (SELECT id FROM doctors WHERE hospital_id = ?)", hid);
+                        jdbcTemplate.update("DELETE FROM ratings WHERE doctor_id IN (SELECT id FROM doctors WHERE hospital_id = ?)", hid);
+                        jdbcTemplate.update("DELETE FROM departments WHERE hospital_id = ?", hid);
+                        
+                        // Delete Hospital (Cascades to Doctors, Admins, and their User accounts)
+                        hospitalRepository.delete(hospital);
+                    }
+                });
+            } else {
+                jdbcTemplate.update("DELETE FROM patients WHERE user_id = ?", uid);
+                jdbcTemplate.update("DELETE FROM doctors WHERE user_id = ?", uid);
+                jdbcTemplate.update("DELETE FROM hospital_admins WHERE user_id = ?", uid);
+                
+                // Finally the User
+                userRepository.delete(user);
+            }
             
             return ResponseEntity.ok(Map.of("message", "Your MediSync clinical node and all associated data have been PERMANENTLY deleted."));
         } catch (Exception e) {

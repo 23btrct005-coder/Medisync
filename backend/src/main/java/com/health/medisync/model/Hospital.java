@@ -111,6 +111,10 @@ public class Hospital {
     @OneToMany(mappedBy = "hospitalEntity", cascade = CascadeType.ALL)
     private List<Doctor> doctors = new ArrayList<>();
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "hospital", cascade = CascadeType.ALL)
+    private List<HospitalAdmin> admins = new ArrayList<>();
+
     // Getters & Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
