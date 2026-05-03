@@ -21,6 +21,7 @@ public class PatientService {
     private final PatientRepository patientRepository;
     private final UserRepository userRepository;
     private final DoctorRepository doctorRepository;
+    private final com.health.medisync.repository.AppointmentRepository appointmentRepository;
     private final AccessRequestRepository accessRequestRepository;
     private final EmailService emailService;
     private final SupabaseStorageService supabaseStorageService;
@@ -28,12 +29,14 @@ public class PatientService {
 
     public PatientService(PatientRepository patientRepository, UserRepository userRepository, 
                           DoctorRepository doctorRepository, AccessRequestRepository accessRequestRepository,
+                          com.health.medisync.repository.AppointmentRepository appointmentRepository,
                           EmailService emailService, SupabaseStorageService supabaseStorageService,
                           NotificationService notificationService) {
         this.patientRepository = patientRepository;
         this.userRepository = userRepository;
         this.doctorRepository = doctorRepository;
         this.accessRequestRepository = accessRequestRepository;
+        this.appointmentRepository = appointmentRepository;
         this.emailService = emailService;
         this.supabaseStorageService = supabaseStorageService;
         this.notificationService = notificationService;
@@ -231,7 +234,20 @@ public class PatientService {
 
     public List<Doctor> getLinkedDoctors(String username) {
         Patient patient = getPatientProfile(username);
-        return List.copyOf(patient.getDoctors());
+        java.util.Set<Doctor> allDoctors = new java.util.HashSet<>(patient.getDoctors());
+        
+        // Also add doctors with confirmed (BOOKED) appointments
+        List<com.health.medisync.model.Appointment> appointments = appointmentRepository.findByPatientIdAndStatusIn(
+            patient.getId(), 
+            List.of(com.health.medisync.model.Appointment.AppointmentStatus.BOOKED, 
+                    com.health.medisync.model.Appointment.AppointmentStatus.AWAITING_VERIFICATION)
+        );
+        
+        for (com.health.medisync.model.Appointment appt : appointments) {
+            allDoctors.add(appt.getDoctor());
+        }
+        
+        return List.copyOf(allDoctors);
     }
 
     @Transactional
