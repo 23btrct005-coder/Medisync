@@ -116,7 +116,8 @@ public class AiService {
         try {
             List<Doctor> allDoctors = doctorRepository.findByApprovedTrue();
             String doctorList = allDoctors.stream()
-                .map(d -> "- Dr. " + d.getName() + " (" + d.getSpecialization() + ")")
+                .map(d -> "- Dr. " + d.getName() + " (" + d.getSpecialization() + ") - Affiliated Hospital: " + 
+                         (d.getHospitalEntity() != null ? d.getHospitalEntity().getName() : "Private Practice"))
                 .collect(Collectors.joining("\n"));
 
             List<Hospital> allHospitals = hospitalRepository.findAll();
