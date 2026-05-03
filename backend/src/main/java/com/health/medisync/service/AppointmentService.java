@@ -335,43 +335,76 @@ public class AppointmentService {
     }
 
     @Transactional
-    public void verifyUpiPayment(Long appointmentId, String patientUpiId) {
+    public void verifyUpiPayment(Long appointmentId, String patientUpiId, String transactionId) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
             .orElseThrow(() -> new RuntimeException("Appointment not found: " + appointmentId));
-        
+
         appointment.setPatientUpiId(patientUpiId);
+        appointment.setTransactionId(transactionId);
         appointment.setStatus(AppointmentStatus.AWAITING_VERIFICATION);
         appointment.setCreatedAt(LocalDateTime.now());
         Appointment booked = appointmentRepository.save(appointment);
 
-        // Notify Doctor
-        notificationService.sendNotification(
-            booked.getDoctor().getUser().getId(),
-            "APPOINTMENT",
-            "New Clinical Session (Direct UPI)",
-             booked.getPatient().getName() + " has initiated an appointment via Direct UPI on " + booked.getAppointmentDate() + ". Please verify payment receipt.",
-            "/doctor-dashboard/appointments",
-            "Open Schedule"
-        );
+        Doctor doctor = booked.getDoctor();
+        boolean isInstitutional = doctor.isInstitutional() && doctor.getHospitalEntity() != null;
+
+        if (isInstitutional) {
+            Hospital hospital = doctor.getHospitalEntity();
+            // Notify all admins of this hospital
+            for (HospitalAdmin admin : hospital.getAdmins()) {
+                notificationService.sendNotification(
+                    admin.getUser().getId(),
+                    "APPOINTMENT",
+                    "New Institutional Session (Direct UPI)",
+                    booked.getPatient().getName() + " has initiated a booking with Dr. " + doctor.getName() + " via Direct UPI. Txn ID: " + transactionId + ". Please verify in Hospital Ledger.",
+                    "/hospital/appointments",
+                    "Verify Payment"
+                );
+            }
+        } else {
+            // Notify Doctor directly for independent practice
+            notificationService.sendNotification(
+                doctor.getUser().getId(),
+                "APPOINTMENT",
+                "New Clinical Session (Direct UPI)",
+                 booked.getPatient().getName() + " has initiated an appointment via Direct UPI on " + booked.getAppointmentDate() + ". Txn ID: " + transactionId + ". Please verify payment receipt.",
+                "/doctor-dashboard/appointments",
+                "Open Schedule"
+            );
+        }
 
         // Notify Patient
         notificationService.sendNotification(
             booked.getPatient().getUser().getId(),
             "APPOINTMENT",
-            "Session Confirmed (Direct UPI)",
-            "Your direct UPI appointment with Dr. " + booked.getDoctor().getName() + " is currently awaiting payment verification by the physician.",
+            "Session Pending Verification",
+            "Your direct UPI appointment with Dr. " + booked.getDoctor().getName() + " is currently awaiting verification by " + (isInstitutional ? "the Hospital Administration" : "the physician") + ".",
             "/dashboard/sessions",
             "View Details"
         );
     }
 
     @Transactional
-    public void confirmUpiPayment(String doctorEmail, Long appointmentId) {
+    public void confirmUpiPayment(String authorEmail, Long appointmentId) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
             .orElseThrow(() -> new RuntimeException("Appointment not found: " + appointmentId));
         
-        if (!appointment.getDoctor().getUser().getUsername().equalsIgnoreCase(doctorEmail)) {
-            throw new RuntimeException("Unauthorized: This appointment does not belong to your clinical node.");
+        Doctor doctor = appointment.getDoctor();
+        boolean isInstitutional = doctor.isInstitutional() && doctor.getHospitalEntity() != null;
+        
+        boolean authorized = false;
+        if (isInstitutional) {
+            // Check if author is an admin of the hospital
+            Hospital hospital = doctor.getHospitalEntity();
+            authorized = hospital.getAdmins().stream()
+                .anyMatch(admin -> admin.getUser().getUsername().equalsIgnoreCase(authorEmail));
+        } else {
+            // Check if author is the doctor
+            authorized = doctor.getUser().getUsername().equalsIgnoreCase(authorEmail);
+        }
+
+        if (!authorized) {
+            throw new RuntimeException("Unauthorized: You do not have permissions to verify this clinical settlement.");
         }
 
         appointment.setStatus(AppointmentStatus.BOOKED);
@@ -383,7 +416,7 @@ public class AppointmentService {
             booked.getPatient().getUser().getId(),
             "APPOINTMENT",
             "Payment Verified & Session Booked",
-            "Dr. " + booked.getDoctor().getName() + " has verified your UPI payment. Your session is now officially booked.",
+            (isInstitutional ? "The Hospital Administration" : "Dr. " + booked.getDoctor().getName()) + " has verified your UPI payment. Your session is now officially booked.",
             "/dashboard/sessions",
             "View Details"
         );

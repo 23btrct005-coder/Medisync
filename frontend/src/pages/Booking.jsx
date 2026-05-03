@@ -149,15 +149,16 @@ const Booking = () => {
     }
   };
 
-  const handleUpiSuccess = async (upiId) => {
+  const handleUpiSuccess = async () => {
     if (!upiOrderData) return;
     try {
         setIsBooking(true);
+        // For UPI, we trust the doctor will verify, but we mark as booked
+        // In a real app, we might wait for a webhook or manual approval
         await api.post('appointments/verify-upi', {
-            appointmentId: upiOrderData.appointmentId,
-            patientUpiId: upiId
+            appointmentId: upiOrderData.appointmentId
         });
-        toast.success("Transaction Registered! Awaiting Verification.");
+        toast.success("Transaction Registered! Awaiting Clinical Verification.");
         navigate('/dashboard/sessions', { state: { autoOpenApptId: upiOrderData.appointmentId } });
     } catch (err) {
         toast.error("Failed to sync UPI transaction.");
@@ -537,41 +538,50 @@ const Booking = () => {
                 <button onClick={() => setShowUpiModal(false)} className="p-2 hover:bg-slate-50 rounded-xl transition-colors">
                   <X size={20} className="text-slate-400" />
                 </button>
-              </div>
-
-              <div className="p-8 pt-4 space-y-8">
+              </div>              <div className="p-8 pt-4 space-y-6">
                 <div className="bg-slate-50 rounded-3xl p-6 border border-slate-100 text-center">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Consultation Fee</p>
                   <p className="text-4xl font-black text-slate-900">₹{upiOrderData.amount}</p>
                 </div>
-
+                
                 <div className="space-y-4">
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="w-48 h-48 bg-white p-4 rounded-3xl border-2 border-slate-100 shadow-inner flex items-center justify-center">
-                      {/* Simple QR placeholder using API */}
-                      <img 
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiOrderData.upiId}%26pn=MEDISYNC%26am=${upiOrderData.amount}%26cu=INR`} 
-                        alt="UPI QR Code" 
-                        className="w-full h-full object-contain"
-                      />
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="w-48 h-48 bg-white p-4 rounded-3xl border-2 border-slate-100 shadow-inner flex items-center justify-center">
+                            <img 
+                                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiOrderData.upiId}%26pn=MEDISYNC%26am=${upiOrderData.amount}%26cu=INR`} 
+                                alt="UPI QR Code" 
+                                className="w-full h-full object-contain"
+                            />
+                        </div>
+                        <div className="text-center">
+                            <p className="text-xs font-black text-slate-900">{upiOrderData.upiId}</p>
+                            <p className="text-[10px] font-medium text-slate-400 mt-1 uppercase tracking-widest italic">Verified Clinical VPA</p>
+                        </div>
                     </div>
-                    <div className="text-center">
-                        <p className="text-xs font-black text-slate-900">{upiOrderData.upiId}</p>
-                        <p className="text-[10px] font-medium text-slate-400 mt-1 uppercase tracking-widest italic">Verified Clinical VPA</p>
-                    </div>
-                  </div>
                 </div>
 
                 <div className="space-y-4">
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Your UPI ID (For Verification)</label>
-                        <input 
-                            type="text"
-                            placeholder="e.g. name@bank"
-                            className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-primary outline-none font-bold text-slate-800 text-sm"
-                            value={upiOrderData.patientUpiId || ''}
-                            onChange={(e) => setUpiOrderData({ ...upiOrderData, patientUpiId: e.target.value })}
-                        />
+                    <div className="grid grid-cols-1 gap-4">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Your UPI ID (VPA)</label>
+                            <input 
+                                type="text"
+                                placeholder="e.g. name@upi"
+                                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:ring-2 ring-primary/20 outline-none"
+                                value={upiOrderData.patientUpiId || ''}
+                                onChange={(e) => setUpiOrderData({...upiOrderData, patientUpiId: e.target.value})}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Transaction ID / Ref Number</label>
+                            <input 
+                                type="text"
+                                placeholder="12-digit UPI reference"
+                                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:ring-2 ring-primary/20 outline-none"
+                                value={upiOrderData.transactionId || ''}
+                                onChange={(e) => setUpiOrderData({...upiOrderData, transactionId: e.target.value})}
+                            />
+                        </div>
                     </div>
 
                     <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
@@ -583,17 +593,31 @@ const Booking = () => {
                             onChange={(e) => setUpiConfirmed(e.target.checked)}
                         />
                         <label htmlFor="upiConfirm" className="text-[10px] font-black text-slate-500 uppercase tracking-tight leading-relaxed">
-                            I confirm that I have transferred ₹{upiOrderData.amount} to {upiOrderData.upiId} and have the transaction ID ready.
+                            I confirm that I have transferred ₹{upiOrderData.amount} and the Transaction ID provided above is correct.
                         </label>
                     </div>
 
                     <button 
-                        onClick={() => {
-                            if (!upiOrderData.patientUpiId) {
-                                toast.error("Please provide your UPI ID for verification.");
+                        onClick={async () => {
+                            if (!upiOrderData.patientUpiId || !upiOrderData.transactionId) {
+                                toast.error("Please provide both UPI ID and Transaction ID for verification.");
                                 return;
                             }
-                            handleUpiSuccess(upiOrderData.patientUpiId);
+                            try {
+                                setIsBooking(true);
+                                await api.post('appointments/verify-upi', {
+                                    appointmentId: upiOrderData.appointmentId,
+                                    patientUpiId: upiOrderData.patientUpiId,
+                                    transactionId: upiOrderData.transactionId
+                                });
+                                toast.success("Transaction Registered! Awaiting Administrative Verification.");
+                                navigate('/dashboard/sessions', { state: { autoOpenApptId: upiOrderData.appointmentId } });
+                            } catch (err) {
+                                toast.error("Failed to sync UPI transaction.");
+                            } finally {
+                                setIsBooking(false);
+                                setShowUpiModal(false);
+                            }
                         }}
                         disabled={isBooking || !upiConfirmed}
                         className={`w-full py-5 rounded-[2rem] text-sm font-black uppercase tracking-widest transition-all shadow-xl active:scale-95 ${
@@ -602,13 +626,13 @@ const Booking = () => {
                             : 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'
                         }`}
                     >
-                        {isBooking ? "Registering Protocol..." : "I've completed the payment"}
+                        {isBooking ? "Registering Protocol..." : "Complete Booking"}
                     </button>
                     <p className="text-[10px] text-center text-slate-400 font-bold leading-relaxed px-4 uppercase tracking-tighter">
-                        Verification required by physician before slot confirmation.
+                        Manual verification required before session authorization.
                     </p>
                 </div>
-              </div>
+              </div></div>
             </motion.div>
           </div>
         )}

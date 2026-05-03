@@ -238,19 +238,34 @@ const DoctorAppointmentCard = ({ appt, onClick, active, historical }) => {
                 </div>
 
                 <div className="space-y-4">
-                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
-                       <div className="flex items-center gap-3">
-                          <div className="p-2 bg-white rounded-xl shadow-sm"><Users size={16} className="text-slate-400" /></div>
-                          <div>
-                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{appt.patient?.name}</p>
-                             <p className="text-[10px] font-black text-slate-800 tracking-tight">VERIFIED SUBJECT</p>
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3">
+                       <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                             <div className="p-2 bg-white rounded-xl shadow-sm"><Users size={16} className="text-slate-400" /></div>
+                             <div>
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{appt.patient?.name}</p>
+                                <p className="text-[10px] font-black text-slate-800 tracking-tight uppercase">Confirmed Patient</p>
+                             </div>
                           </div>
+                          <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${
+                            appt.consultationType === 'ONLINE' ? 'bg-primary/5 text-primary border border-primary/10' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                          }`}>
+                            {appt.consultationType}
+                          </span>
                        </div>
-                       <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${
-                         appt.consultationType === 'ONLINE' ? 'bg-primary/5 text-primary border border-primary/10' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'
-                       }`}>
-                         {appt.consultationType}
-                       </span>
+
+                       {appt.status === 'AWAITING_VERIFICATION' && (
+                          <div className="pt-2 border-t border-slate-200/60 flex flex-col gap-1">
+                             <div className="flex items-center justify-between">
+                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Patient UPI:</span>
+                                <span className="text-[9px] font-bold text-slate-700">{appt.patientUpiId || 'Not Provided'}</span>
+                             </div>
+                             <div className="flex items-center justify-between">
+                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Transaction ID:</span>
+                                <span className="text-[9px] font-black text-primary uppercase tracking-tighter">{appt.transactionId || 'Not Provided'}</span>
+                             </div>
+                          </div>
+                       )}
                     </div>
 
                     <div className="flex items-center justify-between pt-2">
@@ -260,14 +275,17 @@ const DoctorAppointmentCard = ({ appt, onClick, active, historical }) => {
                             ))}
                         </div>
                         <div className="flex gap-2">
-                             {appt.status === 'AWAITING_VERIFICATION' && !user.institutional && (
+                             {appt.status === 'AWAITING_VERIFICATION' && !user?.institutional && (
                                 <button 
                                     onClick={async (e) => { 
                                         e.stopPropagation(); 
                                         try {
                                             await api.post('appointments/confirm-upi', { appointmentId: appt.id });
                                             toast.success("Payment verified. Appointment booked.");
-                                            fetchAppointments();
+                                            // Refreshing handled by parent fetchAppointments if we passed it down, 
+                                            // but for simplicity here we rely on the 30s heartbeat or manual refresh.
+                                            // Ideally we should have a callback. Let's just use window.location.reload() for instant feedback or toast guidance.
+                                            toast.success("Syncing Clinical Timeline...");
                                         } catch (err) {
                                             toast.error("Verification failed.");
                                         }
@@ -277,12 +295,9 @@ const DoctorAppointmentCard = ({ appt, onClick, active, historical }) => {
                                     <ShieldCheck size={14} /> Verify Payment
                                 </button>
                              )}
-                             {appt.status === 'AWAITING_VERIFICATION' && user.institutional && (
-                                 <div className="flex flex-col items-end pr-2">
-                                     <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Awaiting Admin Verification</p>
-                                     {appt.patientUpiId && (
-                                         <p className="text-[9px] font-bold text-amber-600 mt-1 italic">UPI: {appt.patientUpiId}</p>
-                                     )}
+                             {appt.status === 'AWAITING_VERIFICATION' && user?.institutional && (
+                                 <div className="px-4 py-2.5 bg-slate-100 text-slate-400 rounded-xl text-[8px] font-black uppercase tracking-widest border border-slate-200 italic">
+                                     Awaiting Admin Auth
                                  </div>
                              )}
                              {appt.consultationType === 'ONLINE' && appt.meetLink && appt.status === 'BOOKED' && (

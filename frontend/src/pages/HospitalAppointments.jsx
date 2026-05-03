@@ -99,46 +99,51 @@ const HospitalAppointments = () => {
                                                     <Calendar size={14} className="mr-2 text-primary" /> {app.appointmentDate}
                                                 </div>
                                                 <div className="flex items-center text-slate-400 text-[10px] font-bold">
-                                                    <Clock size={12} className="mr-2" /> {app.appointmentTime}
+                                                    <Clock size={12} className="mr-2" /> {app.timeSlot || app.appointmentTime}
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-8 py-6">
-                                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                                                app.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600' :
-                                                app.status === 'CANCELLED' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'
-                                            }`}>
-                                                {app.status || 'SCHEDULED'}
-                                            </span>
+                                            <div className="flex flex-col gap-2">
+                                                <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest w-fit ${
+                                                    app.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600' :
+                                                    app.status === 'AWAITING_VERIFICATION' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                                                    app.status === 'CANCELLED' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'
+                                                }`}>
+                                                    {app.status || 'SCHEDULED'}
+                                                </span>
+                                                {app.status === 'AWAITING_VERIFICATION' && app.transactionId && (
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">VPA: {app.patientUpiId}</p>
+                                                        <p className="text-[8px] font-black text-primary uppercase tracking-tighter">TXN: {app.transactionId}</p>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="px-8 py-6 text-right">
-                                             <div className="flex items-center justify-end gap-3">
-                                                 {app.status === 'AWAITING_VERIFICATION' && (
-                                                     <div className="flex flex-col items-end gap-2">
-                                                         {app.patientUpiId && (
-                                                             <p className="text-[10px] font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded-lg border border-amber-100">UPI: {app.patientUpiId}</p>
-                                                         )}
-                                                         <button 
-                                                             onClick={async () => {
-                                                                 try {
-                                                                     await api.post('appointments/confirm-upi', { appointmentId: app.id });
-                                                                     toast.success("Payment verified and synchronized");
-                                                                     window.location.reload();
-                                                                 } catch (err) {
-                                                                     toast.error("Verification failed");
-                                                                 }
-                                                             }}
-                                                             className="px-4 py-2 bg-amber-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-500 transition-all shadow-lg shadow-amber-600/10 active:scale-95 flex items-center gap-2"
-                                                         >
-                                                             Verify Payment
-                                                         </button>
-                                                     </div>
-                                                 )}
-                                                 <button className="p-2 bg-slate-50 text-slate-400 rounded-xl hover:bg-primary hover:text-white transition-all">
-                                                     <ChevronRight size={20} />
-                                                 </button>
-                                             </div>
-                                         </td>
+                                            <div className="flex items-center justify-end gap-2">
+                                                {app.status === 'AWAITING_VERIFICATION' && (
+                                                    <button 
+                                                        onClick={async () => {
+                                                            try {
+                                                                await api.post('appointments/confirm-upi', { appointmentId: app.id });
+                                                                toast.success("Payment verified and session authorized.");
+                                                                const res = await api.get('/hospital/appointments');
+                                                                setAppointments(res.data);
+                                                            } catch (e) {
+                                                                toast.error("Authorization failed.");
+                                                            }
+                                                        }}
+                                                        className="px-4 py-2 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-primary transition-all shadow-lg active:scale-95"
+                                                    >
+                                                        Verify Payment
+                                                    </button>
+                                                )}
+                                                <button className="p-2 bg-slate-50 text-slate-400 rounded-xl hover:bg-primary hover:text-white transition-all">
+                                                    <ChevronRight size={18} />
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
                                 ))
                             ) : (

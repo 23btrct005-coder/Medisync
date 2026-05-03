@@ -34,10 +34,12 @@ public class Appointment {
     private Double amount;
     private String razorpayOrderId;
     private String razorpayPaymentId;
-    private String patientUpiId;
     
     private String meetLink;
     private boolean meetNotified = false;
+    
+    private String patientUpiId;
+    private String transactionId;
 
     @Transient
     private boolean rated;
@@ -78,9 +80,6 @@ public class Appointment {
     public String getRazorpayPaymentId() { return razorpayPaymentId; }
     public void setRazorpayPaymentId(String razorpayPaymentId) { this.razorpayPaymentId = razorpayPaymentId; }
 
-    public String getPatientUpiId() { return patientUpiId; }
-    public void setPatientUpiId(String patientUpiId) { this.patientUpiId = patientUpiId; }
-
     public java.time.LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(java.time.LocalDateTime createdAt) { this.createdAt = createdAt; }
 
@@ -89,6 +88,12 @@ public class Appointment {
 
     public boolean isMeetNotified() { return meetNotified; }
     public void setMeetNotified(boolean meetNotified) { this.meetNotified = meetNotified; }
+
+    public String getPatientUpiId() { return patientUpiId; }
+    public void setPatientUpiId(String patientUpiId) { this.patientUpiId = patientUpiId; }
+
+    public String getTransactionId() { return transactionId; }
+    public void setTransactionId(String transactionId) { this.transactionId = transactionId; }
 
     public boolean isRated() { return rated; }
     public void setRated(boolean rated) { this.rated = rated; }

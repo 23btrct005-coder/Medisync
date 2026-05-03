@@ -146,15 +146,17 @@ const HospitalLedger = () => {
                                     </td>
                                     <td className="p-6">
                                         <div className="flex flex-col">
-                                            <span className="text-[10px] font-black text-primary uppercase tracking-widest">Institutional RP</span>
-                                            <span className="text-[9px] text-slate-400 font-bold uppercase">{stats?.razorpayKeyId ? 'Encrypted Key' : 'System Default'}</span>
+                                            <span className="text-[10px] font-black text-primary uppercase tracking-widest">{tx.transactionId ? 'Direct UPI' : 'Institutional RP'}</span>
+                                            <span className="text-[9px] text-slate-400 font-bold uppercase">{tx.transactionId ? 'Manual Audit' : (stats?.razorpayKeyId ? 'Encrypted Key' : 'System Default')}</span>
                                         </div>
                                     </td>
                                     <td className="p-6">
                                         <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                                            tx.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'
+                                            tx.status === 'BOOKED' || tx.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600' : 
+                                            tx.status === 'AWAITING_VERIFICATION' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                                            'bg-blue-50 text-blue-600'
                                         }`}>
-                                            {tx.status || 'SETTLED'}
+                                            {(tx.status === 'BOOKED' || tx.status === 'COMPLETED') ? 'SETTLED' : (tx.status || 'SCHEDULED')}
                                         </span>
                                     </td>
                                 </tr>

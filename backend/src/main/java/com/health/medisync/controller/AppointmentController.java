@@ -125,8 +125,10 @@ public class AppointmentController {
             }
             Long appointmentId = Long.valueOf(request.get("appointmentId").toString());
             String patientUpiId = (String) request.get("patientUpiId");
-            appointmentService.verifyUpiPayment(appointmentId, patientUpiId);
-            return ResponseEntity.ok(Map.of("message", "Appointment initiated. Awaiting verification."));
+            String transactionId = (String) request.get("transactionId");
+            
+            appointmentService.verifyUpiPayment(appointmentId, patientUpiId, transactionId);
+            return ResponseEntity.ok(Map.of("message", "Appointment initiated. Awaiting administrative verification."));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
