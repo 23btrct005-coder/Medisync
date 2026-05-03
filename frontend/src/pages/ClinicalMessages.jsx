@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../api/axiosConfig';
-import { MessageSquare, User, Activity, Search, ArrowRight, Building2, Users } from 'lucide-react';
+import { MessageSquare, User, Activity, Search, ArrowRight, Building2, Users, Stethoscope } from 'lucide-react';
 import ClinicalChatBox from '../components/ClinicalChatBox';
 import { useNotifications } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
@@ -9,12 +9,13 @@ const ClinicalMessages = () => {
     const { user, userRole } = useAuth();
     const isAdmin = userRole === 'ROLE_HOSPITAL_ADMIN';
     const isDoctor = userRole === 'ROLE_DOCTOR';
+    const isPatient = userRole === 'ROLE_PATIENT';
     
     const [conversations, setConversations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeChat, setActiveChat] = useState(null);
-    const [activeTab, setActiveTab] = useState(isAdmin ? 'staff' : 'patients');
+    const [activeTab, setActiveTab] = useState(isAdmin ? 'staff' : (isPatient ? 'physicians' : 'patients'));
     const { lastMessage } = useNotifications();
     const [unreadCounts, setUnreadCounts] = useState({});
 
@@ -45,12 +46,17 @@ const ClinicalMessages = () => {
         setLoading(true);
         try {
             let res;
-            if (activeTab === 'patients' && !isAdmin) {
+            if (isPatient) {
+                // Patients only see their doctors
+                res = await api.get('patient/doctors');
+            } else if (activeTab === 'patients' && isDoctor) {
                 // Fetch patients associated with the doctor
                 res = await api.get('doctor/patients');
-            } else {
+            } else if (activeTab === 'staff') {
                 // Fetch institutional staff (colleagues/admin)
                 res = await api.get(isAdmin ? 'hospital/staff-contacts' : 'doctor/institutional-contacts');
+            } else {
+                res = { data: [] };
             }
             setConversations(res.data);
         } catch (err) {
@@ -96,8 +102,8 @@ const ClinicalMessages = () => {
                 </div>
             </div>
 
-            {/* Tab Segregation - Only show if not Admin (Admins only have Staff) */}
-            {!isAdmin && (
+            {/* Tab Segregation - Only show if Physician (Admins/Patients have single scoped views) */}
+            {isDoctor && (
                 <div className="flex p-1.5 bg-slate-100 rounded-[1.5rem] w-fit border border-slate-200/50">
                     <button
                         onClick={() => setActiveTab('patients')}
@@ -120,6 +126,14 @@ const ClinicalMessages = () => {
                         <Building2 size={14} /> Colleagues
                     </button>
                 </div>
+            )}
+
+            {isPatient && (
+                 <div className="flex p-1.5 bg-slate-100 rounded-[1.5rem] w-fit border border-slate-200/50">
+                    <div className="px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest bg-white text-primary shadow-sm border border-slate-200">
+                         <Stethoscope size={14} className="inline mr-2" /> My Physicians
+                    </div>
+                 </div>
             )}
 
             {loading ? (
@@ -169,11 +183,11 @@ const ClinicalMessages = () => {
                                     <h4 className="font-black text-slate-800 text-lg group-hover:text-primary transition-colors leading-none">{contact.name}</h4>
                                     <div className="flex items-center gap-2 mt-2">
                                         <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border ${
-                                            activeTab === 'staff' ? 'bg-blue-50 text-blue-500 border-blue-100' : 'bg-slate-50 text-slate-400 border-slate-100'
+                                            activeTab === 'staff' || isPatient ? 'bg-blue-50 text-blue-500 border-blue-100' : 'bg-slate-50 text-slate-400 border-slate-100'
                                         }`}>
-                                            {activeTab === 'staff' ? (contact.role === 'HOSPITAL_ADMIN' ? 'Admin' : 'Physician') : `Patient ID: #${contact.id}`}
+                                            {isPatient ? 'Physician' : (activeTab === 'staff' ? (contact.role === 'HOSPITAL_ADMIN' ? 'Admin' : 'Physician') : `Patient ID: #${contact.id}`)}
                                         </span>
-                                        {activeTab === 'staff' && contact.specialization && (
+                                        {(activeTab === 'staff' || isPatient) && contact.specialization && (
                                             <>
                                                 <div className="w-1 h-1 bg-slate-300 rounded-full" />
                                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{contact.specialization}</span>

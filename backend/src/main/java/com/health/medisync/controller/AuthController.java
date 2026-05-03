@@ -451,6 +451,9 @@ public class AuthController {
             try { doctor.setAge(Integer.parseInt(String.valueOf(request.get("age")))); }
             catch (NumberFormatException ignored) {}
         }
+        if (request.containsKey("appointmentsEnabled")) {
+            doctor.setAppointmentsEnabled(Boolean.parseBoolean(String.valueOf(request.get("appointmentsEnabled"))));
+        }
 
         // Advanced Clinical Depth Mapping
         doctor.setSubSpecialties(request.get("subSpecialties") != null ? String.valueOf(request.get("subSpecialties")) : null);

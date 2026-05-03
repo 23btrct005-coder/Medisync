@@ -87,6 +87,9 @@ const Register = () => {
     hospitalName: '', 
     yearsOfExperience: '',
     onlineConsultationFee: '',
+    offlineConsultationFee: '',
+    onlineConsultation: true,
+    appointmentsEnabled: true,
     clinicAddress: '',
     clinicStreet: '',
     clinicCity: '',
@@ -384,7 +387,11 @@ const Register = () => {
         username: formData.email,
         role: role,
         clinicAddress: role === 'ROLE_DOCTOR' ? `${formData.clinicStreet}, ${formData.clinicCity}, ${formData.clinicState} - ${formData.clinicPinCode}` : formData.clinicAddress,
-        consultationTimings: `${formData.startTime} - ${formData.endTime}`
+        consultationTimings: `${formData.startTime} - ${formData.endTime}`,
+        onlineConsultationFee: formData.onlineConsultationFee,
+        offlineConsultationFee: formData.offlineConsultationFee,
+        onlineConsultation: formData.onlineConsultation,
+        appointmentsEnabled: formData.appointmentsEnabled
       }));
       
       if (profilePicture) formDataToSend.append('profilePicture', profilePicture);
@@ -686,8 +693,76 @@ const Register = () => {
                         <div className="space-y-6">
                             <div className="grid grid-cols-2 gap-6">
                                 <div><label className={labelClass}>Years of Experience <span className="text-red-500">*</span></label><input type="number" name="yearsOfExperience" required value={formData.yearsOfExperience} onChange={handleChange} className={inputClass} placeholder="e.g. 10" /></div>
-                                <div><label className={labelClass}>Consultation Fee (₹) <span className="text-red-500">*</span></label><input type="number" name="onlineConsultationFee" required value={formData.onlineConsultationFee} onChange={handleChange} className={inputClass} placeholder="e.g. 500" /></div>
+                                <div><label className={labelClass}>Base OPD Fee (₹) <span className="text-red-500">*</span></label><input type="number" name="onlineConsultationFee" required value={formData.onlineConsultationFee} onChange={handleChange} className={inputClass} placeholder="e.g. 500" /></div>
                             </div>
+
+                            {/* Section 5.1: Consultation & Booking (New) */}
+                            <div className="p-8 bg-indigo-50/30 rounded-[2rem] border border-indigo-100/50 space-y-8">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                                    <h4 className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.3em]">Consultation & Booking</h4>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    {/* Fees */}
+                                    <div className="space-y-6">
+                                        <div>
+                                            <label className={labelClass}>Online Consultation Fee (₹)</label>
+                                            <input type="number" name="onlineConsultationFee" value={formData.onlineConsultationFee} onChange={handleChange} className={inputClass} placeholder="500" />
+                                        </div>
+                                        <div>
+                                            <label className={labelClass}>Offline Consultation Fee (₹)</label>
+                                            <input type="number" name="offlineConsultationFee" value={formData.offlineConsultationFee} onChange={handleChange} className={inputClass} placeholder="800" />
+                                        </div>
+                                    </div>
+
+                                    {/* Mode & Toggle */}
+                                    <div className="space-y-6">
+                                        <div>
+                                            <label className={labelClass}>Consultation Mode</label>
+                                            <div className="flex gap-2 p-1 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                                                {[
+                                                    { id: 'online', label: 'Online', val: true },
+                                                    { id: 'offline', label: 'Offline', val: false },
+                                                    { id: 'both', label: 'Both', val: 'BOTH' }
+                                                ].map(mode => (
+                                                    <button
+                                                        key={mode.id}
+                                                        type="button"
+                                                        onClick={() => setFormData({...formData, onlineConsultation: mode.val === 'BOTH' ? true : mode.val})}
+                                                        className={`flex-1 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
+                                                            (mode.id === 'both' && formData.onlineConsultation === true && formData.offlineConsultationFee > 0) || 
+                                                            (mode.id === 'online' && formData.onlineConsultation === true && !formData.offlineConsultationFee) ||
+                                                            (mode.id === 'offline' && formData.onlineConsultation === false)
+                                                            ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
+                                                            : 'text-slate-400 hover:text-indigo-600'
+                                                        }`}
+                                                    >
+                                                        {mode.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-between p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
+                                            <div>
+                                                <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Accept Appointments</p>
+                                                <p className="text-[8px] font-bold text-emerald-600/60 uppercase tracking-widest mt-0.5">Allow patients to book slots</p>
+                                            </div>
+                                            <label className="relative inline-flex items-center cursor-pointer">
+                                                <input 
+                                                    type="checkbox" 
+                                                    className="sr-only peer"
+                                                    checked={formData.appointmentsEnabled !== false}
+                                                    onChange={(e) => setFormData({...formData, appointmentsEnabled: e.target.checked})}
+                                                />
+                                                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
                                 <div className="md:col-span-2"><label className={labelClass}>Clinic Address (Street/Area) <span className="text-red-500">*</span></label><input type="text" name="clinicStreet" required value={formData.clinicStreet} onChange={handleChange} className={inputClass} placeholder="Street, Building" /></div>
                                 <div><label className={labelClass}>State <span className="text-red-500">*</span></label><select name="clinicState" required value={formData.clinicState} onChange={handleChange} className={inputClass}><option value="">Select State</option>{Object.keys(geographyData).sort().map(s => <option key={s} value={s}>{s}</option>)}</select></div>

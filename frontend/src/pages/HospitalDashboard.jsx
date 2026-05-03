@@ -26,6 +26,10 @@ const HospitalDashboard = () => {
         medicalDegree: '',
         yearsOfExperience: '',
         consultationFee: '',
+        onlineConsultationFee: '',
+        offlineConsultationFee: '',
+        onlineConsultation: true,
+        appointmentsEnabled: true,
         workingDaysArray: [],
         startTime: '09:00',
         endTime: '17:00',
@@ -173,7 +177,11 @@ const HospitalDashboard = () => {
                 proceduresHandled: onboardData.proceduresHandled,
                 publications: onboardData.publications,
                 treatmentFocus: onboardData.treatmentFocus,
-                slotDuration: onboardData.slotDuration
+                slotDuration: onboardData.slotDuration,
+                onlineConsultationFee: onboardData.onlineConsultationFee,
+                offlineConsultationFee: onboardData.offlineConsultationFee,
+                onlineConsultation: onboardData.onlineConsultation,
+                appointmentsEnabled: onboardData.appointmentsEnabled
             };
             formDataToSend.append('userData', JSON.stringify(userData));
             
@@ -198,6 +206,10 @@ const HospitalDashboard = () => {
                 medicalDegree: '',
                 yearsOfExperience: '',
                 consultationFee: '',
+                onlineConsultationFee: '',
+                offlineConsultationFee: '',
+                onlineConsultation: true,
+                appointmentsEnabled: true,
                 workingDaysArray: [],
                 startTime: '09:00',
                 endTime: '17:00',
@@ -620,7 +632,74 @@ const HospitalDashboard = () => {
                                 <div className="grid grid-cols-3 gap-6">
                                     <div><label className={labelClass}>Monthly Salary (₹)</label><input type="number" required value={onboardData.salary} onChange={(e) => setOnboardData({...onboardData, salary: e.target.value})} className="w-full px-6 py-4 bg-blue-50/50 border-none rounded-3xl text-xs font-bold focus:ring-2 ring-blue-100 transition-all text-blue-700 placeholder:text-blue-200" placeholder="150000" /></div>
                                     <div><label className={labelClass}>Revenue Share (%)</label><input type="number" value={onboardData.revenueSharePercentage} onChange={(e) => setOnboardData({...onboardData, revenueSharePercentage: e.target.value})} className="w-full px-6 py-4 bg-blue-50/50 border-none rounded-3xl text-xs font-bold focus:ring-2 ring-blue-100 transition-all text-blue-700 placeholder:text-blue-200" placeholder="0" /></div>
-                                    <div><label className={labelClass}>OPD Fee (₹)</label><input type="number" required value={onboardData.consultationFee} onChange={(e) => setOnboardData({...onboardData, consultationFee: e.target.value})} className="w-full px-6 py-4 bg-emerald-50/50 border-none rounded-3xl text-xs font-bold focus:ring-2 ring-emerald-100 transition-all text-emerald-700 placeholder:text-emerald-200" placeholder="500" /></div>
+                                    <div><label className={labelClass}>Base OPD Fee (₹)</label><input type="number" required value={onboardData.consultationFee} onChange={(e) => setOnboardData({...onboardData, consultationFee: e.target.value})} className="w-full px-6 py-4 bg-emerald-50/50 border-none rounded-3xl text-xs font-bold focus:ring-2 ring-emerald-100 transition-all text-emerald-700 placeholder:text-emerald-200" placeholder="500" /></div>
+                                </div>
+
+                                {/* Section 5: Consultation & Booking (New) */}
+                                <div className="p-8 bg-indigo-50/30 rounded-[3rem] border border-indigo-100/50 space-y-8">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                                        <h4 className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.3em]">5. Consultation & Booking</h4>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        {/* Fees */}
+                                        <div className="space-y-6">
+                                            <div>
+                                                <label className={labelClass}>Online Consultation Fee (₹)</label>
+                                                <input type="number" value={onboardData.onlineConsultationFee} onChange={(e) => setOnboardData({...onboardData, onlineConsultationFee: e.target.value})} className={onboardInputClass} placeholder="500" />
+                                            </div>
+                                            <div>
+                                                <label className={labelClass}>Offline Consultation Fee (₹)</label>
+                                                <input type="number" value={onboardData.offlineConsultationFee} onChange={(e) => setOnboardData({...onboardData, offlineConsultationFee: e.target.value})} className={onboardInputClass} placeholder="800" />
+                                            </div>
+                                        </div>
+
+                                        {/* Mode & Toggle */}
+                                        <div className="space-y-6">
+                                            <div>
+                                                <label className={labelClass}>Consultation Mode</label>
+                                                <div className="flex gap-2 p-1 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                                                    {[
+                                                        { id: 'online', label: 'Online', val: true },
+                                                        { id: 'offline', label: 'Offline', val: false },
+                                                        { id: 'both', label: 'Both', val: 'BOTH' }
+                                                    ].map(mode => (
+                                                        <button
+                                                            key={mode.id}
+                                                            type="button"
+                                                            onClick={() => setOnboardData({...onboardData, onlineConsultation: mode.val === 'BOTH' ? true : mode.val})}
+                                                            className={`flex-1 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
+                                                                (mode.id === 'both' && onboardData.onlineConsultation === true && onboardData.offlineConsultationFee > 0) || 
+                                                                (mode.id === 'online' && onboardData.onlineConsultation === true && !onboardData.offlineConsultationFee) ||
+                                                                (mode.id === 'offline' && onboardData.onlineConsultation === false)
+                                                                ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
+                                                                : 'text-slate-400 hover:text-indigo-600'
+                                                            }`}
+                                                        >
+                                                            {mode.label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center justify-between p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
+                                                <div>
+                                                    <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Accept Appointments</p>
+                                                    <p className="text-[8px] font-bold text-emerald-600/60 uppercase tracking-widest mt-0.5">Allow patients to book slots</p>
+                                                </div>
+                                                <label className="relative inline-flex items-center cursor-pointer">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        className="sr-only peer"
+                                                        checked={onboardData.appointmentsEnabled !== false}
+                                                        onChange={(e) => setOnboardData({...onboardData, appointmentsEnabled: e.target.checked})}
+                                                    />
+                                                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 
                                 {/* Institutional Financial Sync */}
