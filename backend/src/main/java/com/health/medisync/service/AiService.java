@@ -22,7 +22,6 @@ public class AiService {
     private final PatientRepository patientRepository;
     private final AppointmentService appointmentService;
     
-    // Simple transient memory for Clinical Handover (In production, use Redis or DB)
     private static final Map<String, String> sessionSummaries = new HashMap<>();
 
     public AiService(DoctorRepository doctorRepository, 
@@ -40,7 +39,6 @@ public class AiService {
     public String generateResponse(String query, String patientEmail) {
         String lowerQuery = query.toLowerCase();
 
-        // 1. Emergency Guard Layer
         if (isEmergency(lowerQuery)) {
             return "🚨 **CRITICAL EMERGENCY DETECTED** 🚨\n\nYour symptoms suggest a potentially life-threatening situation. \n\n" +
                    "**ACTIONS REQUIRED:**\n" +
@@ -49,11 +47,9 @@ public class AiService {
                    "Our nearest network hospital is: **Apollo Hospital (ER: +91 99999 00000)**";
         }
 
-        // 2. Gather Clinical Context
         List<Doctor> allDoctors = doctorRepository.findAll();
         List<Hospital> allHospitals = hospitalRepository.findAll();
 
-        // 2. Intelligence Layer: Advanced Symptom Mapping
         String mappedSpecialty = mapSymptomToSpecialty(lowerQuery);
         if (mappedSpecialty != null) {
             List<Doctor> specialists = allDoctors.stream()
@@ -64,13 +60,11 @@ public class AiService {
             if (!specialists.isEmpty()) {
                 StringBuilder sb = new StringBuilder("Based on your symptoms, you should consult a **" + mappedSpecialty.toUpperCase() + "** specialist. \n\nI recommend these experts in our network:\n\n");
                 
-                // Prepare handover summary
                 String brief = "AI SUMMARY: Patient reported " + mappedSpecialty + " related symptoms: '" + query + "'. Suggests specialist consultation.";
                 sessionSummaries.put(patientEmail, brief);
 
-                for (Doctor d : specialists.limit(2)) {
+                for (Doctor d : specialists.stream().limit(2).collect(Collectors.toList())) {
                     sb.append("👨‍⚕️ **Dr. ").append(d.getName()).append("** (").append(d.getSpecialization()).append(")\n");
-                    // Dynamic Slot Preview
                     List<String> slots = appointmentService.getAvailableSlots(d.getId(), LocalDate.now());
                     if (!slots.isEmpty()) {
                         sb.append("   📅 Next available today at: ").append(slots.get(0)).append("\n");
@@ -81,19 +75,15 @@ public class AiService {
             }
         }
 
-        // 3. Medication Awareness (If patient email provided)
         if (patientEmail != null && (lowerQuery.contains("medicine") || lowerQuery.contains("tablet") || lowerQuery.contains("dose"))) {
             return "I am scanning your clinical history... You currently have active prescriptions. Please ensure you take your medications as directed by your physician. If you are experiencing side effects, I can help you find a doctor for a follow-up.";
         }
-
-        // 4. Intelligence Layer: Heuristic Matching (Phase 1: Local Knowledge)
         
-        // Handle "Nearby" / "Hospital" queries
         if (lowerQuery.contains("hospital") || lowerQuery.contains("near") || lowerQuery.contains("where")) {
             StringBuilder sb = new StringBuilder("I found the following medical institutions in our network:\n\n");
             for (Hospital h : allHospitals.stream().limit(3).collect(Collectors.toList())) {
                 sb.append("🏥 **").append(h.getName()).append("** (").append(h.getHospitalType()).append(")\n");
-                sb.append("   📍 ").append(h.getCity()).append(", ").append(h.getState()).append("\n");
+                sb.append("   📍 ").append(h.getCity() != null ? h.getCity() : "Location").append(", ").append(h.getState() != null ? h.getState() : "Network").append("\n");
                 if (h.getServices() != null) {
                     sb.append("   🔬 ").append(h.getServices()).append("\n");
                 }
@@ -102,19 +92,18 @@ public class AiService {
             return sb.toString();
         }
 
-        // Handle "Doctor" / "Specialist" / "ENT" / "Heart" etc.
         if (lowerQuery.contains("doctor") || lowerQuery.contains("specialist") || lowerQuery.contains("find") || lowerQuery.contains("help")) {
             List<Doctor> matches = allDoctors.stream()
-                .filter(d -> d.isApproved())
+                .filter(Doctor::isApproved)
                 .filter(d -> {
-                    String data = (d.getSpecialization() + " " + d.getTreatmentFocus() + " " + d.getSubSpecialties()).toLowerCase();
+                    String data = (d.getSpecialization() + " " + (d.getTreatmentFocus() != null ? d.getTreatmentFocus() : "") + " " + (d.getSubSpecialties() != null ? d.getSubSpecialties() : "")).toLowerCase();
                     return data.contains(extractKeyword(lowerQuery)) || lowerQuery.contains(d.getSpecialization().toLowerCase());
                 })
                 .collect(Collectors.toList());
 
             if (!matches.isEmpty()) {
                 StringBuilder sb = new StringBuilder("Based on your query, I recommend these specialists:\n\n");
-                for (Doctor d : matches) {
+                for (Doctor d : matches.stream().limit(5).collect(Collectors.toList())) {
                     sb.append("👨‍⚕️ **Dr. ").append(d.getName()).append("**\n");
                     sb.append("   Specialty: ").append(d.getSpecialization()).append("\n");
                     sb.append("   Experience: ").append(d.getYearsOfExperience()).append(" Years\n");
@@ -125,14 +114,12 @@ public class AiService {
             }
         }
 
-        // Handle General Medical / Health queries (Simulated LLM for Phase 1)
         if (lowerQuery.contains("symptom") || lowerQuery.contains("pain") || lowerQuery.contains("cold") || lowerQuery.contains("fever") || lowerQuery.contains("health")) {
             return "I can certainly help with medical information. For symptoms like " + extractKeyword(lowerQuery) + 
                    ", it is generally recommended to monitor your temperature and stay hydrated. " +
                    "However, for a precise clinical assessment, I suggest booking a consultation with one of our specialized doctors in the MediSync portal.";
         }
 
-        // Default Greeting / Help
         return "Hello! I am your MediSync AI Concierge. I can help you find hospitals, search for specialists (like ENT, Cardiologists, etc.), or explain portal features. What can I do for you today?";
     }
 
@@ -162,7 +149,6 @@ public class AiService {
     }
 
     private String extractKeyword(String query) {
-        // Simple keyword extractor for prototype intelligence
         String[] keywords = {"ent", "cardio", "dental", "skin", "eye", "bone", "fever", "pain", "scan", "mri"};
         for (String k : keywords) {
             if (query.contains(k)) return k;
