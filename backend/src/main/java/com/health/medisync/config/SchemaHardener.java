@@ -28,6 +28,7 @@ public class SchemaHardener {
                     "languages_spoken VARCHAR(255)",
                     "publications VARCHAR(255)",
                     "slot_duration INTEGER",
+                    "slot_buffer INTEGER DEFAULT 0",
                     "max_patients_per_day INTEGER",
                     "break_timings VARCHAR(255)",
                     "institutional BOOLEAN DEFAULT FALSE",
