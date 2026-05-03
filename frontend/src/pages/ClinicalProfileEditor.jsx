@@ -588,7 +588,7 @@ const EditDoctorProfile = () => {
                     <input type="text" name="breakTimings" value={formData.breakTimings} onChange={handleChange} className={inputClass} placeholder="e.g. 13:00 - 14:00" />
                 </div>
             </div>
-            <div className={isAffiliated ? 'opacity-50 pointer-events-none' : ''}>
+            <div>
               <label className={labelClass}>
                 Working Days
                 {(formData.appointmentsEnabled || formData.onlineConsultation) && <span className="text-red-500 ml-1 font-bold">*</span>}
@@ -610,7 +610,7 @@ const EditDoctorProfile = () => {
                 ))}
               </div>
             </div>
-            <div className={`md:col-span-2 ${isAffiliated ? 'opacity-50 pointer-events-none' : ''}`}>
+            <div className="md:col-span-2">
               <label className={labelClass}>
                 Consultation Timings
                 {(formData.appointmentsEnabled || formData.onlineConsultation) && <span className="text-red-500 ml-1 font-bold">*</span>}
@@ -715,14 +715,14 @@ const EditDoctorProfile = () => {
                 </div>
                 <div>
                     <label className={labelClass}>Personal UPI ID (VPA)</label>
-                    <input type="text" name="upiId" value={formData.upiId} onChange={handleChange} className={isAffiliated ? readOnlyInputClass : inputClass} readOnly={isAffiliated} placeholder="doctor@okaxis" />
+                    <input type="text" name="upiId" value={formData.upiId} onChange={handleChange} className={inputClass} placeholder="doctor@okaxis" />
                 </div>
                 <p className="md:col-span-2 text-[10px] text-slate-400 mt-1 ml-1 flex items-center gap-2">
                     <AlertCircle size={12} />
                     Payments will be routed based on your preferred channel. Razorpay requires account verification.
                 </p>
             </div>
-            <div className={`md:col-span-2 ${isAffiliated ? 'opacity-50 pointer-events-none' : ''}`}>
+            <div className="md:col-span-2">
                 <label className="flex items-center gap-3 cursor-pointer p-4 bg-blue-50/50 rounded-2xl border border-blue-100 hover:bg-blue-100/50 transition-colors shadow-sm">
                     <input 
                         type="checkbox" 
