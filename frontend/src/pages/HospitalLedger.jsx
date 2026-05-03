@@ -172,7 +172,6 @@ const HospitalLedger = () => {
                                             }`}>
                                                 {(tx.status === 'BOOKED' || tx.status === 'COMPLETED') ? 'SETTLED' : (tx.status || 'SCHEDULED')}
                                             </span>
-                                            )}
                                         </div>
                                     </td>
                                 </tr>
