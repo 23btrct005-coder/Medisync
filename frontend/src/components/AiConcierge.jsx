@@ -20,6 +20,17 @@ const AiConcierge = () => {
         { code: 'ta-IN', name: 'Tamil', flag: '🇮🇳' }
     ];
 
+    const [location, setLocation] = useState(null);
+    const [voices, setVoices] = useState([]);
+
+    useEffect(() => {
+        const loadVoices = () => {
+            setVoices(window.speechSynthesis.getVoices());
+        };
+        loadVoices();
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+    }, []);
+
     useEffect(() => {
         if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }, [messages, isOpen]);
@@ -27,9 +38,43 @@ const AiConcierge = () => {
     const speak = (text) => {
         if (!isVoiceEnabled) return;
         window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text.replace(/\[.*?\]\(.*?\)/g, ''));
+        const utterance = new SpeechSynthesisUtterance(text.replace(/\[.*?\]\(.*?\)/g, '').replace(/[*_]/g, ''));
+        
+        // Premium Voice Selection Logic
+        const preferredVoices = voices.filter(v => 
+            v.lang.includes(selectedLang.split('-')[0]) && 
+            (v.name.includes('Google') || v.name.includes('Premium') || v.name.includes('Natural') || v.name.includes('Samantha'))
+        );
+        
+        if (preferredVoices.length > 0) {
+            utterance.voice = preferredVoices[0];
+        }
+        
         utterance.lang = selectedLang;
+        utterance.rate = 1.0;
+        utterance.pitch = 1.1; // Slightly higher pitch for clarity
         window.speechSynthesis.speak(utterance);
+    };
+
+    const requestLocation = () => {
+        if (!navigator.geolocation) {
+            toast.error("Geolocation not supported by clinical node");
+            return;
+        }
+        
+        setMessages(prev => [...prev, { role: 'ai', text: '📡 Initializing Geolocation Protocol... Please authorize access to find nearby clinical facilities.' }]);
+        
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                const locData = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                setLocation(locData);
+                setMessages(prev => [...prev, { role: 'ai', text: `📍 Location Synchronized: [${locData.lat.toFixed(4)}, ${locData.lng.toFixed(4)}]. I can now provide hyper-localized hospital triage.` }]);
+                speak("Location synchronized. I am now providing localized triage.");
+            },
+            (err) => {
+                setMessages(prev => [...prev, { role: 'ai', text: '⚠️ Geolocation Refused. I will continue using global clinical logic.' }]);
+            }
+        );
     };
 
     const handleSend = async (manualInput) => {
@@ -123,6 +168,11 @@ const AiConcierge = () => {
                                         }
                                         return <div key={li}>{l}</div>;
                                     })}
+                                    {m.role === 'ai' && i === 0 && !location && (
+                                        <button onClick={requestLocation} style={{ marginTop: '15px', width: '100%', padding: '12px', backgroundColor: '#f0f9ff', color: '#0369a1', border: '1px dashed #bae6fd', borderRadius: '12px', cursor: 'pointer', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                            📍 SHARE LOCATION FOR LOCAL TRIAGE
+                                        </button>
+                                    )}
                                     {m.role === 'ai' && i > 0 && (
                                         <div style={{ marginTop: '12px', pt: '10px', borderTop: '1px solid #f1f5f9', display: 'flex', gap: '15px', alignItems: 'center' }}>
                                             <div style={{ fontSize: '11px', opacity: 0.6 }}>
