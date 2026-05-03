@@ -183,34 +183,6 @@ const HospitalDashboard = () => {
                     </div>
                 </div>
 
-                {/* Security Section */}
-                <div className="lg:col-span-4 space-y-8">
-                    <div className="bg-white rounded-[3.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 p-10 relative overflow-hidden">
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="w-12 h-12 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center">
-                                <Shield size={24} />
-                            </div>
-                            <div>
-                                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight italic">Security <span className="not-italic text-amber-500">Sentinel</span></h3>
-                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Institutional Integrity</p>
-                            </div>
-                        </div>
-
-                        <div className="py-6 space-y-6">
-                            <p className="text-xs font-bold text-slate-500 leading-relaxed uppercase">No critical security events detected in the current clinical cycle. Institutional integrity is <span className="text-emerald-500">OPTIMAL</span>.</p>
-                            <div className="h-[1px] w-full bg-slate-100" />
-                            <div className="space-y-4">
-                                {auditLogs.slice(0, 2).map((log, i) => (
-                                    <div key={i} className="flex gap-4">
-                                        <div className="w-1 h-8 bg-slate-100 rounded-full shrink-0" />
-                                        <div>
-                                            <p className="text-[10px] font-black text-slate-800 uppercase">{log.action}</p>
-                                            <p className="text-[8px] font-bold text-slate-400 uppercase mt-0.5">{new Date(log.createdAt).toLocaleTimeString()}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
                 {/* Institutional Operations Column */}
                 <div className="lg:col-span-4 space-y-8">
                     {/* Broadcast Terminal */}
