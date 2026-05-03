@@ -14,12 +14,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.dao.DataAccessException;
 import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 
 import com.health.medisync.model.Patient;
 import com.health.medisync.repository.PatientRepository;
 import com.health.medisync.model.User;
 import com.health.medisync.model.Doctor;
+import com.health.medisync.model.Hospital;
 import com.health.medisync.repository.UserRepository;
 import com.health.medisync.repository.DoctorRepository;
 import com.health.medisync.repository.PasswordResetTokenRepository;
