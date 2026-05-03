@@ -14,6 +14,7 @@ import StatCardPro from '../components/StatCard';
 import { SkeletonRow } from '../components/SkeletonCard';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import InstitutionalNodeCard from '../components/InstitutionalNodeCard';
 
 const DoctorDashboard = () => {
   const { user } = useAuth();
@@ -27,16 +28,34 @@ const DoctorDashboard = () => {
   const [scanError, setScanError] = useState('');
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [instStats, setInstStats] = useState(null);
+  const [instLoading, setInstLoading] = useState(false);
   const navigate = useNavigate();
  
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      await fetchRequests();
+      await Promise.all([
+        fetchRequests(),
+        fetchInstitutionalStats()
+      ]);
       setLoading(false);
     };
     fetchData();
   }, []);
+
+  const fetchInstitutionalStats = async () => {
+    if (!user?.institutional && !user?.hospitalEntity) return;
+    setInstLoading(true);
+    try {
+      const res = await api.get('doctor/institutional-stats');
+      setInstStats(res.data);
+    } catch (err) {
+      console.error("Failed to fetch institutional stats", err);
+    } finally {
+      setInstLoading(false);
+    }
+  };
  
   const fetchRequests = async () => {
     try {
@@ -157,7 +176,7 @@ const DoctorDashboard = () => {
               <div className="space-y-6 max-w-2xl text-left">
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400">
                   <Stethoscope size={14} className="animate-pulse" />
-                  Verified Clinical Gateway
+                  {user?.institutional ? 'Institutional Clinical Node' : 'Verified Clinical Gateway'}
                 </div>
                 
                 <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-none flex flex-wrap items-center gap-4">
@@ -176,8 +195,9 @@ const DoctorDashboard = () => {
                 </h1>
                 
                 <p className="text-slate-400 font-medium text-lg leading-relaxed">
-                  Your "Unified Healthcare OS" gateway is active. Oversighting 
-                  <span className="text-white mx-1 font-bold">{activePatients} verified nodes</span> 
+                  Your "Unified Healthcare OS" gateway is active 
+                  {user?.institutional && instStats && <span className="text-emerald-400 font-black mx-1">@ {instStats.hospitalName}</span>}. 
+                  Oversighting <span className="text-white mx-1 font-bold">{activePatients} verified nodes</span> 
                   with real-time decryption capabilities.
                 </p>
 
@@ -214,6 +234,11 @@ const DoctorDashboard = () => {
             <Stethoscope size={400} className="absolute -right-20 -bottom-20 text-emerald-500/5 -rotate-12" />
           </div>
         </section>
+
+        {/* Institutional Context Node */}
+        {instStats?.isInstitutional && (
+          <InstitutionalNodeCard stats={instStats} loading={instLoading} />
+        )}
 
         {/* Operating Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

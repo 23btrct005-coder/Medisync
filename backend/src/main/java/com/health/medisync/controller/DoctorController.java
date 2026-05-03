@@ -7,6 +7,7 @@ import com.health.medisync.model.MedicalRecordRequest;
 import com.health.medisync.model.Report;
 import com.health.medisync.model.AccessRequest;
 import com.health.medisync.service.DoctorService;
+import com.health.medisync.service.HospitalService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -22,9 +23,11 @@ import java.util.Map;
 public class DoctorController {
 
     private final DoctorService doctorService;
+    private final HospitalService hospitalService;
 
-    public DoctorController(DoctorService doctorService) {
+    public DoctorController(DoctorService doctorService, HospitalService hospitalService) {
         this.doctorService = doctorService;
+        this.hospitalService = hospitalService;
     }
 
     @GetMapping("/profile")
@@ -162,6 +165,21 @@ public class DoctorController {
     public ResponseEntity<?> getRevenueAnalytics(Authentication authentication) {
         try {
             return ResponseEntity.ok(doctorService.getRevenueAnalytics(authentication.getName()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/institutional-stats")
+    public ResponseEntity<?> getInstitutionalStats(Authentication authentication) {
+        try {
+            Doctor doctor = doctorService.getDoctorProfile(authentication.getName());
+            if (doctor.getHospitalEntity() == null) {
+                return ResponseEntity.ok(Map.of("isInstitutional", false));
+            }
+            Map<String, Object> stats = hospitalService.getHospitalStats(doctor.getHospitalEntity());
+            stats.put("isInstitutional", true);
+            return ResponseEntity.ok(stats);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
