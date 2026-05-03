@@ -335,10 +335,11 @@ public class AppointmentService {
     }
 
     @Transactional
-    public void verifyUpiPayment(Long appointmentId) {
+    public void verifyUpiPayment(Long appointmentId, String patientUpiId) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
             .orElseThrow(() -> new RuntimeException("Appointment not found: " + appointmentId));
-
+        
+        appointment.setPatientUpiId(patientUpiId);
         appointment.setStatus(AppointmentStatus.AWAITING_VERIFICATION);
         appointment.setCreatedAt(LocalDateTime.now());
         Appointment booked = appointmentRepository.save(appointment);

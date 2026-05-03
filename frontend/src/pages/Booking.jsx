@@ -149,16 +149,15 @@ const Booking = () => {
     }
   };
 
-  const handleUpiSuccess = async () => {
+  const handleUpiSuccess = async (upiId) => {
     if (!upiOrderData) return;
     try {
         setIsBooking(true);
-        // For UPI, we trust the doctor will verify, but we mark as booked
-        // In a real app, we might wait for a webhook or manual approval
         await api.post('appointments/verify-upi', {
-            appointmentId: upiOrderData.appointmentId
+            appointmentId: upiOrderData.appointmentId,
+            patientUpiId: upiId
         });
-        toast.success("Transaction Registered! Awaiting Clinical Verification.");
+        toast.success("Transaction Registered! Awaiting Verification.");
         navigate('/dashboard/sessions', { state: { autoOpenApptId: upiOrderData.appointmentId } });
     } catch (err) {
         toast.error("Failed to sync UPI transaction.");
@@ -564,6 +563,17 @@ const Booking = () => {
                 </div>
 
                 <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Your UPI ID (For Verification)</label>
+                        <input 
+                            type="text"
+                            placeholder="e.g. name@bank"
+                            className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-primary outline-none font-bold text-slate-800 text-sm"
+                            value={upiOrderData.patientUpiId || ''}
+                            onChange={(e) => setUpiOrderData({ ...upiOrderData, patientUpiId: e.target.value })}
+                        />
+                    </div>
+
                     <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
                         <input 
                             type="checkbox" 
@@ -578,7 +588,13 @@ const Booking = () => {
                     </div>
 
                     <button 
-                        onClick={handleUpiSuccess}
+                        onClick={() => {
+                            if (!upiOrderData.patientUpiId) {
+                                toast.error("Please provide your UPI ID for verification.");
+                                return;
+                            }
+                            handleUpiSuccess(upiOrderData.patientUpiId);
+                        }}
                         disabled={isBooking || !upiConfirmed}
                         className={`w-full py-5 rounded-[2rem] text-sm font-black uppercase tracking-widest transition-all shadow-xl active:scale-95 ${
                             upiConfirmed 

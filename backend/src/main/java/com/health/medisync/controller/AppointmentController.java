@@ -124,8 +124,9 @@ public class AppointmentController {
                 return ResponseEntity.badRequest().body(Map.of("message", "Missing appointmentId"));
             }
             Long appointmentId = Long.valueOf(request.get("appointmentId").toString());
-            appointmentService.verifyUpiPayment(appointmentId);
-            return ResponseEntity.ok(Map.of("message", "Appointment initiated. Awaiting doctor verification."));
+            String patientUpiId = (String) request.get("patientUpiId");
+            appointmentService.verifyUpiPayment(appointmentId, patientUpiId);
+            return ResponseEntity.ok(Map.of("message", "Appointment initiated. Awaiting verification."));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }

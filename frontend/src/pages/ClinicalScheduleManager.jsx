@@ -260,7 +260,7 @@ const DoctorAppointmentCard = ({ appt, onClick, active, historical }) => {
                             ))}
                         </div>
                         <div className="flex gap-2">
-                             {appt.status === 'AWAITING_VERIFICATION' && (
+                             {appt.status === 'AWAITING_VERIFICATION' && !user.institutional && (
                                 <button 
                                     onClick={async (e) => { 
                                         e.stopPropagation(); 
@@ -276,6 +276,14 @@ const DoctorAppointmentCard = ({ appt, onClick, active, historical }) => {
                                 >
                                     <ShieldCheck size={14} /> Verify Payment
                                 </button>
+                             )}
+                             {appt.status === 'AWAITING_VERIFICATION' && user.institutional && (
+                                 <div className="flex flex-col items-end pr-2">
+                                     <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Awaiting Admin Verification</p>
+                                     {appt.patientUpiId && (
+                                         <p className="text-[9px] font-bold text-amber-600 mt-1 italic">UPI: {appt.patientUpiId}</p>
+                                     )}
+                                 </div>
                              )}
                              {appt.consultationType === 'ONLINE' && appt.meetLink && appt.status === 'BOOKED' && (
                                 <button 

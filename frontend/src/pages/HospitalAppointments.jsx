@@ -112,10 +112,33 @@ const HospitalAppointments = () => {
                                             </span>
                                         </td>
                                         <td className="px-8 py-6 text-right">
-                                            <button className="p-2 bg-slate-50 text-slate-400 rounded-xl hover:bg-primary hover:text-white transition-all">
-                                                <ChevronRight size={20} />
-                                            </button>
-                                        </td>
+                                             <div className="flex items-center justify-end gap-3">
+                                                 {app.status === 'AWAITING_VERIFICATION' && (
+                                                     <div className="flex flex-col items-end gap-2">
+                                                         {app.patientUpiId && (
+                                                             <p className="text-[10px] font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded-lg border border-amber-100">UPI: {app.patientUpiId}</p>
+                                                         )}
+                                                         <button 
+                                                             onClick={async () => {
+                                                                 try {
+                                                                     await api.post('appointments/confirm-upi', { appointmentId: app.id });
+                                                                     toast.success("Payment verified and synchronized");
+                                                                     window.location.reload();
+                                                                 } catch (err) {
+                                                                     toast.error("Verification failed");
+                                                                 }
+                                                             }}
+                                                             className="px-4 py-2 bg-amber-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-500 transition-all shadow-lg shadow-amber-600/10 active:scale-95 flex items-center gap-2"
+                                                         >
+                                                             Verify Payment
+                                                         </button>
+                                                     </div>
+                                                 )}
+                                                 <button className="p-2 bg-slate-50 text-slate-400 rounded-xl hover:bg-primary hover:text-white transition-all">
+                                                     <ChevronRight size={20} />
+                                                 </button>
+                                             </div>
+                                         </td>
                                     </tr>
                                 ))
                             ) : (

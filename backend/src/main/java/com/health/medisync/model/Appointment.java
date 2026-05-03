@@ -34,6 +34,7 @@ public class Appointment {
     private Double amount;
     private String razorpayOrderId;
     private String razorpayPaymentId;
+    private String patientUpiId;
     
     private String meetLink;
     private boolean meetNotified = false;
@@ -76,6 +77,9 @@ public class Appointment {
 
     public String getRazorpayPaymentId() { return razorpayPaymentId; }
     public void setRazorpayPaymentId(String razorpayPaymentId) { this.razorpayPaymentId = razorpayPaymentId; }
+
+    public String getPatientUpiId() { return patientUpiId; }
+    public void setPatientUpiId(String patientUpiId) { this.patientUpiId = patientUpiId; }
 
     public java.time.LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(java.time.LocalDateTime createdAt) { this.createdAt = createdAt; }
