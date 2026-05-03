@@ -115,18 +115,19 @@ export const AuthProvider = ({ children }) => {
       });
       
       let message = error.response?.data?.message;
+      let pendingApproval = error.response?.status === 403;
       
       if (!message) {
         if (error.response?.status === 401) {
           message = 'Invalid credentials. Please check your password.';
-        } else if (error.response?.status === 403) {
+        } else if (pendingApproval) {
           message = 'Your account is pending institutional or administrative approval.';
         } else {
           message = 'Login service unavailable. Please verify your internet connection.';
         }
       }
       
-      return { success: false, message };
+      return { success: false, message, pendingApproval };
     }
   };
 

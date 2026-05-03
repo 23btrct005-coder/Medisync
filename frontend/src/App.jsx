@@ -49,6 +49,7 @@ import HospitalPatients from './pages/HospitalPatients';
 import HospitalProfile from './pages/HospitalProfile';
 import HospitalAnalytics from './pages/HospitalAnalytics';
 import HospitalLedger from './pages/HospitalLedger';
+import PendingApproval from './pages/PendingApproval';
 import VerifyEmail from './pages/VerifyEmail';
 import PatientMessages from './pages/PatientMessages';
 import ClinicalError404 from './pages/ClinicalError404';
@@ -127,6 +128,7 @@ function App() {
                 <Route path="/terms-of-service" element={<TermsOfService />} />
                 <Route path="/ai-disclaimer" element={<AIDisclaimer />} />
                 <Route path="/verify-email" element={<VerifyEmail />} />
+                <Route path="/pending-approval" element={<PendingApproval />} />
                 
                 {/* Legacy Redirects */}
                 <Route path="/profile" element={

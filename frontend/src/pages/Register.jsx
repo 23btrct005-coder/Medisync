@@ -849,8 +849,8 @@ const Register = () => {
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Banking & Automated Payouts</p>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="md:col-span-2 space-y-1">
-                                        <label className={labelClass}>Razorpay Account ID <span className="text-red-500">*</span></label>
-                                        <input type="text" name="razorpayAccountId" required value={formData.razorpayAccountId} onChange={handleChange} className={`${inputClass} font-mono`} placeholder="acc_XXXXXXXXXXXXXX" />
+                                        <label className={labelClass}>Razorpay Account ID</label>
+                                        <input type="text" name="razorpayAccountId" value={formData.razorpayAccountId} onChange={handleChange} className={`${inputClass} font-mono`} placeholder="acc_XXXXXXXXXXXXXX" />
                                         <p className="text-[9px] text-slate-400 mt-1 uppercase font-bold tracking-widest">Your institutional linked account ID for automated payouts</p>
                                     </div>
                                     <div className="md:col-span-2"><label className={labelClass}>Primary UPI ID</label><input type="text" name="upiId" value={formData.upiId} onChange={handleChange} className={inputClass} placeholder="hospital@upi" /></div>

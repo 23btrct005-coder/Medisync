@@ -34,8 +34,12 @@ const Login = () => {
         navigate('/dashboard');
       }
     } else {
-      setError(result.message);
-      setIsLoading(false);
+      if (result.pendingApproval) {
+        navigate('/pending-approval');
+      } else {
+        setError(result.message);
+        setIsLoading(false);
+      }
     }
   };
 
