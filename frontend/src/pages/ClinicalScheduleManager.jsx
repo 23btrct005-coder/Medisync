@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import SkeletonCard from '../components/SkeletonCard';
+import toast from 'react-hot-toast';
 
 const DoctorAppointments = () => {
     const { user } = useAuth();
@@ -209,6 +210,7 @@ const DoctorAppointments = () => {
 /* --- SUBCOMPONENTS --- */
 
 const DoctorAppointmentCard = ({ appt, onClick, active, historical }) => {
+    const { user } = useAuth();
     return (
         <div 
             onClick={onClick}
