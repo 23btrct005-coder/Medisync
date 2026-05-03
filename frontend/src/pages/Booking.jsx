@@ -619,9 +619,9 @@ const Booking = () => {
                                 setShowUpiModal(false);
                             }
                         }}
-                        disabled={isBooking || !upiConfirmed}
+                        disabled={isBooking || !upiConfirmed || !upiOrderData?.patientUpiId?.trim() || !upiOrderData?.transactionId?.trim()}
                         className={`w-full py-5 rounded-[2rem] text-sm font-black uppercase tracking-widest transition-all shadow-xl active:scale-95 ${
-                            upiConfirmed 
+                            (upiConfirmed && upiOrderData?.patientUpiId?.trim() && upiOrderData?.transactionId?.trim()) 
                             ? 'bg-slate-900 text-white shadow-slate-900/20' 
                             : 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'
                         }`}
