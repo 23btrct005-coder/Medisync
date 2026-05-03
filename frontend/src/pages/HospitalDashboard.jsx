@@ -126,129 +126,73 @@ const HospitalDashboard = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                {/* Clinical Dynamics */}
-                <div className="lg:col-span-8 bg-white rounded-[3.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 p-10 space-y-10">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight italic">Clinical <span className="not-italic text-primary">Dynamics</span></h3>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mt-1">Real-time departmental load and triage status</p>
-                        </div>
-                        <div className="p-1 bg-slate-50 rounded-full border border-slate-100 flex items-center">
-                            <button className="px-6 py-2.5 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest rounded-full shadow-lg transition-all">Live Feed</button>
-                            <button className="px-6 py-2.5 text-slate-400 text-[9px] font-black uppercase tracking-widest hover:text-slate-600 transition-colors">Historical</button>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {Object.entries(loadFluctuations).map(([dept, load]) => (
-                            <div key={dept} className="p-8 bg-slate-50/50 rounded-[2.5rem] border border-slate-100 hover:bg-white hover:shadow-lg hover:shadow-slate-100 transition-all group">
-                                <div className="flex items-center justify-between mb-6">
-                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{dept} Division</h4>
-                                    <TrendingUp size={16} className="text-primary opacity-50 group-hover:opacity-100" />
-                                </div>
-                                <div className="flex items-baseline gap-2 mb-4">
-                                    <span className="text-4xl font-black text-slate-900 italic">{load.toFixed(1)}</span>
-                                    <span className="text-[10px] font-black text-slate-400 uppercase">% Capacity</span>
-                                </div>
-                                <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
-                                    <div 
-                                        className={`h-full transition-all duration-1000 ${load > 90 ? 'bg-amber-500' : 'bg-primary'}`}
-                                        style={{ width: `${load}%` }}
-                                    />
-                                </div>
-                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-4">Status: <span className={load > 90 ? 'text-amber-500' : 'text-emerald-500'}>{load > 90 ? 'High Pressure' : 'Optimal'}</span></p>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                        <button 
-                            onClick={() => navigate('/hospital-dashboard/staff')}
-                            className="group p-10 bg-primary rounded-[3rem] text-left relative overflow-hidden transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-primary/20"
-                        >
-                            <div className="absolute top-0 right-0 w-48 h-48 bg-white/20 -mr-24 -mt-24 rounded-full blur-3xl group-hover:bg-white/30 transition-all" />
-                            <Users size={32} className="text-white mb-6" />
-                            <h3 className="text-3xl font-black text-white uppercase tracking-tight italic leading-none mb-2">Staff<span className="not-italic opacity-60">Portal</span></h3>
-                            <p className="text-white/60 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">Manage Personnel <ChevronRight size={14} /></p>
-                        </button>
-                        <button 
-                            onClick={() => navigate('/hospital-dashboard/ledger')}
-                            className="group p-10 bg-slate-900 rounded-[3rem] text-left relative overflow-hidden transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-slate-900/20"
-                        >
-                            <div className="absolute top-0 right-0 w-48 h-48 bg-primary/10 -mr-24 -mt-24 rounded-full blur-3xl" />
-                            <DollarSign size={32} className="text-primary mb-6" />
-                            <h3 className="text-3xl font-black text-white uppercase tracking-tight italic leading-none mb-2">Financial<br/><span className="not-italic text-primary">Reach</span></h3>
-                            <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">Review Ledger <ChevronRight size={14} /></p>
-                        </button>
-                    </div>
-                </div>
-
-                {/* Institutional Operations Column */}
-                <div className="lg:col-span-4 space-y-8">
-                    {/* Broadcast Terminal */}
-                    <div className="bg-slate-900 rounded-[3.5rem] p-10 text-white shadow-2xl shadow-slate-900/40 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 -mr-32 -mt-32 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700" />
-                        <div className="relative z-10 space-y-8">
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-md">
-                                    <Megaphone size={24} className="text-primary" />
+                {/* Institutional Broadcast Terminal */}
+                <div className="lg:col-span-8">
+                    <div className="bg-slate-900 rounded-[3.5rem] p-12 text-white shadow-2xl shadow-slate-900/40 relative overflow-hidden group h-full flex flex-col justify-between">
+                        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 -mr-48 -mt-48 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700" />
+                        <div className="relative z-10 space-y-10">
+                            <div className="flex items-center gap-6">
+                                <div className="p-5 bg-white/10 rounded-[2rem] backdrop-blur-md">
+                                    <Megaphone size={32} className="text-primary" />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-black uppercase tracking-tight italic">Institutional <span className="text-primary">Broadcast</span></h3>
-                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Personnel Notification Terminal</p>
+                                    <h3 className="text-3xl font-black uppercase tracking-tight italic">Institutional <span className="text-primary">Broadcast</span></h3>
+                                    <p className="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mt-1">High-Priority Personnel Notification Terminal</p>
                                 </div>
                             </div>
 
-                            <div className="space-y-4">
+                            <div className="space-y-6">
                                 <textarea
                                     value={broadcastMessage}
                                     onChange={(e) => setBroadcastMessage(e.target.value)}
                                     placeholder="Type high-priority announcement for all onboarded staff..."
-                                    className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 text-sm focus:ring-2 ring-primary/50 outline-none transition-all placeholder:text-slate-500 resize-none min-h-[150px]"
+                                    className="w-full bg-white/5 border border-white/10 rounded-[2.5rem] p-8 text-lg focus:ring-2 ring-primary/50 outline-none transition-all placeholder:text-slate-500 resize-none min-h-[250px]"
                                 />
                                 <button
                                     onClick={handleBroadcast}
                                     disabled={sendingBroadcast || !broadcastMessage.trim()}
-                                    className="w-full py-5 bg-primary hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-3xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3 active:scale-95"
+                                    className="w-full py-7 bg-primary hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-[2.5rem] font-black uppercase tracking-[0.3em] text-xs shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-4 active:scale-[0.98]"
                                 >
-                                    {sendingBroadcast ? <Activity className="animate-spin" size={18} /> : <Send size={18} />}
-                                    Dispatch Announcement
+                                    {sendingBroadcast ? <Activity className="animate-spin" size={24} /> : <Send size={24} />}
+                                    Dispatch Institutional Announcement
                                 </button>
                             </div>
+                        </div>
 
-                            <div className="pt-4 border-t border-white/5 flex items-center gap-3 text-slate-500">
-                                <ShieldAlert size={16} />
-                                <p className="text-[9px] font-bold uppercase tracking-widest leading-relaxed">
-                                    Broadcasts are encrypted and visible to all verified institutional staff.
-                                </p>
-                            </div>
+                        <div className="relative z-10 pt-10 border-t border-white/5 flex items-center gap-4 text-slate-500">
+                            <ShieldAlert size={20} />
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] leading-relaxed">
+                                Broadcasts are verified by the institutional security node and visible to all medical staff.
+                            </p>
                         </div>
                     </div>
+                </div>
 
-                    {/* Quick Action Hubs */}
+                {/* Quick Action Hubs */}
+                <div className="lg:col-span-4 space-y-8">
                     <button 
                         onClick={() => navigate('/hospital-dashboard/staff')}
-                        className="w-full group bg-blue-600 p-10 rounded-[3.5rem] text-white shadow-xl shadow-blue-500/20 flex flex-col items-start gap-4 hover:scale-[1.02] transition-all relative overflow-hidden"
+                        className="w-full group bg-blue-600 p-12 rounded-[3.5rem] text-white shadow-xl shadow-blue-500/20 flex flex-col items-start gap-6 hover:scale-[1.02] transition-all relative overflow-hidden min-h-[280px] justify-end"
                     >
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 -mr-16 -mt-16 rounded-full group-hover:scale-150 transition-transform duration-700" />
-                        <Users size={32} className="relative z-10" />
+                        <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 -mr-24 -mt-24 rounded-full group-hover:scale-150 transition-transform duration-700 blur-2xl" />
+                        <Users size={48} className="relative z-10" />
                         <div className="relative z-10 text-left">
-                            <h3 className="text-3xl font-black uppercase tracking-tight italic">Staff <span className="opacity-60">Portal</span></h3>
-                            <p className="text-[10px] font-black uppercase tracking-widest mt-2 flex items-center gap-2 opacity-80">
-                                Manage Personnel <ChevronRight size={14} />
+                            <h3 className="text-4xl font-black uppercase tracking-tight italic">Staff <span className="opacity-60">Portal</span></h3>
+                            <p className="text-xs font-black uppercase tracking-widest mt-4 flex items-center gap-2 opacity-80 bg-white/10 px-4 py-2 rounded-full">
+                                Manage Personnel <ChevronRight size={16} />
                             </p>
                         </div>
                     </button>
 
                     <button 
-                        className="w-full group bg-slate-900 p-10 rounded-[3.5rem] text-white shadow-xl shadow-slate-900/20 flex flex-col items-start gap-4 hover:scale-[1.02] transition-all relative overflow-hidden"
+                        className="w-full group bg-slate-900 p-12 rounded-[3.5rem] text-white shadow-xl shadow-slate-900/20 flex flex-col items-start gap-6 hover:scale-[1.02] transition-all relative overflow-hidden min-h-[280px] justify-end"
                     >
-                        <div className="absolute bottom-0 right-0 w-32 h-32 bg-primary/10 -mr-16 -mb-16 rounded-full group-hover:scale-150 transition-transform duration-700" />
-                        <DollarSign size={32} className="relative z-10 text-primary" />
+                        <div className="absolute bottom-0 right-0 w-48 h-48 bg-primary/10 -mr-24 -mb-24 rounded-full group-hover:scale-150 transition-transform duration-700 blur-2xl" />
+                        <DollarSign size={48} className="relative z-10 text-primary" />
                         <div className="relative z-10 text-left">
-                            <h3 className="text-3xl font-black uppercase tracking-tight italic">Financial <span className="text-primary opacity-60">Reach</span></h3>
-                            <p className="text-[10px] font-black uppercase tracking-widest mt-2 flex items-center gap-2 opacity-80">
-                                Review Ledger <ChevronRight size={14} />
+                            <h3 className="text-4xl font-black uppercase tracking-tight italic">Financial <span className="text-primary opacity-60">Reach</span></h3>
+                            <p className="text-xs font-black uppercase tracking-widest mt-4 flex items-center gap-2 opacity-80 bg-primary/10 px-4 py-2 rounded-full">
+                                Review Ledger <ChevronRight size={16} />
                             </p>
                         </div>
                     </button>
