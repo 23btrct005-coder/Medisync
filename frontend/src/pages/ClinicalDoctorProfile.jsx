@@ -8,6 +8,8 @@ import {
   Calendar, CheckCircle, XCircle, Video, Edit3, MapPin, CreditCard, Wallet
 } from 'lucide-react';
 import ClinicMap from '../components/ClinicMap';
+import toast from 'react-hot-toast';
+import { ShieldCheck, Save, X } from 'lucide-react';
 
 const InfoRow = ({ icon: Icon, label, value, color = 'text-blue-600' }) => (
   <div className="flex items-start gap-3 py-3 border-b border-slate-100 last:border-0">
@@ -30,9 +32,39 @@ const Section = ({ title, icon: Icon, children }) => (
 );
 
 const DoctorProfile = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('identity');
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({});
+  const [saving, setSaving] = useState(false);
+
+  const startEditing = () => {
+    setFormData({
+      subSpecialties: user.subSpecialties || '',
+      proceduresHandled: user.proceduresHandled || '',
+      treatmentFocus: user.treatmentFocus || '',
+      publications: user.publications || '',
+      languagesSpoken: user.languagesSpoken || '',
+      onlineConsultation: user.onlineConsultation || false,
+      appointmentsEnabled: user.appointmentsEnabled || false,
+    });
+    setIsEditing(true);
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await api.post('/doctor/profile/sync', formData);
+      toast.success("Profile synchronized successfully");
+      await refreshUser();
+      setIsEditing(false);
+    } catch (err) {
+      toast.error("Synchronization failure: Protocol interrupted");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (loading) return (
     <div className="flex justify-center items-center p-20">
@@ -93,7 +125,23 @@ const DoctorProfile = () => {
         </div>
         
         <div className="flex items-center gap-3">
-            {!user.institutional ? (
+            {isEditing ? (
+                <div className="flex gap-2">
+                    <button 
+                        onClick={() => setIsEditing(false)}
+                        className="flex items-center justify-center gap-3 bg-slate-100 text-slate-500 font-black uppercase tracking-widest text-[10px] px-6 py-4 rounded-[2rem] hover:bg-slate-200 transition-all active:scale-95"
+                    >
+                        <X size={16} /> Discard
+                    </button>
+                    <button 
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="flex items-center justify-center gap-3 bg-blue-600 text-white font-black uppercase tracking-widest text-[10px] px-8 py-4 rounded-[2rem] hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 active:scale-95 disabled:opacity-50"
+                    >
+                        <Save size={16} /> {saving ? 'Syncing...' : 'Save Changes'}
+                    </button>
+                </div>
+            ) : !user.institutional ? (
                 <button 
                     onClick={() => navigate('/doctor-dashboard/profile/edit')}
                     className="flex items-center justify-center gap-3 bg-slate-900 text-white font-black uppercase tracking-widest text-[10px] px-8 py-4 rounded-[2rem] hover:bg-blue-600 transition-all shadow-xl shadow-slate-900/20 active:scale-95 group"
@@ -102,11 +150,19 @@ const DoctorProfile = () => {
                     Modify Clinical Profile
                 </button>
             ) : (
-                <div className="flex flex-col items-end">
-                    <div className="flex items-center gap-2 px-6 py-3 bg-blue-50 text-blue-700 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm border border-blue-100">
-                        <Building2 size={16} /> Institutional Profile
+                <div className="flex items-center gap-3">
+                    <button 
+                        onClick={startEditing}
+                        className="flex items-center justify-center gap-3 bg-blue-600 text-white font-black uppercase tracking-widest text-[10px] px-8 py-4 rounded-[2rem] hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 active:scale-95 group"
+                    >
+                        <Edit3 size={16} /> Manage Expertise
+                    </button>
+                    <div className="flex flex-col items-end">
+                        <div className="flex items-center gap-2 px-6 py-3 bg-blue-50 text-blue-700 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm border border-blue-100">
+                            <Building2 size={16} /> Institutional Profile
+                        </div>
+                        <p className="text-[9px] text-slate-400 mt-2 font-bold uppercase tracking-tighter">Controlled by {user.hospital || 'Institution'}</p>
                     </div>
-                    <p className="text-[9px] text-slate-400 mt-2 font-bold uppercase tracking-tighter">Controlled by {user.hospital || 'Institution'}</p>
                 </div>
             )}
         </div>
@@ -184,21 +240,81 @@ const DoctorProfile = () => {
                     <Section title="Clinical Specialization" icon={Stethoscope}>
                         <div className="py-4 border-b border-slate-50">
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Sub-Specialty Focus</p>
-                            <div className="flex flex-wrap gap-2">
-                                {user.subSpecialties ? user.subSpecialties.split(', ').map(s => (
-                                    <span key={s} className="px-4 py-2 bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded-xl border border-blue-100 shadow-sm">
-                                        {s}
-                                    </span>
-                                )) : <span className="text-slate-300 italic text-sm">No sub-specialties listed</span>}
-                            </div>
+                            {isEditing ? (
+                                <input 
+                                    type="text" 
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                                    placeholder="e.g. Cardiology, Diabetology (comma separated)"
+                                    value={formData.subSpecialties}
+                                    onChange={(e) => setFormData({ ...formData, subSpecialties: e.target.value })}
+                                />
+                            ) : (
+                                <div className="flex flex-wrap gap-2">
+                                    {user.subSpecialties ? user.subSpecialties.split(', ').map(s => (
+                                        <span key={s} className="px-4 py-2 bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded-xl border border-blue-100 shadow-sm">
+                                            {s}
+                                        </span>
+                                    )) : <span className="text-slate-300 italic text-sm">No sub-specialties listed</span>}
+                                </div>
+                            )}
                         </div>
-                        <InfoRow icon={Activity} label="Procedures Managed" value={user.proceduresHandled} color="text-indigo-600" />
-                        <InfoRow icon={Activity} label="Treatment Focus" value={user.treatmentFocus} color="text-rose-600" />
+                        {isEditing ? (
+                            <div className="space-y-4 py-4">
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Procedures Managed</p>
+                                    <textarea 
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                                        rows={3}
+                                        value={formData.proceduresHandled}
+                                        onChange={(e) => setFormData({ ...formData, proceduresHandled: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Treatment Focus</p>
+                                    <textarea 
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                                        rows={3}
+                                        value={formData.treatmentFocus}
+                                        onChange={(e) => setFormData({ ...formData, treatmentFocus: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <InfoRow icon={Activity} label="Procedures Managed" value={user.proceduresHandled} color="text-indigo-600" />
+                                <InfoRow icon={Activity} label="Treatment Focus" value={user.treatmentFocus} color="text-rose-600" />
+                            </>
+                        )}
                     </Section>
-
+                                    
                     <Section title="Professional Assets" icon={Star}>
-                        <InfoRow icon={Activity} label="Languages Spoken" value={user.languagesSpoken} color="text-emerald-600" />
-                        <InfoRow icon={Activity} label="Scientific Publications" value={user.publications} color="text-blue-600" />
+                        {isEditing ? (
+                            <div className="space-y-4 py-4">
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Languages Spoken</p>
+                                    <input 
+                                        type="text" 
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                                        value={formData.languagesSpoken}
+                                        onChange={(e) => setFormData({ ...formData, languagesSpoken: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Scientific Publications</p>
+                                    <textarea 
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                                        rows={3}
+                                        value={formData.publications}
+                                        onChange={(e) => setFormData({ ...formData, publications: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <InfoRow icon={Activity} label="Languages Spoken" value={user.languagesSpoken} color="text-emerald-600" />
+                                <InfoRow icon={Activity} label="Scientific Publications" value={user.publications} color="text-blue-600" />
+                            </>
+                        )}
                     </Section>
                 </div>
             )}
@@ -229,14 +345,44 @@ const DoctorProfile = () => {
                             <InfoRow icon={CreditCard} label="Online Fee" value={user.onlineConsultationFee ? `₹ ${user.onlineConsultationFee}` : null} color="text-emerald-600" />
                             <InfoRow icon={MapPin} label="In-Person Fee" value={user.offlineConsultationFee ? `₹ ${user.offlineConsultationFee}` : null} color="text-blue-600" />
                         </div>
-                        <div className="py-4 flex items-center justify-between">
-                            <div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Digital Care Status</p>
-                                <p className="text-sm font-bold text-slate-700 mt-1">Telemedicine Availability</p>
+                        <div className="py-4 space-y-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Digital Care Status</p>
+                                    <p className="text-sm font-bold text-slate-700 mt-1">Telemedicine Availability</p>
+                                </div>
+                                {isEditing ? (
+                                    <button 
+                                        onClick={() => setFormData({ ...formData, onlineConsultation: !formData.onlineConsultation })}
+                                        className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${formData.onlineConsultation ? 'bg-emerald-600 text-white border-emerald-500 shadow-lg shadow-emerald-500/20' : 'bg-slate-100 text-slate-400 border-slate-200'}`}
+                                    >
+                                        {formData.onlineConsultation ? 'Enabled' : 'Disabled'}
+                                    </button>
+                                ) : (
+                                    <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border ${user.onlineConsultation ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-100 text-slate-400'}`}>
+                                        {user.onlineConsultation ? 'Enabled' : 'Disabled'}
+                                    </span>
+                                )}
                             </div>
-                            <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border ${user.onlineConsultation ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-100 text-slate-400'}`}>
-                                {user.onlineConsultation ? 'Enabled' : 'Disabled'}
-                            </span>
+                            
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Booking Protocol</p>
+                                    <p className="text-sm font-bold text-slate-700 mt-1">Accept New Appointments</p>
+                                </div>
+                                {isEditing ? (
+                                    <button 
+                                        onClick={() => setFormData({ ...formData, appointmentsEnabled: !formData.appointmentsEnabled })}
+                                        className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${formData.appointmentsEnabled ? 'bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-500/20' : 'bg-slate-100 text-slate-400 border-slate-200'}`}
+                                    >
+                                        {formData.appointmentsEnabled ? 'Accepting' : 'Paused'}
+                                    </button>
+                                ) : (
+                                    <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border ${user.appointmentsEnabled ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-slate-100 text-slate-400'}`}>
+                                        {user.appointmentsEnabled ? 'Accepting' : 'Paused'}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </Section>
                 </div>
