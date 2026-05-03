@@ -22,6 +22,7 @@ public class AiService {
     private final AppointmentRepository appointmentRepository;
     private final PatientRepository patientRepository;
     private final AppointmentService appointmentService;
+    private final AiQueryLogRepository aiQueryLogRepository;
     
     private static final Map<String, String> sessionSummaries = new HashMap<>();
 
@@ -29,12 +30,14 @@ public class AiService {
                      HospitalRepository hospitalRepository,
                      AppointmentRepository appointmentRepository,
                      PatientRepository patientRepository,
-                     @Lazy AppointmentService appointmentService) {
+                     @Lazy AppointmentService appointmentService,
+                     AiQueryLogRepository aiQueryLogRepository) {
         this.doctorRepository = doctorRepository;
         this.hospitalRepository = hospitalRepository;
         this.appointmentRepository = appointmentRepository;
         this.patientRepository = patientRepository;
         this.appointmentService = appointmentService;
+        this.aiQueryLogRepository = aiQueryLogRepository;
     }
 
     public String generateResponse(String query, String patientEmail) {
@@ -52,6 +55,9 @@ public class AiService {
         List<Hospital> allHospitals = hospitalRepository.findAll();
 
         String mappedSpecialty = mapSymptomToSpecialty(lowerQuery);
+        
+        // Institutional Intelligence: Log the query
+        logQuery(query, mappedSpecialty);
         if (mappedSpecialty != null) {
             List<Doctor> specialists = allDoctors.stream()
                 .filter(d -> d.isApproved() && (d.getSpecialization().toLowerCase().contains(mappedSpecialty) || 
@@ -192,5 +198,16 @@ public class AiService {
 
     public String getLatestBrief(String email) {
         return sessionSummaries.getOrDefault(email, "No AI context provided for this session.");
+    }
+
+    private void logQuery(String query, String specialty) {
+        try {
+            com.health.medisync.model.AiQueryLog log = new com.health.medisync.model.AiQueryLog();
+            log.setQueryText(query);
+            log.setDetectedSpecialty(specialty != null ? specialty : "general");
+            aiQueryLogRepository.save(log);
+        } catch (Exception e) {
+            // Silently fail logging to not disrupt patient experience
+        }
     }
 }

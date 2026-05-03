@@ -4,7 +4,7 @@ import {
   Building2, Users, ClipboardCheck, TrendingUp, ShieldAlert, Shield, 
   ChevronRight, Activity, Calendar, MapPin, Clock, DollarSign, 
   CreditCard, Lock, X, Check, Settings, ArrowUpRight, HeartPulse,
-  LayoutDashboard, Bell, Megaphone, Send
+  LayoutDashboard, Bell, Megaphone, Send, BrainCircuit, Search, BarChart3
 } from 'lucide-react';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
@@ -16,17 +16,20 @@ const HospitalDashboard = () => {
     const [broadcastMessage, setBroadcastMessage] = useState('');
     const [sendingBroadcast, setSendingBroadcast] = useState(false);
     const [auditLogs, setAuditLogs] = useState([]);
+    const [aiInsights, setAiInsights] = useState([]);
     const [loadFluctuations, setLoadFluctuations] = useState({ Cardiology: 92.1, Neurology: 67.9, Pediatrics: 92.1 });
 
     const fetchInstitutionalData = async (silent = false) => {
         if (!silent) setLoading(true);
         try {
-            const [statsRes, auditRes] = await Promise.all([
+            const [statsRes, auditRes, aiRes] = await Promise.all([
                 api.get('/hospital/stats'),
-                api.get('/hospital/audit-logs')
+                api.get('/hospital/audit-logs'),
+                api.get('/ai/analytics/current')
             ]);
             setStats(statsRes.data);
             setAuditLogs(auditRes.data);
+            setAiInsights(aiRes.data);
         } catch (err) {
             console.error("Institutional sync failed", err);
         } finally {
@@ -60,6 +63,16 @@ const HospitalDashboard = () => {
         }
     };
 
+    const topSpecialties = aiInsights.reduce((acc, log) => {
+        const spec = log.detectedSpecialty || 'general';
+        acc[spec] = (acc[spec] || 0) + 1;
+        return acc;
+    }, {});
+
+    const sortedTrends = Object.entries(topSpecialties)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 5);
+
     if (loading) return (
         <div className="h-screen flex items-center justify-center bg-slate-50">
             <div className="flex flex-col items-center gap-4">
@@ -68,12 +81,6 @@ const HospitalDashboard = () => {
             </div>
         </div>
     );
-
-    const statCards = [
-        { label: 'Growth', value: `${stats?.institutionalPatientGrowth || '12.4'}%`, icon: TrendingUp, color: 'bg-blue-500', trend: '+2.1%', sub: 'Active clinical cycle' },
-        { label: 'Verified', value: stats?.totalInstitutionalAppointments || '842', icon: Check, color: 'bg-emerald-500', trend: '98% Success', sub: 'Completed sessions' },
-        { label: 'Revenue', value: `₹${stats?.institutionalMonthlyRevenue ? (stats.institutionalMonthlyRevenue / 1000).toFixed(1) : '42.8'}K`, icon: DollarSign, color: 'bg-amber-500', trend: '+12%', sub: 'Monthly projection' }
-    ];
 
     return (
         <div className="min-h-screen bg-[#f8fafc] p-6 lg:p-12 space-y-10 animate-in fade-in duration-700">
@@ -107,11 +114,27 @@ const HospitalDashboard = () => {
                 </div>
             </div>
 
-
+            {/* Stats Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {sortedTrends.slice(0, 3).map(([name, count], i) => (
+                    <div key={i} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex items-center justify-between group hover:border-primary/20 transition-all">
+                        <div>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Top Patient Demand</p>
+                            <p className="text-xl font-black text-slate-900 uppercase italic">{name}</p>
+                            <p className="text-xs text-primary font-bold mt-2 flex items-center gap-2">
+                                <Activity size={14} /> {count} clinical queries this week
+                            </p>
+                        </div>
+                        <div className="p-4 bg-slate-50 rounded-2xl group-hover:bg-primary/10 transition-all">
+                            <BrainCircuit size={24} className="text-slate-400 group-hover:text-primary transition-all" />
+                        </div>
+                    </div>
+                ))}
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Institutional Broadcast Terminal */}
-                <div className="lg:col-span-8">
+                <div className="lg:col-span-7">
                     <div className="bg-slate-900 rounded-[3.5rem] p-12 text-white shadow-2xl shadow-slate-900/40 relative overflow-hidden group h-full flex flex-col justify-between">
                         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 -mr-48 -mt-48 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700" />
                         <div className="relative z-10 space-y-10">
@@ -130,7 +153,7 @@ const HospitalDashboard = () => {
                                     value={broadcastMessage}
                                     onChange={(e) => setBroadcastMessage(e.target.value)}
                                     placeholder="Type high-priority announcement for all onboarded staff..."
-                                    className="w-full bg-white/5 border border-white/10 rounded-[2.5rem] p-8 text-lg focus:ring-2 ring-primary/50 outline-none transition-all placeholder:text-slate-500 resize-none min-h-[250px]"
+                                    className="w-full bg-white/5 border border-white/10 rounded-[2.5rem] p-8 text-lg focus:ring-2 ring-primary/50 outline-none transition-all placeholder:text-slate-500 resize-none min-h-[200px]"
                                 />
                                 <button
                                     onClick={handleBroadcast}
@@ -142,44 +165,53 @@ const HospitalDashboard = () => {
                                 </button>
                             </div>
                         </div>
-
-                        <div className="relative z-10 pt-10 border-t border-white/5 flex items-center gap-4 text-slate-500">
-                            <ShieldAlert size={20} />
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] leading-relaxed">
-                                Broadcasts are verified by the institutional security node and visible to all medical staff.
-                            </p>
-                        </div>
                     </div>
                 </div>
 
-                {/* Quick Action Hubs */}
-                <div className="lg:col-span-4 space-y-8">
-                    <button 
-                        onClick={() => navigate('/hospital-dashboard/staff')}
-                        className="w-full group bg-blue-600 p-12 rounded-[3.5rem] text-white shadow-xl shadow-blue-500/20 flex flex-col items-start gap-6 hover:scale-[1.02] transition-all relative overflow-hidden min-h-[280px] justify-end"
-                    >
-                        <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 -mr-24 -mt-24 rounded-full group-hover:scale-150 transition-transform duration-700 blur-2xl" />
-                        <Users size={48} className="relative z-10" />
-                        <div className="relative z-10 text-left">
-                            <h3 className="text-4xl font-black uppercase tracking-tight italic">Staff <span className="opacity-60">Portal</span></h3>
-                            <p className="text-xs font-black uppercase tracking-widest mt-4 flex items-center gap-2 opacity-80 bg-white/10 px-4 py-2 rounded-full">
-                                Manage Personnel <ChevronRight size={16} />
-                            </p>
+                {/* AI SEARCH TRENDS SECTION */}
+                <div className="lg:col-span-5">
+                    <div className="bg-white border border-slate-100 rounded-[3.5rem] p-10 shadow-sm h-full flex flex-col">
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center gap-4">
+                                <div className="p-4 bg-indigo-50 text-indigo-600 rounded-2xl">
+                                    <BarChart3 size={24} />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">AI Clinical <span className="text-indigo-600 italic">Insights</span></h3>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Patient Query Dynamics</p>
+                                </div>
+                            </div>
+                            <div className="px-3 py-1 bg-emerald-100 text-emerald-600 rounded-full text-[10px] font-black uppercase">Live Telemetry</div>
                         </div>
-                    </button>
 
-                    <button 
-                        className="w-full group bg-slate-900 p-12 rounded-[3.5rem] text-white shadow-xl shadow-slate-900/20 flex flex-col items-start gap-6 hover:scale-[1.02] transition-all relative overflow-hidden min-h-[280px] justify-end"
-                    >
-                        <div className="absolute bottom-0 right-0 w-48 h-48 bg-primary/10 -mr-24 -mb-24 rounded-full group-hover:scale-150 transition-transform duration-700 blur-2xl" />
-                        <DollarSign size={48} className="relative z-10 text-primary" />
-                        <div className="relative z-10 text-left">
-                            <h3 className="text-4xl font-black uppercase tracking-tight italic">Financial <span className="text-primary opacity-60">Reach</span></h3>
-                            <p className="text-xs font-black uppercase tracking-widest mt-4 flex items-center gap-2 opacity-80 bg-primary/10 px-4 py-2 rounded-full">
-                                Review Ledger <ChevronRight size={16} />
-                            </p>
+                        <div className="flex-1 space-y-6">
+                            {sortedTrends.length > 0 ? sortedTrends.map(([spec, count], i) => (
+                                <div key={i} className="relative">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <span className="text-xs font-black text-slate-700 uppercase tracking-widest">{spec}</span>
+                                        <span className="text-xs font-black text-indigo-600 italic">{count} Searches</span>
+                                    </div>
+                                    <div className="h-3 w-full bg-slate-50 rounded-full overflow-hidden">
+                                        <div 
+                                            className="h-full bg-gradient-to-r from-indigo-500 to-indigo-400 rounded-full transition-all duration-1000 ease-out" 
+                                            style={{ width: `${(count / aiInsights.length) * 100}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            )) : (
+                                <div className="h-full flex flex-col items-center justify-center text-center p-10 opacity-40">
+                                    <Search size={48} className="mb-4" />
+                                    <p className="text-xs font-black uppercase tracking-widest">No search data captured yet</p>
+                                </div>
+                            )}
                         </div>
-                    </button>
+
+                        <div className="mt-10 p-6 bg-slate-50 rounded-[2rem] border border-dashed border-slate-200">
+                             <p className="text-[10px] font-black text-slate-400 uppercase leading-relaxed text-center">
+                                Pro Tip: High search volume for specialties you don't offer indicates a market expansion opportunity.
+                             </p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

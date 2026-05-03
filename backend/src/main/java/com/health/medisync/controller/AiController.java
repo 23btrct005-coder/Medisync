@@ -1,7 +1,9 @@
 package com.health.medisync.controller;
 
 import com.health.medisync.service.AiService;
+import com.health.medisync.repository.AiQueryLogRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,9 +15,11 @@ import java.util.Map;
 public class AiController {
 
     private final AiService aiService;
+    private final AiQueryLogRepository aiQueryLogRepository;
 
-    public AiController(AiService aiService) {
+    public AiController(AiService aiService, AiQueryLogRepository aiQueryLogRepository) {
         this.aiService = aiService;
+        this.aiQueryLogRepository = aiQueryLogRepository;
     }
 
     @PostMapping("/chat")
@@ -38,5 +42,11 @@ public class AiController {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of("error", "Clinical Engine Error: " + e.getMessage()));
         }
+    }
+
+    @GetMapping("/analytics/{hospitalId}")
+    @PreAuthorize("hasRole('HOSPITAL_ADMIN')")
+    public ResponseEntity<?> getAnalytics(@PathVariable Long hospitalId) {
+        return ResponseEntity.ok(aiQueryLogRepository.findAll());
     }
 }
