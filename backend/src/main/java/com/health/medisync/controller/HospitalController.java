@@ -331,4 +331,13 @@ public class HospitalController {
         hospitalService.updateDoctorProfile(id, updates, admin.getHospital());
         return ResponseEntity.ok(Map.of("message", "Physician profile updated successfully"));
     }
+
+    @DeleteMapping("/delete-doctor/{id}")
+    public ResponseEntity<?> deleteDoctor(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        HospitalAdmin admin = hospitalService.getAdminByUser(user);
+        hospitalService.deleteDoctor(id, admin.getHospital());
+        return ResponseEntity.ok(Map.of("message", "Physician record purged successfully"));
+    }
 }

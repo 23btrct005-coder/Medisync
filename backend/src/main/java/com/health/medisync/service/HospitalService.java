@@ -252,4 +252,20 @@ public class HospitalService {
         
         doctorRepository.save(doctor);
     }
+
+    public void deleteDoctor(Long doctorId, Hospital hospital) {
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+        
+        if (doctor.getHospitalEntity() == null || !doctor.getHospitalEntity().getId().equals(hospital.getId())) {
+            throw new RuntimeException("Unauthorized: Physician not affiliated with your institution");
+        }
+        
+        // Remove associated user if it exists
+        if (doctor.getUser() != null) {
+            userRepository.delete(doctor.getUser());
+        } else {
+            doctorRepository.delete(doctor);
+        }
+    }
 }
