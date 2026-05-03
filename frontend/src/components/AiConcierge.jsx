@@ -4,7 +4,7 @@ import api from '../api/axiosConfig';
 const AiConcierge = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([
-        { role: 'ai', text: '### 🏥 Welcome!\n- I am your MediSync Clinical Concierge.\n- I can help with Symptom Analysis, Hospital Comparisons, and Emergency Triage.\n- How are you feeling today?' }
+        { role: 'ai', text: 'Hello! I am your MediSync Clinical Concierge. I can help with Symptom Analysis, Hospital Comparisons, and Emergency Triage. How are you feeling today?' }
     ]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -86,7 +86,10 @@ const AiConcierge = () => {
         setIsLoading(true);
 
         try {
-            const res = await api.post('/ai/chat', { message: textToSend });
+            const res = await api.post('/ai/chat', { 
+                message: textToSend,
+                location: location ? `${location.lat},${location.lng}` : null
+            });
             const aiMsg = { role: 'ai', text: res.data.response };
             setMessages(prev => [...prev, aiMsg]);
             speak(res.data.response);

@@ -141,22 +141,14 @@ public class GroqAiService implements AiProvider {
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setBearerAuth(apiKey);
 
-            Map<String, Object> systemMessage = new HashMap<>();
-            systemMessage.put("role", "system");
-            systemMessage.put("content", "You are the MediSync Clinical Assistant. " +
-                "STRICT FORMATTING RULE: NEVER use paragraphs. " +
-                "EVERY response MUST be structured into sections with Markdown headers (### Topic). " +
-                "EVERY point MUST be a bullet point (-). " +
-                "NO introductory filler text like 'Hi there' in paragraph form.");
-
-            Map<String, Object> userMessage = new HashMap<>();
-            userMessage.put("role", "user");
-            userMessage.put("content", prompt);
+            Map<String, Object> message = new HashMap<>();
+            message.put("role", "user");
+            message.put("content", prompt);
 
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("model", "llama-3.3-70b-versatile");
-            requestBody.put("messages", Arrays.asList(systemMessage, userMessage));
-            requestBody.put("temperature", 0.3); // Lower temperature for stricter formatting
+            requestBody.put("messages", Arrays.asList(message));
+            requestBody.put("temperature", 0.5);
 
             HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
             ResponseEntity<Map> response = restTemplate.postForEntity(url, requestEntity, Map.class);

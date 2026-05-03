@@ -38,7 +38,7 @@ public class AiService {
         this.groqAiService = groqAiService;
     }
 
-    public String generateResponse(String query, String userEmail, List<String> roles) {
+    public String generateResponse(String query, String userEmail, List<String> roles, String location) {
         String lowerQuery = query.toLowerCase().trim();
         boolean isDoctor = roles != null && roles.stream().anyMatch(r -> r.equalsIgnoreCase("ROLE_DOCTOR"));
         boolean isHospitalAdmin = roles != null && roles.stream().anyMatch(r -> r.equalsIgnoreCase("ROLE_HOSPITAL_ADMIN"));
@@ -48,9 +48,9 @@ public class AiService {
         // --- POLYGLOT DETECTION ---
         String language = detectLanguage(query);
 
-        // 1. Emergency Detection
+        // 1. Emergency Detection (High Precision)
         if (isEmergency(lowerQuery)) {
-            return translate("🚨 **CRITICAL EMERGENCY DETECTED**\n\nPlease visit the nearest ER or call 108/911 immediately.", language);
+            return translate("🚨 **CRITICAL EMERGENCY DETECTED**\n\n- Visit the nearest ER immediately.\n- Call 108 or 911 now.\n- Do not wait for further AI analysis.", language);
         }
 
         // 2. Prescription Logic
@@ -58,11 +58,11 @@ public class AiService {
             List<Prescription> active = prescriptionRepository.findByPatientEmailAndIsActiveTrue(userEmail);
             if (!active.isEmpty()) {
                 String meds = active.stream().map(Prescription::getMedicineName).collect(Collectors.joining(", "));
-                return translate("💊 **Active Meds:** " + meds + "\n\nCheck your Medical History for details.", language);
+                return translate("💊 **Active Prescriptions:**\n- " + meds + "\n\n### 📝 Note\n- Check your Medical History for full dosage details.", language);
             }
         }
 
-        // 3. Detailed Symptom Analysis
+        // 3. Symptom to Specialist Mapping
         String specialty = mapSymptomToSpecialty(lowerQuery);
         if (specialty != null) {
             String advice = getGeneralAdvice(specialty);
@@ -71,44 +71,35 @@ public class AiService {
                 .collect(Collectors.toList());
 
             StringBuilder sb = new StringBuilder();
-            sb.append("### 🏥 ").append(translate("Specialist Recommendation", language)).append("\n");
-            sb.append(translate("For " + specialty.toUpperCase() + " issues, " + advice, language)).append("\n\n");
+            sb.append("### 🏥 ").append(translate("Clinical Recommendation", language)).append("\n");
+            sb.append("- ").append(translate("For " + specialty.toUpperCase() + " issues: " + advice, language)).append("\n");
 
             if (!specialists.isEmpty()) {
-                sb.append("**").append(translate("Available Specialists:", language)).append("**\n");
+                sb.append("\n### 👨‍⚕️ ").append(translate("Approved Specialists", language)).append("\n");
                 for (Doctor d : specialists.stream().limit(2).collect(Collectors.toList())) {
                     sb.append("- **Dr. ").append(d.getName()).append("** (").append(d.getSpecialization()).append(")\n");
                 }
-            } else {
-                sb.append("⚠️ ").append(translate("Note: We currently don't have an approved " + specialty + " specialist. Please consult a General Physician.", language));
             }
             return sb.toString();
         }
 
-        // --- NEURAL REASONING FALLBACK (Groq Llama-3.3-70b) ---
+        // --- NEURAL REASONING (Telemetry Augmented) ---
         try {
-            // Fetch real clinical data to ground the AI and prevent hallucinations
             List<Doctor> allDoctors = doctorRepository.findByApprovedTrue();
             String doctorList = allDoctors.stream()
                 .map(d -> "- Dr. " + d.getName() + " (" + d.getSpecialization() + ")")
                 .collect(Collectors.joining("\n"));
 
-            String prompt = "You are the MediSync Clinical Assistant. " +
+            String prompt = "You are the MediSync Clinical AI. " +
                 "User Role: " + (isDoctor ? "Doctor" : "Patient") + ". " +
+                "Current Location (Telemetry): " + (location != null ? location : "Unknown") + ". " +
                 "Language: " + language + ". " +
-                "Style: Be highly interactive and use appropriate medical emojis. " +
-                "STRICT FORMATTING RULES:\n" +
-                "1. NEVER use long paragraphs. Responses MUST be divided into clear Topic Sections.\n" +
-                "2. EVERY single piece of information MUST be a bullet point (-).\n" +
-                "3. Use Markdown headers (### Topic) for sections.\n" +
-                "4. Example Format:\n" +
-                "   ### 🏥 Greeting\n" +
-                "   - Hello! I am here to help.\n" +
-                "   ### 🩺 Clinical Advice\n" +
-                "   - Rest well.\n" +
-                "   - Drink fluids.\n\n" +
-                "5. You are a FULLY FUNCTIONAL Clinical AI. Answer ANY question correctly and thoroughly, including health tips, disease explanations, and clinical logistics.\n" +
-                "6. If you don't know something about the hospital layout, suggest asking at the Physical Reception ✨.\n\n" +
+                "STRICT RESPONSE RULES:\n" +
+                "1. NO PARAGRAPHS. NO GREETINGS. NO DISCLAIMERS.\n" +
+                "2. ONLY answer what the user asked. Be extremely concise.\n" +
+                "3. Use Markdown headers (###) and Bullet Points (-) for EVERYTHING.\n" +
+                "4. If asked for a location (like Blood Bank) and telemetry is available, use your knowledge to provide general directions.\n" +
+                "5. GROUNDING: Only mention these doctors if relevant to the query:\n" + doctorList + "\n\n" +
                 "Query: " + query;
             
             String neuralResponse = groqAiService.getCompletion(prompt);
@@ -119,8 +110,7 @@ public class AiService {
             System.err.println("NEURAL_HUB_ERROR: " + e.getMessage());
         }
 
-        // 5. Default Greeting (If Neural fails)
-        return translate("### 🏥 Hello!\n- I am your MediSync Clinical Concierge.\n- How can I help you today?", language);
+        return translate("### 🤖 Clinical Status\n- I am here to help.\n- Please describe your clinical query in detail.", language);
     }
 
     private String detectLanguage(String query) {
@@ -135,16 +125,18 @@ public class AiService {
 
     private String translate(String text, String lang) {
         if ("tamil".equals(lang)) {
-            if (text.contains("Hello")) return "### 🏥 வணக்கம்!\n- நான் உங்கள் MediSync மருத்துவ உதவியாளர்.\n- நான் உங்களுக்கு எப்படி உதவ முடியும்?";
-            if (text.contains("Specialist Recommendation")) return "### 🩺 மருத்துவ நிபுணர் பரிந்துரை";
-            if (text.contains("Active Meds")) return "### 💊 தற்போதைய மருந்துகள்";
-            if (text.contains("ER")) return "### 🚨 அவசரநிலை!\n- தயவுசெய்து உடனடியாக மருத்துவமனைக்குச் செல்லவும்.";
-            if (text.contains("approved")) return "### ⚠️ அறிவிப்பு\n- தற்போது இந்த பிரிவில் மருத்துவர்கள் இல்லை.\n- பொது மருத்துவரை அணுகவும்.";
-            return "### 🏥 உதவி\n- உங்களுக்கு உதவ நான் தயாராக உள்ளேன்.\n- உங்கள் அறிகுறிகளை விவரிக்கவும்.";
+            if (text.contains("Hello")) return "வணக்கம்! நான் உங்கள் MediSync மருத்துவ உதவியாளர். நான் உங்களுக்கு எப்படி உதவ முடியும்?";
+            if (text.contains("Specialist Recommendation")) return "மருத்துவ நிபுணர் பரிந்துரை";
+            if (text.contains("Active Meds")) return "தற்போதைய மருந்துகள்";
+            if (text.contains("ER")) return "🚨 **அவசரநிலை!** தயவுசெய்து உடனடியாக மருத்துவமனைக்குச் செல்லவும்.";
+            if (text.contains("dental")) return "பல் தொடர்பான பிரச்சனைகளுக்கு, சூடான அல்லது குளிர்ந்த உணவைத் தவிர்க்கவும்.";
+            if (text.contains("cardiology")) return "இதயத் துடிப்பைக் கண்காணித்து, கடினமான வேலைகளைத் தவிர்க்கவும்.";
+            if (text.contains("approved")) return "தற்போது இந்த பிரிவில் மருத்துவர்கள் இல்லை. பொது மருத்துவரை அணுகவும்.";
+            return "உங்களுக்கு உதவ நான் தயாராக உள்ளேன். உங்கள் அறிகுறிகளை விவரிக்கவும்.";
         }
         if ("hindi".equals(lang)) {
-            if (text.contains("Hello")) return "### 🏥 नमस्ते!\n- मैं आपका MediSync क्लिनिकल कंसीयज हूँ।\n- मैं आपकी कैसे मदद कर सकता हूँ?";
-            return "### 🏥 सहायता\n- मैं आपकी मदद के लिए यहाँ हूँ।\n- कृपया अपने लक्षणों के बारे में बताएं।";
+            if (text.contains("Hello")) return "नमस्ते! मैं आपका MediSync क्लिनिकल कंसीयज हूँ। मैं आपकी कैसे मदद कर सकता हूँ?";
+            return "मैं आपकी मदद के लिए यहाँ हूँ। कृपया अपने लक्षणों के बारे में बताएं।";
         }
         return text;
     }
