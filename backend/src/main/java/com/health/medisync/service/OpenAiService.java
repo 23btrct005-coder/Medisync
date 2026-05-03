@@ -138,4 +138,45 @@ public class OpenAiService implements AiProvider {
         }
         return null;
     }
+    @Override
+    public String getCompletion(String prompt) {
+        if (apiKey == null || apiKey.trim().isEmpty()) {
+            return "{\"error\": \"OpenAI is disabled. Configure `openai.api.key`.\"}";
+        }
+
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            String url = "https://api.openai.com/v1/chat/completions";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(apiKey);
+
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("model", "gpt-4o");
+
+            List<Map<String, Object>> messages = new ArrayList<>();
+            Map<String, Object> userMessage = new HashMap<>();
+            userMessage.put("role", "user");
+            userMessage.put("content", prompt);
+            messages.add(userMessage);
+
+            requestBody.put("messages", messages);
+
+            HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
+            ResponseEntity<Map> response = restTemplate.postForEntity(url, requestEntity, Map.class);
+            Map<String, Object> responseBody = response.getBody();
+
+            if (responseBody != null && responseBody.containsKey("choices")) {
+                List<Map<String, Object>> choices = (List<Map<String, Object>>) responseBody.get("choices");
+                if (!choices.isEmpty()) {
+                    Map<String, Object> messageObj = (Map<String, Object>) choices.get(0).get("message");
+                    return (String) messageObj.get("content");
+                }
+            }
+            return "{\"error\": \"Unexpected response format.\"}";
+        } catch (Exception e) {
+            return "{\"error\": \"" + e.getMessage() + "\"}";
+        }
+    }
 }
