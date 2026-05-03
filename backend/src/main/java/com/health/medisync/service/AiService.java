@@ -3,11 +3,8 @@ package com.health.medisync.service;
 import com.health.medisync.model.Doctor;
 import com.health.medisync.model.Hospital;
 import com.health.medisync.model.AiQueryLog;
-import com.health.medisync.repository.DoctorRepository;
-import com.health.medisync.repository.HospitalRepository;
-import com.health.medisync.repository.AppointmentRepository;
-import com.health.medisync.repository.PatientRepository;
-import com.health.medisync.repository.AiQueryLogRepository;
+import com.health.medisync.model.Prescription;
+import com.health.medisync.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.context.annotation.Lazy;
 
@@ -24,6 +21,7 @@ public class AiService {
     private final PatientRepository patientRepository;
     private final AppointmentService appointmentService;
     private final AiQueryLogRepository aiQueryLogRepository;
+    private final PrescriptionRepository prescriptionRepository;
     
     private static final Map<String, String> sessionSummaries = new HashMap<>();
 
@@ -32,13 +30,15 @@ public class AiService {
                      AppointmentRepository appointmentRepository,
                      PatientRepository patientRepository,
                      @Lazy AppointmentService appointmentService,
-                     AiQueryLogRepository aiQueryLogRepository) {
+                     AiQueryLogRepository aiQueryLogRepository,
+                     PrescriptionRepository prescriptionRepository) {
         this.doctorRepository = doctorRepository;
         this.hospitalRepository = hospitalRepository;
         this.appointmentRepository = appointmentRepository;
         this.patientRepository = patientRepository;
         this.appointmentService = appointmentService;
         this.aiQueryLogRepository = aiQueryLogRepository;
+        this.prescriptionRepository = prescriptionRepository;
     }
 
     public String generateResponse(String query, String patientEmail) {
@@ -54,23 +54,52 @@ public class AiService {
                    "**FOLLOW-UP:** Mandatory hospital visit.";
         }
 
+        // 2. Community Outbreak Alert (Predictive Health)
+        if (lowerQuery.contains("outbreak") || lowerQuery.contains("fever") || lowerQuery.contains("flu")) {
+            List<AiQueryLog> recentLogs = aiQueryLogRepository.findAll();
+            long feverCount = recentLogs.stream().filter(l -> l.getQueryText().contains("fever")).count();
+            if (feverCount > 5) {
+                return "⚠️ **SEASONAL HEALTH ALERT** ⚠️\n\nMy predictive engine detected a high volume of 'Fever' queries in your area recently. \n\n" +
+                       "**ADVICE:**\n" +
+                       "- Wear a mask in crowded places.\n" +
+                       "- Stay hydrated.\n" +
+                       "- If you feel symptomatic, I can book a General Physician for you.";
+            }
+        }
+
+        // 3. Prescription Explainer (If logged in)
+        if (patientEmail != null && (lowerQuery.contains("prescription") || lowerQuery.contains("medicine") || lowerQuery.contains("tablet"))) {
+            List<Prescription> active = prescriptionRepository.findByPatientEmailAndIsActiveTrue(patientEmail);
+            if (!active.isEmpty()) {
+                StringBuilder sb = new StringBuilder("### 💊 Your Medication Explainer\n\n");
+                for (Prescription p : active) {
+                    sb.append("**").append(p.getMedicineName()).append("** (").append(p.getDosage()).append(")\n");
+                    sb.append("- **Frequency:** ").append(p.getFrequency()).append("\n");
+                    sb.append("- **Clinical Purpose:** This was prescribed by Dr. ").append(p.getDoctor() != null ? p.getDoctor().getName() : "your physician")
+                      .append(" for your recent treatment cycle.\n");
+                    sb.append("- **Instructions:** ").append(p.getInstructions() != null ? p.getInstructions() : "Follow your doctor's advice.").append("\n\n");
+                }
+                sb.append("**Pro Tip:** Set reminders on your phone to never miss a dose!");
+                return sb.toString();
+            }
+        }
+
         List<Doctor> allDoctors = doctorRepository.findAll();
         List<Hospital> allHospitals = hospitalRepository.findAll();
 
-        // 2. Competitive Comparison Engine
+        // 4. Competitive Comparison
         if (lowerQuery.contains("compare") || lowerQuery.contains("versus") || lowerQuery.contains("vs")) {
             StringBuilder sb = new StringBuilder("### 📊 Institutional Comparison Matrix\n\n");
             for (Hospital h : allHospitals.stream().limit(3).collect(Collectors.toList())) {
                 sb.append("**").append(h.getName()).append("**\n");
-                sb.append("- 💰 Fee: ₹").append(h.getConsultationTimings() != null ? "High Quality" : "Standard").append("\n");
+                sb.append("- 💰 Fee: ").append(h.getConsultationTimings() != null ? "Premium Tier" : "Standard").append("\n");
                 sb.append("- 🏥 Type: ").append(h.getHospitalType()).append("\n");
-                sb.append("- 🧪 Services: ").append(h.getServices() != null ? h.getServices() : "Standard Diagnostic").append("\n");
-                sb.append("- 🛡️ Insurance: ").append(h.getInsuranceProviders() != null ? "Supported" : "Cash Only").append("\n\n");
+                sb.append("- 🧪 Services: ").append(h.getServices() != null ? h.getServices() : "Diagnostic").append("\n\n");
             }
             return sb.toString();
         }
 
-        // 3. Symptom to Specialty Mapping & Risk Profiling
+        // 5. Symptom Analysis
         String mappedSpecialty = mapSymptomToSpecialty(lowerQuery);
         String riskLevel = calculateRisk(lowerQuery);
         logQuery(query, mappedSpecialty);
@@ -82,42 +111,26 @@ public class AiService {
 
             if (!specialists.isEmpty()) {
                 StringBuilder sb = new StringBuilder("### 🏥 Clinical Recommendation\n");
-                sb.append("**DETECTED SPECIALTY:** ").append(mappedSpecialty.toUpperCase()).append("\n");
-                sb.append("**HEALTH RISK:** ").append(riskLevel).append("\n\n");
+                sb.append("**RISK LEVEL:** ").append(riskLevel).append("\n\n");
                 
-                String brief = "AI RISK [" + riskLevel + "]: Patient reported " + mappedSpecialty + " issues. Query: '" + query + "'.";
+                String brief = "AI RISK [" + riskLevel + "]: Patient reported " + mappedSpecialty + " issues.";
                 sessionSummaries.put(patientEmail, brief);
 
-                sb.append("Recommended Experts:\n\n");
                 for (Doctor d : specialists.stream().limit(2).collect(Collectors.toList())) {
-                    sb.append("👨‍⚕️ **Dr. ").append(d.getName()).append("**\n");
+                    sb.append("👨‍⚕️ **Dr. ").append(d.getName()).append("** (").append(d.getSpecialization()).append(")\n");
                     sb.append("   [Book Now](/dashboard/booking?doctorId=").append(d.getId()).append(")\n\n");
                 }
-                
-                sb.append("**NEXT STEP:** ").append(getFollowUpAdvice(mappedSpecialty));
                 return sb.toString();
             }
         }
 
-        // 4. Financial Intelligence
-        if (lowerQuery.contains("insurance") || lowerQuery.contains("cost")) {
-            return "I am scanning our financial network. Most hospitals in our network accept **ICICI, LIC, and Star Health**. \n\n" +
-                   "General consultation fees range from **₹500 to ₹1500**. For a precise quote, please specify a hospital name.";
-        }
-
-        return "Hello! I am your MediSync Clinical Brain. I can help with **Symptom Analysis**, **Hospital Comparisons**, and **Emergency Triage**. How are you feeling today?";
+        return "Hello! I am your MediSync Clinical Concierge. I can explain your **Prescriptions**, alert you to **Seasonal Outbreaks**, and help with **Symptom Mapping**. How can I help you today?";
     }
 
     private String calculateRisk(String query) {
-        if (query.contains("severe") || query.contains("blood") || query.contains("chest") || query.contains("vision")) return "HIGH";
-        if (query.contains("pain") || query.contains("fever") || query.contains("swelling")) return "MEDIUM";
+        if (query.contains("severe") || query.contains("chest")) return "HIGH";
+        if (query.contains("pain") || query.contains("fever")) return "MEDIUM";
         return "LOW";
-    }
-
-    private String getFollowUpAdvice(String specialty) {
-        if (specialty.equals("cardiology")) return "Complete cardiac screening within 48 hours.";
-        if (specialty.equals("dental")) return "Dental checkup within 1 week.";
-        return "Monitor symptoms for 24 hours and consult if pain persists.";
     }
 
     private String mapSymptomToSpecialty(String query) {
@@ -140,7 +153,7 @@ public class AiService {
     }
 
     private boolean isEmergency(String query) {
-        String[] emergencies = {"stroke", "cannot breathe", "chest pain", "unconscious", "stroke", "poison"};
+        String[] emergencies = {"stroke", "cannot breathe", "chest pain", "unconscious"};
         for (String e : emergencies) {
             if (query.contains(e)) return true;
         }
@@ -148,6 +161,6 @@ public class AiService {
     }
 
     public String getLatestBrief(String email) {
-        return sessionSummaries.getOrDefault(email, "No clinical context available.");
+        return sessionSummaries.getOrDefault(email, "No AI context.");
     }
 }
