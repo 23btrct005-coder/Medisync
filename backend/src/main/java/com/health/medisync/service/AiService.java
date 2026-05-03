@@ -54,7 +54,7 @@ public class AiService {
                    "**FOLLOW-UP:** Mandatory hospital visit.";
         }
 
-        // 2. Community Outbreak Alert (Predictive Health)
+        // 2. Community Outbreak Alert
         if (lowerQuery.contains("outbreak") || lowerQuery.contains("fever") || lowerQuery.contains("flu")) {
             List<AiQueryLog> recentLogs = aiQueryLogRepository.findAll();
             long feverCount = recentLogs.stream().filter(l -> l.getQueryText().contains("fever")).count();
@@ -67,7 +67,7 @@ public class AiService {
             }
         }
 
-        // 3. Prescription Explainer (If logged in)
+        // 3. Prescription Explainer
         if (patientEmail != null && (lowerQuery.contains("prescription") || lowerQuery.contains("medicine") || lowerQuery.contains("tablet"))) {
             List<Prescription> active = prescriptionRepository.findByPatientEmailAndIsActiveTrue(patientEmail);
             if (!active.isEmpty()) {
@@ -75,11 +75,11 @@ public class AiService {
                 for (Prescription p : active) {
                     sb.append("**").append(p.getMedicineName()).append("** (").append(p.getDosage()).append(")\n");
                     sb.append("- **Frequency:** ").append(p.getFrequency()).append("\n");
-                    sb.append("- **Clinical Purpose:** This was prescribed by Dr. ").append(p.getDoctor() != null ? p.getDoctor().getName() : "your physician")
-                      .append(" for your recent treatment cycle.\n");
-                    sb.append("- **Instructions:** ").append(p.getInstructions() != null ? p.getInstructions() : "Follow your doctor's advice.").append("\n\n");
+                    sb.append("- **Purpose:** Prescribed by Dr. ").append(p.getDoctor() != null ? p.getDoctor().getName() : "your physician")
+                      .append(".\n");
+                    sb.append("- **Instructions:** ").append(p.getInstructions() != null ? p.getInstructions() : "Follow doctor's advice.").append("\n\n");
                 }
-                sb.append("**Pro Tip:** Set reminders on your phone to never miss a dose!");
+                sb.append("**Pro Tip:** Set reminders to never miss a dose!");
                 return sb.toString();
             }
         }
@@ -87,13 +87,13 @@ public class AiService {
         List<Doctor> allDoctors = doctorRepository.findAll();
         List<Hospital> allHospitals = hospitalRepository.findAll();
 
-        // 4. Competitive Comparison
+        // 4. Competitive Comparison (FIXED: removed non-existent getConsultationTimings)
         if (lowerQuery.contains("compare") || lowerQuery.contains("versus") || lowerQuery.contains("vs")) {
             StringBuilder sb = new StringBuilder("### 📊 Institutional Comparison Matrix\n\n");
             for (Hospital h : allHospitals.stream().limit(3).collect(Collectors.toList())) {
                 sb.append("**").append(h.getName()).append("**\n");
-                sb.append("- 💰 Fee: ").append(h.getConsultationTimings() != null ? "Premium Tier" : "Standard").append("\n");
-                sb.append("- 🏥 Type: ").append(h.getHospitalType()).append("\n");
+                sb.append("- 🏥 Type: ").append(h.getHospitalType() != null ? h.getHospitalType() : "General").append("\n");
+                sb.append("- 🕒 Hours: ").append(h.getWorkingHours() != null ? h.getWorkingHours() : "24/7 Support").append("\n");
                 sb.append("- 🧪 Services: ").append(h.getServices() != null ? h.getServices() : "Diagnostic").append("\n\n");
             }
             return sb.toString();
