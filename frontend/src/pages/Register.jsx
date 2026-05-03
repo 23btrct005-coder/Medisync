@@ -142,7 +142,6 @@ const Register = () => {
     bankName: '',
     bankAccountNumber: '',
     ifscCode: '',
-    upiId: '',
     preferredPaymentMode: 'RAZORPAY',
     termsAccepted: false,
     privacyAccepted: false,
