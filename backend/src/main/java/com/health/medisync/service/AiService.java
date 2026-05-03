@@ -9,6 +9,10 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * MediSync Clinical Intelligence Engine v2.5
+ * Role-Aware Operational & Diagnostic Assistant
+ */
 @Service
 public class AiService {
 
@@ -37,15 +41,17 @@ public class AiService {
 
     public String generateResponse(String query, String userEmail, List<String> roles) {
         String lowerQuery = query.toLowerCase();
-        boolean isDoctor = roles != null && roles.contains("ROLE_DOCTOR");
-        boolean isHospitalAdmin = roles != null && roles.contains("ROLE_HOSPITAL_ADMIN");
+        
+        // Robust Role Detection
+        boolean isDoctor = roles != null && roles.stream().anyMatch(r -> r.equalsIgnoreCase("ROLE_DOCTOR"));
+        boolean isHospitalAdmin = roles != null && roles.stream().anyMatch(r -> r.equalsIgnoreCase("ROLE_HOSPITAL_ADMIN"));
 
         // --- DOCTOR / ADMIN INTELLIGENCE ---
         if (isDoctor || isHospitalAdmin) {
             return generateProfessionalResponse(lowerQuery, userEmail, isDoctor);
         }
 
-        // --- PATIENT INTELLIGENCE (Existing) ---
+        // --- PATIENT INTELLIGENCE ---
         
         // 1. Emergency Detection
         if (isEmergency(lowerQuery)) {
