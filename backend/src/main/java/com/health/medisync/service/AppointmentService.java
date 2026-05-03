@@ -78,7 +78,7 @@ public class AppointmentService {
         }
 
         // 1. Generate all possible slots from consultationTimings (e.g., "10:00 AM - 05:00 PM")
-        List<String> allSlots = parseSlots(doctor.getConsultationTimings());
+        List<String> allSlots = parseSlots(doctor);
         System.out.println("TRACE: Total possible slots: " + allSlots.size());
 
         // 2. Filter out booked or pending (not expired) slots
@@ -94,6 +94,7 @@ public class AppointmentService {
         
         Set<String> takenSlots = existing.stream()
             .filter(a -> a.getStatus() == AppointmentStatus.BOOKED || 
+                        a.getStatus() == AppointmentStatus.AWAITING_VERIFICATION ||
                         (a.getStatus() == AppointmentStatus.PENDING && a.getCreatedAt() != null && a.getCreatedAt().isAfter(expiryTime)))
             .map(a -> a.getTimeSlot())
             .filter(Objects::nonNull)
@@ -119,9 +120,20 @@ public class AppointmentService {
         return results;
     }
 
-    private List<String> parseSlots(String timings) {
+    private List<String> parseSlots(Doctor doctor) {
+        String timings = doctor.getConsultationTimings();
+        int duration = (doctor.getSlotDuration() != null && doctor.getSlotDuration() > 0) ? doctor.getSlotDuration() : 15;
+        
         if (timings == null || timings.trim().isEmpty()) {
-            return Arrays.asList("09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM");
+            // Default 15-min slots if timings are missing
+            List<String> defaultSlots = new ArrayList<>();
+            java.time.LocalTime t = java.time.LocalTime.of(9, 0);
+            DateTimeFormatter f = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);
+            for(int i=0; i<16; i++) {
+                defaultSlots.add(t.format(f));
+                t = t.plusMinutes(duration);
+            }
+            return defaultSlots;
         }
         try {
             String[] parts = timings.split(" - ");
@@ -132,7 +144,7 @@ public class AppointmentService {
             List<String> slots = new ArrayList<>();
             while (start.isBefore(end)) {
                 slots.add(start.format(formatter));
-                start = start.plusMinutes(30);
+                start = start.plusMinutes(duration);
             }
             return slots;
         } catch (Exception e) {
