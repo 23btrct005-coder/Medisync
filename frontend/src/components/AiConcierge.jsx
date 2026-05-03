@@ -85,7 +85,20 @@ const AiConcierge = () => {
                             <div style={{ width: '10px', height: '10px', backgroundColor: '#4ade80', borderRadius: '50%' }}></div>
                             <span style={{ fontWeight: '900', fontSize: '14px', letterSpacing: '1px' }}>CLINICAL AI 2.0</span>
                         </div>
-                        <button onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '18px' }}>✕</button>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                            <button 
+                                onClick={() => {
+                                    setIsVoiceEnabled(!isVoiceEnabled);
+                                    if (!isVoiceEnabled) speak("Voice enabled. I am listening.");
+                                    else window.speechSynthesis.cancel();
+                                }} 
+                                style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '18px', opacity: isVoiceEnabled ? 1 : 0.4 }}
+                                title={isVoiceEnabled ? "Mute AI" : "Unmute AI"}
+                            >
+                                {isVoiceEnabled ? '🔊' : '🔈'}
+                            </button>
+                            <button onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '18px' }}>✕</button>
+                        </div>
                     </div>
 
                     {/* Lang Toggle */}
@@ -111,8 +124,17 @@ const AiConcierge = () => {
                                         return <div key={li}>{l}</div>;
                                     })}
                                     {m.role === 'ai' && i > 0 && (
-                                        <div style={{ marginTop: '12px', pt: '10px', borderTop: '1px solid #f1f5f9', display: 'flex', gap: '10px', fontSize: '11px', opacity: 0.6 }}>
-                                            Was this helpful? <span style={{ cursor: 'pointer' }}>👍</span> <span style={{ cursor: 'pointer' }}>👎</span>
+                                        <div style={{ marginTop: '12px', pt: '10px', borderTop: '1px solid #f1f5f9', display: 'flex', gap: '15px', alignItems: 'center' }}>
+                                            <div style={{ fontSize: '11px', opacity: 0.6 }}>
+                                                Was this helpful? <span style={{ cursor: 'pointer' }}>👍</span> <span style={{ cursor: 'pointer' }}>👎</span>
+                                            </div>
+                                            <button 
+                                                onClick={() => speak(m.text)}
+                                                style={{ background: 'none', border: 'none', fontSize: '14px', cursor: 'pointer', padding: 0 }}
+                                                title="Read aloud"
+                                            >
+                                                📢
+                                            </button>
                                         </div>
                                     )}
                                 </div>

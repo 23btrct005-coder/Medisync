@@ -90,6 +90,7 @@ public class AiService {
             String prompt = "You are the MediSync Clinical Assistant. " +
                 "User Role: " + (isDoctor ? "Doctor" : "Patient") + ". " +
                 "Language: " + language + ". " +
+                "Style: Be highly interactive and use appropriate medical emojis (e.g., 🩺, 💊, 🏥, 🚨, ✨) in your response. " +
                 "Context: You are integrated into a Hospital Operating System. " +
                 "Query: " + query;
             
