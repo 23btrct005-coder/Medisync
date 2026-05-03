@@ -104,7 +104,7 @@ const ClinicalMessages = () => {
 
             {/* Tab Segregation - Only show if Physician (Admins/Patients have single scoped views) */}
             {isDoctor && (
-                <div className="flex p-1.5 bg-slate-100 rounded-[1.5rem] w-fit border border-slate-200/50">
+                <div className="flex p-1.5 bg-white/50 backdrop-blur-md rounded-[1.5rem] w-fit border border-slate-200/50 shadow-sm">
                     <button
                         onClick={() => setActiveTab('patients')}
                         className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
@@ -115,16 +115,18 @@ const ClinicalMessages = () => {
                     >
                         <User size={14} /> Patients
                     </button>
-                    <button
-                        onClick={() => setActiveTab('staff')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                            activeTab === 'staff' 
-                            ? 'bg-white text-primary shadow-sm border border-slate-200' 
-                            : 'text-slate-500 hover:text-slate-700'
-                        }`}
-                    >
-                        <Building2 size={14} /> Colleagues
-                    </button>
+                    {user?.institutional && (
+                        <button
+                            onClick={() => setActiveTab('staff')}
+                            className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                                activeTab === 'staff' 
+                                ? 'bg-white text-primary shadow-sm border border-slate-200' 
+                                : 'text-slate-500 hover:text-slate-700'
+                            }`}
+                        >
+                            <Building2 size={14} /> Colleagues
+                        </button>
+                    )}
                 </div>
             )}
 
