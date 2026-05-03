@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, Shield, CreditCard, Globe, MapPin, Phone, Mail, FileText, Camera, CheckCircle, AlertCircle, Save, Loader2, Activity } from 'lucide-react';
+import { Building2, Shield, CreditCard, Globe, MapPin, Phone, Mail, FileText, Camera, CheckCircle, AlertCircle, Save, Loader2, Activity, User } from 'lucide-react';
+import ClinicalDoctorProfile from './ClinicalDoctorProfile';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const HospitalProfile = () => {
     const [profile, setProfile] = useState(null);
@@ -13,12 +14,14 @@ const HospitalProfile = () => {
     const [logoPreview, setLogoPreview] = useState(null);
     const { logout } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
 
     // Deletion State
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deletionStep, setDeletionStep] = useState(1); // 1: Request, 2: Verify
     const [deletionOtp, setDeletionOtp] = useState('');
     const [isDeleting, setIsDeleting] = useState(false);
+    const [viewTab, setViewTab] = useState(location.pathname.includes('institutional') ? 'institutional' : 'personal');
 
     const [formData, setFormData] = useState({
         hospitalName: '',
@@ -199,6 +202,7 @@ const HospitalProfile = () => {
                         Institutional Sovereignty & Compliance Registry
                     </p>
                 </div>
+                {viewTab === 'institutional' && (
                 <button 
                     onClick={handleSave}
                     disabled={saving}
@@ -207,9 +211,40 @@ const HospitalProfile = () => {
                     {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
                     {saving ? 'Synchronizing...' : 'Save Configuration'}
                 </button>
+                )}
             </div>
 
-            <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Tab Switcher */}
+            <div className="flex items-center gap-2 p-1.5 bg-slate-100/50 rounded-[2rem] border border-slate-200/60 backdrop-blur-md mb-12 w-fit">
+                <button
+                    onClick={() => setViewTab('institutional')}
+                    className={`flex items-center gap-3 px-8 py-3 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all ${
+                        viewTab === 'institutional' 
+                        ? 'bg-white text-primary shadow-lg shadow-primary/5 border border-slate-200' 
+                        : 'text-slate-400 hover:text-slate-600'
+                    }`}
+                >
+                    <Building2 size={16} /> Institutional Data
+                </button>
+                <button
+                    onClick={() => setViewTab('personal')}
+                    className={`flex items-center gap-3 px-8 py-3 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all ${
+                        viewTab === 'personal' 
+                        ? 'bg-white text-blue-600 shadow-lg shadow-blue-500/5 border border-slate-200' 
+                        : 'text-slate-400 hover:text-slate-600'
+                    }`}
+                >
+                    <User size={16} /> Personal Physician Node
+                </button>
+            </div>
+
+            {viewTab === 'personal' ? (
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <ClinicalDoctorProfile />
+                </div>
+            ) : (
+                <>
+                <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column: Core Identity & Logo */}
                 <div className="lg:col-span-1 space-y-8 text-left">
                     <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm text-center">
@@ -662,6 +697,8 @@ const HospitalProfile = () => {
                         </div>
                     </div>
                 </div>
+            )}
+            </>
             )}
         </div>
     );
