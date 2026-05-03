@@ -67,7 +67,8 @@ const HospitalProfile = () => {
         razorpayKeyId: '',
         razorpayKeySecret: '',
         upiId: '',
-        preferredPaymentMode: 'RAZORPAY'
+        preferredPaymentMode: 'RAZORPAY',
+        services: ''
     });
 
     useEffect(() => {
@@ -123,7 +124,8 @@ const HospitalProfile = () => {
                 razorpayKeyId: h.razorpayKeyId || '',
                 razorpayKeySecret: h.razorpayKeySecret || '',
                 upiId: h.upiId || '',
-                preferredPaymentMode: h.preferredPaymentMode || 'RAZORPAY'
+                preferredPaymentMode: h.preferredPaymentMode || 'RAZORPAY',
+                services: h.services || ''
             });
             if (h.logoUrl) {
                 console.log("DEBUG: Logo detected:", h.logoUrl);
@@ -481,6 +483,20 @@ const HospitalProfile = () => {
                                 >
                                     <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.emergencyServicesAvailable ? 'right-1' : 'left-1'}`} />
                                 </button>
+                            </div>
+
+                            {/* AI Clinical Services */}
+                            <div className="mt-8 space-y-1">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Clinical & Diagnostic Services (For AI Concierge)</label>
+                                <textarea 
+                                    value={formData.services}
+                                    onChange={(e) => setFormData({...formData, services: e.target.value})}
+                                    placeholder="e.g. 24/7 MRI, CT Scan, Blood Bank, Pediatric Surgery, ICU Availability"
+                                    className="w-full px-5 py-4 bg-slate-50 border-none rounded-[2rem] text-xs font-bold focus:ring-2 ring-emerald-100 min-h-[100px] resize-none"
+                                />
+                                <p className="text-[9px] text-slate-400 font-medium italic mt-2 ml-1">
+                                    List your hospital's key services here. This data is used by the MediSync AI to answer patient queries.
+                                </p>
                             </div>
                         </div>
                     )}

@@ -70,6 +70,9 @@ public class Hospital {
     private String alternatePhone;
     private Integer doctorCount;
     
+    @Column(columnDefinition = "TEXT")
+    private String services; // Diagnostic/Clinical Services (e.g. MRI, X-Ray, Blood Test)
+    
     // ── 3. Digital Capabilities ──
     private Boolean hasEhr = false;
     private Boolean hasPacs = false;
@@ -319,4 +322,7 @@ public class Hospital {
 
     public List<HospitalAdmin> getAdmins() { return admins; }
     public void setAdmins(List<HospitalAdmin> admins) { this.admins = admins; }
+
+    public String getServices() { return services; }
+    public void setServices(String services) { this.services = services; }
 }

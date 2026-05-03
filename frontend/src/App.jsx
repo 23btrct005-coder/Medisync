@@ -56,6 +56,7 @@ import VerifyEmail from './pages/VerifyEmail';
 import PatientMessages from './pages/PatientMessages';
 import ClinicalError404 from './pages/ClinicalError404';
 import ErrorBoundary from './components/ErrorBoundary';
+import AiConcierge from './components/AiConcierge';
 
 const ProtectedRoute = ({ children, allowedRole }) => {
   const { user, userRole, loading } = useAuth();
@@ -118,6 +119,7 @@ function App() {
         <ThemeProvider>
           <AuthProvider>
             <NotificationProvider>
+              <AiConcierge />
               <Toaster position="top-right" toastOptions={{ duration: 4000, style: { background: '#1e293b', color: '#fff' } }} />
               <Routes>
                 <Route path="/login" element={<Login />} />
