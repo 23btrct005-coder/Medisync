@@ -856,7 +856,11 @@ const DoctorLogin = () => {
           setError('Unauthorized. Only registered clinical staff and institutional administrators can access this portal.');
         }
       } else {
-        setError(result.message || 'Login failed. Please try again.');
+        if (result.pendingApproval) {
+          navigate('/pending-approval');
+        } else {
+          setError(result.message || 'Login failed. Please try again.');
+        }
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
