@@ -154,11 +154,26 @@ public class AppointmentService {
             }
 
             List<String> slots = new ArrayList<>();
-            while (start.isBefore(end)) {
-                slots.add(start.format(displayFormatter));
-                start = start.plusMinutes(duration);
+            java.time.LocalTime current = start;
+            int safetyCounter = 0;
+
+            while (safetyCounter < 200) { // Limit to 200 slots per doctor to prevent infinite loops
+                slots.add(current.format(displayFormatter));
+                current = current.plusMinutes(duration);
+
+                // Termination Logic:
+                if (start.isBefore(end)) {
+                    // Normal shift (e.g. 09:00 - 17:00)
+                    if (!current.isBefore(end)) break;
+                } else {
+                    // Midnight crossing shift (e.g. 23:00 - 01:00)
+                    // Stop if we've wrapped around past midnight AND reached the end time
+                    if (current.isBefore(start) && !current.isBefore(end)) break;
+                }
+                safetyCounter++;
             }
             return slots;
+
         } catch (Exception e) {
             System.err.println("WARN: Failed to parse timings for doctor " + doctor.getId() + ": " + timings + ". Falling back to 15-min default series.");
             List<String> fallbackSlots = new ArrayList<>();
