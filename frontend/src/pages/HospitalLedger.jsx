@@ -13,23 +13,34 @@ const HospitalLedger = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
+    const fetchLedgerData = async () => {
+        try {
+            const [statsRes, appointmentsRes] = await Promise.all([
+                api.get('/hospital/stats'),
+                api.get('/hospital/appointments')
+            ]);
+            setStats(statsRes.data);
+            setTransactions(appointmentsRes.data);
+        } catch (err) {
+            toast.error("Failed to synchronize institutional ledger");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchLedgerData = async () => {
-            try {
-                const [statsRes, appointmentsRes] = await Promise.all([
-                    api.get('/hospital/stats'),
-                    api.get('/hospital/appointments')
-                ]);
-                setStats(statsRes.data);
-                setTransactions(appointmentsRes.data);
-            } catch (err) {
-                toast.error("Failed to synchronize institutional ledger");
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchLedgerData();
     }, []);
+
+    const handleVerify = async (appointmentId) => {
+        try {
+            await api.post('/appointments/confirm-upi', { appointmentId });
+            toast.success("Transaction verified & session authorized");
+            fetchLedgerData();
+        } catch (err) {
+            toast.error("Verification protocol failed");
+        }
+    };
 
     const filteredTransactions = transactions.filter(t => 
         t.patient?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -151,13 +162,24 @@ const HospitalLedger = () => {
                                         </div>
                                     </td>
                                     <td className="p-6">
-                                        <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                                            tx.status === 'BOOKED' || tx.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600' : 
-                                            tx.status === 'AWAITING_VERIFICATION' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
-                                            'bg-blue-50 text-blue-600'
-                                        }`}>
-                                            {(tx.status === 'BOOKED' || tx.status === 'COMPLETED') ? 'SETTLED' : (tx.status || 'SCHEDULED')}
-                                        </span>
+                                        <div className="flex items-center gap-3">
+                                            <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                                                tx.status === 'BOOKED' || tx.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600' : 
+                                                tx.status === 'AWAITING_VERIFICATION' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                                                'bg-blue-50 text-blue-600'
+                                            }`}>
+                                                {(tx.status === 'BOOKED' || tx.status === 'COMPLETED') ? 'SETTLED' : (tx.status || 'SCHEDULED')}
+                                            </span>
+                                            {tx.status === 'AWAITING_VERIFICATION' && (
+                                                <button 
+                                                    onClick={() => handleVerify(tx.id)}
+                                                    className="p-1.5 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-all active:scale-90 shadow-lg shadow-slate-900/10"
+                                                    title="Verify Payment"
+                                                >
+                                                    <ShieldCheck size={12} />
+                                                </button>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             )) : (
