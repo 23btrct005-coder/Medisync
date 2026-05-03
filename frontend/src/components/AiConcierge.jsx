@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import api from '../api/axiosConfig';
 
 const AiConcierge = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -74,12 +74,16 @@ const AiConcierge = () => {
         setIsLoading(true);
 
         try {
-            const res = await axios.post('/api/ai/chat', { message: textToSend });
+            // Updated to use authenticated 'api' instance
+            const res = await api.post('/ai/chat', { message: textToSend });
             const aiMsg = { role: 'ai', text: res.data.response };
             setMessages(prev => [...prev, aiMsg]);
             speak(res.data.response);
         } catch (error) {
-            setMessages(prev => [...prev, { role: 'ai', text: 'Sorry, I am having trouble connecting to the clinical network.' }]);
+            const errorMsg = error.response?.status === 401 
+                ? 'Please login to use the Clinical Assistant.' 
+                : 'Sorry, I am having trouble connecting to the clinical network.';
+            setMessages(prev => [...prev, { role: 'ai', text: errorMsg }]);
         } finally {
             setIsLoading(false);
         }

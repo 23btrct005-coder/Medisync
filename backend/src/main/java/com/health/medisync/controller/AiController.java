@@ -26,11 +26,17 @@ public class AiController {
                 return ResponseEntity.badRequest().body(Map.of("error", "Message cannot be empty"));
             }
 
-            String patientEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+            String patientEmail = null;
+            var auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
+                patientEmail = auth.getName();
+            }
+
             String response = aiService.generateResponse(userMessage, patientEmail);
             return ResponseEntity.ok(Map.of("response", response));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "Clinical Engine Error: " + e.getMessage()));
         }
     }
 }
