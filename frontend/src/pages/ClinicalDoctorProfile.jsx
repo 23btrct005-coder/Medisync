@@ -11,11 +11,14 @@ import ClinicMap from '../components/ClinicMap';
 import toast from 'react-hot-toast';
 import { ShieldCheck, Save, X } from 'lucide-react';
 
-const InfoRow = ({ icon: Icon, label, value, color = 'text-blue-600' }) => (
-  <div className="flex items-start gap-3 py-3 border-b border-slate-100 last:border-0">
-    <div className={`mt-0.5 shrink-0 ${color}`}><Icon size={18} /></div>
+const InfoRow = ({ icon: Icon, label, value, color = 'text-blue-600', isLocked = false }) => (
+  <div className={`flex items-start gap-3 py-3 border-b border-slate-100 last:border-0 ${isLocked ? 'opacity-40 grayscale-[0.5]' : ''}`}>
+    <div className={`mt-0.5 shrink-0 ${isLocked ? 'text-slate-400' : color}`}><Icon size={18} /></div>
     <div className="flex-1 min-w-0">
-      <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">{label}</p>
+      <div className="flex items-center gap-2">
+        <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">{label}</p>
+        {isLocked && <ShieldCheck size={10} className="text-slate-300" />}
+      </div>
       <p className="text-sm font-semibold text-slate-800 mt-0.5">{value || <span className="text-slate-300 font-normal">Not provided</span>}</p>
     </div>
   </div>
@@ -194,16 +197,16 @@ const DoctorProfile = () => {
             {activeTab === 'identity' && (
                 <div className="space-y-6">
                     <Section title="Clinical Identity" icon={User}>
-                        <InfoRow icon={User} label="Legal Name" value={user.name} />
-                        <InfoRow icon={Users} label="Gender Representation" value={user.gender} color="text-purple-500" />
-                        <InfoRow icon={Calendar} label="Date of Birth" value={user.dateOfBirth} color="text-blue-500" />
-                        <InfoRow icon={Calendar} label="Biological Age" value={user.age ? `${user.age} Years` : null} color="text-blue-500" />
+                        <InfoRow icon={User} label="Legal Name" value={user.name} isLocked={user.institutional} />
+                        <InfoRow icon={Users} label="Gender Representation" value={user.gender} color="text-purple-500" isLocked={user.institutional} />
+                        <InfoRow icon={Calendar} label="Date of Birth" value={user.dateOfBirth} color="text-blue-500" isLocked={user.institutional} />
+                        <InfoRow icon={Calendar} label="Biological Age" value={user.age ? `${user.age} Years` : null} color="text-blue-500" isLocked={user.institutional} />
                     </Section>
 
                     <Section title="Communication Node" icon={Phone}>
-                        <InfoRow icon={Mail} label="Primary Interface" value={user.email} color="text-blue-500" />
-                        <InfoRow icon={Phone} label="Emergency Contact" value={user.phone} color="text-green-500" />
-                        <InfoRow icon={Phone} label="Secondary Terminal" value={user.alternatePhone} color="text-green-400" />
+                        <InfoRow icon={Mail} label="Primary Interface" value={user.email} color="text-blue-500" isLocked={user.institutional} />
+                        <InfoRow icon={Phone} label="Emergency Contact" value={user.phone} color="text-green-500" isLocked={user.institutional} />
+                        <InfoRow icon={Phone} label="Secondary Terminal" value={user.alternatePhone} color="text-green-400" isLocked={user.institutional} />
                     </Section>
                 </div>
             )}
@@ -211,25 +214,25 @@ const DoctorProfile = () => {
             {activeTab === 'professional' && (
                 <div className="space-y-6">
                     <Section title="Medical Credentials" icon={GraduationCap}>
-                        <InfoRow icon={GraduationCap} label="Academic Degree" value={user.medicalDegree} color="text-indigo-500" />
-                        <InfoRow icon={Stethoscope} label="Core Specialization" value={user.specialization} color="text-blue-600" />
-                        <InfoRow icon={GraduationCap} label="Training Institute" value={user.college} color="text-indigo-400" />
-                        <InfoRow icon={BadgeCheck} label="Clinical Certifications" value={user.additionalCertifications} color="text-amber-500" />
+                        <InfoRow icon={GraduationCap} label="Academic Degree" value={user.medicalDegree} color="text-indigo-500" isLocked={user.institutional} />
+                        <InfoRow icon={Stethoscope} label="Core Specialization" value={user.specialization} color="text-blue-600" isLocked={user.institutional} />
+                        <InfoRow icon={GraduationCap} label="Training Institute" value={user.college} color="text-indigo-400" isLocked={user.institutional} />
+                        <InfoRow icon={BadgeCheck} label="Clinical Certifications" value={user.additionalCertifications} color="text-amber-500" isLocked={user.institutional} />
                     </Section>
 
                     <Section title="Regulatory Verification" icon={BadgeCheck}>
-                        <InfoRow icon={BadgeCheck} label="Medical Council" value={user.medicalCouncil} color="text-emerald-600" />
-                        <InfoRow icon={BadgeCheck} label="License ID" value={user.medicalLicenseNumber} color="text-emerald-600" />
-                        <InfoRow icon={Calendar} label="License Expiry" value={user.licenseExpiryDate} color="text-red-500" />
-                        <InfoRow icon={Calendar} label="Registration Year" value={user.registrationYear} color="text-slate-500" />
+                        <InfoRow icon={BadgeCheck} label="Medical Council" value={user.medicalCouncil} color="text-emerald-600" isLocked={user.institutional} />
+                        <InfoRow icon={BadgeCheck} label="License ID" value={user.medicalLicenseNumber} color="text-emerald-600" isLocked={user.institutional} />
+                        <InfoRow icon={Calendar} label="License Expiry" value={user.licenseExpiryDate} color="text-red-500" isLocked={user.institutional} />
+                        <InfoRow icon={Calendar} label="Registration Year" value={user.registrationYear} color="text-slate-500" isLocked={user.institutional} />
                     </Section>
 
                     {user.institutional && (
                         <Section title="Institutional Mapping" icon={Building2}>
-                            <InfoRow icon={Building2} label="Parent Organization" value={user.hospital} color="text-blue-700" />
-                            <InfoRow icon={User} label="Employee / Staff ID" value={user.employeeId || user.staffId} color="text-slate-600" />
-                            <InfoRow icon={MapPin} label="OPD Station Number" value={user.opdRoomNumber} color="text-emerald-600" />
-                            <InfoRow icon={Calendar} label="Date of Induction" value={user.joiningDate} color="text-slate-500" />
+                            <InfoRow icon={Building2} label="Parent Organization" value={user.hospital} color="text-blue-700" isLocked />
+                            <InfoRow icon={User} label="Employee / Staff ID" value={user.employeeId || user.staffId} color="text-slate-600" isLocked />
+                            <InfoRow icon={MapPin} label="OPD Station Number" value={user.opdRoomNumber} color="text-emerald-600" isLocked />
+                            <InfoRow icon={Calendar} label="Date of Induction" value={user.joiningDate} color="text-slate-500" isLocked />
                         </Section>
                     )}
                 </div>
@@ -332,18 +335,18 @@ const DoctorProfile = () => {
                                 )) : <span className="text-slate-300 italic text-sm">No active roster</span>}
                             </div>
                         </div>
-                        <InfoRow icon={Clock} label="Daily Timings" value={user.consultationTimings} color="text-blue-500" />
-                        <InfoRow icon={Clock} label="Break Intervals" value={user.breakTimings} color="text-slate-400" />
+                        <InfoRow icon={Clock} label="Daily Timings" value={user.consultationTimings} color="text-blue-500" isLocked={user.institutional} />
+                        <InfoRow icon={Clock} label="Break Intervals" value={user.breakTimings} color="text-slate-400" isLocked={user.institutional} />
                         <div className="grid grid-cols-2 gap-4">
-                            <InfoRow icon={Activity} label="Slot Duration" value={`${user.slotDuration || 15} Min`} color="text-blue-600" />
-                            <InfoRow icon={Users} label="Max Daily Load" value={`${user.maxPatientsPerDay || 0} Patients`} color="text-emerald-600" />
+                            <InfoRow icon={Activity} label="Slot Duration" value={`${user.slotDuration || 15} Min`} color="text-blue-600" isLocked={user.institutional} />
+                            <InfoRow icon={Users} label="Max Daily Load" value={`${user.maxPatientsPerDay || 0} Patients`} color="text-emerald-600" isLocked={user.institutional} />
                         </div>
                     </Section>
 
                     <Section title="Practice Economics" icon={Wallet}>
                         <div className="grid grid-cols-2 gap-4">
-                            <InfoRow icon={CreditCard} label="Online Fee" value={user.onlineConsultationFee ? `₹ ${user.onlineConsultationFee}` : null} color="text-emerald-600" />
-                            <InfoRow icon={MapPin} label="In-Person Fee" value={user.offlineConsultationFee ? `₹ ${user.offlineConsultationFee}` : null} color="text-blue-600" />
+                            <InfoRow icon={CreditCard} label="Online Fee" value={user.onlineConsultationFee ? `₹ ${user.onlineConsultationFee}` : null} color="text-emerald-600" isLocked={user.institutional} />
+                            <InfoRow icon={MapPin} label="In-Person Fee" value={user.offlineConsultationFee ? `₹ ${user.offlineConsultationFee}` : null} color="text-blue-600" isLocked={user.institutional} />
                         </div>
                         <div className="py-4 space-y-6">
                             <div className="flex items-center justify-between">
@@ -399,8 +402,8 @@ const DoctorProfile = () => {
                         {!user.preferredPaymentMode && <span className="text-slate-300 italic font-bold">Channel Not Configured</span>}
                         </div>
                     </div>
-                    <InfoRow icon={CreditCard} label="Razorpay Gateway ID" value={user.razorpayAccountId} color="text-indigo-500" />
-                    <InfoRow icon={Activity} label="Verified UPI VPA" value={user.upiId} color="text-emerald-500" />
+                    <InfoRow icon={CreditCard} label="Razorpay Gateway ID" value={user.razorpayAccountId} color="text-indigo-500" isLocked={user.institutional} />
+                    <InfoRow icon={Activity} label="Verified UPI VPA" value={user.upiId} color="text-emerald-500" isLocked={user.institutional} />
                     <div className="py-6 bg-slate-50/50 rounded-2xl px-6 border border-slate-100 mt-4">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 italic">Node Integrity Warning</p>
                         <p className="text-[10px] font-bold text-slate-500 leading-relaxed">
