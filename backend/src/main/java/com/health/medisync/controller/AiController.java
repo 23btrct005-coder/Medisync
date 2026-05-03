@@ -2,6 +2,7 @@ package com.health.medisync.controller;
 
 import com.health.medisync.service.AiService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -25,7 +26,8 @@ public class AiController {
                 return ResponseEntity.badRequest().body(Map.of("error", "Message cannot be empty"));
             }
 
-            String response = aiService.generateResponse(userMessage);
+            String patientEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+            String response = aiService.generateResponse(userMessage, patientEmail);
             return ResponseEntity.ok(Map.of("response", response));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));

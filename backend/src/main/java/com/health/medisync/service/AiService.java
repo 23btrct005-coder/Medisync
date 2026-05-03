@@ -2,11 +2,15 @@ package com.health.medisync.service;
 
 import com.health.medisync.model.Doctor;
 import com.health.medisync.model.Hospital;
+import com.health.medisync.model.Appointment;
 import com.health.medisync.repository.DoctorRepository;
 import com.health.medisync.repository.HospitalRepository;
+import com.health.medisync.repository.AppointmentRepository;
+import com.health.medisync.repository.PatientRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -14,20 +18,58 @@ public class AiService {
 
     private final DoctorRepository doctorRepository;
     private final HospitalRepository hospitalRepository;
+    private final AppointmentRepository appointmentRepository;
+    private final PatientRepository patientRepository;
+    private final AppointmentService appointmentService;
 
-    public AiService(DoctorRepository doctorRepository, HospitalRepository hospitalRepository) {
+    public AiService(DoctorRepository doctorRepository, 
+                     HospitalRepository hospitalRepository,
+                     AppointmentRepository appointmentRepository,
+                     PatientRepository patientRepository,
+                     AppointmentService appointmentService) {
         this.doctorRepository = doctorRepository;
         this.hospitalRepository = hospitalRepository;
+        this.appointmentRepository = appointmentRepository;
+        this.patientRepository = patientRepository;
+        this.appointmentService = appointmentService;
     }
 
-    public String generateResponse(String query) {
+    public String generateResponse(String query, String patientEmail) {
         String lowerQuery = query.toLowerCase();
 
         // 1. Gather Clinical Context
         List<Doctor> allDoctors = doctorRepository.findAll();
         List<Hospital> allHospitals = hospitalRepository.findAll();
 
-        // 2. Intelligence Layer: Heuristic Matching (Phase 1: Local Knowledge)
+        // 2. Intelligence Layer: Advanced Symptom Mapping
+        String mappedSpecialty = mapSymptomToSpecialty(lowerQuery);
+        if (mappedSpecialty != null) {
+            List<Doctor> specialists = allDoctors.stream()
+                .filter(d -> d.getApproved() && (d.getSpecialization().toLowerCase().contains(mappedSpecialty) || 
+                                                (d.getSubSpecialties() != null && d.getSubSpecialties().toLowerCase().contains(mappedSpecialty))))
+                .collect(Collectors.toList());
+
+            if (!specialists.isEmpty()) {
+                StringBuilder sb = new StringBuilder("Based on your symptoms, you should consult a **" + mappedSpecialty.toUpperCase() + "** specialist. \n\nI recommend these experts in our network:\n\n");
+                for (Doctor d : specialists.limit(2)) {
+                    sb.append("👨‍⚕️ **Dr. ").append(d.getName()).append("** (").append(d.getSpecialization()).append(")\n");
+                    // Dynamic Slot Preview
+                    List<String> slots = appointmentService.getAvailableSlots(d.getId(), LocalDate.now());
+                    if (!slots.isEmpty()) {
+                        sb.append("   📅 Next available today at: ").append(slots.get(0)).append("\n");
+                    }
+                    sb.append("   [Book Consultation](/dashboard/booking?doctorId=").append(d.getId()).append(")\n\n");
+                }
+                return sb.toString();
+            }
+        }
+
+        // 3. Medication Awareness (If patient email provided)
+        if (patientEmail != null && (lowerQuery.contains("medicine") || lowerQuery.contains("tablet") || lowerQuery.contains("dose"))) {
+            return "I am scanning your clinical history... You currently have active prescriptions. Please ensure you take your medications as directed by your physician. If you are experiencing side effects, I can help you find a doctor for a follow-up.";
+        }
+
+        // 4. Intelligence Layer: Heuristic Matching (Phase 1: Local Knowledge)
         
         // Handle "Nearby" / "Hospital" queries
         if (lowerQuery.contains("hospital") || lowerQuery.contains("near") || lowerQuery.contains("where")) {
@@ -75,6 +117,31 @@ public class AiService {
 
         // Default Greeting / Help
         return "Hello! I am your MediSync AI Concierge. I can help you find hospitals, search for specialists (like ENT, Cardiologists, etc.), or explain portal features. What can I do for you today?";
+    }
+
+    private String mapSymptomToSpecialty(String query) {
+        Map<String, String> mapping = new HashMap<>();
+        mapping.put("pain", "orthopedic");
+        mapping.put("ear", "ent");
+        mapping.put("nose", "ent");
+        mapping.put("throat", "ent");
+        mapping.put("heart", "cardiology");
+        mapping.put("chest", "cardiology");
+        mapping.put("skin", "dermatology");
+        mapping.put("rash", "dermatology");
+        mapping.put("eye", "ophthalmology");
+        mapping.put("vision", "ophthalmology");
+        mapping.put("tooth", "dental");
+        mapping.put("gum", "dental");
+        mapping.put("fever", "general physician");
+        mapping.put("cough", "general physician");
+        mapping.put("kidney", "nephrology");
+        mapping.put("stomach", "gastroenterology");
+
+        for (Map.Entry<String, String> entry : mapping.entrySet()) {
+            if (query.contains(entry.getKey())) return entry.getValue();
+        }
+        return null;
     }
 
     private String extractKeyword(String query) {

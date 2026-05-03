@@ -4,7 +4,7 @@ import axios from 'axios';
 const AiConcierge = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([
-        { role: 'ai', text: 'Hello! I am your MediSync Clinical Concierge. How can I help you today?' }
+        { role: 'ai', text: 'Hello! I am your MediSync Clinical Concierge.\n\nI can help you:\n1. Find specialists for your symptoms\n2. Check nearby hospital facilities\n3. Manage your medication queries\n\nHow can I help you today?' }
     ]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -14,18 +14,19 @@ const AiConcierge = () => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
-    }, [messages]);
+    }, [messages, isOpen]);
 
     const handleSend = async () => {
         if (!input.trim()) return;
 
         const userMsg = { role: 'user', text: input };
         setMessages(prev => [...prev, userMsg]);
+        const currentInput = input;
         setInput('');
         setIsLoading(true);
 
         try {
-            const res = await axios.post('/api/ai/chat', { message: input });
+            const res = await axios.post('/api/ai/chat', { message: currentInput });
             const aiMsg = { role: 'ai', text: res.data.response };
             setMessages(prev => [...prev, aiMsg]);
         } catch (error) {
@@ -47,8 +48,6 @@ const AiConcierge = () => {
                         boxShadow: '0 4px 15px rgba(0,102,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                         transition: 'transform 0.2s'
                     }}
-                    onMouseOver={(e) => e.target.style.transform = 'scale(1.1)'}
-                    onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
                 >
                     🤖
                 </button>
@@ -57,55 +56,95 @@ const AiConcierge = () => {
             {/* Chat Window */}
             {isOpen && (
                 <div style={{
-                    width: '350px', height: '500px', backgroundColor: 'white', borderRadius: '15px',
-                    boxShadow: '0 10px 30px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column',
-                    overflow: 'hidden', border: '1px solid #eee'
+                    width: '350px', height: '500px', backgroundColor: 'white', borderRadius: '20px',
+                    boxShadow: '0 20px 50px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column',
+                    overflow: 'hidden', border: '1px solid rgba(0,0,0,0.05)',
+                    animation: 'slideUp 0.3s ease-out'
                 }}>
+                    <style>{`
+                        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+                    `}</style>
+                    
                     {/* Header */}
                     <div style={{
-                        padding: '15px', backgroundColor: '#0066FF', color: 'white',
+                        padding: '20px', backgroundColor: '#0066FF', color: 'white',
                         display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                     }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <span style={{ fontSize: '20px' }}>🤖</span>
-                            <span style={{ fontWeight: '600' }}>MediSync AI Concierge</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ width: '10px', height: '10px', backgroundColor: '#4ade80', borderRadius: '50%', border: '2px solid white' }}></div>
+                            <span style={{ fontWeight: '800', fontSize: '14px', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Clinical Concierge</span>
                         </div>
-                        <button onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '18px' }}>✕</button>
+                        <button onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '20px' }}>✕</button>
                     </div>
 
                     {/* Messages */}
-                    <div ref={scrollRef} style={{ flex: 1, padding: '15px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', backgroundColor: '#f9f9f9' }}>
+                    <div ref={scrollRef} style={{ flex: 1, padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '15px', backgroundColor: '#fcfdfe' }}>
                         {messages.map((m, i) => (
                             <div key={i} style={{
                                 alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
-                                maxWidth: '80%', padding: '10px 14px', borderRadius: '12px',
+                                maxWidth: '85%', padding: '12px 16px', borderRadius: m.role === 'user' ? '18px 18px 2px 18px' : '18px 18px 18px 2px',
                                 backgroundColor: m.role === 'user' ? '#0066FF' : 'white',
-                                color: m.role === 'user' ? 'white' : '#333',
-                                boxShadow: m.role === 'ai' ? '0 2px 5px rgba(0,0,0,0.05)' : 'none',
-                                fontSize: '14px', lineHeight: '1.5', whiteSpace: 'pre-wrap'
+                                color: m.role === 'user' ? 'white' : '#1e293b',
+                                boxShadow: m.role === 'ai' ? '0 4px 12px rgba(0,0,0,0.03)' : 'none',
+                                fontSize: '13px', lineHeight: '1.6', border: m.role === 'ai' ? '1px solid #f1f5f9' : 'none'
                             }}>
-                                {m.text}
+                                {m.text.split('\n').map((line, li) => {
+                                    // Actionable Link Support
+                                    const linkMatch = line.match(/\[(.*?)\]\((.*?)\)/);
+                                    if (linkMatch) {
+                                        return (
+                                            <div key={li} style={{ marginTop: '8px' }}>
+                                                <button 
+                                                    onClick={() => window.location.href = linkMatch[2]}
+                                                    style={{
+                                                        width: '100%', padding: '10px', backgroundColor: '#f0f7ff', color: '#0066FF',
+                                                        border: '1px solid #bfdbfe', borderRadius: '10px', fontSize: '12px',
+                                                        fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                                                        transition: 'all 0.2s'
+                                                    }}
+                                                    onMouseOver={(e) => e.target.style.backgroundColor = '#e0edff'}
+                                                    onMouseOut={(e) => e.target.style.backgroundColor = '#f0f7ff'}
+                                                >
+                                                    ⚡ {linkMatch[1].toUpperCase()}
+                                                </button>
+                                            </div>
+                                        );
+                                    }
+                                    return <div key={li} style={{ marginBottom: '6px' }}>{line}</div>;
+                                })}
                             </div>
                         ))}
                         {isLoading && (
-                            <div style={{ alignSelf: 'flex-start', padding: '10px', color: '#888', fontSize: '12px' }}>AI is thinking...</div>
+                            <div style={{ alignSelf: 'flex-start', padding: '10px', color: '#94a3b8', fontSize: '11px', fontStyle: 'italic' }}>AI is analyzing clinical context...</div>
                         )}
                     </div>
 
                     {/* Input */}
-                    <div style={{ padding: '15px', borderTop: '1px solid #eee', display: 'flex', gap: '10px' }}>
+                    <div style={{ padding: '20px', backgroundColor: 'white', borderTop: '1px solid #f1f5f9', display: 'flex', gap: '12px' }}>
                         <input 
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                            placeholder="Ask anything..."
-                            style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #ddd', outline: 'none', fontSize: '14px' }}
+                            placeholder="Describe your symptoms..."
+                            style={{ 
+                                flex: 1, padding: '12px 16px', borderRadius: '12px', 
+                                border: '1px solid #e2e8f0', outline: 'none', fontSize: '13px',
+                                transition: 'border-color 0.2s'
+                            }}
+                            onFocus={(e) => e.target.style.borderColor = '#0066FF'}
+                            onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                         />
                         <button 
                             onClick={handleSend}
-                            style={{ padding: '10px 15px', backgroundColor: '#0066FF', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                            disabled={isLoading || !input.trim()}
+                            style={{ 
+                                width: '45px', height: '45px', backgroundColor: '#0066FF', 
+                                color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                disabled: { opacity: 0.5 }
+                            }}
                         >
-                            Send
+                            ➔
                         </button>
                     </div>
                 </div>
