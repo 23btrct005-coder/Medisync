@@ -495,8 +495,7 @@ const HospitalDoctorRoster = () => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </form>
+                        </form>
 
                         {/* Modal Footer */}
                         <div className="p-10 border-t border-slate-50 bg-slate-50/30 shrink-0 flex gap-4">
