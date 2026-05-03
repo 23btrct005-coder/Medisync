@@ -19,6 +19,7 @@ public class AiService {
     private final AppointmentRepository appointmentRepository;
     private final DoctorService doctorService;
     private final GroqAiService groqAiService;
+    private final UserRepository userRepository;
     
     private static final Map<String, String> sessionSummaries = new HashMap<>();
 
@@ -28,7 +29,8 @@ public class AiService {
                      PrescriptionRepository prescriptionRepository,
                      AppointmentRepository appointmentRepository,
                      @Lazy DoctorService doctorService,
-                     GroqAiService groqAiService) {
+                     GroqAiService groqAiService,
+                     UserRepository userRepository) {
         this.doctorRepository = doctorRepository;
         this.hospitalRepository = hospitalRepository;
         this.aiQueryLogRepository = aiQueryLogRepository;
@@ -36,6 +38,7 @@ public class AiService {
         this.appointmentRepository = appointmentRepository;
         this.doctorService = doctorService;
         this.groqAiService = groqAiService;
+        this.userRepository = userRepository;
     }
 
     public String generateResponse(String query, String userEmail, List<String> roles, String location) {
@@ -83,22 +86,33 @@ public class AiService {
             return sb.toString();
         }
 
-        // 4. Real-time Context Extraction (Temporal + Clinical)
+        // 4. Real-time Context Extraction (Temporal + Clinical History)
         String currentTime = java.time.LocalTime.now().toString();
         String currentDate = java.time.LocalDate.now().toString();
-        String appointmentContext = "None";
+        StringBuilder clinicalHistory = new StringBuilder("None");
+        
         if (userEmail != null) {
-            List<Appointment> todayAppts = appointmentRepository.findByPatientEmail(userEmail).stream()
-                .filter(a -> a.getAppointmentDate().isEqual(LocalDate.now()))
-                .collect(Collectors.toList());
-            if (!todayAppts.isEmpty()) {
-                appointmentContext = todayAppts.stream()
-                    .map(a -> "- Dr. " + a.getDoctor().getName() + " at " + a.getTimeSlot())
-                    .collect(Collectors.joining("\n"));
+            clinicalHistory = new StringBuilder();
+            List<Prescription> pastMeds = prescriptionRepository.findByPatientEmailAndIsActiveTrue(userEmail);
+            if (!pastMeds.isEmpty()) {
+                clinicalHistory.append("Past Diagnoses: ")
+                    .append(pastMeds.stream().map(Prescription::getMedicineName).collect(Collectors.joining(", ")))
+                    .append(". ");
+            }
+            
+            Optional<User> userOpt = userRepository.findByUsernameIgnoreCase(userEmail);
+            if (userOpt.isPresent()) {
+                List<Appointment> todayAppts = appointmentRepository.findByPatientId(userOpt.get().getId()).stream()
+                    .filter(a -> a.getAppointmentDate().isEqual(LocalDate.now()))
+                    .collect(Collectors.toList());
+                if (!todayAppts.isEmpty()) {
+                    clinicalHistory.append("Today's Schedule: ")
+                        .append(todayAppts.stream().map(a -> "- Dr. " + a.getDoctor().getName() + " at " + a.getTimeSlot()).collect(Collectors.joining("; ")));
+                }
             }
         }
 
-        // --- NEURAL REASONING (Telemetry + Temporal Augmented) ---
+        // --- NEURAL REASONING (Expert Physician Profile) ---
         try {
             List<Doctor> allDoctors = doctorRepository.findByApprovedTrue();
             String doctorList = allDoctors.stream()
@@ -107,23 +121,22 @@ public class AiService {
 
             List<Hospital> allHospitals = hospitalRepository.findAll();
             String hospitalList = allHospitals.stream()
-                .map(h -> "- " + h.getName() + " (" + (h.getAddress() != null ? h.getAddress() : "Active Node") + ")")
+                .map(h -> "- " + h.getName() + " (" + (h.getLocation() != null ? h.getLocation() : "Active Node") + ")")
                 .collect(Collectors.joining("\n"));
 
-            String prompt = "You are the MediSync Real-time Clinical Assistant. " +
+            String prompt = "You are the MediSync EXPERT CLINICAL PHYSICIAN. " +
                 "System Time: " + currentTime + " (" + currentDate + "). " +
-                "User Role: " + (isDoctor ? "Doctor" : "Patient") + ". " +
-                "User's TODAY Schedule:\n" + appointmentContext + "\n" +
-                "Current Location (Telemetry): " + (location != null ? location : "Unknown") + ". " +
+                "Patient Clinical Profile: " + clinicalHistory.toString() + ". " +
+                "Current Location: " + (location != null ? location : "Unknown") + ". " +
                 "Language: " + language + ". " +
-                "STRICT RESPONSE RULES:\n" +
+                "STRICT PROTOCOLS:\n" +
                 "1. NO PARAGRAPHS. NO GREETINGS. NO DISCLAIMERS.\n" +
-                "2. ONLY answer what the user asked. Be extremely concise.\n" +
+                "2. PROVIDE DEEP CLINICAL INSIGHTS. Act as a board-certified MD.\n" +
                 "3. Use Markdown headers (###) and Bullet Points (-) for EVERYTHING.\n" +
-                "4. NAVIGATION: Always provide a detailed street address when mentioning a hospital or facility.\n" +
-                "5. GROUNDING - APPROVED HOSPITALS:\n" + hospitalList + "\n" +
-                "6. GROUNDING - APPROVED DOCTORS:\n" + doctorList + "\n" +
-                "7. If a user asks about a hospital or doctor NOT in the lists above, say 'I couldn't find that in our current clinical network.'\n\n" +
+                "4. NAVIGATION: Always provide a detailed street address when mentioning a hospital.\n" +
+                "5. GROUNDING: Reference the Institutional Registry below:\n" +
+                "   HOSPITALS:\n" + hospitalList + "\n" +
+                "   DOCTORS:\n" + doctorList + "\n\n" +
                 "Query: " + query;
             
             String neuralResponse = groqAiService.getCompletion(prompt);
