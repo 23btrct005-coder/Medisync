@@ -687,11 +687,11 @@ const EditDoctorProfile = () => {
             </div>
             <div>
               <label className={labelClass}>Online Consultation Fee (INR)</label>
-              <input type="number" name="onlineConsultationFee" value={formData.onlineConsultationFee} onChange={handleChange} className={inputClass} placeholder="e.g. 500" min="0" />
+              <input type="number" name="onlineConsultationFee" value={formData.onlineConsultationFee} readOnly={isAffiliated} onChange={handleChange} className={isAffiliated ? readOnlyInputClass : inputClass} placeholder="e.g. 500" min="0" />
             </div>
             <div>
               <label className={labelClass}>Offline Consultation Fee (INR)</label>
-              <input type="number" name="offlineConsultationFee" value={formData.offlineConsultationFee} onChange={handleChange} className={inputClass} placeholder="e.g. 800" min="0" />
+              <input type="number" name="offlineConsultationFee" value={formData.offlineConsultationFee} readOnly={isAffiliated} onChange={handleChange} className={isAffiliated ? readOnlyInputClass : inputClass} placeholder="e.g. 800" min="0" />
             </div>
             <div className="md:col-span-2">
               <label className={labelClass}>
@@ -715,7 +715,7 @@ const EditDoctorProfile = () => {
                 </div>
                 <div>
                     <label className={labelClass}>Personal UPI ID (VPA)</label>
-                    <input type="text" name="upiId" value={formData.upiId} onChange={handleChange} className={inputClass} placeholder="doctor@okaxis" />
+                    <input type="text" name="upiId" value={formData.upiId} onChange={handleChange} className={isAffiliated ? readOnlyInputClass : inputClass} readOnly={isAffiliated} placeholder="doctor@okaxis" />
                 </div>
                 <p className="md:col-span-2 text-[10px] text-slate-400 mt-1 ml-1 flex items-center gap-2">
                     <AlertCircle size={12} />
