@@ -364,7 +364,7 @@ public class HospitalController {
             return ResponseEntity.badRequest().body(Map.of("message", "Broadcast message cannot be empty"));
         }
         
-        hospitalService.broadcastToStaff(admin.getHospital(), title, message);
+        hospitalService.broadcastToStaff(admin.getHospital(), title, message, user.getId());
         return ResponseEntity.ok(Map.of("message", "Institutional broadcast dispatched successfully"));
     }
 }

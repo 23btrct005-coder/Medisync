@@ -29,6 +29,7 @@ public class HospitalService {
     private final UserRepository userRepository;
     private final PatientRepository patientRepository;
     private final com.health.medisync.repository.NotificationRepository notificationRepository;
+    private final com.health.medisync.repository.ChatMessageRepository chatMessageRepository;
 
     public HospitalService(HospitalRepository hospitalRepository, 
                            HospitalAdminRepository hospitalAdminRepository, 
@@ -37,7 +38,8 @@ public class HospitalService {
                            DepartmentRepository departmentRepository,
                            UserRepository userRepository,
                            PatientRepository patientRepository,
-                           com.health.medisync.repository.NotificationRepository notificationRepository) {
+                           com.health.medisync.repository.NotificationRepository notificationRepository,
+                           com.health.medisync.repository.ChatMessageRepository chatMessageRepository) {
         this.hospitalRepository = hospitalRepository;
         this.hospitalAdminRepository = hospitalAdminRepository;
         this.doctorRepository = doctorRepository;
@@ -46,18 +48,28 @@ public class HospitalService {
         this.userRepository = userRepository;
         this.patientRepository = patientRepository;
         this.notificationRepository = notificationRepository;
+        this.chatMessageRepository = chatMessageRepository;
     }
 
-    public void broadcastToStaff(Hospital hospital, String title, String message) {
+    public void broadcastToStaff(Hospital hospital, String title, String message, Long senderUserId) {
         List<Doctor> doctors = doctorRepository.findByHospitalEntity(hospital);
         for (Doctor doctor : doctors) {
             if (doctor.getUser() != null) {
+                // 1. Send Notification
                 com.health.medisync.model.Notification notification = new com.health.medisync.model.Notification();
                 notification.setUserId(doctor.getUser().getId());
                 notification.setType("INSTITUTIONAL");
                 notification.setTitle(title);
                 notification.setDescription(message);
                 notificationRepository.save(notification);
+
+                // 2. Send Message Center Entry
+                com.health.medisync.model.ChatMessage chatMsg = new com.health.medisync.model.ChatMessage();
+                chatMsg.setSenderId(senderUserId);
+                chatMsg.setReceiverId(doctor.getUser().getId());
+                chatMsg.setContent("[" + title + "] " + message);
+                chatMsg.setRead(false);
+                chatMessageRepository.save(chatMsg);
             }
         }
     }
