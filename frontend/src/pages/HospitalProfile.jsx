@@ -261,7 +261,7 @@ const HospitalProfile = () => {
                         Institutional Sovereignty & Compliance Registry
                     </p>
                 </div>
-                {['operations', 'settlements', 'environment'].includes(activeTab) && (
+                {['identity', 'operations', 'settlements', 'environment'].includes(activeTab) && (
                     <button 
                         onClick={handleSave}
                         disabled={saving}
@@ -278,8 +278,8 @@ const HospitalProfile = () => {
                 {[
                     { id: 'identity', label: 'Identity', icon: Building2 },
                     { id: 'compliance', label: 'Compliance', icon: Shield },
-                    { id: 'operations', label: 'Operations', icon: Activity },
                     { id: 'location', label: 'Location', icon: MapPin },
+                    { id: 'operations', label: 'Operations', icon: Activity },
                     { id: 'environment', label: 'Environment', icon: Globe },
                     { id: 'governance', label: 'Governance', icon: User },
                     { id: 'settlements', label: 'Settlements', icon: CreditCard },
@@ -374,6 +374,23 @@ const HospitalProfile = () => {
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Official Website</label>
                                     <input type="text" readOnly value={formData.website} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed" />
                                 </div>
+                            </div>
+
+                            {/* Clinical Services (Moved for visibility) */}
+                            <div className="mt-10 pt-10 border-t border-slate-100 space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <Activity className="text-primary" size={18} />
+                                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900">Clinical & Diagnostic Services</h4>
+                                </div>
+                                <textarea 
+                                    value={formData.services}
+                                    onChange={(e) => setFormData({...formData, services: e.target.value})}
+                                    placeholder="e.g. 24/7 MRI, CT Scan, Blood Bank, Pediatric Surgery, ICU Availability"
+                                    className="w-full px-8 py-6 bg-slate-50 border-2 border-transparent focus:border-primary/20 rounded-[2.5rem] text-sm font-bold text-slate-800 outline-none transition-all min-h-[150px] resize-none"
+                                />
+                                <p className="text-[10px] text-slate-400 font-medium italic ml-2">
+                                    List your primary services (MRI, Blood Bank, etc.). This data allows the AI Concierge to confirm availability to patients in real-time.
+                                </p>
                             </div>
                         </div>
                     )}
@@ -483,20 +500,6 @@ const HospitalProfile = () => {
                                 >
                                     <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.emergencyServicesAvailable ? 'right-1' : 'left-1'}`} />
                                 </button>
-                            </div>
-
-                            {/* AI Clinical Services */}
-                            <div className="mt-8 space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Clinical & Diagnostic Services (For AI Concierge)</label>
-                                <textarea 
-                                    value={formData.services}
-                                    onChange={(e) => setFormData({...formData, services: e.target.value})}
-                                    placeholder="e.g. 24/7 MRI, CT Scan, Blood Bank, Pediatric Surgery, ICU Availability"
-                                    className="w-full px-5 py-4 bg-slate-50 border-none rounded-[2rem] text-xs font-bold focus:ring-2 ring-emerald-100 min-h-[100px] resize-none"
-                                />
-                                <p className="text-[9px] text-slate-400 font-medium italic mt-2 ml-1">
-                                    List your hospital's key services here. This data is used by the MediSync AI to answer patient queries.
-                                </p>
                             </div>
                         </div>
                     )}

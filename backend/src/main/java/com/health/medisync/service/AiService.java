@@ -17,28 +17,22 @@ public class AiService {
 
     private final DoctorRepository doctorRepository;
     private final HospitalRepository hospitalRepository;
-    private final AppointmentRepository appointmentRepository;
-    private final PatientRepository patientRepository;
-    private final AppointmentService appointmentService;
     private final AiQueryLogRepository aiQueryLogRepository;
     private final PrescriptionRepository prescriptionRepository;
+    private final DoctorService doctorService;
     
     private static final Map<String, String> sessionSummaries = new HashMap<>();
 
     public AiService(DoctorRepository doctorRepository, 
                      HospitalRepository hospitalRepository,
-                     AppointmentRepository appointmentRepository,
-                     PatientRepository patientRepository,
-                     @Lazy AppointmentService appointmentService,
                      AiQueryLogRepository aiQueryLogRepository,
-                     PrescriptionRepository prescriptionRepository) {
+                     PrescriptionRepository prescriptionRepository,
+                     @Lazy DoctorService doctorService) {
         this.doctorRepository = doctorRepository;
         this.hospitalRepository = hospitalRepository;
-        this.appointmentRepository = appointmentRepository;
-        this.patientRepository = patientRepository;
-        this.appointmentService = appointmentService;
         this.aiQueryLogRepository = aiQueryLogRepository;
         this.prescriptionRepository = prescriptionRepository;
+        this.doctorService = doctorService;
     }
 
     public String generateResponse(String query, String patientEmail) {
@@ -87,7 +81,7 @@ public class AiService {
         List<Doctor> allDoctors = doctorRepository.findAll();
         List<Hospital> allHospitals = hospitalRepository.findAll();
 
-        // 4. Competitive Comparison (FIXED: removed non-existent getConsultationTimings)
+        // 4. Competitive Comparison
         if (lowerQuery.contains("compare") || lowerQuery.contains("versus") || lowerQuery.contains("vs")) {
             StringBuilder sb = new StringBuilder("### 📊 Institutional Comparison Matrix\n\n");
             for (Hospital h : allHospitals.stream().limit(3).collect(Collectors.toList())) {
@@ -118,6 +112,15 @@ public class AiService {
 
                 for (Doctor d : specialists.stream().limit(2).collect(Collectors.toList())) {
                     sb.append("👨‍⚕️ **Dr. ").append(d.getName()).append("** (").append(d.getSpecialization()).append(")\n");
+                    
+                    // Show next available slot using DoctorService
+                    try {
+                        List<String> slots = doctorService.getAvailableSlots(d.getId(), LocalDate.now());
+                        if (!slots.isEmpty()) {
+                            sb.append("   - Next Slot: ").append(slots.get(0)).append("\n");
+                        }
+                    } catch (Exception e) {}
+
                     sb.append("   [Book Now](/dashboard/booking?doctorId=").append(d.getId()).append(")\n\n");
                 }
                 return sb.toString();

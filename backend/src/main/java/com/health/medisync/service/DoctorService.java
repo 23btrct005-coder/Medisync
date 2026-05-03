@@ -1,24 +1,16 @@
 package com.health.medisync.service;
 
-import com.health.medisync.model.Appointment;
-import com.health.medisync.model.Doctor;
-import com.health.medisync.model.Patient;
-import com.health.medisync.model.User;
-import com.health.medisync.model.MedicalRecord;
-import com.health.medisync.model.MedicalRecordRequest;
-import com.health.medisync.model.Report;
-import com.health.medisync.model.AccessRequest;
-import com.health.medisync.repository.DoctorRepository;
-import com.health.medisync.repository.UserRepository;
-import com.health.medisync.repository.PatientRepository;
-import com.health.medisync.repository.MedicalRecordRepository;
-import com.health.medisync.repository.ReportRepository;
-import com.health.medisync.repository.AccessRequestRepository;
-import com.health.medisync.repository.AppointmentRepository;
+import com.health.medisync.model.*;
+import com.health.medisync.repository.*;
 import com.health.medisync.service.DatabaseSchemaService;
 import org.springframework.stereotype.Service;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class DoctorService {
@@ -418,5 +410,73 @@ public class DoctorService {
             "total", totalRevenue,
             "history", monthlyHistory
         );
+    }
+
+    public List<String> getAvailableSlots(Long doctorId, LocalDate date) {
+        Doctor doctor = doctorRepository.findById(doctorId)
+            .orElseThrow(() -> new RuntimeException("Doctor Record Not Found for ID: " + doctorId));
+
+        if (doctor.getAppointmentsEnabled() != null && !doctor.getAppointmentsEnabled()) {
+            return Collections.emptyList();
+        }
+
+        List<String> allSlots = parseSlots(doctor);
+        LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(10);
+        List<Appointment> existing = new ArrayList<>();
+        try {
+            existing = appointmentRepository.findByDoctorIdAndAppointmentDate(doctorId, date);
+        } catch (Exception e) {}
+        
+        Set<String> takenSlots = existing.stream()
+            .filter(a -> a.getStatus() == Appointment.AppointmentStatus.BOOKED || 
+                        a.getStatus() == Appointment.AppointmentStatus.AWAITING_VERIFICATION ||
+                        (a.getStatus() == Appointment.AppointmentStatus.PENDING && a.getCreatedAt() != null && a.getCreatedAt().isAfter(expiryTime)))
+            .map(a -> a.getTimeSlot())
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
+
+        ZoneId clinicalZone = ZoneId.of("Asia/Kolkata");
+        return allSlots.stream()
+            .filter(slot -> !takenSlots.contains(slot))
+            .filter(slot -> {
+                if (date.isEqual(LocalDate.now(clinicalZone))) {
+                    try {
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);
+                        java.time.LocalTime slotTime = java.time.LocalTime.parse(slot.trim(), formatter);
+                        return slotTime.isAfter(java.time.LocalTime.now(clinicalZone).plusMinutes(2));
+                    } catch (Exception e) { return true; }
+                }
+                return true;
+            })
+            .collect(Collectors.toList());
+    }
+
+    private List<String> parseSlots(Doctor doctor) {
+        String timings = doctor.getConsultationTimings();
+        int duration = (doctor.getSlotDuration() != null && doctor.getSlotDuration() > 0) ? doctor.getSlotDuration() : 15;
+        DateTimeFormatter displayFormatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);
+        
+        if (timings == null || timings.trim().isEmpty() || !timings.contains("-")) {
+            return Arrays.asList("10:00 AM", "10:15 AM", "10:30 AM", "10:45 AM", "11:00 AM");
+        }
+
+        try {
+            String[] parts = timings.split("-");
+            String startStr = parts[0].trim();
+            String endStr = parts[1].trim();
+
+            java.time.LocalTime startTime = java.time.LocalTime.parse(startStr, displayFormatter);
+            java.time.LocalTime endTime = java.time.LocalTime.parse(endStr, displayFormatter);
+
+            List<String> slots = new ArrayList<>();
+            java.time.LocalTime current = startTime;
+            while (current.isBefore(endTime)) {
+                slots.add(current.format(displayFormatter));
+                current = current.plusMinutes(duration);
+            }
+            return slots;
+        } catch (Exception e) {
+            return Arrays.asList("10:00 AM", "10:15 AM", "10:30 AM", "10:45 AM", "11:00 AM");
+        }
     }
 }

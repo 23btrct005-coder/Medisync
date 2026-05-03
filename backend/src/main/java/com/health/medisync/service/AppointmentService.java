@@ -1,19 +1,9 @@
 package com.health.medisync.service;
 
-import com.health.medisync.model.Appointment;
+import com.health.medisync.model.*;
 import com.health.medisync.model.Appointment.AppointmentStatus;
 import com.health.medisync.model.Appointment.ConsultationType;
-import com.health.medisync.model.Doctor;
-import com.health.medisync.model.Patient;
-import com.health.medisync.model.User;
-import com.health.medisync.model.Hospital;
-import com.health.medisync.model.HospitalAdmin;
-import com.health.medisync.repository.AppointmentRepository;
-import com.health.medisync.repository.DoctorRepository;
-import com.health.medisync.repository.PatientRepository;
-import com.health.medisync.repository.UserRepository;
-import com.health.medisync.repository.RatingRepository;
-import com.health.medisync.model.DoctorDTO;
+import com.health.medisync.repository.*;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 import com.razorpay.Utils;
@@ -22,7 +12,6 @@ import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.context.annotation.Lazy;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -40,7 +29,6 @@ public class AppointmentService {
     private final UserRepository userRepository;
     private final NotificationService notificationService;
     private final RatingRepository ratingRepository;
-    private final AiService aiService;
 
     @Value("${razorpay.key.id:}")
     private String razorpayKeyId;
@@ -53,141 +41,18 @@ public class AppointmentService {
                               PatientRepository patientRepository,
                               UserRepository userRepository,
                               NotificationService notificationService,
-                              RatingRepository ratingRepository,
-                              @Lazy AiService aiService) {
+                              RatingRepository ratingRepository) {
         this.appointmentRepository = appointmentRepository;
         this.doctorRepository = doctorRepository;
         this.patientRepository = patientRepository;
         this.userRepository = userRepository;
         this.notificationService = notificationService;
         this.ratingRepository = ratingRepository;
-        this.aiService = aiService;
     }
 
     public boolean hasBookedAppointment(Long doctorId, Long patientId) {
         return appointmentRepository.existsByDoctorIdAndPatientIdAndStatus(
             doctorId, patientId, AppointmentStatus.BOOKED);
-    }
-
-    public List<String> getAvailableSlots(Long doctorId, LocalDate date) {
-        System.out.println("TRACE: Fetching slots for Doctor ID: " + doctorId + ", Date: " + date);
-        
-        Doctor doctor = doctorRepository.findById(doctorId)
-            .orElseThrow(() -> new RuntimeException("Doctor Record Not Found for ID: " + doctorId));
-
-        System.out.println("TRACE: Doctor found: " + doctor.getName() + ", ApptsEnabled: " + doctor.getAppointmentsEnabled());
-
-        if (doctor.getAppointmentsEnabled() != null && !doctor.getAppointmentsEnabled()) {
-            return Collections.emptyList();
-        }
-
-        // 1. Generate all possible slots from consultationTimings (e.g., "10:00 AM - 05:00 PM")
-        List<String> allSlots = parseSlots(doctor);
-        System.out.println("TRACE: Total possible slots: " + allSlots.size());
-
-        // 2. Filter out booked or pending (not expired) slots
-        LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(10);
-        List<Appointment> existing = new ArrayList<>();
-        try {
-            existing = appointmentRepository.findByDoctorIdAndAppointmentDate(doctorId, date);
-            System.out.println("TRACE: Found " + existing.size() + " existing appointments/holds.");
-        } catch (Exception e) {
-            System.err.println("WARNING: Database query for existing appointments failed: " + e.getMessage());
-            // Fallback: Assume no existing appointments if DB query fails due to schema sync issues
-        }
-        
-        Set<String> takenSlots = existing.stream()
-            .filter(a -> a.getStatus() == AppointmentStatus.BOOKED || 
-                        a.getStatus() == AppointmentStatus.AWAITING_VERIFICATION ||
-                        (a.getStatus() == AppointmentStatus.PENDING && a.getCreatedAt() != null && a.getCreatedAt().isAfter(expiryTime)))
-            .map(a -> a.getTimeSlot())
-            .filter(Objects::nonNull)
-            .collect(Collectors.toSet());
-
-        ZoneId clinicalZone = ZoneId.of("Asia/Kolkata");
-        List<String> results = allSlots.stream()
-            .filter(slot -> !takenSlots.contains(slot))
-            .filter(slot -> {
-                // HARDEN: Filter out past slots if date is today (Local Context)
-                if (date.isEqual(LocalDate.now(clinicalZone))) {
-                    try {
-                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);
-                        java.time.LocalTime slotTime = java.time.LocalTime.parse(slot.trim(), formatter);
-                        return slotTime.isAfter(java.time.LocalTime.now(clinicalZone).plusMinutes(2)); // 2-min buffer
-                    } catch (Exception e) { return true; }
-                }
-                return true;
-            })
-            .collect(Collectors.toList());
-            
-        System.out.println("TRACE: Returning " + results.size() + " available slots.");
-        return results;
-    }
-
-    private List<String> parseSlots(Doctor doctor) {
-        String timings = doctor.getConsultationTimings();
-        int duration = (doctor.getSlotDuration() != null && doctor.getSlotDuration() > 0) ? doctor.getSlotDuration() : 15;
-        DateTimeFormatter displayFormatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);
-
-        if (timings == null || timings.trim().isEmpty()) {
-            List<String> defaultSlots = new ArrayList<>();
-            java.time.LocalTime t = java.time.LocalTime.of(9, 0);
-            for(int i=0; i<16; i++) {
-                defaultSlots.add(t.format(displayFormatter));
-                t = t.plusMinutes(duration);
-            }
-            return defaultSlots;
-        }
-
-        try {
-            String[] parts = timings.split(" - ");
-            if (parts.length != 2) throw new Exception("INVALID_TIMING_FORMAT");
-
-            java.time.LocalTime start;
-            java.time.LocalTime end;
-
-            try {
-                // Try parsing as 24-hour format (e.g. 09:00)
-                DateTimeFormatter isoFormatter = DateTimeFormatter.ofPattern("HH:mm");
-                start = java.time.LocalTime.parse(parts[0].trim(), isoFormatter);
-                end = java.time.LocalTime.parse(parts[1].trim(), isoFormatter);
-            } catch (Exception e) {
-                // Fallback to display format (e.g. 09:00 AM)
-                start = java.time.LocalTime.parse(parts[0].trim(), displayFormatter);
-                end = java.time.LocalTime.parse(parts[1].trim(), displayFormatter);
-            }
-
-            List<String> slots = new ArrayList<>();
-            java.time.LocalTime current = start;
-            int safetyCounter = 0;
-
-            while (safetyCounter < 200) { // Limit to 200 slots per doctor to prevent infinite loops
-                slots.add(current.format(displayFormatter));
-                current = current.plusMinutes(duration);
-
-                // Termination Logic:
-                if (start.isBefore(end)) {
-                    // Normal shift (e.g. 09:00 - 17:00)
-                    if (!current.isBefore(end)) break;
-                } else {
-                    // Midnight crossing shift (e.g. 23:00 - 01:00)
-                    // Stop if we've wrapped around past midnight AND reached the end time
-                    if (current.isBefore(start) && !current.isBefore(end)) break;
-                }
-                safetyCounter++;
-            }
-            return slots;
-
-        } catch (Exception e) {
-            System.err.println("WARN: Failed to parse timings for doctor " + doctor.getId() + ": " + timings + ". Falling back to 15-min default series.");
-            List<String> fallbackSlots = new ArrayList<>();
-            java.time.LocalTime t = java.time.LocalTime.of(9, 0);
-            for(int i=0; i<20; i++) {
-                fallbackSlots.add(t.format(displayFormatter));
-                t = t.plusMinutes(duration);
-            }
-            return fallbackSlots;
-        }
     }
 
     @Transactional
@@ -327,10 +192,6 @@ public class AppointmentService {
             String deterministicId = "ms-" + java.util.UUID.randomUUID().toString().substring(0, 12);
             appointment.setMeetLink("https://meet.google.com/" + deterministicId);
         }
-
-        // 4. Attach AI Clinical Brief for Physician Handover
-        String brief = aiService.getLatestBrief(patientEmail);
-        appointment.setAiClinicalBrief(brief);
 
         Appointment saved = appointmentRepository.save(appointment);
         
