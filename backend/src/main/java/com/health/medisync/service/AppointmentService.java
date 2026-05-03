@@ -123,32 +123,51 @@ public class AppointmentService {
     private List<String> parseSlots(Doctor doctor) {
         String timings = doctor.getConsultationTimings();
         int duration = (doctor.getSlotDuration() != null && doctor.getSlotDuration() > 0) ? doctor.getSlotDuration() : 15;
-        
+        DateTimeFormatter displayFormatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);
+
         if (timings == null || timings.trim().isEmpty()) {
-            // Default 15-min slots if timings are missing
             List<String> defaultSlots = new ArrayList<>();
             java.time.LocalTime t = java.time.LocalTime.of(9, 0);
-            DateTimeFormatter f = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);
             for(int i=0; i<16; i++) {
-                defaultSlots.add(t.format(f));
+                defaultSlots.add(t.format(displayFormatter));
                 t = t.plusMinutes(duration);
             }
             return defaultSlots;
         }
+
         try {
             String[] parts = timings.split(" - ");
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);
-            java.time.LocalTime start = java.time.LocalTime.parse(parts[0].trim(), formatter);
-            java.time.LocalTime end = java.time.LocalTime.parse(parts[1].trim(), formatter);
+            if (parts.length != 2) throw new Exception("INVALID_TIMING_FORMAT");
+
+            java.time.LocalTime start;
+            java.time.LocalTime end;
+
+            try {
+                // Try parsing as 24-hour format (e.g. 09:00)
+                DateTimeFormatter isoFormatter = DateTimeFormatter.ofPattern("HH:mm");
+                start = java.time.LocalTime.parse(parts[0].trim(), isoFormatter);
+                end = java.time.LocalTime.parse(parts[1].trim(), isoFormatter);
+            } catch (Exception e) {
+                // Fallback to display format (e.g. 09:00 AM)
+                start = java.time.LocalTime.parse(parts[0].trim(), displayFormatter);
+                end = java.time.LocalTime.parse(parts[1].trim(), displayFormatter);
+            }
 
             List<String> slots = new ArrayList<>();
             while (start.isBefore(end)) {
-                slots.add(start.format(formatter));
+                slots.add(start.format(displayFormatter));
                 start = start.plusMinutes(duration);
             }
             return slots;
         } catch (Exception e) {
-            return Arrays.asList("09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM");
+            System.err.println("WARN: Failed to parse timings for doctor " + doctor.getId() + ": " + timings + ". Falling back to 15-min default series.");
+            List<String> fallbackSlots = new ArrayList<>();
+            java.time.LocalTime t = java.time.LocalTime.of(9, 0);
+            for(int i=0; i<20; i++) {
+                fallbackSlots.add(t.format(displayFormatter));
+                t = t.plusMinutes(duration);
+            }
+            return fallbackSlots;
         }
     }
 
