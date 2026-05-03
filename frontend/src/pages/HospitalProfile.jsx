@@ -272,7 +272,7 @@ const HospitalProfile = () => {
             </div>
 
             {/* Tab Switcher */}
-            <div className="flex items-center gap-2 p-1.5 bg-slate-100/50 rounded-[2.5rem] border border-slate-200/60 backdrop-blur-md mb-12 w-fit">
+            <div className="flex items-center gap-2 p-1.5 bg-slate-100/50 rounded-[2.5rem] border border-slate-200/60 backdrop-blur-md mb-12 w-full overflow-x-auto no-scrollbar scroll-smooth">
                 {[
                     { id: 'identity', label: 'Identity', icon: Building2 },
                     { id: 'compliance', label: 'Compliance', icon: Shield },
@@ -285,7 +285,7 @@ const HospitalProfile = () => {
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-3 px-8 py-4 rounded-[2rem] text-[10px] font-black uppercase tracking-widest transition-all ${
+                        className={`flex items-center gap-3 px-8 py-4 rounded-[2rem] text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
                             activeTab === tab.id 
                             ? 'bg-white text-primary shadow-xl shadow-primary/5 border border-slate-200' 
                             : 'text-slate-400 hover:text-slate-600 hover:bg-white/50'
