@@ -108,6 +108,9 @@ public class Patient {
     @Column(name = "history_passcode")
     private String historyPasscode;
 
+    @Transient
+    private boolean linked;
+
     // ── Getters & Setters ──
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -246,6 +249,9 @@ public class Patient {
 
     public String getHistoryPasscode() { return historyPasscode; }
     public void setHistoryPasscode(String historyPasscode) { this.historyPasscode = historyPasscode; }
+
+    public boolean isLinked() { return linked; }
+    public void setLinked(boolean linked) { this.linked = linked; }
 
     @PrePersist
     public void ensurePatientId() {

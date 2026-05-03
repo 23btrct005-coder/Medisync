@@ -128,6 +128,12 @@ public class DoctorService {
         List<Patient> linkedPatients = patientRepository.findByDoctorId(doctor.getId());
         boolean hasAccess = linkedPatients.stream().anyMatch(p -> p.getId().equals(patientId));
             
+        // Secondary Protocol: Check for confirmed clinical engagement (Appointment)
+        if (!hasAccess) {
+            hasAccess = appointmentRepository.existsByDoctorIdAndPatientIdAndStatus(
+                doctor.getId(), patientId, Appointment.AppointmentStatus.BOOKED);
+        }
+
         if (!hasAccess) {
             throw new RuntimeException("Unauthorized Access: This patient is not linked to your clinical practice. Please use the Patient Code to establish a secure link.");
         }
@@ -145,8 +151,14 @@ public class DoctorService {
     public Patient getPatientById(String doctorUsername, Long id) {
         Doctor doctor = getDoctorProfile(doctorUsername);
         verifyAccess(doctor, id);
-        return patientRepository.findById(id)
+        Patient patient = patientRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Clinical telemetry for subject #" + id + " not found in the local ledger."));
+        
+        // Determine if there is a permanent link
+        boolean isPermanentlyLinked = patient.getDoctors().stream().anyMatch(d -> d.getId().equals(doctor.getId()));
+        patient.setLinked(isPermanentlyLinked);
+        
+        return patient;
     }
 
     public List<MedicalRecord> getPatientRecords(String doctorUsername, Long patientId) {

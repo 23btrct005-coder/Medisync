@@ -8,6 +8,7 @@ import com.health.medisync.model.Report;
 import com.health.medisync.model.AccessRequest;
 import com.health.medisync.service.DoctorService;
 import com.health.medisync.service.HospitalService;
+import com.health.medisync.service.AppointmentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -24,10 +25,12 @@ public class DoctorController {
 
     private final DoctorService doctorService;
     private final HospitalService hospitalService;
+    private final AppointmentService appointmentService;
 
-    public DoctorController(DoctorService doctorService, HospitalService hospitalService) {
+    public DoctorController(DoctorService doctorService, HospitalService hospitalService, AppointmentService appointmentService) {
         this.doctorService = doctorService;
         this.hospitalService = hospitalService;
+        this.appointmentService = appointmentService;
     }
 
     @GetMapping("/profile")
@@ -127,6 +130,9 @@ public class DoctorController {
             String username = authentication.getName();
             Doctor doctor = doctorService.getDoctorProfile(username);
             boolean isLinked = p.getDoctors().stream().anyMatch(d -> d.getId().equals(doctor.getId()));
+            if (!isLinked) {
+                isLinked = appointmentService.hasBookedAppointment(doctor.getId(), p.getId());
+            }
             
             java.util.Map<String, Object> response = new java.util.HashMap<>();
             response.put("id", p.getId());

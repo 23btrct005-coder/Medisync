@@ -58,6 +58,11 @@ public class AppointmentService {
         this.ratingRepository = ratingRepository;
     }
 
+    public boolean hasBookedAppointment(Long doctorId, Long patientId) {
+        return appointmentRepository.existsByDoctorIdAndPatientIdAndStatus(
+            doctorId, patientId, AppointmentStatus.BOOKED);
+    }
+
     public List<String> getAvailableSlots(Long doctorId, LocalDate date) {
         System.out.println("TRACE: Fetching slots for Doctor ID: " + doctorId + ", Date: " + date);
         

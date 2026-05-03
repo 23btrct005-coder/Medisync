@@ -16,6 +16,7 @@ import MedicalTimeline from '../components/MedicalTimeline';
 import StructuredAiReport from '../components/StructuredAiReport';
 import AiSummaryModal from '../components/AiSummaryModal';
 import ClinicalChatBox from '../components/ClinicalChatBox';
+import { useAuth } from '../context/AuthContext';
 
 // ── Reusable row for info display ──────────────────────────────────────────
 const InfoRow = ({ icon: Icon, label, value, color = 'text-primary-500' }) => (
@@ -31,7 +32,7 @@ const InfoRow = ({ icon: Icon, label, value, color = 'text-primary-500' }) => (
 );
 
 // ── Patient Info Card ──────────────────────────────────────────────────────
-const PatientInfoCard = ({ patient, patientId }) => {
+const PatientInfoCard = ({ patient, patientId, currentDoctorId }) => {
   const [expanded, setExpanded] = useState(() => {
     const saved = localStorage.getItem(`medisync_patient_info_expanded_${patientId}`);
     return saved !== null ? JSON.parse(saved) : false;
@@ -63,7 +64,14 @@ const PatientInfoCard = ({ patient, patientId }) => {
             </div>
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-xl font-extrabold">{patient?.name || 'Authorized Subject'}</h3>
+            <div className="flex items-center gap-3">
+              <h3 className="text-xl font-extrabold">{patient?.name || 'Authorized Subject'}</h3>
+              {!patient.linked && (
+                <span className="bg-emerald-400 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 border border-emerald-300 flex items-center gap-1">
+                  <ShieldCheck size={10} /> Confirmed Engagement
+                </span>
+              )}
+            </div>
             <div className="flex flex-wrap gap-2 mt-2">
               {patient.gender && (
                 <span className="bg-white/20 px-2.5 py-0.5 rounded-full text-xs font-bold">{patient.gender}</span>
@@ -209,6 +217,8 @@ const PatientInfoCard = ({ patient, patientId }) => {
 const PatientManager = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const currentDoctorId = user?.id;
 
   const [patient, setPatient] = useState(null);
   const [records, setRecords] = useState([]);
@@ -530,7 +540,7 @@ const PatientManager = () => {
       <ClinicalAlertBanner patient={patient} />
 
       <div className="space-y-6">
-        <PatientInfoCard patient={patient} patientId={id} />
+        <PatientInfoCard patient={patient} patientId={id} currentDoctorId={currentDoctorId} />
       </div>
 
       {/* E-Prescription System */}
