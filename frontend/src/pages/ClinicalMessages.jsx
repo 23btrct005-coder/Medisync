@@ -6,17 +6,24 @@ import { useNotifications } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
 
 const ClinicalMessages = () => {
-    const { user } = useAuth();
+    const { user, userRole } = useAuth();
+    const isAdmin = userRole === 'ROLE_HOSPITAL_ADMIN';
+    const isDoctor = userRole === 'ROLE_DOCTOR';
+    
     const [conversations, setConversations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeChat, setActiveChat] = useState(null);
-    const [activeTab, setActiveTab] = useState('patients');
+    const [activeTab, setActiveTab] = useState(isAdmin ? 'staff' : 'patients');
     const { lastMessage } = useNotifications();
     const [unreadCounts, setUnreadCounts] = useState({});
 
-    const isAdmin = user?.role === 'ROLE_HOSPITAL_ADMIN';
-    const isDoctor = user?.role === 'ROLE_DOCTOR';
+    useEffect(() => {
+        // Force staff tab for admin if they somehow get into patients
+        if (isAdmin && activeTab !== 'staff') {
+            setActiveTab('staff');
+        }
+    }, [isAdmin, activeTab]);
 
     useEffect(() => {
         if (lastMessage) {
@@ -38,9 +45,9 @@ const ClinicalMessages = () => {
         setLoading(true);
         try {
             let res;
-            if (activeTab === 'patients') {
-                // Fetch patients associated with the doctor or hospital
-                res = await api.get(isAdmin ? 'hospital/patients' : 'doctor/patients');
+            if (activeTab === 'patients' && !isAdmin) {
+                // Fetch patients associated with the doctor
+                res = await api.get('doctor/patients');
             } else {
                 // Fetch institutional staff (colleagues/admin)
                 res = await api.get(isAdmin ? 'hospital/staff-contacts' : 'doctor/institutional-contacts');
@@ -89,29 +96,31 @@ const ClinicalMessages = () => {
                 </div>
             </div>
 
-            {/* Tab Segregation */}
-            <div className="flex p-1.5 bg-slate-100 rounded-[1.5rem] w-fit border border-slate-200/50">
-                <button
-                    onClick={() => setActiveTab('patients')}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                        activeTab === 'patients' 
-                        ? 'bg-white text-primary shadow-sm border border-slate-200' 
-                        : 'text-slate-500 hover:text-slate-700'
-                    }`}
-                >
-                    <User size={14} /> Patients
-                </button>
-                <button
-                    onClick={() => setActiveTab('staff')}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                        activeTab === 'staff' 
-                        ? 'bg-white text-primary shadow-sm border border-slate-200' 
-                        : 'text-slate-500 hover:text-slate-700'
-                    }`}
-                >
-                    <Building2 size={14} /> Institutional Staff
-                </button>
-            </div>
+            {/* Tab Segregation - Only show if not Admin (Admins only have Staff) */}
+            {!isAdmin && (
+                <div className="flex p-1.5 bg-slate-100 rounded-[1.5rem] w-fit border border-slate-200/50">
+                    <button
+                        onClick={() => setActiveTab('patients')}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                            activeTab === 'patients' 
+                            ? 'bg-white text-primary shadow-sm border border-slate-200' 
+                            : 'text-slate-500 hover:text-slate-700'
+                        }`}
+                    >
+                        <User size={14} /> Patients
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('staff')}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                            activeTab === 'staff' 
+                            ? 'bg-white text-primary shadow-sm border border-slate-200' 
+                            : 'text-slate-500 hover:text-slate-700'
+                        }`}
+                    >
+                        <Building2 size={14} /> Colleagues
+                    </button>
+                </div>
+            )}
 
             {loading ? (
                 <div className="flex justify-center py-20">

@@ -389,7 +389,74 @@ const HospitalDoctorRoster = () => {
                                 </div>
                             </div>
 
-                            {/* Section 4: Institutional Governance */}
+                            {/* Section 6: Consultation & Booking */}
+                            <div className="space-y-8 pt-8 border-t border-slate-50">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                                    <h4 className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.3em]">6. Consultation & Booking</h4>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    {/* Fees */}
+                                    <div className="space-y-6">
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2 mb-2 block">Online Consultation Fee (₹)</label>
+                                            <input type="number" value={editData.onlineConsultationFee || ''} onChange={(e) => setEditData({...editData, onlineConsultationFee: e.target.value})} className="w-full px-6 py-4 bg-indigo-50/30 border-none rounded-3xl text-xs font-bold focus:ring-2 ring-indigo-100 transition-all" placeholder="500" />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2 mb-2 block">Offline Consultation Fee (₹)</label>
+                                            <input type="number" value={editData.offlineConsultationFee || ''} onChange={(e) => setEditData({...editData, offlineConsultationFee: e.target.value})} className="w-full px-6 py-4 bg-indigo-50/30 border-none rounded-3xl text-xs font-bold focus:ring-2 ring-indigo-100 transition-all" placeholder="800" />
+                                        </div>
+                                    </div>
+
+                                    {/* Mode & Toggle */}
+                                    <div className="space-y-6">
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2 mb-3 block">Consultation Mode</label>
+                                            <div className="flex gap-2 p-1 bg-slate-100 rounded-2xl w-full">
+                                                {[
+                                                    { id: 'online', label: 'Online', val: true },
+                                                    { id: 'offline', label: 'Offline', val: false },
+                                                    { id: 'both', label: 'Both', val: 'BOTH' }
+                                                ].map(mode => (
+                                                    <button
+                                                        key={mode.id}
+                                                        type="button"
+                                                        onClick={() => setEditData({...editData, onlineConsultation: mode.val === 'BOTH' ? true : mode.val})}
+                                                        className={`flex-1 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
+                                                            (mode.id === 'both' && editData.onlineConsultation === true && editData.offlineConsultationFee > 0) || 
+                                                            (mode.id === 'online' && editData.onlineConsultation === true && !editData.offlineConsultationFee) ||
+                                                            (mode.id === 'offline' && editData.onlineConsultation === false)
+                                                            ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
+                                                            : 'text-slate-400 hover:text-indigo-600'
+                                                        }`}
+                                                    >
+                                                        {mode.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-between p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100/50">
+                                            <div>
+                                                <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Accept Appointments</p>
+                                                <p className="text-[8px] font-bold text-emerald-600/60 uppercase tracking-widest mt-0.5">Allow patients to book slots</p>
+                                            </div>
+                                            <label className="relative inline-flex items-center cursor-pointer">
+                                                <input 
+                                                    type="checkbox" 
+                                                    className="sr-only peer"
+                                                    checked={editData.appointmentsEnabled !== false}
+                                                    onChange={(e) => setEditData({...editData, appointmentsEnabled: e.target.checked})}
+                                                />
+                                                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Section 5: Institutional Governance */}
                             <div className="space-y-8 pt-8 border-t border-slate-50">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
@@ -428,7 +495,8 @@ const HospitalDoctorRoster = () => {
                                     </div>
                                 </div>
                             </div>
-                        </form>
+                        </div>
+                    </form>
 
                         {/* Modal Footer */}
                         <div className="p-10 border-t border-slate-50 bg-slate-50/30 shrink-0 flex gap-4">

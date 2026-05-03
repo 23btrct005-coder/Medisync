@@ -233,6 +233,20 @@ public class HospitalService {
         if (updates.containsKey("opdRoomNumber")) doctor.setOpdRoomNumber(updates.get("opdRoomNumber") != null ? updates.get("opdRoomNumber").toString() : null);
         if (updates.containsKey("preferredPaymentMode")) doctor.setPreferredPaymentMode(updates.get("preferredPaymentMode") != null ? updates.get("preferredPaymentMode").toString() : "BOTH");
         
+        if (updates.containsKey("onlineConsultationFee") && updates.get("onlineConsultationFee") != null && !updates.get("onlineConsultationFee").toString().isEmpty()) {
+            try {
+                doctor.setOnlineConsultationFee(Double.valueOf(updates.get("onlineConsultationFee").toString()));
+            } catch (NumberFormatException ignored) {}
+        }
+        if (updates.containsKey("offlineConsultationFee") && updates.get("offlineConsultationFee") != null && !updates.get("offlineConsultationFee").toString().isEmpty()) {
+            try {
+                doctor.setOfflineConsultationFee(Double.valueOf(updates.get("offlineConsultationFee").toString()));
+            } catch (NumberFormatException ignored) {}
+        }
+        if (updates.containsKey("appointmentsEnabled") && updates.get("appointmentsEnabled") != null) {
+            doctor.setAppointmentsEnabled(Boolean.parseBoolean(updates.get("appointmentsEnabled").toString()));
+        }
+        
         // Auto-flag as institutional if updated through hospital context
         doctor.setInstitutional(true);
         
