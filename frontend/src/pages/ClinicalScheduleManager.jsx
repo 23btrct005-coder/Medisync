@@ -56,10 +56,23 @@ const DoctorAppointments = () => {
         }
     };
 
+    const isPastSlot = (apptDate, slot) => {
+        try {
+            const now = new Date();
+            const [time, period] = slot.split(' ');
+            let [hours, minutes] = time.split(':').map(Number);
+            if (period === 'PM' && hours !== 12) hours += 12;
+            if (period === 'AM' && hours === 12) hours = 0;
+            const sessionTime = new Date(apptDate);
+            sessionTime.setHours(hours, minutes, 0);
+            return (now - sessionTime) / (1000 * 60) > 60; // Past if > 1 hour after start
+        } catch (e) { return false; }
+    };
+
     const todayString = new Date().toISOString().split('T')[0];
-    const todaysAppointments = (appointments || []).filter(a => a.appointmentDate === todayString);
+    const todaysAppointments = (appointments || []).filter(a => a.appointmentDate === todayString && !isPastSlot(a.appointmentDate, a.timeSlot));
     const upcomingAppointments = (appointments || []).filter(a => a.appointmentDate > todayString);
-    const pastAppointments = (appointments || []).filter(a => a.appointmentDate < todayString);
+    const pastAppointments = (appointments || []).filter(a => a.appointmentDate < todayString || (a.appointmentDate === todayString && isPastSlot(a.appointmentDate, a.timeSlot)));
 
     const tabs = [
         { id: 'today', label: 'Today', count: todaysAppointments.length, color: 'emerald' },

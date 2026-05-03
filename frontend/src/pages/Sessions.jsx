@@ -292,14 +292,36 @@ const Sessions = () => {
 
     useEffect(() => {
         fetchAppointments();
+        const interval = setInterval(() => {
+            // Re-run the calculations every 30s for real-time transitions
+            setAppointments(prev => [...prev]);
+        }, 30000);
+        return () => clearInterval(interval);
     }, []);
+
+    const isPastSlot = (apptDate, slot) => {
+        try {
+            const now = new Date();
+            const [time, period] = slot.split(' ');
+            let [hours, minutes] = time.split(':').map(Number);
+            if (period === 'PM' && hours !== 12) hours += 12;
+            if (period === 'AM' && hours === 12) hours = 0;
+            
+            const sessionTime = new Date(apptDate);
+            sessionTime.setHours(hours, minutes, 0);
+            
+            // A slot is past if it's more than 60 mins after the start time
+            return (now - sessionTime) / (1000 * 60) > 60;
+        } catch (e) {
+            return false;
+        }
+    };
 
     const isCallActive = (apptDate, slot) => {
         try {
             const now = new Date();
             const [time, period] = slot.split(' ');
-            let [hours, minutes] = time.split(':');
-            hours = parseInt(hours);
+            let [hours, minutes] = time.split(':').map(Number);
             if (period === 'PM' && hours !== 12) hours += 12;
             if (period === 'AM' && hours === 12) hours = 0;
             
@@ -347,8 +369,8 @@ const Sessions = () => {
     const activeAppts = safeAppointments.filter(a => a.status === 'BOOKED');
     const pendingAppointments = safeAppointments.filter(a => a.status === 'PENDING' || a.status === 'AWAITING_VERIFICATION');
     
-    const todaysAppointments = activeAppts.filter(a => a.appointmentDate === todayString);
-    const pastAppointments = activeAppts.filter(a => a.appointmentDate < todayString);
+    const todaysAppointments = activeAppts.filter(a => a.appointmentDate === todayString && !isPastSlot(a.appointmentDate, a.timeSlot));
+    const pastAppointments = activeAppts.filter(a => a.appointmentDate < todayString || (a.appointmentDate === todayString && isPastSlot(a.appointmentDate, a.timeSlot)));
     const upcomingAppointments = activeAppts.filter(a => a.appointmentDate > todayString);
 
     const tabs = [
