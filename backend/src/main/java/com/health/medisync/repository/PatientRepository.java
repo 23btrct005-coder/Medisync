@@ -13,8 +13,12 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     java.util.List<Patient> findAllByEmail(@org.springframework.data.repository.query.Param("email") String email);
 
     @org.springframework.data.jpa.repository.Query("SELECT DISTINCT p FROM Patient p LEFT JOIN p.doctors d " +
-            "WHERE d.id = :doctorId OR p.id IN (SELECT ar.patient.id FROM AccessRequest ar WHERE ar.doctor.id = :doctorId AND ar.status IN ('ACCEPTED', 'APPROVED'))")
-    java.util.List<Patient> findByDoctorId(@org.springframework.data.repository.query.Param("doctorId") Long doctorId);
+            "WHERE d.id = :doctorId " +
+            "OR p.id IN (SELECT ar.patient.id FROM AccessRequest ar WHERE ar.doctor.id = :doctorId AND ar.status IN ('ACCEPTED', 'APPROVED')) " +
+            "OR p.id IN (SELECT a.patient.id FROM Appointment a WHERE a.doctor.id = :doctorId) " +
+            "OR p.user.id IN (SELECT cm.receiverId FROM ChatMessage cm WHERE cm.senderId = :userId) " +
+            "OR p.user.id IN (SELECT cm.senderId FROM ChatMessage cm WHERE cm.receiverId = :userId)")
+    java.util.List<Patient> findByDoctorIdAndUserId(@org.springframework.data.repository.query.Param("doctorId") Long doctorId, @org.springframework.data.repository.query.Param("userId") Long userId);
 
     default Optional<Patient> findByEmail(String email) {
         java.util.List<Patient> list = findAllByEmail(email);

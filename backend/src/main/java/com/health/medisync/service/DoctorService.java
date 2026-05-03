@@ -67,7 +67,7 @@ public class DoctorService {
 
     public List<Patient> getLinkedPatients(String doctorUsername) {
         Doctor doctor = getDoctorProfile(doctorUsername);
-        return patientRepository.findByDoctorId(doctor.getId());
+        return patientRepository.findByDoctorIdAndUserId(doctor.getId(), doctor.getUser().getId());
     }
 
     public void requestAccess(String doctorUsername, String patientEmail) {
@@ -125,7 +125,7 @@ public class DoctorService {
 
     private void verifyAccess(Doctor doctor, Long patientId) {
         // Authoritative Check: Is this patient in the doctor's verified census?
-        List<Patient> linkedPatients = patientRepository.findByDoctorId(doctor.getId());
+        List<Patient> linkedPatients = patientRepository.findByDoctorIdAndUserId(doctor.getId(), doctor.getUser().getId());
         boolean hasAccess = linkedPatients.stream().anyMatch(p -> p.getId().equals(patientId));
             
         // Secondary Protocol: Check for confirmed clinical engagement (Appointment)
