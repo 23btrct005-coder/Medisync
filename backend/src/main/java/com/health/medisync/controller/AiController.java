@@ -31,12 +31,14 @@ public class AiController {
             }
 
             String patientEmail = null;
+            java.util.List<String> roles = new java.util.ArrayList<>();
             var auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
                 patientEmail = auth.getName();
+                auth.getAuthorities().forEach(a -> roles.add(a.getAuthority()));
             }
 
-            String response = aiService.generateResponse(userMessage, patientEmail);
+            String response = aiService.generateResponse(userMessage, patientEmail, roles);
             return ResponseEntity.ok(Map.of("response", response));
         } catch (Exception e) {
             e.printStackTrace();
