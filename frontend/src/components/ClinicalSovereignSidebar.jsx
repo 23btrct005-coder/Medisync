@@ -57,11 +57,6 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
         icon: <Activity size={20} />
       },
       {
-        name: 'Inst. Analytics',
-        path: `${prefix}/analytics`,
-        icon: <TrendingUp size={20} />
-      },
-      {
         name: 'Inst. Profile',
         path: `${prefix}/institutional-profile`,
         icon: (
