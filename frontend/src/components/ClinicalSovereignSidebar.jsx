@@ -52,11 +52,6 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
     },
     ...(isAdmin ? [
       {
-        name: 'Patient Registry',
-        path: `${prefix}/patients`,
-        icon: <Activity size={20} />
-      },
-      {
         name: 'Inst. Profile',
         path: `${prefix}/institutional-profile`,
         icon: (
