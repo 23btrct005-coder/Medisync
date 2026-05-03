@@ -235,13 +235,7 @@ const HospitalProfile = () => {
                 ))}
             </div>
 
-            {viewTab === 'personal' ? (
-                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <ClinicalDoctorProfile />
-                </div>
-            ) : (
-                <>
-                <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column: Core Identity & Logo */}
                 <div className="lg:col-span-1 space-y-8 text-left">
                     <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm text-center">
@@ -667,8 +661,6 @@ const HospitalProfile = () => {
                     </div>
                 </div>
             )}
-        </>
-    )}
 </div>
 );
 };
