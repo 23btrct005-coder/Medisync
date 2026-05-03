@@ -3,6 +3,7 @@ package com.health.medisync.controller;
 import com.health.medisync.model.Appointment;
 import com.health.medisync.model.Appointment.ConsultationType;
 import com.health.medisync.service.AppointmentService;
+import com.health.medisync.service.DoctorService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -17,9 +18,11 @@ import java.util.Map;
 public class AppointmentController {
 
     private final AppointmentService appointmentService;
+    private final DoctorService doctorService;
 
-    public AppointmentController(AppointmentService appointmentService) {
+    public AppointmentController(AppointmentService appointmentService, DoctorService doctorService) {
         this.appointmentService = appointmentService;
+        this.doctorService = doctorService;
     }
 
     @GetMapping("/doctors")
@@ -42,7 +45,7 @@ public class AppointmentController {
                 return ResponseEntity.badRequest().body(Map.of("message", "Invalid or missing doctorId parameter"));
             }
             Long id = Long.valueOf(doctorId.split("\\.")[0]);
-            return ResponseEntity.ok(appointmentService.getAvailableSlots(id, date));
+            return ResponseEntity.ok(doctorService.getAvailableSlots(id, date));
         } catch (Exception e) {
             String errorMsg = e.getClass().getSimpleName() + ": " + e.getMessage();
             System.err.println("ERROR: Slot retrieval failed for doc " + doctorId + " on " + date + ": " + errorMsg);
