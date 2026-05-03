@@ -61,6 +61,7 @@ const Register = () => {
     // Contact & Residency
     phone: '',
     alternatePhone: '',
+    location: '',
     street: '',
     city: '',
     state: '',
@@ -284,17 +285,17 @@ const Register = () => {
           const detectedState = address.state || '';
           const detectedCity = address.city || address.town || address.village || address.district || '';
           const detectedPin = address.postcode || '';
-          const detectedStreet = data.road || data.suburb || data.display_name || '';
+          const detectedStreet = address.road || address.suburb || data.display_name || '';
+          const detectedLocation = `${address.suburb || address.neighbourhood || ''} ${detectedCity}`.trim();
 
           const updated = { ...formData };
           
           if (role === 'ROLE_PATIENT' || role === 'ROLE_HOSPITAL_ADMIN') {
-              updated.state = detectedState;
               updated.city = detectedCity;
               updated.pinCode = detectedPin;
               updated.street = detectedStreet;
+              updated.location = detectedLocation;
           } else if (role === 'ROLE_DOCTOR') {
-              updated.clinicState = detectedState;
               updated.clinicCity = detectedCity;
               updated.clinicPinCode = detectedPin;
               updated.clinicStreet = detectedStreet;
@@ -753,6 +754,7 @@ const Register = () => {
                             </button>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="md:col-span-2"><label className={labelClass}>Regional Location (Area/City) <span className="text-red-500">*</span></label><input type="text" name="location" required value={formData.location} onChange={handleChange} className={inputClass} placeholder="e.g. South Delhi, Saket" /></div>
                             <div className="md:col-span-2"><label className={labelClass}>Full Postal Address <span className="text-red-500">*</span></label><input type="text" name="street" required value={formData.street} onChange={handleChange} className={inputClass} placeholder="Street, Building, Area" /></div>
                             <div><label className={labelClass}>State <span className="text-red-500">*</span></label><select name="state" required value={formData.state} onChange={handleChange} className={inputClass}><option value="">Select State</option>{Object.keys(geographyData).sort().map(s => <option key={s} value={s}>{s}</option>)}</select></div>
                             <div><label className={labelClass}>City / District <span className="text-red-500">*</span></label><select name="city" required value={formData.city} onChange={handleChange} className={inputClass} disabled={!formData.state}><option value="">Select District</option>{availableCities.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
