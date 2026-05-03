@@ -28,6 +28,7 @@ public class HospitalService {
     private final DepartmentRepository departmentRepository;
     private final UserRepository userRepository;
     private final PatientRepository patientRepository;
+    private final com.health.medisync.repository.NotificationRepository notificationRepository;
 
     public HospitalService(HospitalRepository hospitalRepository, 
                            HospitalAdminRepository hospitalAdminRepository, 
@@ -35,7 +36,8 @@ public class HospitalService {
                            AppointmentRepository appointmentRepository,
                            DepartmentRepository departmentRepository,
                            UserRepository userRepository,
-                           PatientRepository patientRepository) {
+                           PatientRepository patientRepository,
+                           com.health.medisync.repository.NotificationRepository notificationRepository) {
         this.hospitalRepository = hospitalRepository;
         this.hospitalAdminRepository = hospitalAdminRepository;
         this.doctorRepository = doctorRepository;
@@ -43,6 +45,21 @@ public class HospitalService {
         this.departmentRepository = departmentRepository;
         this.userRepository = userRepository;
         this.patientRepository = patientRepository;
+        this.notificationRepository = notificationRepository;
+    }
+
+    public void broadcastToStaff(Hospital hospital, String title, String message) {
+        List<Doctor> doctors = doctorRepository.findByHospitalEntity(hospital);
+        for (Doctor doctor : doctors) {
+            if (doctor.getUser() != null) {
+                com.health.medisync.model.Notification notification = new com.health.medisync.model.Notification();
+                notification.setUserId(doctor.getUser().getId());
+                notification.setType("INSTITUTIONAL");
+                notification.setTitle(title);
+                notification.setDescription(message);
+                notificationRepository.save(notification);
+            }
+        }
     }
 
     public HospitalAdmin getAdminByUser(User user) {

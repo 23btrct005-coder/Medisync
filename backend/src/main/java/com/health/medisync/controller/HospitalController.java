@@ -349,4 +349,22 @@ public class HospitalController {
         hospitalService.deleteDoctor(id, admin.getHospital());
         return ResponseEntity.ok(Map.of("message", "Physician record purged successfully"));
     }
+
+    @PostMapping("/broadcast")
+    public ResponseEntity<?> broadcastMessage(@RequestBody Map<String, String> request,
+                                              @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        HospitalAdmin admin = hospitalService.getAdminByUser(user);
+        
+        String title = request.getOrDefault("title", "Institutional Announcement");
+        String message = request.get("message");
+        
+        if (message == null || message.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Broadcast message cannot be empty"));
+        }
+        
+        hospitalService.broadcastToStaff(admin.getHospital(), title, message);
+        return ResponseEntity.ok(Map.of("message", "Institutional broadcast dispatched successfully"));
+    }
 }

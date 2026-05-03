@@ -4,7 +4,7 @@ import {
   Building2, Users, ClipboardCheck, TrendingUp, ShieldAlert, Shield, 
   ChevronRight, Activity, Calendar, MapPin, Clock, DollarSign, 
   CreditCard, Lock, X, Check, Settings, ArrowUpRight, HeartPulse,
-  LayoutDashboard, Bell
+  LayoutDashboard, Bell, Megaphone, Send
 } from 'lucide-react';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
@@ -13,6 +13,8 @@ const HospitalDashboard = () => {
     const navigate = useNavigate();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [broadcastMessage, setBroadcastMessage] = useState('');
+    const [sendingBroadcast, setSendingBroadcast] = useState(false);
     const [auditLogs, setAuditLogs] = useState([]);
     const [loadFluctuations, setLoadFluctuations] = useState({ Cardiology: 92.1, Neurology: 67.9, Pediatrics: 92.1 });
 
@@ -44,6 +46,20 @@ const HospitalDashboard = () => {
         return () => clearInterval(vitalitySync);
     }, []);
 
+    const handleBroadcast = async () => {
+        if (!broadcastMessage.trim()) return;
+        setSendingBroadcast(true);
+        try {
+            await api.post('/hospital/broadcast', { message: broadcastMessage, title: 'Institutional Update' });
+            toast.success("Institutional broadcast dispatched to all personnel");
+            setBroadcastMessage('');
+        } catch (err) {
+            toast.error("Failed to transmit broadcast");
+        } finally {
+            setSendingBroadcast(false);
+        }
+    };
+
     if (loading) return (
         <div className="h-screen flex items-center justify-center bg-slate-50">
             <div className="flex flex-col items-center gap-4">
@@ -55,7 +71,6 @@ const HospitalDashboard = () => {
 
     const statCards = [
         { label: 'Growth', value: `${stats?.institutionalPatientGrowth || '12.4'}%`, icon: TrendingUp, color: 'bg-blue-500', trend: '+2.1%', sub: 'Active clinical cycle' },
-        { label: 'Patients', value: stats?.totalPatientsInstitutional || '1,284', icon: Users, color: 'bg-indigo-600', trend: 'Optimal', sub: 'Institutional load' },
         { label: 'Verified', value: stats?.totalInstitutionalAppointments || '842', icon: Check, color: 'bg-emerald-500', trend: '98% Success', sub: 'Completed sessions' },
         { label: 'Revenue', value: `₹${stats?.institutionalMonthlyRevenue ? (stats.institutionalMonthlyRevenue / 1000).toFixed(1) : '42.8'}K`, icon: DollarSign, color: 'bg-amber-500', trend: '+12%', sub: 'Monthly projection' }
     ];
@@ -93,7 +108,7 @@ const HospitalDashboard = () => {
             </div>
 
             {/* Stats Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {statCards.map((item, idx) => (
                     <div key={idx} className="group bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500 relative overflow-hidden">
                         <div className={`absolute top-0 right-0 w-32 h-32 ${item.color} opacity-[0.03] -mr-16 -mt-16 rounded-full group-hover:scale-150 transition-transform duration-700`} />
@@ -196,24 +211,75 @@ const HospitalDashboard = () => {
                                 ))}
                             </div>
                         </div>
+                {/* Institutional Operations Column */}
+                <div className="lg:col-span-4 space-y-8">
+                    {/* Broadcast Terminal */}
+                    <div className="bg-slate-900 rounded-[3.5rem] p-10 text-white shadow-2xl shadow-slate-900/40 relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 -mr-32 -mt-32 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700" />
+                        <div className="relative z-10 space-y-8">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-md">
+                                    <Megaphone size={24} className="text-primary" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-black uppercase tracking-tight italic">Institutional <span className="text-primary">Broadcast</span></h3>
+                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Personnel Notification Terminal</p>
+                                </div>
+                            </div>
 
-                        <button 
-                            onClick={() => navigate('/hospital-dashboard/institutional-profile')}
-                            className="w-full mt-6 p-5 bg-slate-50 text-slate-900 rounded-[2rem] font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all flex items-center justify-between border border-slate-100"
-                        >
-                            <span>Review Security Ledger</span>
-                            <ChevronRight size={16} />
-                        </button>
-                    </div>
+                            <div className="space-y-4">
+                                <textarea
+                                    value={broadcastMessage}
+                                    onChange={(e) => setBroadcastMessage(e.target.value)}
+                                    placeholder="Type high-priority announcement for all onboarded staff..."
+                                    className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 text-sm focus:ring-2 ring-primary/50 outline-none transition-all placeholder:text-slate-500 resize-none min-h-[150px]"
+                                />
+                                <button
+                                    onClick={handleBroadcast}
+                                    disabled={sendingBroadcast || !broadcastMessage.trim()}
+                                    className="w-full py-5 bg-primary hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-3xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3 active:scale-95"
+                                >
+                                    {sendingBroadcast ? <Activity className="animate-spin" size={18} /> : <Send size={18} />}
+                                    Dispatch Announcement
+                                </button>
+                            </div>
 
-                    <div className="bg-gradient-to-br from-indigo-600 to-primary p-10 rounded-[3.5rem] shadow-xl shadow-primary/20 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 -mr-16 -mt-16 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
-                        <div className="relative z-10">
-                            <HeartPulse className="text-white/60 mb-6" size={32} />
-                            <h3 className="text-2xl font-black text-white uppercase tracking-tight italic leading-tight">Patient<br/>Ecosystem</h3>
-                            <p className="text-white/60 text-[10px] font-black uppercase tracking-widest mt-2">{stats?.totalPatientsInstitutional || '1,284'} Active Registrations</p>
+                            <div className="pt-4 border-t border-white/5 flex items-center gap-3 text-slate-500">
+                                <ShieldAlert size={16} />
+                                <p className="text-[9px] font-bold uppercase tracking-widest leading-relaxed">
+                                    Broadcasts are encrypted and visible to all verified institutional staff.
+                                </p>
+                            </div>
                         </div>
                     </div>
+
+                    {/* Quick Action Hubs */}
+                    <button 
+                        onClick={() => navigate('/hospital-dashboard/staff')}
+                        className="w-full group bg-blue-600 p-10 rounded-[3.5rem] text-white shadow-xl shadow-blue-500/20 flex flex-col items-start gap-4 hover:scale-[1.02] transition-all relative overflow-hidden"
+                    >
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 -mr-16 -mt-16 rounded-full group-hover:scale-150 transition-transform duration-700" />
+                        <Users size={32} className="relative z-10" />
+                        <div className="relative z-10 text-left">
+                            <h3 className="text-3xl font-black uppercase tracking-tight italic">Staff <span className="opacity-60">Portal</span></h3>
+                            <p className="text-[10px] font-black uppercase tracking-widest mt-2 flex items-center gap-2 opacity-80">
+                                Manage Personnel <ChevronRight size={14} />
+                            </p>
+                        </div>
+                    </button>
+
+                    <button 
+                        className="w-full group bg-slate-900 p-10 rounded-[3.5rem] text-white shadow-xl shadow-slate-900/20 flex flex-col items-start gap-4 hover:scale-[1.02] transition-all relative overflow-hidden"
+                    >
+                        <div className="absolute bottom-0 right-0 w-32 h-32 bg-primary/10 -mr-16 -mb-16 rounded-full group-hover:scale-150 transition-transform duration-700" />
+                        <DollarSign size={32} className="relative z-10 text-primary" />
+                        <div className="relative z-10 text-left">
+                            <h3 className="text-3xl font-black uppercase tracking-tight italic">Financial <span className="text-primary opacity-60">Reach</span></h3>
+                            <p className="text-[10px] font-black uppercase tracking-widest mt-2 flex items-center gap-2 opacity-80">
+                                Review Ledger <ChevronRight size={14} />
+                            </p>
+                        </div>
+                    </button>
                 </div>
             </div>
         </div>
