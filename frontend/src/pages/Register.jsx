@@ -729,9 +729,17 @@ const Register = () => {
                                                     <button
                                                         key={mode.id}
                                                         type="button"
-                                                        onClick={() => setFormData({...formData, onlineConsultation: mode.val === 'BOTH' ? true : mode.val})}
+                                                        onClick={() => {
+                                                            if (mode.id === 'online') {
+                                                                setFormData({...formData, onlineConsultation: true, offlineConsultationFee: ''});
+                                                            } else if (mode.id === 'offline') {
+                                                                setFormData({...formData, onlineConsultation: false});
+                                                            } else {
+                                                                setFormData({...formData, onlineConsultation: true});
+                                                            }
+                                                        }}
                                                         className={`flex-1 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
-                                                            (mode.id === 'both' && formData.onlineConsultation === true && formData.offlineConsultationFee > 0) || 
+                                                            (mode.id === 'both' && formData.onlineConsultation === true && formData.offlineConsultationFee) || 
                                                             (mode.id === 'online' && formData.onlineConsultation === true && !formData.offlineConsultationFee) ||
                                                             (mode.id === 'offline' && formData.onlineConsultation === false)
                                                             ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'

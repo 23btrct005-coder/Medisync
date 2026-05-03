@@ -576,11 +576,11 @@ const HospitalDashboard = () => {
                                 <div><label className={labelClass}>Scientific Publications</label><textarea value={onboardData.publications} onChange={(e) => setOnboardData({...onboardData, publications: e.target.value})} className={`${onboardInputClass} min-h-[80px] resize-none`} placeholder="Journal articles, Research papers..." /></div>
                             </div>
 
-                            {/* Section 3: Institutional Mapping */}
+                            {/* Section 4: Institutional Mapping */}
                             <div className="space-y-8">
                                 <div className="flex items-center gap-3">
                                     <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                                    <h4 className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">3. Institutional Mapping</h4>
+                                    <h4 className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">4. Institutional Mapping</h4>
                                 </div>
                                 <div className="grid grid-cols-2 gap-6">
                                     <div><label className={labelClass}>Employee ID</label><input type="text" required value={onboardData.employeeId} onChange={(e) => setOnboardData({...onboardData, employeeId: e.target.value})} className="w-full px-6 py-4 bg-blue-50/50 border-none rounded-3xl text-xs font-bold focus:ring-2 ring-blue-100 transition-all text-blue-700 placeholder:text-blue-200" placeholder="ST-2026-001" /></div>
@@ -623,24 +623,12 @@ const HospitalDashboard = () => {
                                 </div>
                             </div>
 
-                            {/* Section 4: Financial Governance */}
-                            <div className="space-y-8">
+                            {/* Section 5: Consultation & Booking */}
+                            <div className="p-8 bg-indigo-50/30 rounded-[3rem] border border-indigo-100/50 space-y-8">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                                    <h4 className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">4. Financial Governance</h4>
+                                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                                    <h4 className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.3em]">5. Consultation & Booking</h4>
                                 </div>
-                                <div className="grid grid-cols-3 gap-6">
-                                    <div><label className={labelClass}>Monthly Salary (₹)</label><input type="number" required value={onboardData.salary} onChange={(e) => setOnboardData({...onboardData, salary: e.target.value})} className="w-full px-6 py-4 bg-blue-50/50 border-none rounded-3xl text-xs font-bold focus:ring-2 ring-blue-100 transition-all text-blue-700 placeholder:text-blue-200" placeholder="150000" /></div>
-                                    <div><label className={labelClass}>Revenue Share (%)</label><input type="number" value={onboardData.revenueSharePercentage} onChange={(e) => setOnboardData({...onboardData, revenueSharePercentage: e.target.value})} className="w-full px-6 py-4 bg-blue-50/50 border-none rounded-3xl text-xs font-bold focus:ring-2 ring-blue-100 transition-all text-blue-700 placeholder:text-blue-200" placeholder="0" /></div>
-                                    <div><label className={labelClass}>Base OPD Fee (₹)</label><input type="number" required value={onboardData.consultationFee} onChange={(e) => setOnboardData({...onboardData, consultationFee: e.target.value})} className="w-full px-6 py-4 bg-emerald-50/50 border-none rounded-3xl text-xs font-bold focus:ring-2 ring-emerald-100 transition-all text-emerald-700 placeholder:text-emerald-200" placeholder="500" /></div>
-                                </div>
-
-                                {/* Section 5: Consultation & Booking (New) */}
-                                <div className="p-8 bg-indigo-50/30 rounded-[3rem] border border-indigo-100/50 space-y-8">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                                        <h4 className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.3em]">5. Consultation & Booking</h4>
-                                    </div>
                                     
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         {/* Fees */}
@@ -668,9 +656,17 @@ const HospitalDashboard = () => {
                                                         <button
                                                             key={mode.id}
                                                             type="button"
-                                                            onClick={() => setOnboardData({...onboardData, onlineConsultation: mode.val === 'BOTH' ? true : mode.val})}
+                                                            onClick={() => {
+                                                                if (mode.id === 'online') {
+                                                                    setOnboardData({...onboardData, onlineConsultation: true, offlineConsultationFee: ''});
+                                                                } else if (mode.id === 'offline') {
+                                                                    setOnboardData({...onboardData, onlineConsultation: false});
+                                                                } else {
+                                                                    setOnboardData({...onboardData, onlineConsultation: true});
+                                                                }
+                                                            }}
                                                             className={`flex-1 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
-                                                                (mode.id === 'both' && onboardData.onlineConsultation === true && onboardData.offlineConsultationFee > 0) || 
+                                                                (mode.id === 'both' && onboardData.onlineConsultation === true && onboardData.offlineConsultationFee) || 
                                                                 (mode.id === 'online' && onboardData.onlineConsultation === true && !onboardData.offlineConsultationFee) ||
                                                                 (mode.id === 'offline' && onboardData.onlineConsultation === false)
                                                                 ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
@@ -748,11 +744,11 @@ const HospitalDashboard = () => {
                                 </div>
                             </div>
 
-                            {/* Section 5: Permissions Matrix */}
+                            {/* Section 6: Permissions Matrix */}
                             <div className="space-y-8">
                                 <div className="flex items-center gap-3">
                                     <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                                    <h4 className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">5. Permissions Matrix</h4>
+                                    <h4 className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">6. Permissions Matrix</h4>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     {[
