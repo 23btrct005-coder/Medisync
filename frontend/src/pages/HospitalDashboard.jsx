@@ -696,7 +696,7 @@ const HospitalDashboard = () => {
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                
                                 
                                 {/* Institutional Financial Sync */}
                                 <div className="p-8 bg-slate-50 rounded-[3rem] border border-slate-100 space-y-6">
@@ -743,7 +743,6 @@ const HospitalDashboard = () => {
                                     </p>
                                 </div>
                             </div>
-
                             {/* Section 6: Permissions Matrix */}
                             <div className="space-y-8">
                                 <div className="flex items-center gap-3">
