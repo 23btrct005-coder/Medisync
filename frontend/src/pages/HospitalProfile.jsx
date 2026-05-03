@@ -259,7 +259,7 @@ const HospitalProfile = () => {
                         Institutional Sovereignty & Compliance Registry
                     </p>
                 </div>
-                {['operations', 'settlements'].includes(activeTab) && (
+                {['operations', 'settlements', 'environment'].includes(activeTab) && (
                     <button 
                         onClick={handleSave}
                         disabled={saving}
@@ -557,7 +557,13 @@ const HospitalProfile = () => {
                                     </div>
                                     <div className="space-y-1 md:col-span-2">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Insurance Providers</label>
-                                        <input type="text" readOnly value={formData.insuranceProviders} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed" />
+                                        <input 
+                                            type="text" 
+                                            value={formData.insuranceProviders} 
+                                            onChange={(e) => setFormData({...formData, insuranceProviders: e.target.value})}
+                                            className="w-full px-5 py-3 bg-white border-2 border-slate-100 rounded-2xl text-xs font-bold text-slate-800 focus:border-indigo-500 transition-all outline-none" 
+                                            placeholder="e.g. Star Health, LIC, Apollo Munich"
+                                        />
                                     </div>
                                 </div>
                             </div>
