@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, Shield, CreditCard, Globe, MapPin, Phone, Mail, FileText, Camera, CheckCircle, AlertCircle, Save, Loader2, Activity, User } from 'lucide-react';
+import { Building2, Shield, CreditCard, Globe, MapPin, Phone, Mail, FileText, Camera, CheckCircle, AlertCircle, Save, Loader2, Activity, User, Navigation } from 'lucide-react';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -21,6 +21,7 @@ const HospitalProfile = () => {
     const [deletionOtp, setDeletionOtp] = useState('');
     const [isDeleting, setIsDeleting] = useState(false);
     const [activeTab, setActiveTab] = useState('identity');
+    const [locating, setLocating] = useState(false);
 
     const [formData, setFormData] = useState({
         hospitalName: '',
@@ -160,6 +161,48 @@ const HospitalProfile = () => {
         } finally {
             setSaving(false);
         }
+    };
+
+    const handleGetCurrentLocation = () => {
+        if (!navigator.geolocation) {
+            toast.error("Geolocation is not supported by your browser");
+            return;
+        }
+        setLocating(true);
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                try {
+                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`);
+                    const data = await response.json();
+                    const address = data.address;
+                    
+                    const detectedState = address.state || '';
+                    const detectedCity = address.city || address.town || address.village || address.district || '';
+                    const detectedPin = address.postcode || '';
+                    const detectedStreet = address.road || address.suburb || data.display_name || '';
+
+                    setFormData(prev => ({
+                        ...prev,
+                        state: detectedState,
+                        city: detectedCity,
+                        pinCode: detectedPin,
+                        street: detectedStreet
+                    }));
+                    toast.success("Location synchronized successfully");
+                } catch (err) {
+                    console.error("Geocoding failed", err);
+                    toast.error("Failed to resolve physical address");
+                } finally {
+                    setLocating(false);
+                }
+            },
+            (error) => {
+                console.error("Geolocation error", error);
+                toast.error("Location access denied or unavailable");
+                setLocating(false);
+            }
+        );
     };
 
     const handleRequestDeletion = async () => {
@@ -481,7 +524,18 @@ const HospitalProfile = () => {
                                 <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
                                     <Globe size={24} />
                                 </div>
-                                <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Environmental <span className="not-italic text-indigo-600">Presence</span></h3>
+                                <div className="flex-1">
+                                    <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Environmental <span className="not-italic text-indigo-600">Presence</span></h3>
+                                </div>
+                                <button 
+                                    type="button" 
+                                    onClick={handleGetCurrentLocation} 
+                                    disabled={locating}
+                                    className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-100 transition-all disabled:opacity-50"
+                                >
+                                    <Navigation size={14} className={locating ? 'animate-pulse' : ''} />
+                                    {locating ? 'Locating...' : 'Detect Current Location'}
+                                </button>
                             </div>
                             <div className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
