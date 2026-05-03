@@ -259,14 +259,16 @@ const HospitalProfile = () => {
                         Institutional Sovereignty & Compliance Registry
                     </p>
                 </div>
-                <button 
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="flex items-center gap-2 px-8 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
-                >
-                    {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
-                    {saving ? 'Synchronizing...' : 'Save Configuration'}
-                </button>
+                {['operations', 'settlements'].includes(activeTab) && (
+                    <button 
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="flex items-center gap-2 px-8 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 animate-in fade-in zoom-in duration-300"
+                    >
+                        {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+                        {saving ? 'Synchronizing...' : 'Save Configuration'}
+                    </button>
+                )}
             </div>
 
             {/* Tab Switcher */}
