@@ -8,13 +8,55 @@ const AiConcierge = () => {
     ]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isListening, setIsListening] = useState(false);
     const scrollRef = useRef(null);
+    const recognitionRef = useRef(null);
 
     useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
     }, [messages, isOpen]);
+
+    // Initialize Voice Recognition
+    useEffect(() => {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            recognitionRef.current = new SpeechRecognition();
+            recognitionRef.current.continuous = false;
+            recognitionRef.current.interimResults = false;
+            recognitionRef.current.lang = 'en-US';
+
+            recognitionRef.current.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                setInput(transcript);
+                setIsListening(false);
+            };
+
+            recognitionRef.current.onerror = (event) => {
+                console.error("Speech Recognition Error:", event.error);
+                setIsListening(false);
+            };
+
+            recognitionRef.current.onend = () => {
+                setIsListening(false);
+            };
+        }
+    }, []);
+
+    const toggleListening = () => {
+        if (!recognitionRef.current) {
+            alert("Voice recognition is not supported in your browser. Please try Chrome or Edge.");
+            return;
+        }
+
+        if (isListening) {
+            recognitionRef.current.stop();
+        } else {
+            setIsListening(true);
+            recognitionRef.current.start();
+        }
+    };
 
     const handleSend = async () => {
         if (!input.trim()) return;
@@ -64,6 +106,7 @@ const AiConcierge = () => {
                     <style>{`
                         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
                         @keyframes pulseEmergency { 0% { background-color: #fee2e2; } 50% { background-color: #fca5a5; } 100% { background-color: #fee2e2; } }
+                        @keyframes wave { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
                     `}</style>
                     
                     {/* Header */}
@@ -121,16 +164,45 @@ const AiConcierge = () => {
                         )}
                     </div>
 
-                    {/* Input */}
-                    <div style={{ padding: '20px', backgroundColor: 'white', borderTop: '1px solid #f1f5f9', display: 'flex', gap: '12px' }}>
-                        <input 
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                            placeholder="Describe your symptoms..."
-                            style={{ flex: 1, padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', outline: 'none', fontSize: '13px' }}
-                        />
-                        <button onClick={handleSend} disabled={isLoading || !input.trim()} style={{ width: '45px', height: '45px', backgroundColor: '#0066FF', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer' }}>➔</button>
+                    {/* Input Area */}
+                    <div style={{ padding: '20px', backgroundColor: 'white', borderTop: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                            <input 
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                                placeholder={isListening ? "Listening..." : "Speak or type symptoms..."}
+                                style={{ flex: 1, padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', outline: 'none', fontSize: '13px' }}
+                            />
+                            
+                            {/* Voice Button */}
+                            <button 
+                                onClick={toggleListening}
+                                style={{
+                                    width: '45px', height: '45px', 
+                                    backgroundColor: isListening ? '#ef4444' : '#f1f5f9',
+                                    color: isListening ? 'white' : '#64748b',
+                                    border: 'none', borderRadius: '12px', cursor: 'pointer',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontSize: '20px', animation: isListening ? 'wave 1s infinite' : 'none'
+                                }}
+                            >
+                                {isListening ? '⏹' : '🎤'}
+                            </button>
+
+                            {/* Send Button */}
+                            <button 
+                                onClick={handleSend} 
+                                disabled={isLoading || !input.trim()} 
+                                style={{ 
+                                    width: '45px', height: '45px', backgroundColor: '#0066FF', 
+                                    color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center' 
+                                }}
+                            >
+                                ➔
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
