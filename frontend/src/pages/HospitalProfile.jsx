@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Building2, Shield, CreditCard, Globe, MapPin, Phone, Mail, FileText, Camera, CheckCircle, AlertCircle, Save, Loader2, Activity, User } from 'lucide-react';
-import ClinicalDoctorProfile from './ClinicalDoctorProfile';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -21,7 +20,7 @@ const HospitalProfile = () => {
     const [deletionStep, setDeletionStep] = useState(1); // 1: Request, 2: Verify
     const [deletionOtp, setDeletionOtp] = useState('');
     const [isDeleting, setIsDeleting] = useState(false);
-    const [viewTab, setViewTab] = useState(location.pathname.includes('institutional') ? 'institutional' : 'personal');
+    const [activeTab, setActiveTab] = useState('identity');
 
     const [formData, setFormData] = useState({
         hospitalName: '',
@@ -202,40 +201,32 @@ const HospitalProfile = () => {
                         Institutional Sovereignty & Compliance Registry
                     </p>
                 </div>
-                {viewTab === 'institutional' && (
-                <button 
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="flex items-center gap-2 px-8 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
-                >
-                    {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
                     {saving ? 'Synchronizing...' : 'Save Configuration'}
                 </button>
-                )}
             </div>
 
             {/* Tab Switcher */}
-            <div className="flex items-center gap-2 p-1.5 bg-slate-100/50 rounded-[2rem] border border-slate-200/60 backdrop-blur-md mb-12 w-fit">
-                <button
-                    onClick={() => setViewTab('institutional')}
-                    className={`flex items-center gap-3 px-8 py-3 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all ${
-                        viewTab === 'institutional' 
-                        ? 'bg-white text-primary shadow-lg shadow-primary/5 border border-slate-200' 
-                        : 'text-slate-400 hover:text-slate-600'
-                    }`}
-                >
-                    <Building2 size={16} /> Institutional Data
-                </button>
-                <button
-                    onClick={() => setViewTab('personal')}
-                    className={`flex items-center gap-3 px-8 py-3 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all ${
-                        viewTab === 'personal' 
-                        ? 'bg-white text-blue-600 shadow-lg shadow-blue-500/5 border border-slate-200' 
-                        : 'text-slate-400 hover:text-slate-600'
-                    }`}
-                >
-                    <User size={16} /> Personal Physician Node
-                </button>
+            <div className="flex items-center gap-2 p-1.5 bg-slate-100/50 rounded-[2.5rem] border border-slate-200/60 backdrop-blur-md mb-12 w-fit">
+                {[
+                    { id: 'identity', label: 'Identity', icon: Building2 },
+                    { id: 'compliance', label: 'Compliance', icon: Shield },
+                    { id: 'operations', label: 'Operations', icon: Activity },
+                    { id: 'environment', label: 'Environment', icon: Globe },
+                    { id: 'settlements', label: 'Settlements', icon: CreditCard },
+                ].map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`flex items-center gap-3 px-8 py-4 rounded-[2rem] text-[10px] font-black uppercase tracking-widest transition-all ${
+                            activeTab === tab.id 
+                            ? 'bg-white text-primary shadow-xl shadow-primary/5 border border-slate-200' 
+                            : 'text-slate-400 hover:text-slate-600 hover:bg-white/50'
+                        }`}
+                    >
+                        <tab.icon size={16} />
+                        {tab.label}
+                    </button>
+                ))}
             </div>
 
             {viewTab === 'personal' ? (
@@ -298,307 +289,188 @@ const HospitalProfile = () => {
 
                 {/* Right Column: Detailed Configuration */}
                 <div className="lg:col-span-2 space-y-8 text-left">
-                    {/* Section 1: Basic Information */}
-                    <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
-                                <Building2 size={24} />
+                    {activeTab === 'identity' && (
+                        <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
+                                    <Building2 size={24} />
+                                </div>
+                                <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Basic <span className="not-italic text-blue-600">Identification</span></h3>
                             </div>
-                            <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Basic <span className="not-italic text-blue-600">Identification</span></h3>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Hospital Name</label>
-                                <input 
-                                    type="text" required
-                                    value={formData.hospitalName}
-                                    onChange={(e) => setFormData({...formData, hospitalName: e.target.value})}
-                                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-blue-100"
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Hospital Type</label>
-                                <select 
-                                    value={formData.hospitalType}
-                                    onChange={(e) => setFormData({...formData, hospitalType: e.target.value})}
-                                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-blue-100 appearance-none"
-                                >
-                                    <option value="">Select Type</option>
-                                    <option value="Private">Private</option>
-                                    <option value="Government">Government</option>
-                                    <option value="Trust">Trust</option>
-                                    <option value="Charitable">Charitable</option>
-                                </select>
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">License Code</label>
-                                <input 
-                                    type="text" required
-                                    value={formData.licenseCode}
-                                    onChange={(e) => setFormData({...formData, licenseCode: e.target.value})}
-                                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-blue-100 font-mono"
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Official Website</label>
-                                <input 
-                                    type="url"
-                                    value={formData.website}
-                                    onChange={(e) => setFormData({...formData, website: e.target.value})}
-                                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-blue-100"
-                                    placeholder="https://hospital.com"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Section 2: Legal & Compliance */}
-                    <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600">
-                                <Shield size={24} />
-                            </div>
-                            <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Legal & <span className="not-italic text-amber-600">Compliance</span></h3>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">GST Number (India)</label>
-                                <input 
-                                    type="text"
-                                    value={formData.gstNumber}
-                                    onChange={(e) => setFormData({...formData, gstNumber: e.target.value})}
-                                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-amber-100 font-mono"
-                                    placeholder="27AAAAA0000A1Z5"
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">PAN Number</label>
-                                <input 
-                                    type="text"
-                                    value={formData.panNumber}
-                                    onChange={(e) => setFormData({...formData, panNumber: e.target.value})}
-                                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-amber-100 font-mono"
-                                    placeholder="ABCDE1234F"
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">NABH ID</label>
-                                <input 
-                                    type="text"
-                                    value={formData.nabhId}
-                                    onChange={(e) => setFormData({...formData, nabhId: e.target.value})}
-                                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-amber-100"
-                                    placeholder="NABH-2024-XXXX"
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">ISO Certification ID</label>
-                                <input 
-                                    type="text"
-                                    value={formData.isoId}
-                                    onChange={(e) => setFormData({...formData, isoId: e.target.value})}
-                                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-amber-100"
-                                    placeholder="ISO 9001:2015"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Section 3: Medical Infrastructure */}
-                    <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
-                                <Activity size={24} />
-                            </div>
-                            <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Medical <span className="not-italic text-emerald-600">Infrastructure</span></h3>
-                        </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Total Beds</label>
-                                <input 
-                                    type="number"
-                                    value={formData.totalBeds}
-                                    onChange={(e) => setFormData({...formData, totalBeds: e.target.value})}
-                                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-emerald-100"
-                                    placeholder="500"
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">ICU Beds</label>
-                                <input 
-                                    type="number"
-                                    value={formData.icuBeds}
-                                    onChange={(e) => setFormData({...formData, icuBeds: e.target.value})}
-                                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-emerald-100"
-                                    placeholder="50"
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">OT Count</label>
-                                <input 
-                                    type="number"
-                                    value={formData.operationTheatersCount}
-                                    onChange={(e) => setFormData({...formData, operationTheatersCount: e.target.value})}
-                                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-emerald-100"
-                                    placeholder="12"
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Ambulances</label>
-                                <input 
-                                    type="number"
-                                    value={formData.ambulanceCount}
-                                    onChange={(e) => setFormData({...formData, ambulanceCount: e.target.value})}
-                                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-emerald-100"
-                                    placeholder="5"
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nurse Count</label>
-                                <input 
-                                    type="number"
-                                    value={formData.nurseCount}
-                                    onChange={(e) => setFormData({...formData, nurseCount: e.target.value})}
-                                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-emerald-100"
-                                    placeholder="200"
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">General Staff</label>
-                                <input 
-                                    type="number"
-                                    value={formData.generalStaffCount}
-                                    onChange={(e) => setFormData({...formData, generalStaffCount: e.target.value})}
-                                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-emerald-100"
-                                    placeholder="150"
-                                />
-                            </div>
-                        </div>
-                        <div className="mt-8 p-6 bg-emerald-50/50 rounded-3xl border border-emerald-100/50 flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <AlertCircle className="text-emerald-600" size={20} />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-800">24/7 Emergency Services Active</span>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setFormData(prev => ({...prev, emergencyServicesAvailable: !prev.emergencyServicesAvailable}))}
-                                className={`w-12 h-6 rounded-full relative transition-all ${formData.emergencyServicesAvailable ? 'bg-emerald-500' : 'bg-slate-200'}`}
-                            >
-                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.emergencyServicesAvailable ? 'right-1' : 'left-1'}`} />
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Section 4: Billing & Online Branding */}
-                    <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
-                        <div className="flex items-center gap-4 mb-8 text-left">
-                            <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
-                                <Globe size={24} />
-                            </div>
-                            <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Branding & <span className="not-italic text-indigo-600">Online</span></h3>
-                        </div>
-                        <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-1">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Google Maps URL</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Hospital Name</label>
                                     <input 
-                                        type="url"
-                                        value={formData.googleMapsUrl}
-                                        onChange={(e) => setFormData({...formData, googleMapsUrl: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100"
+                                        type="text" required
+                                        value={formData.hospitalName}
+                                        onChange={(e) => setFormData({...formData, hospitalName: e.target.value})}
+                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-blue-100"
                                     />
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Facebook URL</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Hospital Type</label>
+                                    <select 
+                                        value={formData.hospitalType}
+                                        onChange={(e) => setFormData({...formData, hospitalType: e.target.value})}
+                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-blue-100 appearance-none"
+                                    >
+                                        <option value="">Select Type</option>
+                                        <option value="Private">Private</option>
+                                        <option value="Government">Government</option>
+                                        <option value="Trust">Trust</option>
+                                        <option value="Charitable">Charitable</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">License Code</label>
+                                    <input 
+                                        type="text" required
+                                        value={formData.licenseCode}
+                                        onChange={(e) => setFormData({...formData, licenseCode: e.target.value})}
+                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-blue-100 font-mono"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Official Website</label>
                                     <input 
                                         type="url"
-                                        value={formData.facebookUrl}
-                                        onChange={(e) => setFormData({...formData, facebookUrl: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100"
+                                        value={formData.website}
+                                        onChange={(e) => setFormData({...formData, website: e.target.value})}
+                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-blue-100"
+                                        placeholder="https://hospital.com"
                                     />
                                 </div>
                             </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Supported Insurance Providers (Comma Separated)</label>
-                                <textarea 
-                                    value={formData.insuranceProviders}
-                                    onChange={(e) => setFormData({...formData, insuranceProviders: e.target.value})}
-                                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100 min-h-[80px]"
-                                    placeholder="Star Health, HDFC Ergo, ICICI Lombard, etc."
-                                />
-                            </div>
                         </div>
-                    </div>
+                    )}
 
-                    {/* Section 5: Financial Settlements */}
-                    <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
-                        <div className="flex items-center gap-4 mb-8 text-left">
-                            <div className="w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center text-primary">
-                                <CreditCard size={24} />
+                    {activeTab === 'compliance' && (
+                        <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600">
+                                    <Shield size={24} />
+                                </div>
+                                <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Legal & <span className="not-italic text-amber-600">Compliance</span></h3>
                             </div>
-                            <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Financial <span className="not-italic text-primary">Settlements</span></h3>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Razorpay Key ID</label>
-                                <input 
-                                    type="text"
-                                    value={formData.razorpayKeyId}
-                                    onChange={(e) => setFormData({...formData, razorpayKeyId: e.target.value})}
-                                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 font-mono"
-                                    placeholder="rzp_live_XXXXXXXXXXXX"
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Razorpay Key Secret</label>
-                                <input 
-                                    type="password"
-                                    value={formData.razorpayKeySecret}
-                                    onChange={(e) => setFormData({...formData, razorpayKeySecret: e.target.value})}
-                                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20"
-                                    placeholder="••••••••••••••••"
-                                />
-                            </div>
-                            <div className="space-y-1 md:col-span-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Institutional UPI ID</label>
-                                <input 
-                                    type="text"
-                                    value={formData.upiId}
-                                    onChange={(e) => setFormData({...formData, upiId: e.target.value})}
-                                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 font-mono"
-                                    placeholder="hospital@okaxis"
-                                />
-                            </div>
-                        </div>
-                        <div className="md:col-span-2 space-y-4">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Preferred Institutional Payout Mode</label>
-                            <div className="grid grid-cols-3 gap-4">
-                                {[
-                                    { id: 'RAZORPAY', label: 'Razorpay', icon: CreditCard },
-                                    { id: 'UPI', label: 'Direct UPI', icon: Activity },
-                                    { id: 'BOTH', label: 'Dual Mode', icon: CheckCircle }
-                                ].map(mode => (
-                                    <button
-                                        key={mode.id}
-                                        type="button"
-                                        onClick={() => setFormData({...formData, preferredPaymentMode: mode.id})}
-                                        className={`flex flex-col items-center gap-3 p-5 rounded-3xl border-2 transition-all duration-300 ${
-                                            formData.preferredPaymentMode === mode.id
-                                                ? 'bg-primary/5 border-primary text-primary shadow-lg shadow-primary/10'
-                                                : 'bg-slate-50 border-transparent text-slate-400 hover:bg-slate-100'
-                                        }`}
-                                    >
-                                        <mode.icon size={24} />
-                                        <span className="text-[10px] font-black uppercase tracking-widest">{mode.label}</span>
-                                    </button>
-                                ))}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">GST Number (India)</label>
+                                    <input 
+                                        type="text"
+                                        value={formData.gstNumber}
+                                        onChange={(e) => setFormData({...formData, gstNumber: e.target.value})}
+                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-amber-100 font-mono"
+                                        placeholder="27AAAAA0000A1Z5"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">PAN Number</label>
+                                    <input 
+                                        type="text"
+                                        value={formData.panNumber}
+                                        onChange={(e) => setFormData({...formData, panNumber: e.target.value})}
+                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-amber-100 font-mono"
+                                        placeholder="ABCDE1234F"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">NABH ID</label>
+                                    <input 
+                                        type="text"
+                                        value={formData.nabhId}
+                                        onChange={(e) => setFormData({...formData, nabhId: e.target.value})}
+                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-amber-100"
+                                        placeholder="NABH-2024-XXXX"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">ISO Certification ID</label>
+                                    <input 
+                                        type="text"
+                                        value={formData.isoId}
+                                        onChange={(e) => setFormData({...formData, isoId: e.target.value})}
+                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-amber-100"
+                                        placeholder="ISO 9001:2015"
+                                    />
+                                </div>
                             </div>
                         </div>
+                    )}
 
-                        <div className="mt-8 p-6 bg-blue-50/50 rounded-[2rem] border border-blue-100/50 flex items-center gap-4 text-left md:col-span-2">
-                            <Shield className="text-primary" size={20} />
-                            <p className="text-[10px] font-bold text-slate-600 leading-relaxed uppercase">
-                                The selected <span className="text-primary font-black">{formData.preferredPaymentMode}</span> mode will be enforced as the <span className="text-primary font-black">exclusive payout rail</span> for all onboarded staff members.
+                    {activeTab === 'operations' && (
+                        <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
+                                    <Activity size={24} />
+                                </div>
+                                <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Medical <span className="not-italic text-emerald-600">Infrastructure</span></h3>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Total Beds</label>
+                                    <input 
+                                        type="number"
+                                        value={formData.totalBeds}
+                                        onChange={(e) => setFormData({...formData, totalBeds: e.target.value})}
+                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-emerald-100"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">ICU Beds</label>
+                                    <input 
+                                        type="number"
+                                        value={formData.icuBeds}
+                                        onChange={(e) => setFormData({...formData, icuBeds: e.target.value})}
+                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-emerald-100"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">OT Count</label>
+                                    <input 
+                                        type="number"
+                                        value={formData.operationTheatersCount}
+                                        onChange={(e) => setFormData({...formData, operationTheatersCount: e.target.value})}
+                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-emerald-100"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Ambulances</label>
+                                    <input 
+                                        type="number"
+                                        value={formData.ambulanceCount}
+                                        onChange={(e) => setFormData({...formData, ambulanceCount: e.target.value})}
+                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-emerald-100"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nurse Count</label>
+                                    <input 
+                                        type="number"
+                                        value={formData.nurseCount}
+                                        onChange={(e) => setFormData({...formData, nurseCount: e.target.value})}
+                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-emerald-100"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">General Staff</label>
+                                    <input 
+                                        type="number"
+                                        value={formData.generalStaffCount}
+                                        onChange={(e) => setFormData({...formData, generalStaffCount: e.target.value})}
+                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-emerald-100"
+                                    />
+                                </div>
+                            </div>
+                            <div className="mt-8 p-6 bg-emerald-50/50 rounded-3xl border border-emerald-100/50 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <AlertCircle className="text-emerald-600" size={20} />
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-800">24/7 Emergency Services Active</span>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setFormData(prev => ({...prev, emergencyServicesAvailable: !prev.emergencyServicesAvailable}))}
+                                    className={`w-12 h-6 rounded-full relative transition-all ${formData.emergencyServicesAvailable ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                                >
                             </p>
                         </div>
                     </div>
@@ -695,10 +567,6 @@ const HospitalProfile = () => {
                                 </>
                             )}
                         </div>
-                    </div>
-                </div>
-            )}
-            </>
             )}
         </div>
     );
