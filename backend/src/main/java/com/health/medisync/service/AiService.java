@@ -70,19 +70,16 @@ public class AiService {
                 .filter(d -> d.isApproved() && d.getSpecialization().toLowerCase().contains(specialty))
                 .collect(Collectors.toList());
 
-            StringBuilder sb = new StringBuilder();
-            sb.append("### 🏥 ").append(translate("Specialist Recommendation", language)).append("\n");
-            sb.append(translate("For " + specialty.toUpperCase() + " issues, " + advice, language)).append("\n\n");
-
             if (!specialists.isEmpty()) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("### 🏥 ").append(translate("Specialist Recommendation", language)).append("\n");
+                sb.append(translate("For " + specialty.toUpperCase() + " issues, " + advice, language)).append("\n\n");
                 sb.append("**").append(translate("Available Specialists:", language)).append("**\n");
                 for (Doctor d : specialists.stream().limit(2).collect(Collectors.toList())) {
                     sb.append("- **Dr. ").append(d.getName()).append("** (").append(d.getSpecialization()).append(")\n");
                 }
-            } else {
-                sb.append("⚠️ ").append(translate("Note: We currently don't have an approved " + specialty + " specialist. Please consult a General Physician.", language));
+                return sb.toString();
             }
-            return sb.toString();
         }
 
         // --- NEURAL REASONING FALLBACK (Groq Llama-3.3-70b) ---
@@ -128,18 +125,24 @@ public class AiService {
 
     private String translate(String text, String lang) {
         if ("tamil".equals(lang)) {
-            if (text.contains("Hello")) return "வணக்கம்! நான் உங்கள் MediSync மருத்துவ உதவியாளர். நான் உங்களுக்கு எப்படி உதவ முடியும்?";
-            if (text.contains("Specialist Recommendation")) return "மருத்துவ நிபுணர் பரிந்துரை";
-            if (text.contains("Active Meds")) return "தற்போதைய மருந்துகள்";
+            if (text.contains("Hello")) return "வணக்கம்! நான் உங்கள் MediSync மருத்துவ உதவியாளர். நான் உங்களுக்கு எப்படி உதவ முடியும்? ✨";
+            if (text.contains("Specialist Recommendation")) return "மருத்துவ நிபுணர் பரிந்துரை 🩺";
+            if (text.contains("Available Specialists")) return "கிடைக்கக்கூடிய மருத்துவர்கள்:";
+            if (text.contains("Active Meds")) return "தற்போதைய மருந்துகள் 💊";
             if (text.contains("ER")) return "🚨 **அவசரநிலை!** தயவுசெய்து உடனடியாக மருத்துவமனைக்குச் செல்லவும்.";
-            if (text.contains("dental")) return "பல் தொடர்பான பிரச்சனைகளுக்கு, சூடான அல்லது குளிர்ந்த உணவைத் தவிர்க்கவும்.";
-            if (text.contains("cardiology")) return "இதயத் துடிப்பைக் கண்காணித்து, கடினமான வேலைகளைத் தவிர்க்கவும்.";
             if (text.contains("approved")) return "தற்போது இந்த பிரிவில் மருத்துவர்கள் இல்லை. பொது மருத்துவரை அணுகவும்.";
-            return "உங்களுக்கு உதவ நான் தயாராக உள்ளேன். உங்கள் அறிகுறிகளை விவரிக்கவும்.";
+            return "உங்களுக்கு உதவ நான் தயாராக உள்ளேன். உங்கள் அறிகுறிகளை விவரிக்கவும். 🚑";
         }
         if ("hindi".equals(lang)) {
-            if (text.contains("Hello")) return "नमस्ते! मैं आपका MediSync क्लिनिकल कंसीयज हूँ। मैं आपकी कैसे मदद कर सकता हूँ?";
-            return "मैं आपकी मदद के लिए यहाँ हूँ। कृपया अपने लक्षणों के बारे में बताएं।";
+            if (text.contains("Hello")) return "नमस्ते! मैं आपका MediSync क्लिनिकल कंसीयज हूँ। मैं आपकी कैसे मदद कर सकता हूँ? ✨";
+            if (text.contains("Specialist Recommendation")) return "विशेषज्ञ अनुशंसा 🩺";
+            if (text.contains("Available Specialists")) return "उपलब्ध डॉक्टर:";
+            return "मैं आपकी मदद के लिए यहाँ हूँ। कृपया अपने लक्षणों के बारे में बताएं। 🚑";
+        }
+        if ("telugu".equals(lang)) {
+            if (text.contains("Hello")) return "నమస్కారం! నేను మీ మెడిసింక్ క్లినికల్ అసిస్టెంట్‌ని. మీకు ఎలా సహాయం చేయగలను? ✨";
+            if (text.contains("Specialist Recommendation")) return "నిపుణుల సిఫార్సు 🩺";
+            return "నేను మీకు సహాయం చేయడానికి ఇక్కడ ఉన్నాను. దయచేసి మీ లక్షణాలను తెలియజేయండి. 🚑";
         }
         return text;
     }
@@ -157,10 +160,13 @@ public class AiService {
     }
 
     private String mapSymptomToSpecialty(String query) {
-        // English + Tamil + Hindi Keywords
+        // High-precision keywords
         if (query.contains("tooth") || query.contains("teeth") || query.contains("பல்") || query.contains("दांत")) return "dental";
         if (query.contains("heart") || query.contains("chest") || query.contains("இதயம்") || query.contains("दिल")) return "cardiology";
-        if (query.contains("fever") || query.contains("cold") || query.contains("காய்ச்சல்") || query.contains("बुखार") || query.contains("வலி") || query.contains("pain")) return "general physician";
+        if (query.contains("brain") || query.contains("nerve") || query.contains("நரம்பு") || query.contains("दिमाग")) return "neurology";
+        if (query.contains("child") || query.contains("baby") || query.contains("குழந்தை") || query.contains("बच्चा")) return "pediatrics";
+        
+        // General symptoms are now handled by Neural Reasoning to avoid false-negatives
         return null;
     }
 

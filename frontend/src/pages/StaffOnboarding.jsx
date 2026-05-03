@@ -176,7 +176,7 @@ const StaffOnboarding = () => {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 relative z-10">
                         <PremiumDropdown label="Primary Degree" options={['MBBS', 'MD', 'MS', 'DM', 'MCh', 'PhD']} value={onboardData.medicalDegree} onChange={(val) => setOnboardData({...onboardData, medicalDegree: val})} />
-                        <PremiumDropdown label="Clinical Specialization" options={['Cardiology', 'Neurology', 'Oncology', 'Pediatrics', 'Orthopedics', 'Dermatology', 'Psychiatry', 'Radiology']} value={onboardData.specialization} onChange={(val) => setOnboardData({...onboardData, specialization: val})} searchable={true} />
+                        <PremiumDropdown label="Clinical Specialization" options={['General Physician', 'Cardiology', 'Neurology', 'Oncology', 'Pediatrics', 'Orthopedics', 'Dermatology', 'Psychiatry', 'Radiology']} value={onboardData.specialization} onChange={(val) => setOnboardData({...onboardData, specialization: val})} searchable={true} />
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-10 relative z-10">
