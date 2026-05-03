@@ -632,7 +632,7 @@ const Booking = () => {
                         Manual verification required before session authorization.
                     </p>
                 </div>
-              </div></div>
+              </div>
             </motion.div>
           </div>
         )}
