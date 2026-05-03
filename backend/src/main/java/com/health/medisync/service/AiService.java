@@ -83,23 +83,47 @@ public class AiService {
             return sb.toString();
         }
 
-        // --- NEURAL REASONING (Telemetry Augmented) ---
+        // 4. Real-time Context Extraction (Temporal + Clinical)
+        String currentTime = java.time.LocalTime.now().toString();
+        String currentDate = java.time.LocalDate.now().toString();
+        String appointmentContext = "None";
+        if (userEmail != null) {
+            List<Appointment> todayAppts = appointmentRepository.findByPatientEmail(userEmail).stream()
+                .filter(a -> a.getAppointmentDate().isEqual(LocalDate.now()))
+                .collect(Collectors.toList());
+            if (!todayAppts.isEmpty()) {
+                appointmentContext = todayAppts.stream()
+                    .map(a -> "- Dr. " + a.getDoctor().getName() + " at " + a.getTimeSlot())
+                    .collect(Collectors.joining("\n"));
+            }
+        }
+
+        // --- NEURAL REASONING (Telemetry + Temporal Augmented) ---
         try {
             List<Doctor> allDoctors = doctorRepository.findByApprovedTrue();
             String doctorList = allDoctors.stream()
                 .map(d -> "- Dr. " + d.getName() + " (" + d.getSpecialization() + ")")
                 .collect(Collectors.joining("\n"));
 
-            String prompt = "You are the MediSync Clinical AI. " +
+            List<Hospital> allHospitals = hospitalRepository.findAll();
+            String hospitalList = allHospitals.stream()
+                .map(h -> "- " + h.getName() + " (" + (h.getAddress() != null ? h.getAddress() : "Active Node") + ")")
+                .collect(Collectors.joining("\n"));
+
+            String prompt = "You are the MediSync Real-time Clinical Assistant. " +
+                "System Time: " + currentTime + " (" + currentDate + "). " +
                 "User Role: " + (isDoctor ? "Doctor" : "Patient") + ". " +
+                "User's TODAY Schedule:\n" + appointmentContext + "\n" +
                 "Current Location (Telemetry): " + (location != null ? location : "Unknown") + ". " +
                 "Language: " + language + ". " +
                 "STRICT RESPONSE RULES:\n" +
                 "1. NO PARAGRAPHS. NO GREETINGS. NO DISCLAIMERS.\n" +
                 "2. ONLY answer what the user asked. Be extremely concise.\n" +
                 "3. Use Markdown headers (###) and Bullet Points (-) for EVERYTHING.\n" +
-                "4. If asked for a location (like Blood Bank) and telemetry is available, use your knowledge to provide general directions.\n" +
-                "5. GROUNDING: Only mention these doctors if relevant to the query:\n" + doctorList + "\n\n" +
+                "4. NAVIGATION: Always provide a detailed street address when mentioning a hospital or facility.\n" +
+                "5. GROUNDING - APPROVED HOSPITALS:\n" + hospitalList + "\n" +
+                "6. GROUNDING - APPROVED DOCTORS:\n" + doctorList + "\n" +
+                "7. If a user asks about a hospital or doctor NOT in the lists above, say 'I couldn't find that in our current clinical network.'\n\n" +
                 "Query: " + query;
             
             String neuralResponse = groqAiService.getCompletion(prompt);

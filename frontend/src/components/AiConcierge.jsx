@@ -100,6 +100,31 @@ const AiConcierge = () => {
         }
     };
 
+    const [streamingText, setStreamingText] = useState({});
+
+    useEffect(() => {
+        const latestMsg = messages[messages.length - 1];
+        if (latestMsg && latestMsg.role === 'ai') {
+            const msgId = messages.length - 1;
+            let i = 0;
+            const fullText = latestMsg.text;
+            
+            // Fast streaming feel
+            const interval = setInterval(() => {
+                setStreamingText(prev => ({
+                    ...prev,
+                    [msgId]: fullText.slice(0, i + 30)
+                }));
+                i += 30;
+                if (i >= fullText.length) {
+                    clearInterval(interval);
+                    setStreamingText(prev => ({ ...prev, [msgId]: fullText }));
+                }
+            }, 30);
+            return () => clearInterval(interval);
+        }
+    }, [messages]);
+
     const startListening = () => {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) return alert('Not supported');
@@ -117,6 +142,12 @@ const AiConcierge = () => {
 
     return (
         <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 1000, fontFamily: 'Inter, sans-serif' }}>
+            <style>{`
+                @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
+                @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+                @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+            `}</style>
+
             {!isOpen && (
                 <button onClick={() => setIsOpen(true)} style={{ width: '65px', height: '65px', borderRadius: '50%', backgroundColor: '#0066FF', border: 'none', color: 'white', fontSize: '28px', cursor: 'pointer', boxShadow: '0 8px 25px rgba(0,66,255,0.4)', transition: '0.3s' }}>
                     🤖
@@ -125,13 +156,15 @@ const AiConcierge = () => {
 
             {isOpen && (
                 <div style={{ width: '400px', height: '650px', backgroundColor: 'white', borderRadius: '32px', boxShadow: '0 30px 80px rgba(0,0,0,0.25)', display: 'flex', flexDirection: 'column', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.05)', animation: 'slideUp 0.4s' }}>
-                    <style>{`@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`}</style>
                     
                     {/* Header */}
                     <div style={{ padding: '24px', backgroundColor: '#0066FF', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <div style={{ width: '10px', height: '10px', backgroundColor: '#4ade80', borderRadius: '50%' }}></div>
-                            <span style={{ fontWeight: '900', fontSize: '14px', letterSpacing: '1px' }}>CLINICAL AI 2.0</span>
+                            <div style={{ width: '10px', height: '10px', backgroundColor: '#4ade80', borderRadius: '50%', boxShadow: '0 0 10px #4ade80', animation: 'pulse 2s infinite' }}></div>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span style={{ fontWeight: '900', fontSize: '13px', letterSpacing: '1px' }}>CLINICAL AI 2.0</span>
+                                <span style={{ fontSize: '9px', opacity: 0.7, fontWeight: '800' }}>LIVE SAT-LINK • REAL-TIME</span>
+                            </div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                             <button 
@@ -163,6 +196,7 @@ const AiConcierge = () => {
                         {messages.map((m, i) => {
                             const isHighRisk = m.text.includes('HIGH') || m.text.includes('CRITICAL');
                             const isGreeting = i === 0 && m.role === 'ai';
+                            const displayText = streamingText[i] || m.text;
                             
                             return (
                                 <div key={i} style={{ alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '90%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -177,7 +211,7 @@ const AiConcierge = () => {
                                         {/* Background accent for AI messages */}
                                         {m.role === 'ai' && !isHighRisk && <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', backgroundColor: '#0066FF', opacity: 0.8 }} />}
                                         
-                                        {m.text.split('\n').map((l, li) => {
+                                        {displayText.split('\n').map((l, li) => {
                                             const line = l.trim();
                                             if (!line) return <div key={li} style={{ height: '12px' }} />;
 
@@ -197,10 +231,25 @@ const AiConcierge = () => {
 
                                             // Styled Lists or Proactive Point Conversion for long lines
                                             if (line.startsWith('-') || line.startsWith('•') || line.length > 60) {
+                                                const isLocation = line.toLowerCase().includes('location') || line.toLowerCase().includes('address') || line.toLowerCase().includes('hospital');
+                                                
                                                 return (
-                                                    <div key={li} style={{ display: 'flex', gap: '10px', paddingLeft: '8px', marginBottom: '8px', alignItems: 'flex-start' }}>
-                                                        <div style={{ marginTop: '8px', width: '5px', height: '5px', borderRadius: '50%', backgroundColor: m.role === 'user' ? 'white' : '#94a3b8', flexShrink: 0 }}></div>
-                                                        <span style={{ fontWeight: '500' }}>{line.startsWith('-') || line.startsWith('•') ? line.substring(1).trim() : line}</span>
+                                                    <div key={li} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                        <div style={{ display: 'flex', gap: '10px', paddingLeft: '8px', marginBottom: '4px', alignItems: 'flex-start' }}>
+                                                            <div style={{ marginTop: '8px', width: '5px', height: '5px', borderRadius: '50%', backgroundColor: m.role === 'user' ? 'white' : '#94a3b8', flexShrink: 0 }}></div>
+                                                            <span style={{ fontWeight: '500' }}>{line.startsWith('-') || line.startsWith('•') ? line.substring(1).trim() : line}</span>
+                                                        </div>
+                                                        {isLocation && (
+                                                            <button 
+                                                                onClick={() => {
+                                                                    const searchStr = encodeURIComponent(line.replace(/#|-|•/g, '').trim());
+                                                                    window.open(`https://www.google.com/maps/search/?api=1&query=${searchStr}`, '_blank');
+                                                                }}
+                                                                style={{ marginLeft: '25px', padding: '8px 16px', borderRadius: '10px', backgroundColor: '#f0f9ff', border: '1px solid #bae6fd', color: '#0369a1', fontSize: '10px', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', width: 'fit-content' }}
+                                                            >
+                                                                📍 VIEW DIRECTIONS ON MAP
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 );
                                             }
