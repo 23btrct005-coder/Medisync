@@ -146,6 +146,33 @@ public class MedisyncApplication {
         };
     }
 
+    @Bean
+    public CommandLineRunner dataCleanupBootstrap(org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
+        return args -> {
+            System.out.println("[CLEANUP] Requested deletion of User ID: 48 (abhi7892596@gmail.com)");
+            try {
+                // Wipe doctor-related clinical data
+                jdbcTemplate.update("DELETE FROM appointments WHERE doctor_id = (SELECT id FROM doctors WHERE user_id = 48)");
+                jdbcTemplate.update("DELETE FROM access_requests WHERE doctor_id = (SELECT id FROM doctors WHERE user_id = 48)");
+                jdbcTemplate.update("DELETE FROM ratings WHERE doctor_id = (SELECT id FROM doctors WHERE user_id = 48)");
+                jdbcTemplate.update("DELETE FROM notifications WHERE user_id = 48");
+                jdbcTemplate.update("DELETE FROM password_reset_tokens WHERE user_id = 48");
+                
+                // Wipe profiles and core identity
+                jdbcTemplate.update("DELETE FROM doctors WHERE user_id = 48");
+                int rows = jdbcTemplate.update("DELETE FROM users WHERE id = 48");
+                
+                if (rows > 0) {
+                    System.out.println("[CLEANUP] User ID 48 and associated clinical data purged successfully.");
+                } else {
+                    System.out.println("[CLEANUP] User ID 48 not found. Node already clean.");
+                }
+            } catch (Exception e) {
+                System.err.println("[CLEANUP] Execution failure for User 48: " + e.getMessage());
+            }
+        };
+    }
+
     private static String maskPassword(String url) {
         if (url == null) return "Not Set";
         return url.replaceAll(":([^@/:]+)@", ":****@");
