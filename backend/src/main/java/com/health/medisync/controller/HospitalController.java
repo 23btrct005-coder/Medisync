@@ -152,6 +152,17 @@ public class HospitalController {
             response.put("hospital", hMap);
         }
 
+        // Security & Status Fields (CRITICAL for AuthContext)
+        response.put("email", user.getUsername());
+        response.put("emailVerified", user.isEmailVerified());
+        
+        Map<String, Object> userMap = new java.util.HashMap<>();
+        userMap.put("id", user.getId());
+        userMap.put("username", user.getUsername());
+        userMap.put("email", user.getUsername());
+        userMap.put("emailVerified", user.isEmailVerified());
+        response.put("user", userMap);
+
         System.out.println("DEBUG: Returning explicit profile map for Admin: " + admin.getName());
         return ResponseEntity.ok(response);
     }
