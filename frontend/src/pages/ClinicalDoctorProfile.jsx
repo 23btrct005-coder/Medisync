@@ -55,7 +55,7 @@ const DoctorProfile = () => {
     { id: 'professional', label: 'Professional', icon: GraduationCap },
     { id: 'expertise', label: 'Expertise', icon: Stethoscope },
     { id: 'practice', label: 'Practice', icon: Clock },
-    { id: 'transactional', label: 'Identity', icon: Wallet },
+    { id: 'transactional', label: 'Settlements', icon: Wallet },
   ];
 
   return (
@@ -79,9 +79,12 @@ const DoctorProfile = () => {
             </div>
             <div>
                 <div className="flex items-center gap-2">
-                    <h2 className="text-3xl font-black text-slate-900 tracking-tight italic">Dr. {user.name}</h2>
+                    <h2 className="text-3xl font-black text-slate-900 tracking-tight italic">Pers. <span className="not-italic text-blue-600">Profile</span></h2>
                     {user.approved && <BadgeCheck className="text-blue-600" size={24} />}
                 </div>
+                <p className="text-slate-400 font-bold text-xs uppercase tracking-[0.2em] mt-2">
+                    Personal Clinical Identity & Credentials
+                </p>
                 <p className="text-slate-500 font-bold flex items-center gap-2 mt-1">
                     <span className="uppercase tracking-widest text-[10px] bg-slate-100 px-2 py-1 rounded-lg text-slate-400 font-black">Physician Node</span>
                     {user.specialization} • {user.medicalDegree}

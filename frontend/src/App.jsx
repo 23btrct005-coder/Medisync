@@ -207,7 +207,7 @@ function App() {
                   <Route path="appointments" element={<HospitalAppointments />} />
                   <Route path="ledger" element={<HospitalLedger />} />
                   <Route path="patients" element={<HospitalPatients />} />
-                  <Route path="profile" element={<HospitalProfile />} />
+                  <Route path="profile" element={<ClinicalDoctorProfile />} />
                   <Route path="institutional-profile" element={<HospitalProfile />} />
                   <Route path="analytics" element={<HospitalAnalytics />} />
                   <Route path="staff" element={<HospitalDoctorRoster />} />
