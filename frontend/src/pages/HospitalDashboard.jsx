@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Building2, Users, ClipboardCheck, TrendingUp, ShieldAlert, Shield, 
   ChevronRight, Activity, Calendar, MapPin, Clock, DollarSign, 
-  CreditCard, Lock, X, Check, Settings, ArrowUpRight, Pulse
+  CreditCard, Lock, X, Check, Settings, ArrowUpRight, HeartPulse
 } from 'lucide-react';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
@@ -219,7 +219,7 @@ const HospitalDashboard = () => {
 
                     <div className="bg-gradient-to-br from-primary to-[#0a0d12] p-10 rounded-[3.5rem] border border-white/5 relative overflow-hidden group">
                         <div className="relative z-10">
-                            <Pulse className="text-slate-900 mb-6 animate-pulse" size={32} />
+                            <HeartPulse className="text-slate-900 mb-6 animate-pulse" size={32} />
                             <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight italic leading-tight">Patient<br/>Ecosystem</h3>
                             <p className="text-slate-900/60 text-[9px] font-black uppercase tracking-widest mt-2">{stats?.totalPatientsInstitutional || '1,284'} Active clinical nodes</p>
                         </div>
