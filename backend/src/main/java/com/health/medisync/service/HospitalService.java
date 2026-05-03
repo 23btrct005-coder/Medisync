@@ -209,7 +209,9 @@ public class HospitalService {
         if (updates.containsKey("medicalCouncil")) doctor.setMedicalCouncil(updates.get("medicalCouncil") != null ? updates.get("medicalCouncil").toString() : null);
         if (updates.containsKey("licenseExpiryDate")) doctor.setLicenseExpiryDate(updates.get("licenseExpiryDate") != null ? updates.get("licenseExpiryDate").toString() : null);
         if (updates.containsKey("registrationYear") && updates.get("registrationYear") != null && !updates.get("registrationYear").toString().isEmpty()) {
-            doctor.setRegistrationYear(Integer.valueOf(updates.get("registrationYear").toString()));
+            try {
+                doctor.setRegistrationYear(Integer.valueOf(updates.get("registrationYear").toString()));
+            } catch (NumberFormatException ignored) {}
         }
 
         // Clinical Depth
@@ -221,10 +223,14 @@ public class HospitalService {
 
         // Advanced Availability
         if (updates.containsKey("slotDuration") && updates.get("slotDuration") != null && !updates.get("slotDuration").toString().isEmpty()) {
-            doctor.setSlotDuration(Integer.valueOf(updates.get("slotDuration").toString()));
+            try {
+                doctor.setSlotDuration(Integer.valueOf(updates.get("slotDuration").toString()));
+            } catch (NumberFormatException ignored) {}
         }
         if (updates.containsKey("maxPatientsPerDay") && updates.get("maxPatientsPerDay") != null && !updates.get("maxPatientsPerDay").toString().isEmpty()) {
-            doctor.setMaxPatientsPerDay(Integer.valueOf(updates.get("maxPatientsPerDay").toString()));
+            try {
+                doctor.setMaxPatientsPerDay(Integer.valueOf(updates.get("maxPatientsPerDay").toString()));
+            } catch (NumberFormatException ignored) {}
         }
         if (updates.containsKey("breakTimings")) doctor.setBreakTimings(updates.get("breakTimings") != null ? updates.get("breakTimings").toString() : null);
 
@@ -245,6 +251,20 @@ public class HospitalService {
         }
         if (updates.containsKey("appointmentsEnabled") && updates.get("appointmentsEnabled") != null) {
             doctor.setAppointmentsEnabled(Boolean.parseBoolean(updates.get("appointmentsEnabled").toString()));
+        }
+
+        // Governance Permissions
+        if (updates.containsKey("canPrescribe") && updates.get("canPrescribe") != null) {
+            doctor.setCanPrescribe(Boolean.parseBoolean(updates.get("canPrescribe").toString()));
+        }
+        if (updates.containsKey("canEditPatientData") && updates.get("canEditPatientData") != null) {
+            doctor.setCanEditPatientData(Boolean.parseBoolean(updates.get("canEditPatientData").toString()));
+        }
+        if (updates.containsKey("canAccessReports") && updates.get("canAccessReports") != null) {
+            doctor.setCanAccessReports(Boolean.parseBoolean(updates.get("canAccessReports").toString()));
+        }
+        if (updates.containsKey("canManageAppointments") && updates.get("canManageAppointments") != null) {
+            doctor.setCanManageAppointments(Boolean.parseBoolean(updates.get("canManageAppointments").toString()));
         }
         
         // Auto-flag as institutional if updated through hospital context
