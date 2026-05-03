@@ -454,10 +454,9 @@ public class DoctorService {
     private List<String> parseSlots(Doctor doctor) {
         String timings = doctor.getConsultationTimings();
         int duration = (doctor.getSlotDuration() != null && doctor.getSlotDuration() > 0) ? doctor.getSlotDuration() : 15;
-        DateTimeFormatter displayFormatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);
         
         if (timings == null || timings.trim().isEmpty() || !timings.contains("-")) {
-            return Arrays.asList("10:00 AM", "10:15 AM", "10:30 AM", "10:45 AM", "11:00 AM");
+            return Collections.emptyList();
         }
 
         try {
@@ -465,18 +464,37 @@ public class DoctorService {
             String startStr = parts[0].trim();
             String endStr = parts[1].trim();
 
-            java.time.LocalTime startTime = java.time.LocalTime.parse(startStr, displayFormatter);
-            java.time.LocalTime endTime = java.time.LocalTime.parse(endStr, displayFormatter);
+            java.time.LocalTime startTime = parseRobustTime(startStr);
+            java.time.LocalTime endTime = parseRobustTime(endStr);
 
+            if (startTime == null || endTime == null) return Collections.emptyList();
+
+            DateTimeFormatter displayFormatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);
             List<String> slots = new ArrayList<>();
             java.time.LocalTime current = startTime;
-            while (current.isBefore(endTime)) {
+            
+            // Safety: prevent infinite loops if start >= end
+            int maxIterations = 100; 
+            int i = 0;
+            while (current.isBefore(endTime) && i < maxIterations) {
                 slots.add(current.format(displayFormatter));
                 current = current.plusMinutes(duration);
+                i++;
             }
             return slots;
         } catch (Exception e) {
-            return Arrays.asList("10:00 AM", "10:15 AM", "10:30 AM", "10:45 AM", "11:00 AM");
+            e.printStackTrace();
+            return Collections.emptyList();
         }
+    }
+
+    private java.time.LocalTime parseRobustTime(String timeStr) {
+        String[] formats = {"hh:mm a", "h:mm a", "HH:mm", "H:mm", "hh:mma", "h:mma"};
+        for (String format : formats) {
+            try {
+                return java.time.LocalTime.parse(timeStr.toUpperCase(), DateTimeFormatter.ofPattern(format, Locale.ENGLISH));
+            } catch (Exception e) {}
+        }
+        return null;
     }
 }
