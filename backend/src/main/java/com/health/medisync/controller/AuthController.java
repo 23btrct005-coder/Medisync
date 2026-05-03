@@ -646,7 +646,7 @@ public class AuthController {
         user.setPassword(passwordEncoder.encode(String.valueOf(request.get("password"))));
         user.setRole("ROLE_HOSPITAL_ADMIN");
         user.setEnabled(true); 
-        user.setEmailVerified(false); // Mandate verification on first login for institutional security
+        user.setEmailVerified(true); 
         user = userRepository.save(user);
 
         // 2. Create or Find Hospital
