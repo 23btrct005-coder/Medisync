@@ -87,11 +87,21 @@ public class AiService {
 
         // --- NEURAL REASONING FALLBACK (Groq Llama-3.3-70b) ---
         try {
+            // Fetch real clinical data to ground the AI and prevent hallucinations
+            List<Doctor> allDoctors = doctorRepository.findByApprovedTrue();
+            String doctorList = allDoctors.stream()
+                .map(d -> "- Dr. " + d.getName() + " (" + d.getSpecialization() + ")")
+                .collect(Collectors.joining("\n"));
+
             String prompt = "You are the MediSync Clinical Assistant. " +
                 "User Role: " + (isDoctor ? "Doctor" : "Patient") + ". " +
                 "Language: " + language + ". " +
-                "Style: Be highly interactive and use appropriate medical emojis (e.g., 🩺, 💊, 🏥, 🚨, ✨) in your response. " +
-                "Context: You are integrated into a Hospital Operating System. " +
+                "Style: Be highly interactive and use appropriate medical emojis. " +
+                "STRICT GROUNDING RULES:\n" +
+                "1. ONLY reference the following APPROVED DOCTORS currently in the building:\n" + doctorList + "\n" +
+                "2. If a user asks for a doctor or specialist NOT in this list, say 'I couldn't find that specific doctor, but here are our available specialists.'\n" +
+                "3. NEVER invent names like 'Dr. Smith' or fake room numbers.\n" +
+                "4. If you don't know something about the hospital layout, suggest asking at the Physical Reception ✨.\n\n" +
                 "Query: " + query;
             
             String neuralResponse = groqAiService.getCompletion(prompt);
