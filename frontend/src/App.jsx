@@ -50,6 +50,7 @@ import HospitalProfile from './pages/HospitalProfile';
 import HospitalAnalytics from './pages/HospitalAnalytics';
 import HospitalLedger from './pages/HospitalLedger';
 import PendingApproval from './pages/PendingApproval';
+import StaffProfileEditor from './pages/StaffProfileEditor';
 import VerifyEmail from './pages/VerifyEmail';
 import PatientMessages from './pages/PatientMessages';
 import ClinicalError404 from './pages/ClinicalError404';
@@ -214,6 +215,7 @@ function App() {
                   <Route path="institutional-profile" element={<HospitalProfile />} />
                   <Route path="analytics" element={<HospitalAnalytics />} />
                   <Route path="staff" element={<HospitalDoctorRoster />} />
+                  <Route path="staff/edit/:id" element={<StaffProfileEditor />} />
                   <Route path="messages" element={<ClinicalMessages />} />
                   <Route path="settings" element={<Settings />} />
                   <Route path="support" element={<Support />} />

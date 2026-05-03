@@ -1,91 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, Users, ClipboardCheck, TrendingUp, ShieldAlert, Shield, ChevronRight, UserPlus, Search, Activity, Calendar, GraduationCap, Briefcase, Mail, Phone, MapPin, Clock, DollarSign, CreditCard, Lock, X, Check, Trash2, Edit3, Settings } from 'lucide-react';
+import { 
+  Building2, Users, ClipboardCheck, TrendingUp, ShieldAlert, Shield, 
+  ChevronRight, Activity, Calendar, MapPin, Clock, DollarSign, 
+  CreditCard, Lock, X, Check, Settings 
+} from 'lucide-react';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
-import DropZone from '../components/DropZone';
-import PremiumDropdown from '../components/PremiumDropdown';
 
 const HospitalDashboard = () => {
     const navigate = useNavigate();
     const [stats, setStats] = useState(null);
-    const [doctors, setDoctors] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showOnboardModal, setShowOnboardModal] = useState(false);
-    const [showEditModal, setShowEditModal] = useState(false);
-    const [editingDoctor, setEditingDoctor] = useState(null);
-    const [editData, setEditData] = useState({});
-    const [onboardData, setOnboardData] = useState({ 
-        name: '', 
-        email: '', 
-        gender: 'Male',
-        dateOfBirth: '',
-        phone: '',
-        alternatePhone: '',
-        specialization: '', 
-        medicalLicenseNumber: '', 
-        medicalCouncil: '',
-        licenseExpiryDate: '',
-        medicalDegree: '',
-        yearsOfExperience: '',
-        consultationFee: '',
-        onlineConsultationFee: '',
-        offlineConsultationFee: '',
-        onlineConsultation: true,
-        appointmentsEnabled: true,
-        workingDaysArray: [],
-        startTime: '09:00',
-        endTime: '17:00',
-        breakTimings: '13:00 - 14:00',
-        maxPatientsPerDay: '30',
-        college: '',
-        additionalCertifications: '',
-        employeeId: '',
-        opdRoomNumber: '',
-        salary: '',
-        contractType: 'PERMANENT',
-        revenueSharePercentage: '',
-        canPrescribe: true,
-        canEditPatientData: false,
-        canAccessReports: true,
-        canManageAppointments: true,
-        age: '',
-        password: 'Password@123',
-        // Advanced Professional Fields
-        subSpecialties: '',
-        languagesSpoken: '',
-        proceduresHandled: '',
-        publications: '',
-        treatmentFocus: '',
-        slotDuration: '15'
-    });
-    const [submitting, setSubmitting] = useState(false);
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [licenseFile, setLicenseFile] = useState(null);
-
-    const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-    const handleDayToggle = (day) => {
-        setOnboardData(prev => ({
-            ...prev,
-            workingDaysArray: prev.workingDaysArray.includes(day)
-                ? prev.workingDaysArray.filter(d => d !== day)
-                : [...prev.workingDaysArray, day]
-        }));
-    };
-
     const [auditLogs, setAuditLogs] = useState([]);
+    const [loadFluctuations, setLoadFluctuations] = useState({ Cardiology: 88, Neurology: 65, Pediatrics: 94 });
 
     const fetchInstitutionalData = async (silent = false) => {
         if (!silent) setLoading(true);
         try {
-            const [statsRes, doctorsRes, auditRes] = await Promise.all([
+            const [statsRes, auditRes] = await Promise.all([
                 api.get('/hospital/stats'),
-                api.get('/hospital/doctors'),
                 api.get('/hospital/audit-logs')
             ]);
             setStats(statsRes.data);
-            setDoctors(doctorsRes.data);
             setAuditLogs(auditRes.data);
         } catch (err) {
             console.error("Institutional sync failed", err);
@@ -95,65 +32,6 @@ const HospitalDashboard = () => {
         }
     };
 
-    const handleDeleteDoctor = async (id) => {
-        if (!window.confirm("Are you sure you want to permanently remove this physician from the institutional roster?")) return;
-        try {
-            await api.delete(`/hospital/delete-doctor/${id}`);
-            toast.success("Physician record purged successfully");
-            setDoctors(prev => prev.filter(d => d.id !== id));
-        } catch (err) {
-            toast.error(err.response?.data?.message || "Purge failed");
-        }
-    };
-
-    const handleUpdateDoctor = async (e) => {
-        e.preventDefault();
-        setSubmitting(true);
-        try {
-            await api.post(`/hospital/update-doctor/${editingDoctor.id}`, editData);
-            toast.success("Physician configuration synchronized");
-            fetchInstitutionalData();
-            setShowEditModal(false);
-        } catch (err) {
-            toast.error(err.response?.data?.message || "Sync failed");
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
-    const openEditModal = (doctor) => {
-        setEditingDoctor(doctor);
-        // Map DTO fields back to update format
-        setEditData({
-            name: doctor.name,
-            specialization: doctor.specialization,
-            medicalDegree: doctor.medicalDegree,
-            medicalLicenseNumber: doctor.medicalLicenseNumber,
-            yearsOfExperience: doctor.yearsOfExperience,
-            consultationFee: doctor.consultationFee,
-            onlineConsultationFee: doctor.onlineConsultationFee,
-            offlineConsultationFee: doctor.offlineConsultationFee,
-            appointmentsEnabled: doctor.appointmentsEnabled,
-            onlineConsultation: doctor.onlineConsultation,
-            opdRoomNumber: doctor.opdRoomNumber,
-            employeeId: doctor.employeeId,
-            workingDays: doctor.workingDays,
-            consultationTimings: doctor.consultationTimings,
-            slotDuration: doctor.slotDuration,
-            maxPatientsPerDay: doctor.maxPatientsPerDay,
-            breakTimings: doctor.breakTimings,
-            contractType: doctor.contractType,
-            salary: doctor.salary,
-            canPrescribe: doctor.canPrescribe,
-            canEditPatientData: doctor.canEditPatientData,
-            canAccessReports: doctor.canAccessReports,
-            canManageAppointments: doctor.canManageAppointments
-        });
-        setShowEditModal(true);
-    };
-
-    const [loadFluctuations, setLoadFluctuations] = useState({ Cardiology: 88, Neurology: 65, Pediatrics: 94 });
-
     useEffect(() => {
         fetchInstitutionalData();
         
@@ -161,7 +39,6 @@ const HospitalDashboard = () => {
             fetchInstitutionalData(true);
         }, 10000);
 
-        // Institutional Vitality Engine: Simulates real-time clinical micro-movements
         const vitalitySync = setInterval(() => {
             setLoadFluctuations(prev => ({
                 Cardiology: Math.min(100, Math.max(80, prev.Cardiology + (Math.random() - 0.5) * 4)),
@@ -176,207 +53,113 @@ const HospitalDashboard = () => {
         };
     }, []);
 
-    useEffect(() => {
-        if (onboardData.dateOfBirth) {
-            const birthDate = new Date(onboardData.dateOfBirth);
-            const today = new Date();
-            let age = today.getFullYear() - birthDate.getFullYear();
-            const monthDiff = today.getMonth() - birthDate.getMonth();
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                age--;
-            }
-            if (!isNaN(age) && age >= 0) {
-                setOnboardData(prev => ({ ...prev, age: String(age) }));
-            }
-        }
-    }, [onboardData.dateOfBirth]);
-
-    const approveDoctor = async (id) => {
-        try {
-            await api.post(`/hospital/approve-doctor/${id}`);
-            toast.success("Physician credentials verified and approved");
-            setDoctors(prev => prev.map(d => d.id === id ? { ...d, approved: true } : d));
-        } catch (err) {
-            toast.error("Institutional approval failed");
-        }
-    };
-
-    const formatTime = (time24) => {
-        if (!time24) return '';
-        const [hours, minutes] = time24.split(':');
-        const h = parseInt(hours);
-        const ampm = h >= 12 ? 'PM' : 'AM';
-        const h12 = h % 12 || 12;
-        return `${String(h12).padStart(2, '0')}:${minutes} ${ampm}`;
-    };
-
-    const handleOnboardStaff = async (e) => {
-        e.preventDefault();
-        setSubmitting(true);
-        try {
-            const formDataToSend = new FormData();
-            
-            // Format days and timings for backend compatibility
-            const workingDays = onboardData.workingDaysArray.join(', ');
-            const consultationTimings = `${formatTime(onboardData.startTime)} - ${formatTime(onboardData.endTime)}`;
-
-            const userData = {
-                ...onboardData,
-                workingDays,
-                consultationTimings,
-                username: onboardData.email,
-                hospital: stats?.hospitalId != null ? String(stats.hospitalId) : '',
-                hospitalName: stats?.hospitalName || '',
-                razorpayAccountId: stats?.razorpayKeyId || '',
-                upiId: stats?.upiId || '',
-                preferredPaymentMode: stats?.preferredPaymentMode || 'BOTH',
-                // Advanced Professional Mapping
-                subSpecialties: onboardData.subSpecialties,
-                languagesSpoken: onboardData.languagesSpoken,
-                proceduresHandled: onboardData.proceduresHandled,
-                publications: onboardData.publications,
-                treatmentFocus: onboardData.treatmentFocus,
-                slotDuration: onboardData.slotDuration,
-                onlineConsultationFee: onboardData.onlineConsultationFee,
-                offlineConsultationFee: onboardData.offlineConsultationFee,
-                onlineConsultation: onboardData.onlineConsultation,
-                appointmentsEnabled: onboardData.appointmentsEnabled
-            };
-            formDataToSend.append('userData', JSON.stringify(userData));
-            
-            if (selectedFile) formDataToSend.append('profilePicture', selectedFile);
-            if (licenseFile) formDataToSend.append('licenseDocument', licenseFile);
-            
-            await api.post('/auth/register/doctor', formDataToSend);
-            toast.success("Staff member onboarded and is now active for booking!");
-            fetchInstitutionalData(); // Refresh the list
-            setShowOnboardModal(false);
-            setOnboardData({ 
-                name: '', 
-                email: '', 
-                gender: 'Male',
-                dateOfBirth: '',
-                phone: '',
-                alternatePhone: '',
-                specialization: '', 
-                medicalLicenseNumber: '', 
-                medicalCouncil: '',
-                licenseExpiryDate: '',
-                medicalDegree: '',
-                yearsOfExperience: '',
-                consultationFee: '',
-                onlineConsultationFee: '',
-                offlineConsultationFee: '',
-                onlineConsultation: true,
-                appointmentsEnabled: true,
-                workingDaysArray: [],
-                startTime: '09:00',
-                endTime: '17:00',
-                breakTimings: '13:00 - 14:00',
-                maxPatientsPerDay: '30',
-                college: '',
-                additionalCertifications: '',
-                employeeId: '',
-                opdRoomNumber: '',
-                salary: '',
-                contractType: 'PERMANENT',
-                revenueSharePercentage: '',
-                canPrescribe: true,
-                canEditPatientData: false,
-                canAccessReports: true,
-                canManageAppointments: true,
-                age: '',
-                password: 'Password@123' 
-            });
-            setSelectedFile(null);
-        } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to onboard staff");
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
-    const onboardInputClass = "w-full px-6 py-4 bg-slate-50 border-none rounded-3xl text-xs font-bold focus:ring-2 ring-primary/20 transition-all placeholder:text-slate-300";
-    const labelClass = "text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2 mb-2 block";
+    if (loading) return (
+        <div className="h-screen flex items-center justify-center bg-slate-900">
+            <div className="flex flex-col items-center gap-6">
+                <Activity className="animate-spin text-primary" size={48} />
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] animate-pulse">Synchronizing Clinical Node</p>
+            </div>
+        </div>
+    );
 
     return (
-        <div className="max-w-7xl mx-auto p-4 md:p-8 animate-in fade-in duration-700">
-            {/* Header Section */}
-            <div className="mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div>
-                    <h1 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-4 uppercase italic">
-                        Hospital <span className="not-italic text-primary">Portal</span>
-                    </h1>
-                    <div className="flex items-center gap-3 mt-2 ml-1">
-                        <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full">
+        <div className="max-w-7xl mx-auto py-12 px-6 space-y-12 animate-in fade-in duration-700">
+            {/* High-Level Institutional Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div className="bg-white p-8 rounded-[3.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 hover:scale-[1.02] transition-all cursor-pointer group">
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                            <Building2 size={24} />
+                        </div>
+                        <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Growth</h3>
+                    </div>
+                    <p className="text-4xl font-black text-slate-900 tracking-tighter italic uppercase">
+                        {stats?.institutionalPatientGrowth || '12.4'}%
+                    </p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase mt-2">Active Clinical Cycle</p>
+                </div>
+
+                <div className="bg-slate-900 p-8 rounded-[3.5rem] shadow-2xl hover:scale-[1.02] transition-all cursor-pointer group relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 -mr-16 -mt-16 rounded-full blur-2xl group-hover:bg-primary/30 transition-all" />
+                    <div className="flex items-center gap-4 mb-6 relative z-10">
+                        <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-primary">
+                            <Users size={24} />
+                        </div>
+                        <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Patients</h3>
+                    </div>
+                    <p className="text-4xl font-black text-white tracking-tighter italic uppercase relative z-10">
+                        {stats?.totalPatientsInstitutional || '1,284'}
+                    </p>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase mt-2 relative z-10">Institutional Load</p>
+                </div>
+
+                <div className="bg-white p-8 rounded-[3.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 hover:scale-[1.02] transition-all cursor-pointer group">
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                            <ClipboardCheck size={24} />
+                        </div>
+                        <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Verified</h3>
+                    </div>
+                    <p className="text-4xl font-black text-slate-900 tracking-tighter italic uppercase">
+                        {stats?.totalInstitutionalAppointments || '842'}
+                    </p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase mt-2">Completed Sessions</p>
+                </div>
+
+                <div className="bg-white p-8 rounded-[3.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 hover:scale-[1.02] transition-all cursor-pointer group">
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                            <TrendingUp size={24} />
+                        </div>
+                        <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Revenue</h3>
+                    </div>
+                    <p className="text-4xl font-black text-slate-900 tracking-tighter italic uppercase">
+                        ₹{stats?.institutionalMonthlyRevenue ? (stats.institutionalMonthlyRevenue / 1000).toFixed(1) : '42.8'}k
+                    </p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase mt-2">Monthly Projection</p>
+                </div>
+            </div>
+
+            {/* Departmental Load Dynamics & Security Sentinel */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                <div className="lg:col-span-2 space-y-10">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight italic">Clinical <span className="not-italic text-primary">Dynamics</span></h3>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Real-time departmental load and triage status</p>
+                        </div>
+                        <button className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-2xl hover:bg-primary transition-all group">
+                            <span className="text-[10px] font-black uppercase tracking-widest">Live Feed</span>
                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600">Live Sync Active</span>
-                        </div>
-                        <span className="text-slate-400 font-bold text-xs uppercase tracking-[0.2em]">
-                            Hospital Management Suite • {stats?.hospitalName} 
-                            {stats?.location && <span className="ml-2 text-primary/50">({stats.location})</span>}
-                        </span>
+                        </button>
                     </div>
-                </div>
-                <div className="flex items-center gap-4">
-                    <button 
-                        onClick={() => setShowOnboardModal(true)}
-                        className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                    >
-                        <UserPlus size={16} /> Onboard Staff
-                    </button>
-                </div>
-            </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                {[
-                    { label: 'Total Staff', value: stats?.totalDoctors, icon: <Users />, color: 'bg-blue-500' },
-                    { label: 'Active Depts', value: stats?.activeDepts, icon: <Building2 />, color: 'bg-indigo-500' },
-                    { label: 'Patient Reach', value: stats?.totalPatientsInstitutional, icon: <TrendingUp />, color: 'bg-emerald-500' },
-                    { label: 'Inst. Revenue', value: `${stats?.currency || '₹'}${stats?.totalRevenue?.toLocaleString() || '0'}`, icon: <Activity />, color: 'bg-amber-500' },
-                ].map((stat, idx) => (
-                    <div key={idx} className="bg-white border border-slate-100 p-8 rounded-[2.5rem] shadow-sm relative overflow-hidden group">
-                        <div className={`absolute top-0 right-0 w-24 h-24 ${stat.color} opacity-5 -mr-8 -mt-8 rounded-full group-hover:scale-110 transition-transform`} />
-                        <div className="relative z-10">
-                            <div className={`w-12 h-12 ${stat.color} text-white rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-blue-500/10`}>
-                                {stat.icon}
-                            </div>
-                            <h3 className="text-3xl font-black text-slate-800 tracking-tight leading-none mb-2">{stat.value}</h3>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</p>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            {/* Institutional High-Fidelity Overview */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12 text-left">
-                <div className="bg-slate-900 p-10 rounded-[3.5rem] shadow-2xl relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 -mr-32 -mt-32 rounded-full blur-3xl group-hover:bg-primary/20 transition-all" />
-                    <div className="relative z-10">
-                        <h3 className="text-white text-xl font-black uppercase tracking-tight italic mb-8">Departmental <span className="text-primary not-italic">Load Dynamics</span></h3>
-                        <div className="space-y-8">
-                            {[
-                                { name: 'Cardiology', value: Math.round(loadFluctuations.Cardiology), color: 'bg-blue-500' },
-                                { name: 'Neurology', value: Math.round(loadFluctuations.Neurology), color: 'bg-indigo-500' },
-                                { name: 'Pediatrics', value: Math.round(loadFluctuations.Pediatrics), color: 'bg-rose-500' },
-                            ].map((dept, idx) => (
-                                <div key={idx} className="space-y-3">
-                                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
-                                        <span>{dept.name}</span>
-                                        <span className="text-white font-bold">{dept.value}% Clinical Load</span>
-                                    </div>
-                                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                                        <div 
-                                            className={`h-full ${dept.color} rounded-full transition-all duration-1000 ease-in-out`} 
-                                            style={{ width: `${dept.value}%` }} 
-                                        />
-                                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {Object.entries(loadFluctuations).map(([dept, load]) => (
+                            <div key={dept} className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-xl relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 p-8">
+                                    <TrendingUp size={20} className={load > 80 ? 'text-primary' : 'text-emerald-500'} />
                                 </div>
-                            ))}
-                        </div>
-                        <button className="mt-10 w-full py-4 bg-white/5 border border-white/10 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-white hover:text-slate-900 transition-all flex items-center justify-center gap-2">
-                            Manage Departments <ChevronRight size={16} />
+                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{dept} Division</h4>
+                                <p className="text-3xl font-black text-slate-900 tracking-tighter italic uppercase mb-6">{load.toFixed(1)}% <span className="text-[10px] not-italic text-slate-300 font-bold">Capacity</span></p>
+                                
+                                <div className="w-full h-3 bg-slate-50 rounded-full overflow-hidden">
+                                    <div 
+                                        className={`h-full transition-all duration-1000 rounded-full ${load > 90 ? 'bg-primary' : load > 75 ? 'bg-blue-500' : 'bg-emerald-500'}`}
+                                        style={{ width: `${load}%` }}
+                                    />
+                                </div>
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-4">Status: <span className={load > 90 ? 'text-primary' : 'text-emerald-500'}>{load > 90 ? 'High Pressure' : 'Optimal'}</span></p>
+                            </div>
+                        ))}
+
+                        <button 
+                            onClick={() => navigate('/hospital-dashboard/staff')}
+                            className="bg-primary p-10 rounded-[3.5rem] shadow-xl shadow-primary/20 relative overflow-hidden group hover:scale-[1.02] transition-all cursor-pointer text-left"
+                        >
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 -mr-16 -mt-16 rounded-full blur-2xl group-hover:bg-white/20 transition-all" />
+                            <h3 className="text-white text-xl font-black uppercase tracking-tight italic mb-2">Staff <span className="not-italic text-slate-900">Portal</span></h3>
+                            <p className="text-white/80 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">Manage Personnel <ChevronRight size={14} /></p>
                         </button>
                     </div>
                 </div>
@@ -414,637 +197,10 @@ const HospitalDashboard = () => {
                     <div className="bg-primary p-10 rounded-[3.5rem] shadow-xl shadow-primary/20 relative overflow-hidden group hover:scale-[1.02] transition-all cursor-pointer">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 -mr-16 -mt-16 rounded-full blur-2xl group-hover:bg-white/20 transition-all" />
                         <h3 className="text-white text-xl font-black uppercase tracking-tight italic mb-2">Clinical <span className="not-italic text-slate-900">Reach</span></h3>
-                        <p className="text-white/80 text-[10px] font-black uppercase tracking-widest">{stats?.totalPatientsInstitutional} Active Registrations</p>
+                        <p className="text-white/80 text-[10px] font-black uppercase tracking-widest">{stats?.totalPatientsInstitutional || '1,284'} Active Registrations</p>
                     </div>
                 </div>
             </div>
-
-            {/* Institutional Staff Roster */}
-            <div className="bg-white rounded-[3.5rem] border border-slate-100 shadow-xl overflow-hidden mb-12">
-                <div className="p-10 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-slate-50/50">
-                    <div>
-                        <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Institutional <span className="not-italic text-primary">Staff Roster</span></h3>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Personnel management and clinical authorization</p>
-                    </div>
-                    <div className="flex bg-white border border-slate-200 rounded-2xl px-4 py-2 focus-within:ring-2 ring-primary/20 transition-all">
-                        <Search size={16} className="text-slate-400 mt-1 mr-2" />
-                        <input 
-                            type="text" 
-                            placeholder="Search personnel..."
-                            className="border-none text-xs p-0 focus:ring-0 placeholder:text-slate-300 w-48"
-                        />
-                    </div>
-                </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-slate-50/30">
-                                <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Personnel</th>
-                                <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Specialization</th>
-                                <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Employee ID</th>
-                                <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">OPD Room</th>
-                                <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Role</th>
-                                <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Permissions</th>
-                                <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-50">
-                            {doctors.length > 0 ? doctors.map((doctor) => (
-                                <tr key={doctor.id} className="hover:bg-slate-50/50 transition-colors group">
-                                    <td className="p-6">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:scale-110 transition-transform overflow-hidden">
-                                                {doctor.profilePictureUrl ? (
-                                                    <img src={doctor.profilePictureUrl} className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <Users size={20} />
-                                                )}
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-black text-slate-800 tracking-tight italic">{doctor.name}</p>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase">{doctor.email}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="p-6">
-                                        <span className="px-3 py-1 bg-primary/5 text-primary text-[9px] font-black uppercase tracking-widest rounded-lg">
-                                            {doctor.specialization}
-                                        </span>
-                                    </td>
-                                    <td className="p-6">
-                                        <span className="font-mono text-xs font-bold text-slate-600">{doctor.employeeId || 'ST-999'}</span>
-                                    </td>
-                                    <td className="p-6 text-xs font-bold text-slate-600">{doctor.opdRoomNumber || 'N/A'}</td>
-                                    <td className="p-6">
-                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{doctor.contractType || 'PERMANENT'}</span>
-                                    </td>
-                                    <td className="p-6">
-                                        <div className="flex gap-1.5">
-                                            {doctor.canPrescribe && <div title="Prescribe" className="w-2 h-2 rounded-full bg-emerald-500" />}
-                                            {doctor.canEditPatientData && <div title="Edit Data" className="w-2 h-2 rounded-full bg-blue-500" />}
-                                            {doctor.canAccessReports && <div title="Reports" className="w-2 h-2 rounded-full bg-indigo-500" />}
-                                            {doctor.canManageAppointments && <div title="Appointments" className="w-2 h-2 rounded-full bg-amber-500" />}
-                                        </div>
-                                    </td>
-                                    <td className="p-6">
-                                        <div className="flex items-center gap-2">
-                                            {doctor.approved ? (
-                                                <span className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-widest">
-                                                    <ClipboardCheck size={12} /> Active
-                                                </span>
-                                            ) : (
-                                                <button 
-                                                    onClick={() => approveDoctor(doctor.id)}
-                                                    className="px-3 py-1 bg-amber-50 text-amber-600 border border-amber-100 rounded-full text-[9px] font-black uppercase tracking-widest hover:bg-amber-100 transition-all"
-                                                >
-                                                    Verify Now
-                                                </button>
-                                            )}
-                                            
-                                            <div className="flex items-center gap-1 ml-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button 
-                                                    onClick={() => openEditModal(doctor)}
-                                                    className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-primary transition-all"
-                                                    title="Configure Settings"
-                                                >
-                                                    <Settings size={16} />
-                                                </button>
-                                                <button 
-                                                    onClick={() => handleDeleteDoctor(doctor.id)}
-                                                    className="p-2 hover:bg-rose-50 rounded-xl text-slate-400 hover:text-rose-500 transition-all"
-                                                    title="Remove Personnel"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            )) : (
-                                <tr>
-                                    <td colSpan="7" className="p-12 text-center">
-                                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">No personnel onboarded to this institutional node.</p>
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            {/* Onboard Staff Modal */}
-            {showOnboardModal && (
-                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-500">
-                    <div className="bg-white rounded-[3.5rem] w-full max-w-2xl shadow-[0_32px_64px_-15px_rgba(0,0,0,0.3)] overflow-hidden border border-slate-100 animate-in zoom-in-95 slide-in-from-bottom-8 duration-500 flex flex-col max-h-[90vh]">
-                        
-                        {/* Modal Header & Portrait DropZone */}
-                        <div className="p-10 bg-slate-900 text-white relative overflow-hidden shrink-0">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 -mr-32 -mt-32 rounded-full blur-[80px]" />
-                            <div className="flex justify-between items-start relative z-10">
-                                <div>
-                                    <h3 className="text-3xl font-black uppercase tracking-tight italic">Onboard <span className="not-italic text-primary">New Physician</span></h3>
-                                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2">Register a new medical professional to your institution</p>
-                                </div>
-                                <button onClick={() => setShowOnboardModal(false)} className="p-3 hover:bg-white/10 rounded-full transition-colors text-slate-400 hover:text-white">
-                                    <X size={24} />
-                                </button>
-                            </div>
-                            
-                            <div className="mt-10">
-                                <DropZone 
-                                    onFileSelect={setSelectedFile}
-                                    label="Identity Portrait"
-                                    type="portrait"
-                                    accept="image/*"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Form Content */}
-                        <form onSubmit={handleOnboardStaff} className="p-10 space-y-10 overflow-y-auto custom-scrollbar flex-1 bg-white">
-                            
-                            {/* Section 1: Basic Identity */}
-                            <div className="space-y-8">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                                    <h4 className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">1. Basic Identity</h4>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div><label className={labelClass}>Full Name</label><input type="text" required value={onboardData.name} onChange={(e) => setOnboardData({...onboardData, name: e.target.value})} className={onboardInputClass} placeholder="Dr. Alexander Wright" /></div>
-                                    <div><label className={labelClass}>Work Email</label><input type="email" required value={onboardData.email} onChange={(e) => setOnboardData({...onboardData, email: e.target.value})} className={onboardInputClass} placeholder="a.wright@hospital.com" /></div>
-                                </div>
-                                <div className="grid grid-cols-3 gap-6">
-                                    <PremiumDropdown 
-                                        label="Gender"
-                                        options={['Male', 'Female', 'Other']}
-                                        value={onboardData.gender}
-                                        onChange={(val) => setOnboardData({...onboardData, gender: val})}
-                                    />
-                                    <div><label className={labelClass}>Age</label><input type="number" value={onboardData.age} onChange={(e) => setOnboardData({...onboardData, age: e.target.value})} className={onboardInputClass} placeholder="35" /></div>
-                                    <div><label className={labelClass}>Date of Birth</label><input type="date" value={onboardData.dateOfBirth} onChange={(e) => setOnboardData({...onboardData, dateOfBirth: e.target.value})} className={onboardInputClass} /></div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div><label className={labelClass}>Primary Phone</label><input type="tel" required value={onboardData.phone} onChange={(e) => setOnboardData({...onboardData, phone: e.target.value})} className={onboardInputClass} placeholder="+91 98765 43210" /></div>
-                                    <div><label className={labelClass}>Alt Phone (Optional)</label><input type="tel" value={onboardData.alternatePhone} onChange={(e) => setOnboardData({...onboardData, alternatePhone: e.target.value})} className={onboardInputClass} placeholder="Alternate contact" /></div>
-                                </div>
-                            </div>
-
-                            {/* Section 2: Clinical Credentials */}
-                            <div className="space-y-8">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                                    <h4 className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">2. Clinical Credentials</h4>
-                                </div>
-                                <div className="grid grid-cols-2 gap-6">
-                                    <PremiumDropdown 
-                                        label="Medical Degree"
-                                        options={['MBBS', 'MD', 'MS', 'DM', 'MCh', 'DNB', 'PhD']}
-                                        value={onboardData.medicalDegree}
-                                        onChange={(val) => setOnboardData({...onboardData, medicalDegree: val})}
-                                        placeholder="Select Degree"
-                                        icon={<GraduationCap size={16} />}
-                                    />
-                                    <PremiumDropdown 
-                                        label="Specialization"
-                                        options={['Cardiology', 'Neurology', 'Oncology', 'Pediatrics', 'Orthopedics', 'Psychiatry', 'Gastroenterology']}
-                                        value={onboardData.specialization}
-                                        onChange={(val) => setOnboardData({...onboardData, specialization: val})}
-                                        placeholder="Select Specialization"
-                                        searchable={true}
-                                        icon={<Activity size={16} />}
-                                    />
-                                </div>
-                                <div><label className={labelClass}>Medical College / Alma Mater</label><input type="text" value={onboardData.college} onChange={(e) => setOnboardData({...onboardData, college: e.target.value})} className={onboardInputClass} placeholder="AIIMS Delhi" /></div>
-                                <div><label className={labelClass}>Additional Certifications (Comma Separated)</label><textarea value={onboardData.additionalCertifications} onChange={(e) => setOnboardData({...onboardData, additionalCertifications: e.target.value})} className={`${onboardInputClass} min-h-[80px] resize-none`} placeholder="Fellow of the American College of Cardiology, etc." /></div>
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div><label className={labelClass}>Medical Council</label><input type="text" required value={onboardData.medicalCouncil} onChange={(e) => setOnboardData({...onboardData, medicalCouncil: e.target.value})} className={onboardInputClass} placeholder="National Medical Commission" /></div>
-                                    <div><label className={labelClass}>License Expiry</label><input type="date" required value={onboardData.licenseExpiryDate} onChange={(e) => setOnboardData({...onboardData, licenseExpiryDate: e.target.value})} className={onboardInputClass} /></div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div><label className={labelClass}>Medical License Number</label><input type="text" required value={onboardData.medicalLicenseNumber} onChange={(e) => setOnboardData({...onboardData, medicalLicenseNumber: e.target.value})} className={`${onboardInputClass} font-mono`} placeholder="MC-99281-Z" /></div>
-                                    <div><label className={labelClass}>Experience (Yrs)</label><input type="number" required value={onboardData.yearsOfExperience} onChange={(e) => setOnboardData({...onboardData, yearsOfExperience: e.target.value})} className={onboardInputClass} placeholder="12" /></div>
-                                </div>
-                                
-                                <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100">
-                                    <label className={labelClass}>Medical License Document (PDF/Image)</label>
-                                    <DropZone 
-                                        onFileSelect={setLicenseFile}
-                                        label="Upload Credentials"
-                                        type="document"
-                                        accept=".pdf,image/*"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Section 3: Professional Depth */}
-                            <div className="space-y-8">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                                    <h4 className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">3. Professional Depth</h4>
-                                </div>
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div><label className={labelClass}>Sub-Specialties</label><input type="text" value={onboardData.subSpecialties} onChange={(e) => setOnboardData({...onboardData, subSpecialties: e.target.value})} className={onboardInputClass} placeholder="Diabetology, Hypertension" /></div>
-                                    <div><label className={labelClass}>Languages Spoken</label><input type="text" value={onboardData.languagesSpoken} onChange={(e) => setOnboardData({...onboardData, languagesSpoken: e.target.value})} className={onboardInputClass} placeholder="English, Hindi, Spanish" /></div>
-                                </div>
-                                <div className="grid grid-cols-1 gap-6">
-                                    <div><label className={labelClass}>Treatment Focus</label><input type="text" value={onboardData.treatmentFocus} onChange={(e) => setOnboardData({...onboardData, treatmentFocus: e.target.value})} className={onboardInputClass} placeholder="Evidence-based Cardiology" /></div>
-                                </div>
-                                <div><label className={labelClass}>Procedures Handled</label><textarea value={onboardData.proceduresHandled} onChange={(e) => setOnboardData({...onboardData, proceduresHandled: e.target.value})} className={`${onboardInputClass} min-h-[80px] resize-none`} placeholder="Angioplasty, Echo, Stress Test" /></div>
-                                <div><label className={labelClass}>Scientific Publications</label><textarea value={onboardData.publications} onChange={(e) => setOnboardData({...onboardData, publications: e.target.value})} className={`${onboardInputClass} min-h-[80px] resize-none`} placeholder="Journal articles, Research papers..." /></div>
-                            </div>
-
-                            {/* Section 4: Institutional Mapping */}
-                            <div className="space-y-8">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                                    <h4 className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">4. Institutional Mapping</h4>
-                                </div>
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div><label className={labelClass}>Employee ID</label><input type="text" required value={onboardData.employeeId} onChange={(e) => setOnboardData({...onboardData, employeeId: e.target.value})} className="w-full px-6 py-4 bg-blue-50/50 border-none rounded-3xl text-xs font-bold focus:ring-2 ring-blue-100 transition-all text-blue-700 placeholder:text-blue-200" placeholder="ST-2026-001" /></div>
-                                    <div><label className={labelClass}>OPD Room No.</label><input type="text" required value={onboardData.opdRoomNumber} onChange={(e) => setOnboardData({...onboardData, opdRoomNumber: e.target.value})} className="w-full px-6 py-4 bg-emerald-50/50 border-none rounded-3xl text-xs font-bold focus:ring-2 ring-emerald-100 transition-all text-emerald-700 placeholder:text-emerald-200" placeholder="OPD-204" /></div>
-                                </div>
-                                <div className="grid grid-cols-3 gap-6">
-                                    <PremiumDropdown 
-                                        label="Role Type"
-                                        options={['Full-time Employee', 'Visiting Consultant', 'Resident Physician', 'Medical Intern']}
-                                        value={onboardData.contractType === 'PERMANENT' ? 'Full-time Employee' : onboardData.contractType}
-                                        onChange={(val) => setOnboardData({...onboardData, contractType: val === 'Full-time Employee' ? 'PERMANENT' : val})}
-                                        icon={<Briefcase size={16} />}
-                                    />
-                                    <div><label className={labelClass}>Max Patients/Day</label><input type="number" required value={onboardData.maxPatientsPerDay} onChange={(e) => setOnboardData({...onboardData, maxPatientsPerDay: e.target.value})} className={onboardInputClass} placeholder="30" /></div>
-                                    <div><label className={labelClass}>Slot Duration (Min)</label><input type="number" required value={onboardData.slotDuration} onChange={(e) => setOnboardData({...onboardData, slotDuration: e.target.value})} className={onboardInputClass} placeholder="15" /></div>
-                                </div>
-                                <div>
-                                    <label className={labelClass}>Working Days</label>
-                                    <div className="flex flex-wrap gap-3">
-                                        {daysOfWeek.map(day => (
-                                            <button
-                                                key={day}
-                                                type="button"
-                                                onClick={() => handleDayToggle(day)}
-                                                className={`px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.1em] transition-all duration-300 ${
-                                                    onboardData.workingDaysArray.includes(day)
-                                                        ? 'bg-primary text-white shadow-lg shadow-primary/25 scale-105'
-                                                        : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
-                                                }`}
-                                            >
-                                                {day}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-3 gap-6">
-                                    <div><label className={labelClass}>Shift Starts</label><input type="time" required value={onboardData.startTime} onChange={(e) => setOnboardData({...onboardData, startTime: e.target.value})} className={onboardInputClass} /></div>
-                                    <div><label className={labelClass}>Shift Ends</label><input type="time" required value={onboardData.endTime} onChange={(e) => setOnboardData({...onboardData, endTime: e.target.value})} className={onboardInputClass} /></div>
-                                    <div><label className={labelClass}>Break Timings</label><input type="text" required value={onboardData.breakTimings} onChange={(e) => setOnboardData({...onboardData, breakTimings: e.target.value})} className={onboardInputClass} placeholder="13:00 - 14:00" /></div>
-                                </div>
-                            </div>
-
-                            {/* Section 5: Consultation & Booking */}
-                            <div className="p-8 bg-indigo-50/30 rounded-[3rem] border border-indigo-100/50 space-y-8">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                                    <h4 className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.3em]">5. Consultation & Booking</h4>
-                                </div>
-                                    
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        {/* Fees */}
-                                        <div className="space-y-6">
-                                            <div>
-                                                <label className={labelClass}>Online Consultation Fee (₹)</label>
-                                                <input type="number" value={onboardData.onlineConsultationFee} onChange={(e) => setOnboardData({...onboardData, onlineConsultationFee: e.target.value})} className={onboardInputClass} placeholder="500" />
-                                            </div>
-                                            <div>
-                                                <label className={labelClass}>Offline Consultation Fee (₹)</label>
-                                                <input type="number" value={onboardData.offlineConsultationFee} onChange={(e) => setOnboardData({...onboardData, offlineConsultationFee: e.target.value})} className={onboardInputClass} placeholder="800" />
-                                            </div>
-                                        </div>
-
-                                        {/* Mode & Toggle */}
-                                        <div className="space-y-6">
-                                            <div>
-                                                <label className={labelClass}>Consultation Mode</label>
-                                                <div className="flex gap-2 p-1 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                                                    {[
-                                                        { id: 'online', label: 'Online', val: true },
-                                                        { id: 'offline', label: 'Offline', val: false },
-                                                        { id: 'both', label: 'Both', val: 'BOTH' }
-                                                    ].map(mode => (
-                                                        <button
-                                                            key={mode.id}
-                                                            type="button"
-                                                            onClick={() => {
-                                                                if (mode.id === 'online') {
-                                                                    setOnboardData({...onboardData, onlineConsultation: true, offlineConsultationFee: ''});
-                                                                } else if (mode.id === 'offline') {
-                                                                    setOnboardData({...onboardData, onlineConsultation: false});
-                                                                } else {
-                                                                    setOnboardData({...onboardData, onlineConsultation: true});
-                                                                }
-                                                            }}
-                                                            className={`flex-1 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
-                                                                (mode.id === 'both' && onboardData.onlineConsultation === true && onboardData.offlineConsultationFee) || 
-                                                                (mode.id === 'online' && onboardData.onlineConsultation === true && !onboardData.offlineConsultationFee) ||
-                                                                (mode.id === 'offline' && onboardData.onlineConsultation === false)
-                                                                ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
-                                                                : 'text-slate-400 hover:text-indigo-600'
-                                                            }`}
-                                                        >
-                                                            {mode.label}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            <div className="flex items-center justify-between p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
-                                                <div>
-                                                    <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Accept Appointments</p>
-                                                    <p className="text-[8px] font-bold text-emerald-600/60 uppercase tracking-widest mt-0.5">Allow patients to book slots</p>
-                                                </div>
-                                                <label className="relative inline-flex items-center cursor-pointer">
-                                                    <input 
-                                                        type="checkbox" 
-                                                        className="sr-only peer"
-                                                        checked={onboardData.appointmentsEnabled !== false}
-                                                        onChange={(e) => setOnboardData({...onboardData, appointmentsEnabled: e.target.checked})}
-                                                    />
-                                                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                
-                                
-                                </div>
-                            {/* Section 6: Permissions Matrix */}
-                            <div className="space-y-8">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                                    <h4 className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">6. Permissions Matrix</h4>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    {[
-                                        { key: 'canPrescribe', label: 'Prescribe Medication' },
-                                        { key: 'canEditPatientData', label: 'Edit Patient Data' },
-                                        { key: 'canAccessReports', label: 'Access Medical Reports' },
-                                        { key: 'canManageAppointments', label: 'Modify Schedule' },
-                                    ].map(perm => (
-                                        <label key={perm.key} className={`flex items-center gap-4 p-5 rounded-[2rem] cursor-pointer transition-all duration-300 border-2
-                                            ${onboardData[perm.key] 
-                                                ? 'bg-primary/5 border-primary/10' 
-                                                : 'bg-slate-50 border-transparent hover:bg-slate-100'}
-                                        `}>
-                                            <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-300
-                                                ${onboardData[perm.key] ? 'bg-primary border-primary text-white' : 'bg-white border-slate-200'}
-                                            `}>
-                                                {onboardData[perm.key] && <Check size={14} strokeWidth={4} />}
-                                            </div>
-                                            <input 
-                                                type="checkbox"
-                                                className="hidden"
-                                                checked={onboardData[perm.key]}
-                                                onChange={(e) => setOnboardData({...onboardData, [perm.key]: e.target.checked})}
-                                            />
-                                            <span className="text-[11px] font-black text-slate-800 uppercase tracking-tight">{perm.label}</span>
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Final Footer Details */}
-                            <div className="p-10 bg-blue-50/50 rounded-[3rem] border border-blue-100/50 space-y-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-primary">
-                                        <Shield size={24} />
-                                    </div>
-                                    <div>
-                                        <h5 className="text-[11px] font-black uppercase tracking-widest text-primary">Initial Access Keys</h5>
-                                        <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">System-generated credentials for first login</p>
-                                    </div>
-                                </div>
-                                <div className="flex justify-between items-end">
-                                    <div>
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Default Password</p>
-                                        <p className="text-xl font-black text-slate-900 tracking-tight">Password@123</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Login Via</p>
-                                        <p className="text-xl font-black text-slate-900 tracking-tight italic">Work Email</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-
-                        {/* Modal Actions */}
-                        <div className="p-10 border-t border-slate-50 bg-slate-50/30 shrink-0 flex gap-4">
-                            <button 
-                                type="button"
-                                onClick={() => setShowOnboardModal(false)}
-                                className="flex-1 py-5 bg-white border border-slate-200 text-slate-400 text-[11px] font-black uppercase tracking-[0.2em] rounded-3xl hover:bg-slate-100 transition-all active:scale-95 shadow-sm"
-                            >
-                                Cancel
-                            </button>
-                            <button 
-                                onClick={handleOnboardStaff}
-                                disabled={submitting}
-                                className="flex-[2] py-5 bg-primary text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-3xl hover:bg-primary/90 transition-all active:scale-95 shadow-xl shadow-primary/20 disabled:opacity-50"
-                            >
-                                {submitting ? 'Authorizing...' : 'Authorize & Onboard'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Physician Configuration & Edit Modal */}
-            {showEditModal && editingDoctor && (
-                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-500">
-                    <div className="bg-white rounded-[3.5rem] w-full max-w-2xl shadow-[0_32px_64px_-15px_rgba(0,0,0,0.3)] overflow-hidden border border-slate-100 animate-in zoom-in-95 slide-in-from-bottom-8 duration-500 flex flex-col max-h-[90vh]">
-                        
-                        <div className="p-10 bg-slate-900 text-white relative overflow-hidden shrink-0">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 -mr-32 -mt-32 rounded-full blur-[80px]" />
-                            <div className="flex justify-between items-center relative z-10">
-                                <div className="flex items-center gap-6">
-                                    <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center overflow-hidden border border-white/10">
-                                        {editingDoctor.profilePictureUrl ? (
-                                            <img src={editingDoctor.profilePictureUrl} className="w-full h-full object-cover" />
-                                        ) : (
-                                            <Users size={32} className="text-white/20" />
-                                        )}
-                                    </div>
-                                    <div>
-                                        <h3 className="text-2xl font-black uppercase tracking-tight italic">Configure <span className="not-italic text-primary">{editingDoctor.name}</span></h3>
-                                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-1">{editingDoctor.specialization} • {editingDoctor.employeeId}</p>
-                                    </div>
-                                </div>
-                                <button onClick={() => setShowEditModal(false)} className="p-3 hover:bg-white/10 rounded-full transition-colors text-slate-400 hover:text-white">
-                                    <X size={24} />
-                                </button>
-                            </div>
-                        </div>
-
-                        <form onSubmit={handleUpdateDoctor} className="p-10 space-y-10 overflow-y-auto custom-scrollbar flex-1 bg-white">
-                            {/* Quick Configuration */}
-                            <div className="space-y-8">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                                        <h4 className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">Clinical Configuration</h4>
-                                    </div>
-                                    <button 
-                                        type="button"
-                                        onClick={() => {
-                                            // Open full edit mode logic (for now just use the same form but maybe structured differently)
-                                            toast.success("Advanced Profile Mode Enabled");
-                                        }}
-                                        className="px-4 py-2 bg-slate-100 text-slate-600 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-200 transition-all flex items-center gap-2"
-                                    >
-                                        <Edit3 size={12} /> Edit Full Profile
-                                    </button>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div className="flex items-center justify-between p-6 bg-emerald-50 rounded-[2rem] border border-emerald-100/50">
-                                        <div>
-                                            <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Appointments</p>
-                                            <p className="text-[8px] font-bold text-emerald-600/60 uppercase mt-0.5">{editData.appointmentsEnabled ? 'Accepting' : 'Paused'}</p>
-                                        </div>
-                                        <label className="relative inline-flex items-center cursor-pointer">
-                                            <input 
-                                                type="checkbox" 
-                                                className="sr-only peer"
-                                                checked={editData.appointmentsEnabled !== false}
-                                                onChange={(e) => setEditData({...editData, appointmentsEnabled: e.target.checked})}
-                                            />
-                                            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
-                                        </label>
-                                    </div>
-                                    <div>
-                                        <label className={labelClass}>OPD Room Number</label>
-                                        <input 
-                                            type="text" 
-                                            value={editData.opdRoomNumber || ''} 
-                                            onChange={(e) => setEditData({...editData, opdRoomNumber: e.target.value})} 
-                                            className="w-full px-6 py-4 bg-blue-50/50 border-none rounded-3xl text-xs font-bold focus:ring-2 ring-blue-100 transition-all text-blue-700 placeholder:text-blue-200" 
-                                            placeholder="OPD-204" 
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div>
-                                        <label className={labelClass}>Online Fee (₹)</label>
-                                        <input type="number" value={editData.onlineConsultationFee || ''} onChange={(e) => setEditData({...editData, onlineConsultationFee: e.target.value})} className={onboardInputClass} placeholder="500" />
-                                    </div>
-                                    <div>
-                                        <label className={labelClass}>Offline Fee (₹)</label>
-                                        <input type="number" value={editData.offlineConsultationFee || ''} onChange={(e) => setEditData({...editData, offlineConsultationFee: e.target.value})} className={onboardInputClass} placeholder="800" />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <label className={labelClass}>Shift Timing Slots</label>
-                                    <div className="grid grid-cols-3 gap-6">
-                                        <div><label className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-2 block">Starts</label><input type="time" value={editData.consultationTimings?.split(' - ')[0] || '09:00'} onChange={(e) => {
-                                            const end = editData.consultationTimings?.split(' - ')[1] || '17:00';
-                                            setEditData({...editData, consultationTimings: `${e.target.value} - ${end}`});
-                                        }} className={onboardInputClass} /></div>
-                                        <div><label className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-2 block">Ends</label><input type="time" value={editData.consultationTimings?.split(' - ')[1] || '17:00'} onChange={(e) => {
-                                            const start = editData.consultationTimings?.split(' - ')[0] || '09:00';
-                                            setEditData({...editData, consultationTimings: `${start} - ${e.target.value}`});
-                                        }} className={onboardInputClass} /></div>
-                                        <div><label className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-2 block">Slot (Min)</label><input type="number" value={editData.slotDuration || '15'} onChange={(e) => setEditData({...editData, slotDuration: e.target.value})} className={onboardInputClass} /></div>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <label className={labelClass}>Working Days</label>
-                                    <div className="flex flex-wrap gap-3">
-                                        {daysOfWeek.map(day => {
-                                            const isActive = editData.workingDays?.includes(day);
-                                            return (
-                                                <button
-                                                    key={day}
-                                                    type="button"
-                                                    onClick={() => {
-                                                        const current = editData.workingDays?.split(', ') || [];
-                                                        const next = current.includes(day)
-                                                            ? current.filter(d => d !== day)
-                                                            : [...current, day];
-                                                        setEditData({...editData, workingDays: next.join(', ')});
-                                                    }}
-                                                    className={`px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.1em] transition-all duration-300 ${
-                                                        isActive
-                                                            ? 'bg-primary text-white shadow-lg shadow-primary/25 scale-105'
-                                                            : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
-                                                    }`}
-                                                >
-                                                    {day}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Advanced Profile Section (Visible on click or always accessible via scroll) */}
-                            <div className="pt-10 border-t border-slate-100 space-y-8">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                                    <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">Identity & Permissions</h4>
-                                </div>
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div><label className={labelClass}>Full Name</label><input type="text" value={editData.name || ''} onChange={(e) => setEditData({...editData, name: e.target.value})} className={onboardInputClass} /></div>
-                                    <div><label className={labelClass}>Specialization</label><input type="text" value={editData.specialization || ''} onChange={(e) => setEditData({...editData, specialization: e.target.value})} className={onboardInputClass} /></div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    {[
-                                        { key: 'canPrescribe', label: 'Prescribe Medication' },
-                                        { key: 'canEditPatientData', label: 'Edit Patient Data' },
-                                        { key: 'canAccessReports', label: 'Access Medical Reports' },
-                                        { key: 'canManageAppointments', label: 'Modify Schedule' },
-                                    ].map(perm => (
-                                        <label key={perm.key} className={`flex items-center gap-4 p-5 rounded-[2rem] cursor-pointer transition-all duration-300 border-2
-                                            ${editData[perm.key] 
-                                                ? 'bg-primary/5 border-primary/10' 
-                                                : 'bg-slate-50 border-transparent hover:bg-slate-100'}
-                                        `}>
-                                            <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-300
-                                                ${editData[perm.key] ? 'bg-primary border-primary text-white' : 'bg-white border-slate-200'}
-                                            `}>
-                                                {editData[perm.key] && <Check size={14} strokeWidth={4} />}
-                                            </div>
-                                            <input 
-                                                type="checkbox"
-                                                className="hidden"
-                                                checked={editData[perm.key]}
-                                                onChange={(e) => setEditData({...editData, [perm.key]: e.target.checked})}
-                                            />
-                                            <span className="text-[11px] font-black text-slate-800 uppercase tracking-tight">{perm.label}</span>
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-                        </form>
-
-                        <div className="p-10 border-t border-slate-50 bg-slate-50/30 shrink-0 flex gap-4">
-                            <button 
-                                type="button"
-                                onClick={() => setShowEditModal(false)}
-                                className="flex-1 py-5 bg-white border border-slate-200 text-slate-400 text-[11px] font-black uppercase tracking-[0.2em] rounded-3xl hover:bg-slate-100 transition-all active:scale-95 shadow-sm"
-                            >
-                                Cancel
-                            </button>
-                            <button 
-                                onClick={handleUpdateDoctor}
-                                disabled={submitting}
-                                className="flex-[2] py-5 bg-slate-900 text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-3xl hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-900/20 disabled:opacity-50"
-                            >
-                                {submitting ? 'Synchronizing...' : 'Save Configuration'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

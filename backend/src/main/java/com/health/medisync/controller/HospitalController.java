@@ -332,6 +332,15 @@ public class HospitalController {
         return ResponseEntity.ok(Map.of("message", "Physician profile updated successfully"));
     }
 
+    @GetMapping("/doctor/{id}")
+    public ResponseEntity<?> getDoctor(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        HospitalAdmin admin = hospitalService.getAdminByUser(user);
+        Doctor doctor = hospitalService.getDoctorById(id, admin.getHospital());
+        return ResponseEntity.ok(new com.health.medisync.model.DoctorDTO(doctor));
+    }
+
     @DeleteMapping("/delete-doctor/{id}")
     public ResponseEntity<?> deleteDoctor(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByUsername(userDetails.getUsername())

@@ -268,4 +268,14 @@ public class HospitalService {
             doctorRepository.delete(doctor);
         }
     }
+
+    public Doctor getDoctorById(Long doctorId, Hospital hospital) {
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+        
+        if (doctor.getHospitalEntity() == null || !doctor.getHospitalEntity().getId().equals(hospital.getId())) {
+            throw new RuntimeException("Unauthorized: Physician not affiliated with your institution");
+        }
+        return doctor;
+    }
 }
