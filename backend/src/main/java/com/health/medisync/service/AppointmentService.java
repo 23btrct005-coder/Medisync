@@ -189,8 +189,8 @@ public class AppointmentService {
 
         // Auto-generate secure meeting link for Virtual consultations
         if (type == ConsultationType.ONLINE) {
-            String deterministicId = "ms-" + java.util.UUID.randomUUID().toString().substring(0, 12);
-            appointment.setMeetLink("https://meet.google.com/" + deterministicId);
+            String roomName = "MediSync-Session-" + java.util.UUID.randomUUID().toString().substring(0, 8);
+            appointment.setMeetLink("https://meet.jit.si/" + roomName);
         }
 
         Appointment saved = appointmentRepository.save(appointment);
