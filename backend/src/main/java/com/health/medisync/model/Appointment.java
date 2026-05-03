@@ -40,6 +40,9 @@ public class Appointment {
     
     private String patientUpiId;
     private String transactionId;
+    
+    @Column(columnDefinition = "TEXT")
+    private String aiClinicalBrief; // Summary from AI Concierge
 
     @Transient
     private boolean rated;
@@ -97,4 +100,7 @@ public class Appointment {
 
     public boolean isRated() { return rated; }
     public void setRated(boolean rated) { this.rated = rated; }
+
+    public String getAiClinicalBrief() { return aiClinicalBrief; }
+    public void setAiClinicalBrief(String aiClinicalBrief) { this.aiClinicalBrief = aiClinicalBrief; }
 }

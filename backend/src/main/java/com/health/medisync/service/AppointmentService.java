@@ -39,6 +39,7 @@ public class AppointmentService {
     private final UserRepository userRepository;
     private final NotificationService notificationService;
     private final RatingRepository ratingRepository;
+    private final AiService aiService;
 
     @Value("${razorpay.key.id:}")
     private String razorpayKeyId;
@@ -51,13 +52,15 @@ public class AppointmentService {
                               PatientRepository patientRepository,
                               UserRepository userRepository,
                               NotificationService notificationService,
-                              RatingRepository ratingRepository) {
+                              RatingRepository ratingRepository,
+                              AiService aiService) {
         this.appointmentRepository = appointmentRepository;
         this.doctorRepository = doctorRepository;
         this.patientRepository = patientRepository;
         this.userRepository = userRepository;
         this.notificationService = notificationService;
         this.ratingRepository = ratingRepository;
+        this.aiService = aiService;
     }
 
     public boolean hasBookedAppointment(Long doctorId, Long patientId) {
@@ -323,6 +326,10 @@ public class AppointmentService {
             String deterministicId = "ms-" + java.util.UUID.randomUUID().toString().substring(0, 12);
             appointment.setMeetLink("https://meet.google.com/" + deterministicId);
         }
+
+        // 4. Attach AI Clinical Brief for Physician Handover
+        String brief = aiService.getLatestBrief(patientEmail);
+        appointment.setAiClinicalBrief(brief);
 
         Appointment saved = appointmentRepository.save(appointment);
         

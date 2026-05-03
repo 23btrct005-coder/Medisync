@@ -63,6 +63,7 @@ const AiConcierge = () => {
                 }}>
                     <style>{`
                         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+                        @keyframes pulseEmergency { 0% { background-color: #fee2e2; } 50% { background-color: #fca5a5; } 100% { background-color: #fee2e2; } }
                     `}</style>
                     
                     {/* Header */}
@@ -79,41 +80,42 @@ const AiConcierge = () => {
 
                     {/* Messages */}
                     <div ref={scrollRef} style={{ flex: 1, padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '15px', backgroundColor: '#fcfdfe' }}>
-                        {messages.map((m, i) => (
-                            <div key={i} style={{
-                                alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
-                                maxWidth: '85%', padding: '12px 16px', borderRadius: m.role === 'user' ? '18px 18px 2px 18px' : '18px 18px 18px 2px',
-                                backgroundColor: m.role === 'user' ? '#0066FF' : 'white',
-                                color: m.role === 'user' ? 'white' : '#1e293b',
-                                boxShadow: m.role === 'ai' ? '0 4px 12px rgba(0,0,0,0.03)' : 'none',
-                                fontSize: '13px', lineHeight: '1.6', border: m.role === 'ai' ? '1px solid #f1f5f9' : 'none'
-                            }}>
-                                {m.text.split('\n').map((line, li) => {
-                                    // Actionable Link Support
-                                    const linkMatch = line.match(/\[(.*?)\]\((.*?)\)/);
-                                    if (linkMatch) {
-                                        return (
-                                            <div key={li} style={{ marginTop: '8px' }}>
-                                                <button 
-                                                    onClick={() => window.location.href = linkMatch[2]}
-                                                    style={{
-                                                        width: '100%', padding: '10px', backgroundColor: '#f0f7ff', color: '#0066FF',
-                                                        border: '1px solid #bfdbfe', borderRadius: '10px', fontSize: '12px',
-                                                        fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                                                        transition: 'all 0.2s'
-                                                    }}
-                                                    onMouseOver={(e) => e.target.style.backgroundColor = '#e0edff'}
-                                                    onMouseOut={(e) => e.target.style.backgroundColor = '#f0f7ff'}
-                                                >
-                                                    ⚡ {linkMatch[1].toUpperCase()}
-                                                </button>
-                                            </div>
-                                        );
-                                    }
-                                    return <div key={li} style={{ marginBottom: '6px' }}>{line}</div>;
-                                })}
-                            </div>
-                        ))}
+                        {messages.map((m, i) => {
+                            const isEmergency = m.text.includes('🚨');
+                            return (
+                                <div key={i} style={{
+                                    alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
+                                    maxWidth: '85%', padding: '12px 16px', borderRadius: m.role === 'user' ? '18px 18px 2px 18px' : '18px 18px 18px 2px',
+                                    backgroundColor: isEmergency ? '#fee2e2' : (m.role === 'user' ? '#0066FF' : 'white'),
+                                    color: m.role === 'user' ? 'white' : '#1e293b',
+                                    boxShadow: m.role === 'ai' ? '0 4px 12px rgba(0,0,0,0.03)' : 'none',
+                                    fontSize: '13px', lineHeight: '1.6', 
+                                    border: isEmergency ? '2px solid #ef4444' : (m.role === 'ai' ? '1px solid #f1f5f9' : 'none'),
+                                    animation: isEmergency ? 'pulseEmergency 2s infinite' : 'none'
+                                }}>
+                                    {m.text.split('\n').map((line, li) => {
+                                        const linkMatch = line.match(/\[(.*?)\]\((.*?)\)/);
+                                        if (linkMatch) {
+                                            return (
+                                                <div key={li} style={{ marginTop: '8px' }}>
+                                                    <button 
+                                                        onClick={() => window.location.href = linkMatch[2]}
+                                                        style={{
+                                                            width: '100%', padding: '10px', backgroundColor: '#f0f7ff', color: '#0066FF',
+                                                            border: '1px solid #bfdbfe', borderRadius: '10px', fontSize: '12px',
+                                                            fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+                                                        }}
+                                                    >
+                                                        ⚡ {linkMatch[1].toUpperCase()}
+                                                    </button>
+                                                </div>
+                                            );
+                                        }
+                                        return <div key={li} style={{ marginBottom: '6px', fontWeight: line.includes('🚨') ? '900' : 'normal' }}>{line}</div>;
+                                    })}
+                                </div>
+                            );
+                        })}
                         {isLoading && (
                             <div style={{ alignSelf: 'flex-start', padding: '10px', color: '#94a3b8', fontSize: '11px', fontStyle: 'italic' }}>AI is analyzing clinical context...</div>
                         )}
@@ -126,26 +128,9 @@ const AiConcierge = () => {
                             onChange={(e) => setInput(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                             placeholder="Describe your symptoms..."
-                            style={{ 
-                                flex: 1, padding: '12px 16px', borderRadius: '12px', 
-                                border: '1px solid #e2e8f0', outline: 'none', fontSize: '13px',
-                                transition: 'border-color 0.2s'
-                            }}
-                            onFocus={(e) => e.target.style.borderColor = '#0066FF'}
-                            onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                            style={{ flex: 1, padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', outline: 'none', fontSize: '13px' }}
                         />
-                        <button 
-                            onClick={handleSend}
-                            disabled={isLoading || !input.trim()}
-                            style={{ 
-                                width: '45px', height: '45px', backgroundColor: '#0066FF', 
-                                color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                disabled: { opacity: 0.5 }
-                            }}
-                        >
-                            ➔
-                        </button>
+                        <button onClick={handleSend} disabled={isLoading || !input.trim()} style={{ width: '45px', height: '45px', backgroundColor: '#0066FF', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer' }}>➔</button>
                     </div>
                 </div>
             )}

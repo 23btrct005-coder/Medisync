@@ -21,6 +21,9 @@ public class AiService {
     private final AppointmentRepository appointmentRepository;
     private final PatientRepository patientRepository;
     private final AppointmentService appointmentService;
+    
+    // Simple transient memory for Clinical Handover (In production, use Redis or DB)
+    private static final Map<String, String> sessionSummaries = new HashMap<>();
 
     public AiService(DoctorRepository doctorRepository, 
                      HospitalRepository hospitalRepository,
@@ -37,7 +40,16 @@ public class AiService {
     public String generateResponse(String query, String patientEmail) {
         String lowerQuery = query.toLowerCase();
 
-        // 1. Gather Clinical Context
+        // 1. Emergency Guard Layer
+        if (isEmergency(lowerQuery)) {
+            return "🚨 **CRITICAL EMERGENCY DETECTED** 🚨\n\nYour symptoms suggest a potentially life-threatening situation. \n\n" +
+                   "**ACTIONS REQUIRED:**\n" +
+                   "1. Call your local Emergency Services (e.g. 108 / 911) immediately.\n" +
+                   "2. Go to the nearest Emergency Room.\n\n" +
+                   "Our nearest network hospital is: **Apollo Hospital (ER: +91 99999 00000)**";
+        }
+
+        // 2. Gather Clinical Context
         List<Doctor> allDoctors = doctorRepository.findAll();
         List<Hospital> allHospitals = hospitalRepository.findAll();
 
@@ -51,6 +63,11 @@ public class AiService {
 
             if (!specialists.isEmpty()) {
                 StringBuilder sb = new StringBuilder("Based on your symptoms, you should consult a **" + mappedSpecialty.toUpperCase() + "** specialist. \n\nI recommend these experts in our network:\n\n");
+                
+                // Prepare handover summary
+                String brief = "AI SUMMARY: Patient reported " + mappedSpecialty + " related symptoms: '" + query + "'. Suggests specialist consultation.";
+                sessionSummaries.put(patientEmail, brief);
+
                 for (Doctor d : specialists.limit(2)) {
                     sb.append("👨‍⚕️ **Dr. ").append(d.getName()).append("** (").append(d.getSpecialization()).append(")\n");
                     // Dynamic Slot Preview
@@ -151,5 +168,17 @@ public class AiService {
             if (query.contains(k)) return k;
         }
         return "your concern";
+    }
+
+    private boolean isEmergency(String query) {
+        String[] emergencies = {"chest pain", "cannot breathe", "shortness of breath", "unconscious", "heavy bleeding", "severe burn", "stroke", "paralysis"};
+        for (String e : emergencies) {
+            if (query.contains(e)) return true;
+        }
+        return false;
+    }
+
+    public String getLatestBrief(String email) {
+        return sessionSummaries.getOrDefault(email, "No AI context provided for this session.");
     }
 }
