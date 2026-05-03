@@ -664,9 +664,13 @@ const HospitalProfile = () => {
                                 </>
                             )}
                         </div>
+                    </div>
+                </div>
             )}
-        </div>
-    );
+        </>
+    )}
+</div>
+);
 };
 
 export default HospitalProfile;
