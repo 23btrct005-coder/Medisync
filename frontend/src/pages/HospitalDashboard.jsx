@@ -107,23 +107,7 @@ const HospitalDashboard = () => {
                 </div>
             </div>
 
-            {/* Stats Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {statCards.map((item, idx) => (
-                    <div key={idx} className="group bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500 relative overflow-hidden">
-                        <div className={`absolute top-0 right-0 w-32 h-32 ${item.color} opacity-[0.03] -mr-16 -mt-16 rounded-full group-hover:scale-150 transition-transform duration-700`} />
-                        <div className="flex justify-between items-start mb-8">
-                            <div className={`p-4 rounded-2xl ${item.color} text-white shadow-lg shadow-current/20`}>
-                                <item.icon size={24} />
-                            </div>
-                            <span className="text-[9px] font-black text-emerald-500 bg-emerald-50 px-3 py-1.5 rounded-full uppercase tracking-widest">{item.trend}</span>
-                        </div>
-                        <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">{item.label}</h3>
-                        <p className="text-4xl font-black text-slate-900 tracking-tighter italic">{item.value}</p>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-3">{item.sub}</p>
-                    </div>
-                ))}
-            </div>
+
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Institutional Broadcast Terminal */}
