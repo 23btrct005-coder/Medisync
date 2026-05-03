@@ -322,7 +322,10 @@ const HospitalProfile = () => {
                             </label>
                         </div>
                         <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">{formData.hospitalName || 'Institutional Node'}</h3>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Registry ID: {formData.licenseCode || 'PENDING'}</p>
+                        <p className="text-slate-400 text-xs mt-1 font-medium italic">
+                            {formData.city && formData.state ? `${formData.city}, ${formData.state}` : 'Location Not Set'}
+                        </p>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3">Registry ID: {formData.licenseCode || 'PENDING'}</p>
                     </div>
 
                     <div className="bg-primary/5 p-8 rounded-[2.5rem] border border-primary/10 relative overflow-hidden">

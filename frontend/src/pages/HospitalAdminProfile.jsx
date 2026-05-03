@@ -176,7 +176,11 @@ const HospitalAdminProfile = () => {
                         <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary-200">Linked Institution</h4>
                     </div>
                     <h4 className="text-lg font-black tracking-tight">{hospital?.name || 'Institutional Node'}</h4>
-                    <p className="text-slate-400 text-xs mt-1">{hospital?.location || 'Location Not Set'}</p>
+                    <p className="text-slate-400 text-xs mt-1">
+                        {hospital?.city && hospital?.state 
+                            ? `${hospital.city}, ${hospital.state}` 
+                            : (hospital?.location || hospital?.city || 'Location Not Set')}
+                    </p>
                     <div className="mt-6 flex items-center gap-2 text-[10px] font-black text-primary-400 uppercase tracking-widest">
                         <ShieldCheck size={14} /> License: {hospital?.licenseCode || 'Pending'}
                     </div>
