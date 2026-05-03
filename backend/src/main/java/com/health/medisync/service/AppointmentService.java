@@ -6,6 +6,8 @@ import com.health.medisync.model.Appointment.ConsultationType;
 import com.health.medisync.model.Doctor;
 import com.health.medisync.model.Patient;
 import com.health.medisync.model.User;
+import com.health.medisync.model.Hospital;
+import com.health.medisync.model.HospitalAdmin;
 import com.health.medisync.repository.AppointmentRepository;
 import com.health.medisync.repository.DoctorRepository;
 import com.health.medisync.repository.PatientRepository;
