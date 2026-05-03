@@ -8,6 +8,7 @@ import com.health.medisync.repository.HospitalRepository;
 import com.health.medisync.repository.AppointmentRepository;
 import com.health.medisync.repository.PatientRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.context.annotation.Lazy;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -28,7 +29,7 @@ public class AiService {
                      HospitalRepository hospitalRepository,
                      AppointmentRepository appointmentRepository,
                      PatientRepository patientRepository,
-                     AppointmentService appointmentService) {
+                     @Lazy AppointmentService appointmentService) {
         this.doctorRepository = doctorRepository;
         this.hospitalRepository = hospitalRepository;
         this.appointmentRepository = appointmentRepository;
@@ -73,6 +74,31 @@ public class AiService {
                 }
                 return sb.toString();
             }
+        }
+
+        // Financial Intelligence: Insurance & Pricing
+        if (lowerQuery.contains("insurance") || lowerQuery.contains("policy") || lowerQuery.contains("cover")) {
+            StringBuilder sb = new StringBuilder("I am scanning the insurance network for our hospitals:\n\n");
+            for (Hospital h : allHospitals.stream().limit(3).collect(Collectors.toList())) {
+                if (h.getInsuranceProviders() != null && !h.getInsuranceProviders().isEmpty()) {
+                    sb.append("🏥 **").append(h.getName()).append("**: Accepts ").append(h.getInsuranceProviders()).append("\n\n");
+                }
+            }
+            sb.append("Please verify with the hospital reception for specific policy details.");
+            return sb.toString();
+        }
+
+        if (lowerQuery.contains("cost") || lowerQuery.contains("price") || lowerQuery.contains("fee")) {
+            StringBuilder sb = new StringBuilder("Here is the estimated clinical pricing for our network:\n\n");
+            for (Hospital h : allHospitals.stream().limit(3).collect(Collectors.toList())) {
+                sb.append("🏥 **").append(h.getName()).append("**\n");
+                sb.append("   - General Consultation: ₹").append(h.getConsultationTimings() != null ? "500 - 1500" : "Contact for fees").append("\n");
+                if (h.getServices() != null) {
+                    sb.append("   - Services: ").append(h.getServices()).append("\n");
+                }
+                sb.append("\n");
+            }
+            return sb.toString();
         }
 
         if (patientEmail != null && (lowerQuery.contains("medicine") || lowerQuery.contains("tablet") || lowerQuery.contains("dose"))) {
