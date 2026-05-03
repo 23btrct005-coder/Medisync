@@ -42,17 +42,20 @@ public class AiService {
 
         if (isDoctor || isHospitalAdmin) return generateProfessionalResponse(lowerQuery, userEmail);
 
+        // --- POLYGLOT DETECTION ---
+        String language = detectLanguage(query);
+
         // 1. Emergency Detection
         if (isEmergency(lowerQuery)) {
-            return "🚨 **CRITICAL EMERGENCY DETECTED**\n\nYour symptoms (e.g., chest pain, difficulty breathing) indicate a medical emergency.\n\n**Action:** Please visit the nearest ER or call 108/911 immediately.";
+            return translate("🚨 **CRITICAL EMERGENCY DETECTED**\n\nPlease visit the nearest ER or call 108/911 immediately.", language);
         }
 
         // 2. Prescription Logic
-        if (userEmail != null && (lowerQuery.contains("medicine") || lowerQuery.contains("prescription"))) {
+        if (userEmail != null && (lowerQuery.contains("medicine") || lowerQuery.contains("prescription") || lowerQuery.contains("மருந்து") || lowerQuery.contains("दवा"))) {
             List<Prescription> active = prescriptionRepository.findByPatientEmailAndIsActiveTrue(userEmail);
             if (!active.isEmpty()) {
-                return "💊 **Active Meds:** " + active.stream().map(Prescription::getMedicineName).collect(Collectors.joining(", ")) + 
-                       "\n\nCheck your **Medical History** for full details.";
+                String meds = active.stream().map(Prescription::getMedicineName).collect(Collectors.joining(", "));
+                return translate("💊 **Active Meds:** " + meds + "\n\nCheck your Medical History for details.", language);
             }
         }
 
@@ -65,63 +68,74 @@ public class AiService {
                 .collect(Collectors.toList());
 
             StringBuilder sb = new StringBuilder();
-            sb.append("### 🏥 Specialist Recommendation\n");
-            sb.append("For **").append(specialty.toUpperCase()).append("** issues, ").append(advice).append("\n\n");
+            sb.append("### 🏥 ").append(translate("Specialist Recommendation", language)).append("\n");
+            sb.append(translate("For " + specialty.toUpperCase() + " issues, " + advice, language)).append("\n\n");
 
             if (!specialists.isEmpty()) {
-                sb.append("**Available Specialists:**\n");
+                sb.append("**").append(translate("Available Specialists:", language)).append("**\n");
                 for (Doctor d : specialists.stream().limit(2).collect(Collectors.toList())) {
                     sb.append("- **Dr. ").append(d.getName()).append("** (").append(d.getSpecialization()).append(")\n");
                 }
-                sb.append("\n[Go to Book Doctor](/dashboard/booking) to schedule an appointment.");
             } else {
-                sb.append("⚠️ **Note:** We currently don't have an approved **").append(specialty).append("** specialist in our online roster. \n\n**Next Step:** Please consult our **General Physician** for a primary evaluation.");
+                sb.append("⚠️ ").append(translate("Note: We currently don't have an approved " + specialty + " specialist. Please consult a General Physician.", language));
             }
             return sb.toString();
         }
 
-        // 4. Outbreak Detection
-        if (lowerQuery.contains("fever") || lowerQuery.contains("flu")) {
-            return "⚠️ **Outbreak Alert:** There is a surge in seasonal flu cases in your district. Stay hydrated and rest.";
-        }
-
         // 5. Default Greeting
-        return "Hello! I am your MediSync Clinical Concierge. I can help with **Symptom Mapping**, **Prescriptions**, and **Outbreak Alerts**. \n\nHow are you feeling today?";
+        return translate("Hello! I am your MediSync Clinical Concierge. How can I help you today?", language);
+    }
+
+    private String detectLanguage(String query) {
+        // Tamil Range: \u0B80-\u0BFF
+        if (query.matches(".*[\\u0B80-\\u0BFF].*")) return "tamil";
+        // Hindi/Sanskrit (Devanagari) Range: \u0900-\u097F
+        if (query.matches(".*[\\u0900-\\u097F].*")) return "hindi";
+        // Telugu Range: \u0C00-\u0C7F
+        if (query.matches(".*[\\u0C00-\\u0C7F].*")) return "telugu";
+        return "english";
+    }
+
+    private String translate(String text, String lang) {
+        if ("tamil".equals(lang)) {
+            if (text.contains("Hello")) return "வணக்கம்! நான் உங்கள் MediSync மருத்துவ உதவியாளர். நான் உங்களுக்கு எப்படி உதவ முடியும்?";
+            if (text.contains("Specialist Recommendation")) return "மருத்துவ நிபுணர் பரிந்துரை";
+            if (text.contains("Active Meds")) return "தற்போதைய மருந்துகள்";
+            if (text.contains("ER")) return "🚨 **அவசரநிலை!** தயவுசெய்து உடனடியாக மருத்துவமனைக்குச் செல்லவும்.";
+            if (text.contains("dental")) return "பல் தொடர்பான பிரச்சனைகளுக்கு, சூடான அல்லது குளிர்ந்த உணவைத் தவிர்க்கவும்.";
+            if (text.contains("cardiology")) return "இதயத் துடிப்பைக் கண்காணித்து, கடினமான வேலைகளைத் தவிர்க்கவும்.";
+            if (text.contains("approved")) return "தற்போது இந்த பிரிவில் மருத்துவர்கள் இல்லை. பொது மருத்துவரை அணுகவும்.";
+            return "உங்களுக்கு உதவ நான் தயாராக உள்ளேன். உங்கள் அறிகுறிகளை விவரிக்கவும்.";
+        }
+        if ("hindi".equals(lang)) {
+            if (text.contains("Hello")) return "नमस्ते! मैं आपका MediSync क्लिनिकल कंसीयज हूँ। मैं आपकी कैसे मदद कर सकता हूँ?";
+            return "मैं आपकी मदद के लिए यहाँ हूँ। कृपया अपने लक्षणों के बारे में बताएं।";
+        }
+        return text;
     }
 
     private String getGeneralAdvice(String specialty) {
         switch (specialty) {
-            case "dental": return "it is important to avoid very hot or cold food and maintain oral hygiene.";
-            case "cardiology": return "avoid strenuous activity and monitor your heart rate.";
-            case "dermatology": return "avoid scratching the area and keep it clean.";
-            case "orthopedic": return "apply a cold compress and limit movement of the joint.";
-            case "ent": return "avoid cold drinks and rest your voice if needed.";
+            case "dental": return "it is important to avoid very hot or cold food.";
+            case "cardiology": return "avoid strenuous activity.";
             default: return "a clinical evaluation is recommended.";
         }
     }
 
     private String generateProfessionalResponse(String query, String email) {
-        if (query.contains("revenue") || query.contains("financial")) {
-            return "### 💰 Financial Insights\nRevenue is trending upwards by 14% this month. See **Financials** tab for the ledger.";
-        }
-        if (query.contains("patient") || query.contains("load")) {
-            return "### 🩺 Practice Load\nYou have 1 verified patient node active. Clinical load is stable.";
-        }
-        return "Greetings, Doctor. I am your **Clinical Operational Intelligence** module. I can provide revenue analysis, practice load stats, and institutional telemetry.";
+        return "Greetings, Doctor. I am your Clinical Operational Intelligence module.";
     }
 
     private String mapSymptomToSpecialty(String query) {
-        if (query.contains("tooth") || query.contains("teeth") || query.contains("gum") || query.contains("dental")) return "dental";
-        if (query.contains("heart") || query.contains("chest")) return "cardiology";
-        if (query.contains("skin") || query.contains("rash") || query.contains("itch")) return "dermatology";
-        if (query.contains("bone") || query.contains("joint") || query.contains("back pain")) return "orthopedic";
-        if (query.contains("ear") || query.contains("nose") || query.contains("throat")) return "ent";
-        if (query.contains("fever") || query.contains("cold") || query.contains("cough") || query.contains("pain")) return "general physician";
+        // English + Tamil + Hindi Keywords
+        if (query.contains("tooth") || query.contains("teeth") || query.contains("பல்") || query.contains("दांत")) return "dental";
+        if (query.contains("heart") || query.contains("chest") || query.contains("இதயம்") || query.contains("दिल")) return "cardiology";
+        if (query.contains("fever") || query.contains("cold") || query.contains("காய்ச்சல்") || query.contains("बुखार") || query.contains("வலி") || query.contains("pain")) return "general physician";
         return null;
     }
 
     private boolean isEmergency(String query) {
-        return query.contains("stroke") || query.contains("cannot breathe") || query.contains("heavy bleeding");
+        return query.contains("stroke") || query.contains("cannot breathe") || query.contains("blood");
     }
 
     public String getLatestBrief(String email) {
