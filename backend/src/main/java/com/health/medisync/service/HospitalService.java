@@ -150,9 +150,10 @@ public class HospitalService {
     }
 
     public List<Appointment> getHospitalAppointments(Hospital hospital) {
-        // Fetch all appointments for all doctors in this hospital
+        // Fetch all appointments for all doctors in this hospital, excluding PENDING
         return doctorRepository.findByHospitalEntity(hospital).stream()
                 .flatMap(d -> appointmentRepository.findByDoctorId(d.getId()).stream())
+                .filter(a -> a.getStatus() != Appointment.AppointmentStatus.PENDING)
                 .sorted((Appointment a, Appointment b) -> b.getId().compareTo(a.getId())) // Newest first
                 .toList();
     }
@@ -184,6 +185,20 @@ public class HospitalService {
         appointment.setTimeSlot(slot);
         appointment.setStatus(com.health.medisync.model.Appointment.AppointmentStatus.BOOKED);
         appointment.setConsultationType(com.health.medisync.model.Appointment.ConsultationType.valueOf(type));
+        
+        // Fetch appropriate fee
+        Double fee = (appointment.getConsultationType() == Appointment.ConsultationType.ONLINE) 
+                     ? doctor.getOnlineConsultationFee() 
+                     : doctor.getOfflineConsultationFee();
+        
+        if (fee == null) {
+            String feeStr = doctor.getConsultationFee();
+            if (feeStr != null) {
+                try { fee = Double.parseDouble(feeStr.replaceAll("[^0-9]", "")); } catch (Exception ignored) {}
+            }
+        }
+        appointment.setAmount(fee != null ? fee : 500.0);
+        
         appointment.setRazorpayPaymentId("INSTITUTIONAL"); // Hospital-booked appointments are pre-authorized/paid internally
         
         appointmentRepository.save(appointment);

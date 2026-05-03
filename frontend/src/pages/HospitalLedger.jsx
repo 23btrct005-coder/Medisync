@@ -142,7 +142,7 @@ const HospitalLedger = () => {
                                         <p className="text-[10px] font-bold text-slate-400 uppercase">{tx.doctor?.specialization}</p>
                                     </td>
                                     <td className="p-6">
-                                        <span className="text-sm font-black text-slate-900">₹{tx.doctor?.consultationFee || '500'}</span>
+                                        <span className="text-sm font-black text-slate-900">₹{tx.amount || tx.doctor?.consultationFee || '500'}</span>
                                     </td>
                                     <td className="p-6">
                                         <div className="flex flex-col">
