@@ -9,15 +9,15 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
   const { unreadChatCount } = useNotifications();
   const navigate = useNavigate();
 
+  const isAdmin = user?.role === 'ROLE_HOSPITAL_ADMIN';
+  const prefix = isAdmin ? '/hospital-dashboard' : '/doctor-dashboard';
   const photoUrl = user?.profilePictureUrl || (user?.id ? `${api.defaults.baseURL}/auth/${isAdmin ? 'hospital' : 'doctor'}/photo/${user.id}` : null);
+  const hospitalLogo = user?.hospital?.logoUrl;
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
-
-  const isAdmin = user?.role === 'ROLE_HOSPITAL_ADMIN';
-  const prefix = isAdmin ? '/hospital-dashboard' : '/doctor-dashboard';
 
   const navItems = [
     { 
@@ -64,7 +64,22 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
       {
         name: 'Inst. Profile',
         path: `${prefix}/institutional-profile`,
-        icon: <Building2 size={20} />
+        icon: (
+          <div className="h-5 w-5 rounded-md overflow-hidden border border-slate-700 bg-slate-800 flex items-center justify-center -ml-1 mr-1">
+            {hospitalLogo ? (
+              <img 
+                src={hospitalLogo} 
+                alt="Logo" 
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'block';
+                }}
+              />
+            ) : null}
+            <Building2 size={14} className={`${hospitalLogo ? 'hidden' : 'block'} text-slate-400`} />
+          </div>
+        )
       }
     ] : []),
     ...(!isAdmin ? [
