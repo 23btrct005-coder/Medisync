@@ -53,6 +53,8 @@ const HospitalProfile = () => {
         billingContactPhone: '',
         // Online Presence
         googleMapsUrl: '',
+        alternatePhone: '',
+        emergencyPhone: '',
         facebookUrl: '',
         twitterUrl: '',
         instagramUrl: '',
@@ -110,6 +112,8 @@ const HospitalProfile = () => {
                 billingContactEmail: h.billingContactEmail || '',
                 billingContactPhone: h.billingContactPhone || '',
                 googleMapsUrl: h.googleMapsUrl || '',
+                alternatePhone: h.alternatePhone || '',
+                emergencyPhone: h.officialEmergencyContact || '',
                 facebookUrl: h.facebookUrl || '',
                 twitterUrl: h.twitterUrl || '',
                 instagramUrl: h.instagramUrl || '',
@@ -546,6 +550,14 @@ const HospitalProfile = () => {
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Contact Email</label>
                                         <input type="email" value={formData.contactEmail} onChange={(e) => setFormData({...formData, contactEmail: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Official Alternate Phone</label>
+                                        <input type="text" value={formData.alternatePhone} onChange={(e) => setFormData({...formData, alternatePhone: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Emergency 24/7 (ER)</label>
+                                        <input type="text" value={formData.emergencyPhone} onChange={(e) => setFormData({...formData, emergencyPhone: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" />
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">City / Region</label>

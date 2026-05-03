@@ -9,7 +9,7 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
   const { unreadChatCount } = useNotifications();
   const navigate = useNavigate();
 
-  const photoUrl = user?.id ? `${api.defaults.baseURL}/auth/doctor/photo/${user.id}` : null;
+  const photoUrl = user?.profilePictureUrl || (user?.id ? `${api.defaults.baseURL}/auth/doctor/photo/${user.id}` : null);
 
   const handleLogout = () => {
     logout();

@@ -144,8 +144,15 @@ public class HospitalController {
             hMap.put("nurseCount", hospital.getNurseCount());
             hMap.put("generalStaffCount", hospital.getGeneralStaffCount());
             hMap.put("icuAvailable", hospital.getIcuAvailable());
+            hMap.put("icuBeds", hospital.getIcuBeds());
+            hMap.put("operationTheatersCount", hospital.getOperationTheatersCount());
             hMap.put("ambulanceAvailable", hospital.getAmbulanceAvailable());
+            hMap.put("ambulanceCount", hospital.getAmbulanceCount());
             hMap.put("emergencyServicesAvailable", hospital.getEmergencyServicesAvailable());
+            hMap.put("officialEmergencyContact", hospital.getOfficialEmergencyContact());
+            hMap.put("alternatePhone", hospital.getAlternatePhone());
+            hMap.put("insuranceProviders", hospital.getInsuranceProviders());
+            hMap.put("googleMapsUrl", hospital.getGoogleMapsUrl());
             hMap.put("medicalDirectorName", hospital.getMedicalDirectorName());
             hMap.put("medicalDirectorEmail", hospital.getMedicalDirectorEmail());
             
@@ -203,6 +210,8 @@ public class HospitalController {
             if (data.get("city")         != null)  hospital.setCity(String.valueOf(data.get("city")));
             if (data.get("pinCode")      != null)  hospital.setPinCode(String.valueOf(data.get("pinCode")));
             if (data.get("street")       != null)  hospital.setStreet(String.valueOf(data.get("street")));
+            if (data.get("alternatePhone") != null) hospital.setAlternatePhone(String.valueOf(data.get("alternatePhone")));
+            if (data.get("emergencyPhone") != null) hospital.setOfficialEmergencyContact(String.valueOf(data.get("emergencyPhone")));
 
             // New Legal & Infrastructure Fields
             if (data.get("gstNumber") != null) hospital.setGstNumber(String.valueOf(data.get("gstNumber")));

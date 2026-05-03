@@ -15,7 +15,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   const navigate = useNavigate();
   const [showMore, setShowMore] = useState(false);
 
-  const photoUrl = user?.id ? `${api.defaults.baseURL}/auth/patient/photo/${user.id}` : null;
+  const photoUrl = user?.profilePictureUrl || (user?.id ? `${api.defaults.baseURL}/auth/patient/photo/${user.id}` : null);
 
   const handleLogout = () => {
     logout();

@@ -129,6 +129,12 @@ const Register = () => {
     facilityId: '',
     govtRegistrationNumber: '',
     cinNumber: '',
+    nabhId: '',
+    isoId: '',
+    insuranceProviders: '',
+    icuBeds: '',
+    operationTheatersCount: '',
+    ambulanceCount: '',
     medicalDirectorName: '',
     medicalDirectorQualification: '',
     medicalDirectorRegNumber: '',
@@ -742,6 +748,8 @@ const Register = () => {
                           <div><label className={labelClass}>License Expiry Date <span className="text-red-500">*</span></label><input type="date" name="hospitalLicenseExpiryDate" required value={formData.hospitalLicenseExpiryDate} onChange={handleChange} className={inputClass} /></div>
                           <div><label className={labelClass}>GST Number</label><input type="text" name="gstNumber" value={formData.gstNumber} onChange={handleChange} className={inputClass} placeholder="22AAAAA0000A1Z5" /></div>
                           <div><label className={labelClass}>PAN Number (India)</label><input type="text" name="panNumber" value={formData.panNumber} onChange={handleChange} className={inputClass} placeholder="ABCDE1234F" /></div>
+                          <div><label className={labelClass}>NABH ID</label><input type="text" name="nabhId" value={formData.nabhId} onChange={handleChange} className={inputClass} placeholder="NABH-2024-XXXX" /></div>
+                          <div><label className={labelClass}>ISO Certification ID</label><input type="text" name="isoId" value={formData.isoId} onChange={handleChange} className={inputClass} placeholder="ISO 9001:2015" /></div>
                         </div>
                       </div>
 
@@ -758,8 +766,9 @@ const Register = () => {
                             <div className="md:col-span-2"><label className={labelClass}>Full Postal Address <span className="text-red-500">*</span></label><input type="text" name="street" required value={formData.street} onChange={handleChange} className={inputClass} placeholder="Street, Building, Area" /></div>
                             <div><label className={labelClass}>State <span className="text-red-500">*</span></label><select name="state" required value={formData.state} onChange={handleChange} className={inputClass}><option value="">Select State</option>{Object.keys(geographyData).sort().map(s => <option key={s} value={s}>{s}</option>)}</select></div>
                             <div><label className={labelClass}>City / District <span className="text-red-500">*</span></label><select name="city" required value={formData.city} onChange={handleChange} className={inputClass} disabled={!formData.state}><option value="">Select District</option>{availableCities.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
-                            <div><label className={labelClass}>PIN Code <span className="text-red-500">*</span></label><input type="text" name="pinCode" required value={formData.pinCode} onChange={handleChange} className={inputClass} placeholder="6-digit PIN" /></div>
-                            <div><label className={labelClass}>Google Maps URL</label><input type="url" name="googleMapsUrl" value={formData.googleMapsUrl} onChange={handleChange} className={inputClass} placeholder="Paste Maps link" /></div>
+                             <div><label className={labelClass}>PIN Code <span className="text-red-500">*</span></label><input type="text" name="pinCode" required value={formData.pinCode} onChange={handleChange} className={inputClass} placeholder="6-digit PIN" /></div>
+                             <div><label className={labelClass}>Google Maps URL</label><input type="url" name="googleMapsUrl" value={formData.googleMapsUrl} onChange={handleChange} className={inputClass} placeholder="Paste Maps link" /></div>
+                             <div className="md:col-span-2"><label className={labelClass}>Insurance Providers</label><input type="text" name="insuranceProviders" value={formData.insuranceProviders} onChange={handleChange} className={inputClass} placeholder="Star, HDFC, etc. (Comma separated)" /></div>
                             
                             <div className="md:col-span-2 pt-4 border-t border-slate-100">
                                 <label className={labelClass}>Official Contact Numbers</label>
@@ -792,8 +801,12 @@ const Register = () => {
                             <div><label className={labelClass}>Nurses <span className="text-red-500">*</span></label><input type="number" name="nurseCount" required value={formData.nurseCount} onChange={handleChange} className={inputClass} /></div>
                             <div><label className={labelClass}>Support Staff <span className="text-red-500">*</span></label><input type="number" name="generalStaffCount" required value={formData.generalStaffCount} onChange={handleChange} className={inputClass} /></div>
                             
-                            <div className="md:col-span-2 pt-4"><label className={labelClass}>ICU Available</label><select name="icuAvailable" value={formData.icuAvailable} onChange={handleChange} className={inputClass}><option value="false">No</option><option value="true">Yes</option></select></div>
-                            <div className="md:col-span-2 pt-4"><label className={labelClass}>Ambulance</label><select name="ambulanceAvailable" value={formData.ambulanceAvailable} onChange={handleChange} className={inputClass}><option value="false">No</option><option value="true">Yes</option></select></div>
+                            <div><label className={labelClass}>ICU Beds</label><input type="number" name="icuBeds" value={formData.icuBeds} onChange={handleChange} className={inputClass} placeholder="0" /></div>
+                            <div><label className={labelClass}>OT Count</label><input type="number" name="operationTheatersCount" value={formData.operationTheatersCount} onChange={handleChange} className={inputClass} placeholder="0" /></div>
+                            <div><label className={labelClass}>Ambulances</label><input type="number" name="ambulanceCount" value={formData.ambulanceCount} onChange={handleChange} className={inputClass} placeholder="0" /></div>
+
+                            <div className="pt-4"><label className={labelClass}>ICU Available</label><select name="icuAvailable" value={formData.icuAvailable} onChange={handleChange} className={inputClass}><option value="false">No</option><option value="true">Yes</option></select></div>
+                            <div className="pt-4"><label className={labelClass}>Ambulance</label><select name="ambulanceAvailable" value={formData.ambulanceAvailable} onChange={handleChange} className={inputClass}><option value="false">No</option><option value="true">Yes</option></select></div>
                             <div className="md:col-span-2"><label className={labelClass}>Timezone</label><select name="timezone" value={formData.timezone} onChange={handleChange} className={inputClass}><option value="Asia/Kolkata">India (IST)</option><option value="UTC">UTC</option></select></div>
                             <div className="md:col-span-2"><label className={labelClass}>Working Hours</label><input type="text" name="workingHours" value={formData.workingHours} onChange={handleChange} className={inputClass} placeholder="e.g. 24/7" /></div>
                         </div>

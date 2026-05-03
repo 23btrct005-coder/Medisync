@@ -136,7 +136,20 @@ const HospitalAdminProfile = () => {
                 <div className="relative z-10 flex flex-col items-center text-center">
                     <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-700 p-1 mb-6 shadow-2xl shadow-blue-200">
                         <div className="w-full h-full rounded-[1.25rem] bg-white flex items-center justify-center overflow-hidden">
-                            <div className="text-3xl font-black text-blue-600">{initials}</div>
+                            {profile?.profilePictureUrl ? (
+                                <img 
+                                    src={profile.profilePictureUrl} 
+                                    alt={profile?.name} 
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        e.target.style.display = 'none';
+                                        e.target.nextSibling.style.display = 'block';
+                                    }}
+                                />
+                            ) : null}
+                            <div className={`${profile?.profilePictureUrl ? 'hidden' : 'block'} text-3xl font-black text-blue-600`}>
+                                {initials}
+                            </div>
                         </div>
                     </div>
                     <h3 className="text-xl font-black text-slate-900 tracking-tight uppercase">{profile?.name || 'Administrator'}</h3>
