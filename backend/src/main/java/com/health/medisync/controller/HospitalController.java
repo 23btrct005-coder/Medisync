@@ -74,12 +74,20 @@ public class HospitalController {
     }
 
     @PostMapping("/approve-doctor/{id}")
-    public ResponseEntity<?> approveDoctor(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
-        User user = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        HospitalAdmin admin = hospitalService.getAdminByUser(user);
-        hospitalService.approveDoctor(id, admin.getHospital());
-        return ResponseEntity.ok(Map.of("message", "Physician approved successfully"));
+    public ResponseEntity<?> approveDoctor(@PathVariable String id, @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            if (id == null || id.equalsIgnoreCase("undefined")) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Invalid personnel identifier"));
+            }
+            Long doctorId = Long.valueOf(id.split("\\.")[0]);
+            User user = userRepository.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            HospitalAdmin admin = hospitalService.getAdminByUser(user);
+            hospitalService.approveDoctor(doctorId, admin.getHospital());
+            return ResponseEntity.ok(Map.of("message", "Physician approved successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 
     @GetMapping("/appointments")
@@ -322,14 +330,22 @@ public class HospitalController {
     }
 
     @PostMapping("/update-doctor/{id}")
-    public ResponseEntity<?> updateDoctor(@PathVariable Long id,
-                                          @RequestBody Map<String, Object> updates,
+    public ResponseEntity<?> updateDoctor(@PathVariable String id,
+                                          @RequestBody Map<String, Object> payload,
                                           @AuthenticationPrincipal UserDetails userDetails) {
-        User user = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        HospitalAdmin admin = hospitalService.getAdminByUser(user);
-        hospitalService.updateDoctorProfile(id, updates, admin.getHospital());
-        return ResponseEntity.ok(Map.of("message", "Physician profile updated successfully"));
+        try {
+            if (id == null || id.equalsIgnoreCase("undefined")) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Invalid personnel identifier"));
+            }
+            Long doctorId = Long.valueOf(id.split("\\.")[0]);
+            User user = userRepository.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            HospitalAdmin admin = hospitalService.getAdminByUser(user);
+            hospitalService.updateDoctorProfile(doctorId, payload, admin.getHospital());
+            return ResponseEntity.ok(Map.of("message", "Doctor profile updated successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 
     @GetMapping("/doctor/{id}")

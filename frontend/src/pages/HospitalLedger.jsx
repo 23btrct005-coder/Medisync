@@ -34,6 +34,10 @@ const HospitalLedger = () => {
     }, []);
 
     const handleVerify = async (appointmentId) => {
+        if (!appointmentId || appointmentId === 'undefined') {
+            toast.error("Critical: Appointment identification failure.");
+            return;
+        }
         try {
             await api.post('/appointments/confirm-upi', { appointmentId });
             toast.success("Transaction verified & session authorized");
@@ -185,7 +189,7 @@ const HospitalLedger = () => {
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan="6" className="p-12 text-center text-left">
+                                    <td colSpan="7" className="p-12 text-center text-left">
                                         <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest italic">No clinical transactions recorded in this cycle.</p>
                                     </td>
                                 </tr>

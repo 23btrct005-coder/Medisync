@@ -24,15 +24,17 @@ const Booking = () => {
   const date = new Date();
   const localToday = [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
 
+  const [bookingStep, setBookingStep] = useState('list');
+  const [showFilters, setShowFilters] = useState(false);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [isBooking, setIsBooking] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [bookingDate, setBookingDate] = useState(localToday);
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [consultationType, setConsultationType] = useState('ONLINE');
-  const [isBooking, setIsBooking] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
-  const [bookingStep, setBookingStep] = useState('list'); // 'list' | 'slots' | 'confirm'
 
   useEffect(() => {
     fetchDoctors();
@@ -57,17 +59,24 @@ const Booking = () => {
   };
 
   const fetchSlots = async () => {
+    if (!selectedDoctor?.id || selectedDoctor.id === 'undefined') {
+      console.warn("Skipping slot retrieval: doctorId is invalid", selectedDoctor);
+      return;
+    }
+    setLoadingSlots(true);
     try {
       const res = await api.get(`appointments/slots?doctorId=${selectedDoctor.id}&date=${bookingDate}`);
       setAvailableSlots(res.data || []);
       setSelectedSlot(null);
     } catch (e) {
       toast.error("Cloud sync failed for time slots.");
+    } finally {
+      setLoadingSlots(false);
     }
   };
 
   const handleBook = async () => {
-    if (!selectedDoctor || !selectedDoctor.id) {
+    if (!selectedDoctor || !selectedDoctor.id || selectedDoctor.id === 'undefined') {
       toast.error("Physician selection invalid. Please re-select from marketplace.");
       setBookingStep('list');
       return;
@@ -146,25 +155,6 @@ const Booking = () => {
       toast.error(err.response?.data?.message || "Cloud synchronization failed. Please try again.");
     } finally {
       setIsBooking(false);
-    }
-  };
-
-  const handleUpiSuccess = async () => {
-    if (!upiOrderData) return;
-    try {
-        setIsBooking(true);
-        // For UPI, we trust the doctor will verify, but we mark as booked
-        // In a real app, we might wait for a webhook or manual approval
-        await api.post('appointments/verify-upi', {
-            appointmentId: upiOrderData.appointmentId
-        });
-        toast.success("Transaction Registered! Awaiting Clinical Verification.");
-        navigate('/dashboard/sessions', { state: { autoOpenApptId: upiOrderData.appointmentId } });
-    } catch (err) {
-        toast.error("Failed to sync UPI transaction.");
-    } finally {
-        setIsBooking(false);
-        setShowUpiModal(false);
     }
   };
 
@@ -444,7 +434,9 @@ const Booking = () => {
                   <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
                     <Clock size={18} className="text-emerald-500" /> Available Cloud Windows
                   </h3>
-                  {availableSlots.length === 0 ? (
+                  {loadingSlots ? (
+                    <div className="p-8 text-center"><Loader2 className="animate-spin mx-auto text-primary" /></div>
+                  ) : availableSlots.length === 0 ? (
                     <div className="p-8 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center">
                       <Clock className="mx-auto text-slate-300 mb-2" size={32} />
                       <p className="text-xs font-bold text-slate-400 italic">No windows open for this date.</p>
@@ -454,7 +446,6 @@ const Booking = () => {
                       {availableSlots.map(slot => {
                         // Logic to disable past time slots for today
                         let isPast = false;
-                        const todayStr = new Date().toISOString().split('T')[0];
                         if (bookingDate === localToday) {
                           try {
                             const [time, period] = slot.split(' ');
@@ -605,6 +596,10 @@ const Booking = () => {
                             }
                             try {
                                 setIsBooking(true);
+                                if (!upiOrderData?.appointmentId || upiOrderData.appointmentId === 'undefined') {
+                                    toast.error("Critical: Session ID lost. Please restart booking.");
+                                    return;
+                                }
                                 await api.post('appointments/verify-upi', {
                                     appointmentId: upiOrderData.appointmentId,
                                     patientUpiId: upiOrderData.patientUpiId,

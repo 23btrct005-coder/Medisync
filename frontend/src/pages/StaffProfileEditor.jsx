@@ -60,6 +60,11 @@ const StaffProfileEditor = () => {
     const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     useEffect(() => {
+        if (!id || id === 'undefined') {
+            toast.error("Institutional protocol error: Missing personnel identifier");
+            navigate('/hospital-dashboard');
+            return;
+        }
         const fetchDoctor = async () => {
             try {
                 const res = await api.get(`/hospital/doctor/${id}`);
