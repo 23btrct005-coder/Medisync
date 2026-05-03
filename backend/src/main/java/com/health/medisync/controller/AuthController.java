@@ -707,9 +707,7 @@ public class AuthController {
         if (request.containsKey("hasLabIntegration")) hospital.setHasLabIntegration(Boolean.parseBoolean(String.valueOf(request.get("hasLabIntegration"))));
         if (request.containsKey("telemedicineEnabled")) hospital.setTelemedicineEnabled(Boolean.parseBoolean(String.valueOf(request.get("telemedicineEnabled"))));
         
-        hospital.setBankName(request.get("bankName") != null ? String.valueOf(request.get("bankName")) : null);
-        hospital.setBankAccountNumber(request.get("bankAccountNumber") != null ? String.valueOf(request.get("bankAccountNumber")) : null);
-        hospital.setIfscCode(request.get("ifscCode") != null ? String.valueOf(request.get("ifscCode")) : null);
+        hospital.setRazorpayAccountId(request.get("razorpayAccountId") != null ? String.valueOf(request.get("razorpayAccountId")) : null);
         hospital.setUpiId(request.get("upiId") != null ? String.valueOf(request.get("upiId")) : null);
         
         hospital.setTimezone(request.get("timezone") != null ? String.valueOf(request.get("timezone")) : "Asia/Kolkata");

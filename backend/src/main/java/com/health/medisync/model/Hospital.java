@@ -93,6 +93,7 @@ public class Hospital {
     private String bankAccountNumber;
     private String ifscCode;
     private String upiId;
+    private String razorpayAccountId;
     private String razorpayKeyId;
     private String razorpayKeySecret;
     private String preferredPaymentMode; // RAZORPAY, UPI, BOTH
@@ -299,6 +300,9 @@ public class Hospital {
 
     public String getUpiId() { return upiId; }
     public void setUpiId(String upiId) { this.upiId = upiId; }
+
+    public String getRazorpayAccountId() { return razorpayAccountId; }
+    public void setRazorpayAccountId(String razorpayAccountId) { this.razorpayAccountId = razorpayAccountId; }
 
     public String getRazorpayKeyId() { return razorpayKeyId; }
     public void setRazorpayKeyId(String razorpayKeyId) { this.razorpayKeyId = razorpayKeyId; }

@@ -149,6 +149,16 @@ public class HospitalController {
             hMap.put("medicalDirectorName", hospital.getMedicalDirectorName());
             hMap.put("medicalDirectorEmail", hospital.getMedicalDirectorEmail());
             
+            // Financial Details
+            hMap.put("razorpayAccountId", hospital.getRazorpayAccountId());
+            hMap.put("razorpayKeyId", hospital.getRazorpayKeyId());
+            hMap.put("razorpayKeySecret", hospital.getRazorpayKeySecret());
+            hMap.put("preferredPaymentMode", hospital.getPreferredPaymentMode());
+            hMap.put("upiId", hospital.getUpiId());
+            hMap.put("bankName", hospital.getBankName());
+            hMap.put("bankAccountNumber", hospital.getBankAccountNumber());
+            hMap.put("ifscCode", hospital.getIfscCode());
+            
             response.put("hospital", hMap);
         }
 
@@ -225,6 +235,7 @@ public class HospitalController {
             if (data.get("instagramUrl")  != null) hospital.setInstagramUrl(String.valueOf(data.get("instagramUrl")));
 
             // Financial Settlements
+            if (data.get("razorpayAccountId") != null) hospital.setRazorpayAccountId(String.valueOf(data.get("razorpayAccountId")));
             if (data.get("razorpayKeyId") != null)     hospital.setRazorpayKeyId(String.valueOf(data.get("razorpayKeyId")));
             if (data.get("razorpayKeySecret") != null) hospital.setRazorpayKeySecret(String.valueOf(data.get("razorpayKeySecret")));
             if (data.get("upiId") != null)             hospital.setUpiId(String.valueOf(data.get("upiId")));

@@ -139,9 +139,7 @@ const Register = () => {
     hasPacs: false,
     hasLabIntegration: false,
     telemedicineEnabled: false,
-    bankName: '',
-    bankAccountNumber: '',
-    ifscCode: '',
+    razorpayAccountId: '',
     preferredPaymentMode: 'RAZORPAY',
     termsAccepted: false,
     privacyAccepted: false,
@@ -848,10 +846,12 @@ const Register = () => {
                             <div className="pt-6 border-t border-slate-100 space-y-6">
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Banking & Automated Payouts</p>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div><label className={labelClass}>Bank Name <span className="text-red-500">*</span></label><input type="text" name="bankName" required value={formData.bankName} onChange={handleChange} className={inputClass} placeholder="e.g. HDFC Bank" /></div>
-                                    <div><label className={labelClass}>Account Number <span className="text-red-500">*</span></label><input type="text" name="bankAccountNumber" required value={formData.bankAccountNumber} onChange={handleChange} className={inputClass} placeholder="0000 0000 0000" /></div>
-                                    <div><label className={labelClass}>IFSC Code <span className="text-red-500">*</span></label><input type="text" name="ifscCode" required value={formData.ifscCode} onChange={handleChange} className={inputClass} placeholder="HDFC0001234" /></div>
-                                    <div><label className={labelClass}>Primary UPI ID</label><input type="text" name="upiId" value={formData.upiId} onChange={handleChange} className={inputClass} placeholder="hospital@upi" /></div>
+                                    <div className="md:col-span-2 space-y-1">
+                                        <label className={labelClass}>Razorpay Account ID <span className="text-red-500">*</span></label>
+                                        <input type="text" name="razorpayAccountId" required value={formData.razorpayAccountId} onChange={handleChange} className={`${inputClass} font-mono`} placeholder="acc_XXXXXXXXXXXXXX" />
+                                        <p className="text-[9px] text-slate-400 mt-1 uppercase font-bold tracking-widest">Your institutional linked account ID for automated payouts</p>
+                                    </div>
+                                    <div className="md:col-span-2"><label className={labelClass}>Primary UPI ID</label><input type="text" name="upiId" value={formData.upiId} onChange={handleChange} className={inputClass} placeholder="hospital@upi" /></div>
                                     <div className="md:col-span-2 space-y-4">
                                         <label className={labelClass}>Preferred Institutional Payout Mode</label>
                                         <div className="grid grid-cols-3 gap-4">
