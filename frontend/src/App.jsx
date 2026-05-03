@@ -27,6 +27,7 @@ import ClinicalExecutiveConsul from './pages/ClinicalExecutiveConsul';
 import ClinicalCensusRegistry from './pages/ClinicalCensusRegistry';
 import ClinicalPatientDossier from './pages/ClinicalPatientDossier';
 import ClinicalDoctorProfile from './pages/ClinicalDoctorProfile';
+import HospitalAdminProfile from './pages/HospitalAdminProfile';
 import ClinicalScheduleManager from './pages/ClinicalScheduleManager';
 import ClinicalMessages from './pages/ClinicalMessages';
 import ClinicalFinancials from './pages/ClinicalFinancials';
@@ -207,7 +208,7 @@ function App() {
                   <Route path="appointments" element={<HospitalAppointments />} />
                   <Route path="ledger" element={<HospitalLedger />} />
                   <Route path="patients" element={<HospitalPatients />} />
-                  <Route path="profile" element={<ClinicalDoctorProfile />} />
+                  <Route path="profile" element={<HospitalAdminProfile />} />
                   <Route path="institutional-profile" element={<HospitalProfile />} />
                   <Route path="analytics" element={<HospitalAnalytics />} />
                   <Route path="staff" element={<HospitalDoctorRoster />} />

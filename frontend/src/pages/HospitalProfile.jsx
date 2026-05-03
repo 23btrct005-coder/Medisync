@@ -58,6 +58,7 @@ const HospitalProfile = () => {
         // Admin Profile
         adminName: '',
         position: '',
+        adminPhone: '',
         // Financial Settlements
         razorpayKeyId: '',
         razorpayKeySecret: '',
@@ -72,9 +73,13 @@ const HospitalProfile = () => {
     const fetchProfile = async () => {
         setLoading(true);
         try {
+            console.log("DEBUG: Initiating Institutional Profile Fetch...");
             const res = await api.get('/hospital/profile');
             const adminData = res.data;
-            const h = adminData.hospital;
+            console.log("DEBUG: Received Admin Data:", adminData);
+            
+            const h = adminData.hospital || {};
+            console.log("DEBUG: Extracted Hospital Node:", h);
             
             setProfile(adminData);
             setFormData({
@@ -113,9 +118,13 @@ const HospitalProfile = () => {
                 upiId: h.upiId || '',
                 preferredPaymentMode: h.preferredPaymentMode || 'RAZORPAY'
             });
-            if (h.logoUrl) setLogoPreview(h.logoUrl);
+            if (h.logoUrl) {
+                console.log("DEBUG: Logo detected:", h.logoUrl);
+                setLogoPreview(h.logoUrl);
+            }
         } catch (err) {
-            toast.error("Failed to load institutional profile");
+            console.error('CRITICAL: Institutional Sync Error:', err);
+            toast.error("Failed to synchronise institutional node");
         } finally {
             setLoading(false);
         }
@@ -218,6 +227,7 @@ const HospitalProfile = () => {
                     { id: 'compliance', label: 'Compliance', icon: Shield },
                     { id: 'operations', label: 'Operations', icon: Activity },
                     { id: 'environment', label: 'Environment', icon: Globe },
+                    { id: 'governance', label: 'Governance', icon: User },
                     { id: 'settlements', label: 'Settlements', icon: CreditCard },
                 ].map(tab => (
                     <button
@@ -256,33 +266,19 @@ const HospitalProfile = () => {
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Registry ID: {formData.licenseCode || 'PENDING'}</p>
                     </div>
 
-                    <div className="bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 -mr-16 -mt-16 rounded-full blur-2xl" />
-                        <div className="relative z-10 space-y-6">
+                    <div className="bg-primary/5 p-8 rounded-[2.5rem] border border-primary/10 relative overflow-hidden">
+                        <div className="relative z-10 space-y-4">
                             <div className="flex items-center gap-3">
-                                <Shield className="text-primary" size={20} />
-                                <h4 className="text-white text-xs font-black uppercase tracking-widest italic">Admin <span className="not-italic text-primary">Dossier</span></h4>
+                                <Activity className="text-primary" size={18} />
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Node Status</h4>
                             </div>
-                            <div>
-                                <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Administrative Lead</label>
-                                <input 
-                                    type="text" 
-                                    value={formData.adminName}
-                                    onChange={(e) => setFormData({...formData, adminName: e.target.value})}
-                                    className="w-full bg-white/5 border-none rounded-xl text-white text-xs font-bold px-4 py-3 focus:ring-1 ring-primary/50"
-                                    placeholder="Lead Administrator Name"
-                                />
+                            <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+                                <span className="text-sm font-black text-slate-700 uppercase tracking-widest">Active & Sovereign</span>
                             </div>
-                            <div>
-                                <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Official Designation</label>
-                                <input 
-                                    type="text" 
-                                    value={formData.position}
-                                    onChange={(e) => setFormData({...formData, position: e.target.value})}
-                                    className="w-full bg-white/5 border-none rounded-xl text-white text-xs font-bold px-4 py-3 focus:ring-1 ring-primary/50"
-                                    placeholder="e.g. Medical Director"
-                                />
-                            </div>
+                            <p className="text-[10px] text-slate-400 font-medium leading-relaxed italic">
+                                This institutional node is synchronized with the global MediSync mesh. All clinical telemetry is being encrypted in real-time.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -518,6 +514,56 @@ const HospitalProfile = () => {
                                         <input type="text" value={formData.insuranceProviders} onChange={(e) => setFormData({...formData, insuranceProviders: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" placeholder="Star, HDFC, etc." />
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'governance' && (
+                        <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-white">
+                                    <User size={24} />
+                                </div>
+                                <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Administrative <span className="not-italic text-slate-900">Governance</span></h3>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Lead Administrator Name</label>
+                                    <input 
+                                        type="text"
+                                        value={formData.adminName}
+                                        onChange={(e) => setFormData({...formData, adminName: e.target.value})}
+                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-slate-200"
+                                        placeholder="Full Name"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Official Designation</label>
+                                    <input 
+                                        type="text"
+                                        value={formData.position}
+                                        onChange={(e) => setFormData({...formData, position: e.target.value})}
+                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-slate-200"
+                                        placeholder="e.g. Chief Administrator"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Admin Contact Number</label>
+                                    <input 
+                                        type="tel"
+                                        value={formData.adminPhone}
+                                        onChange={(e) => setFormData({...formData, adminPhone: e.target.value})}
+                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-slate-200"
+                                        placeholder="Personal / Direct Line"
+                                    />
+                                </div>
+                            </div>
+                            <div className="mt-8 p-6 bg-slate-50 rounded-3xl border border-slate-100 flex items-start gap-4">
+                                <Shield className="text-slate-400 mt-1" size={20} />
+                                <p className="text-[10px] text-slate-500 font-medium leading-relaxed">
+                                    These credentials identify the individual responsible for the institutional node. 
+                                    Changes will be reflected in the personal profile and linked to the registry.
+                                </p>
                             </div>
                         </div>
                     )}

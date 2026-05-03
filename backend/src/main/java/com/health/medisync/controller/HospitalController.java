@@ -103,6 +103,7 @@ public class HospitalController {
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         HospitalAdmin admin = hospitalService.getAdminByUser(user);
+        System.out.println("DEBUG: Fetching profile for Admin: " + admin.getName() + " (Hospital: " + (admin.getHospital() != null ? admin.getHospital().getName() : "NULL") + ")");
         return ResponseEntity.ok(admin);
     }
 
@@ -180,6 +181,7 @@ public class HospitalController {
 
             if (data.get("adminName") != null) admin.setName(String.valueOf(data.get("adminName")));
             if (data.get("position")  != null) admin.setPosition(String.valueOf(data.get("position")));
+            if (data.get("adminPhone") != null) admin.setContactNumber(String.valueOf(data.get("adminPhone")));
 
             hospitalRepository.save(hospital);
             hospitalAdminRepository.save(admin);
