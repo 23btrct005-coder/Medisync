@@ -775,7 +775,6 @@ const HospitalDashboard = () => {
                                 
                                 
                                 </div>
-                            </div>
                             {/* Section 6: Permissions Matrix */}
                             <div className="space-y-8">
                                 <div className="flex items-center gap-3">
