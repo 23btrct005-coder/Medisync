@@ -20,7 +20,7 @@ const DoctorLayout = () => {
     navigate('/login');
   };
 
-  const photoUrl = user?.id ? `${api.defaults.baseURL}/auth/doctor/photo/${user.id}` : null;
+  const photoUrl = user?.profilePictureUrl || (user?.id ? `${api.defaults.baseURL}/auth/${userRole === 'ROLE_DOCTOR' ? 'doctor' : 'hospital'}/photo/${user.id}` : null);
 
   return (
     <div className="flex h-[100dvh] bg-slate-50 overflow-hidden">
@@ -42,7 +42,7 @@ const DoctorLayout = () => {
         </div>
         <div className="flex items-center space-x-2 sm:space-x-6">
           <div className="hidden sm:flex items-center space-x-3">
-            <span className="text-sm font-bold text-slate-700">{user?.name || "Doctor"}</span>
+            <span className="text-sm font-bold text-slate-700">{user?.name || (userRole === 'ROLE_HOSPITAL_ADMIN' ? 'Administrator' : 'Doctor')}</span>
             <div className="h-9 w-9 rounded-full overflow-hidden border-2 border-primary-100 bg-primary-50 flex items-center justify-center">
               {photoUrl ? (
                 <img 

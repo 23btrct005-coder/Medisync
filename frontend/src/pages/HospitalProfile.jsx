@@ -302,10 +302,17 @@ const HospitalProfile = () => {
                         <div className="relative inline-block mb-6 group">
                             <div className="w-32 h-32 rounded-[2.5rem] bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden transition-all group-hover:border-primary/50">
                                 {logoPreview ? (
-                                    <img src={logoPreview} alt="Hospital Logo" className="w-full h-full object-cover" />
-                                ) : (
-                                    <Building2 className="text-slate-200" size={48} />
-                                )}
+                                    <img 
+                                        src={logoPreview} 
+                                        alt="Hospital Logo" 
+                                        className="w-full h-full object-cover" 
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                            e.target.nextSibling.style.display = 'block';
+                                        }}
+                                    />
+                                ) : null}
+                                <Building2 className={`${logoPreview ? 'hidden' : 'block'} text-slate-200`} size={48} />
                             </div>
                             <label className="absolute -bottom-2 -right-2 w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center cursor-pointer shadow-lg hover:scale-110 transition-all">
                                 <Camera size={18} />
@@ -346,45 +353,19 @@ const HospitalProfile = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Hospital Name</label>
-                                    <input 
-                                        type="text" required
-                                        value={formData.hospitalName}
-                                        onChange={(e) => setFormData({...formData, hospitalName: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-blue-100"
-                                    />
+                                    <input type="text" readOnly value={formData.hospitalName} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed" />
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Hospital Type</label>
-                                    <select 
-                                        value={formData.hospitalType}
-                                        onChange={(e) => setFormData({...formData, hospitalType: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-blue-100 appearance-none"
-                                    >
-                                        <option value="">Select Type</option>
-                                        <option value="Private">Private</option>
-                                        <option value="Government">Government</option>
-                                        <option value="Trust">Trust</option>
-                                        <option value="Charitable">Charitable</option>
-                                    </select>
+                                    <input type="text" readOnly value={formData.hospitalType} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed" />
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">License Code</label>
-                                    <input 
-                                        type="text" required
-                                        value={formData.licenseCode}
-                                        onChange={(e) => setFormData({...formData, licenseCode: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-blue-100 font-mono"
-                                    />
+                                    <input type="text" readOnly value={formData.licenseCode} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed font-mono" />
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Official Website</label>
-                                    <input 
-                                        type="url"
-                                        value={formData.website}
-                                        onChange={(e) => setFormData({...formData, website: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-blue-100"
-                                        placeholder="https://hospital.com"
-                                    />
+                                    <input type="text" readOnly value={formData.website} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed" />
                                 </div>
                             </div>
                         </div>
@@ -401,43 +382,19 @@ const HospitalProfile = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">GST Number (India)</label>
-                                    <input 
-                                        type="text"
-                                        value={formData.gstNumber}
-                                        onChange={(e) => setFormData({...formData, gstNumber: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-amber-100 font-mono"
-                                        placeholder="27AAAAA0000A1Z5"
-                                    />
+                                    <input type="text" readOnly value={formData.gstNumber} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed font-mono" />
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">PAN Number</label>
-                                    <input 
-                                        type="text"
-                                        value={formData.panNumber}
-                                        onChange={(e) => setFormData({...formData, panNumber: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-amber-100 font-mono"
-                                        placeholder="ABCDE1234F"
-                                    />
+                                    <input type="text" readOnly value={formData.panNumber} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed font-mono" />
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">NABH ID</label>
-                                    <input 
-                                        type="text"
-                                        value={formData.nabhId}
-                                        onChange={(e) => setFormData({...formData, nabhId: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-amber-100"
-                                        placeholder="NABH-2024-XXXX"
-                                    />
+                                    <input type="text" readOnly value={formData.nabhId} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed" />
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">ISO Certification ID</label>
-                                    <input 
-                                        type="text"
-                                        value={formData.isoId}
-                                        onChange={(e) => setFormData({...formData, isoId: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-amber-100"
-                                        placeholder="ISO 9001:2015"
-                                    />
+                                    <input type="text" readOnly value={formData.isoId} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed" />
                                 </div>
                             </div>
                         </div>
@@ -534,36 +491,35 @@ const HospitalProfile = () => {
                                 </div>
                                 <button 
                                     type="button" 
-                                    onClick={handleGetCurrentLocation} 
-                                    disabled={locating}
-                                    className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-100 transition-all disabled:opacity-50"
+                                    disabled={true}
+                                    className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-not-allowed"
                                 >
-                                    <Navigation size={14} className={locating ? 'animate-pulse' : ''} />
-                                    {locating ? 'Locating...' : 'Detect Current Location'}
+                                    <Navigation size={14} />
+                                    Detect Current Location
                                 </button>
                             </div>
                             <div className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Street Address</label>
-                                        <input type="text" value={formData.street} onChange={(e) => setFormData({...formData, street: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" placeholder="Building, Street, Area" />
+                                        <input type="text" readOnly value={formData.street} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed" />
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">City / Region</label>
-                                        <input type="text" value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" />
+                                        <input type="text" readOnly value={formData.city} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed" />
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">State</label>
-                                        <input type="text" value={formData.state} onChange={(e) => setFormData({...formData, state: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" />
+                                        <input type="text" readOnly value={formData.state} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed" />
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">PIN Code</label>
-                                        <input type="text" value={formData.pinCode} onChange={(e) => setFormData({...formData, pinCode: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" />
+                                        <input type="text" readOnly value={formData.pinCode} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed" />
                                     </div>
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Google Maps URL</label>
-                                    <input type="url" value={formData.googleMapsUrl} onChange={(e) => setFormData({...formData, googleMapsUrl: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" placeholder="https://maps.google.com/..." />
+                                    <input type="url" readOnly value={formData.googleMapsUrl} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed" />
                                 </div>
                             </div>
                         </div>
@@ -583,23 +539,23 @@ const HospitalProfile = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Contact Phone</label>
-                                        <input type="text" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" />
+                                        <input type="text" readOnly value={formData.phone} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed" />
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Contact Email</label>
-                                        <input type="email" value={formData.contactEmail} onChange={(e) => setFormData({...formData, contactEmail: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" />
+                                        <input type="email" readOnly value={formData.contactEmail} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed" />
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Official Alternate Phone</label>
-                                        <input type="text" value={formData.alternatePhone} onChange={(e) => setFormData({...formData, alternatePhone: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" />
+                                        <input type="text" readOnly value={formData.alternatePhone} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed" />
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Emergency 24/7 (ER)</label>
-                                        <input type="text" value={formData.emergencyPhone} onChange={(e) => setFormData({...formData, emergencyPhone: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" />
+                                        <input type="text" readOnly value={formData.emergencyPhone} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed" />
                                     </div>
                                     <div className="space-y-1 md:col-span-2">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Insurance Providers</label>
-                                        <input type="text" value={formData.insuranceProviders} onChange={(e) => setFormData({...formData, insuranceProviders: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-indigo-100" placeholder="Star, HDFC, etc." />
+                                        <input type="text" readOnly value={formData.insuranceProviders} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed" />
                                     </div>
                                 </div>
                             </div>
@@ -617,33 +573,15 @@ const HospitalProfile = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Lead Administrator Name</label>
-                                    <input 
-                                        type="text"
-                                        value={formData.adminName}
-                                        onChange={(e) => setFormData({...formData, adminName: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-slate-200"
-                                        placeholder="Full Name"
-                                    />
+                                    <input type="text" readOnly value={formData.adminName} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed" />
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Official Designation</label>
-                                    <input 
-                                        type="text"
-                                        value={formData.position}
-                                        onChange={(e) => setFormData({...formData, position: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-slate-200"
-                                        placeholder="e.g. Chief Administrator"
-                                    />
+                                    <input type="text" readOnly value={formData.position} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed" />
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Admin Contact Number</label>
-                                    <input 
-                                        type="tel"
-                                        value={formData.adminPhone}
-                                        onChange={(e) => setFormData({...formData, adminPhone: e.target.value})}
-                                        className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-slate-200"
-                                        placeholder="Personal / Direct Line"
-                                    />
+                                    <input type="text" readOnly value={formData.adminPhone} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed" />
                                 </div>
                             </div>
                             <div className="mt-8 p-6 bg-slate-50 rounded-3xl border border-slate-100 flex items-start gap-4">
