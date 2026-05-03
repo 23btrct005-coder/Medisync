@@ -235,10 +235,7 @@ const DoctorDashboard = () => {
           </div>
         </section>
 
-        {/* Institutional Context Node */}
-        {instStats?.isInstitutional && (
-          <InstitutionalNodeCard stats={instStats} loading={instLoading} />
-        )}
+
 
         {/* Operating Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
