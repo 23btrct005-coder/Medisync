@@ -4,7 +4,7 @@ import api from '../api/axiosConfig';
 const AiConcierge = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([
-        { role: 'ai', text: 'Hello! I am your MediSync Clinical Concierge. I can help with Symptom Analysis, Hospital Comparisons, and Emergency Triage. How are you feeling today?' }
+        { role: 'ai', text: '### 🏥 Welcome!\n- I am your MediSync Clinical Concierge.\n- I can help with Symptom Analysis, Hospital Comparisons, and Emergency Triage.\n- How are you feeling today?' }
     ]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -156,50 +156,142 @@ const AiConcierge = () => {
                     </div>
 
                     {/* Messages */}
-                    <div ref={scrollRef} style={{ flex: 1, padding: '24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '20px', backgroundColor: '#fcfdfe' }}>
+                    <div ref={scrollRef} style={{ flex: 1, padding: '24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '24px', backgroundColor: '#fcfdfe' }}>
                         {messages.map((m, i) => {
                             const isHighRisk = m.text.includes('HIGH') || m.text.includes('CRITICAL');
+                            const isGreeting = i === 0 && m.role === 'ai';
+                            
                             return (
-                                <div key={i} style={{ alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '85%', padding: '16px', borderRadius: '18px', backgroundColor: isHighRisk ? '#fee2e2' : (m.role === 'user' ? '#0066FF' : 'white'), color: m.role === 'user' ? 'white' : '#1e293b', boxShadow: '0 4px 15px rgba(0,0,0,0.03)', fontSize: '13.5px', lineHeight: '1.6', border: isHighRisk ? '1px solid #ef4444' : 'none' }}>
-                                    {m.text.split('\n').map((l, li) => {
-                                        if (l.includes('(/dashboard')) {
-                                            const url = l.match(/\((.*?)\)/)[1];
-                                            return <button key={li} onClick={() => window.location.href = url} style={{ width: '100%', marginTop: '10px', padding: '12px', backgroundColor: '#f0f7ff', color: '#0066FF', border: '1px solid #bfdbfe', borderRadius: '10px', cursor: 'pointer', fontWeight: '800' }}>⚡ BOOK NOW</button>;
-                                        }
-                                        return <div key={li}>{l}</div>;
-                                    })}
-                                    {m.role === 'ai' && i === 0 && !location && (
-                                        <button onClick={requestLocation} style={{ marginTop: '15px', width: '100%', padding: '12px', backgroundColor: '#f0f9ff', color: '#0369a1', border: '1px dashed #bae6fd', borderRadius: '12px', cursor: 'pointer', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                                            📍 SHARE LOCATION FOR LOCAL TRIAGE
-                                        </button>
-                                    )}
-                                    {m.role === 'ai' && i > 0 && (
-                                        <div style={{ marginTop: '12px', pt: '10px', borderTop: '1px solid #f1f5f9', display: 'flex', gap: '15px', alignItems: 'center' }}>
-                                            <div style={{ fontSize: '11px', opacity: 0.6 }}>
-                                                Was this helpful? <span style={{ cursor: 'pointer' }}>👍</span> <span style={{ cursor: 'pointer' }}>👎</span>
-                                            </div>
-                                            <button 
-                                                onClick={() => speak(m.text)}
-                                                style={{ background: 'none', border: 'none', fontSize: '14px', cursor: 'pointer', padding: 0 }}
-                                                title="Read aloud"
-                                            >
-                                                📢
-                                            </button>
+                                <div key={i} style={{ alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '90%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    {/* Sticker Integration (Randomized for variety) */}
+                                    {m.role === 'ai' && !isHighRisk && !isGreeting && i % 3 === 0 && (
+                                        <div style={{ fontSize: '40px', marginBottom: '-10px', marginLeft: '10px', animation: 'bounce 2s infinite' }}>
+                                            {m.text.includes('medicine') ? '💊' : (m.text.includes('heart') ? '❤️' : '✨')}
                                         </div>
                                     )}
+
+                                    <div style={{ padding: '20px 24px', borderRadius: m.role === 'user' ? '28px 28px 4px 28px' : '28px 28px 28px 4px', backgroundColor: isHighRisk ? '#fff1f2' : (m.role === 'user' ? '#0066FF' : 'white'), color: m.role === 'user' ? 'white' : '#334155', boxShadow: m.role === 'user' ? '0 12px 30px rgba(0,102,255,0.2)' : '0 10px 40px rgba(0,0,0,0.05)', fontSize: '14.5px', lineHeight: '1.8', border: isHighRisk ? '2px solid #fda4af' : 'none', position: 'relative', overflow: 'hidden' }}>
+                                        {/* Background accent for AI messages */}
+                                        {m.role === 'ai' && !isHighRisk && <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', backgroundColor: '#0066FF', opacity: 0.8 }} />}
+                                        
+                                        {m.text.split('\n').map((l, li) => {
+                                            const line = l.trim();
+                                            if (!line) return <div key={li} style={{ height: '12px' }} />;
+
+                                            // Styled Topic Headers
+                                            if (line.startsWith('###') || line.startsWith('##') || line.startsWith('#')) {
+                                                const title = line.replace(/#/g, '').trim();
+                                                const colors = ['#0066FF', '#7c3aed', '#059669', '#ea580c'];
+                                                const themeColor = colors[li % colors.length];
+                                                
+                                                return (
+                                                    <div key={li} style={{ backgroundColor: m.role === 'user' ? 'rgba(255,255,255,0.15)' : `${themeColor}10`, padding: '10px 14px', borderRadius: '12px', margin: '14px 0 8px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: m.role === 'user' ? 'white' : themeColor }}></div>
+                                                        <span style={{ fontWeight: '900', fontSize: '13px', color: m.role === 'user' ? 'white' : themeColor, letterSpacing: '1px', textTransform: 'uppercase' }}>{title}</span>
+                                                    </div>
+                                                );
+                                            }
+
+                                            // Styled Lists or Proactive Point Conversion for long lines
+                                            if (line.startsWith('-') || line.startsWith('•') || line.length > 60) {
+                                                return (
+                                                    <div key={li} style={{ display: 'flex', gap: '10px', paddingLeft: '8px', marginBottom: '8px', alignItems: 'flex-start' }}>
+                                                        <div style={{ marginTop: '8px', width: '5px', height: '5px', borderRadius: '50%', backgroundColor: m.role === 'user' ? 'white' : '#94a3b8', flexShrink: 0 }}></div>
+                                                        <span style={{ fontWeight: '500' }}>{line.startsWith('-') || line.startsWith('•') ? line.substring(1).trim() : line}</span>
+                                                    </div>
+                                                );
+                                            }
+
+                                            // Dashboard Links
+                                            if (line.includes('(/dashboard')) {
+                                                const url = line.match(/\((.*?)\)/)[1];
+                                                return <button key={li} onClick={() => { setIsOpen(false); window.location.href = url; }} style={{ width: '100%', marginTop: '16px', padding: '16px', backgroundColor: '#0066FF', color: 'white', border: 'none', borderRadius: '18px', cursor: 'pointer', fontWeight: '900', fontSize: '12px', letterSpacing: '1px', boxShadow: '0 8px 20px rgba(0,102,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>🚀 LAUNCH CLINICAL PORTAL</button>;
+                                            }
+
+                                            // Regular Text with Bold replacement
+                                            const parts = line.split(/(\*\*.*?\*\*)/g);
+                                            return (
+                                                <div key={li} style={{ color: m.role === 'user' ? 'white' : (isHighRisk ? '#991b1b' : '#334155') }}>
+                                                    {parts.map((p, pi) => p.startsWith('**') ? <strong key={pi} style={{ color: m.role === 'user' ? 'white' : '#0f172a', fontWeight: '800' }}>{p.replace(/\*\*/g, '')}</strong> : p)}
+                                                </div>
+                                            );
+                                        })}
+
+                                        {m.role === 'ai' && i === 0 && !location && (
+                                            <button onClick={requestLocation} style={{ marginTop: '20px', width: '100%', padding: '16px', backgroundColor: '#0066FF', color: 'white', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '11px', fontWeight: '900', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', boxShadow: '0 8px 25px rgba(0,102,255,0.2)' }}>
+                                                🛰️ ENABLE LIVE GEOLOCATION TRIAGE
+                                            </button>
+                                        )}
+                                        
+                                        {m.role === 'ai' && i > 0 && (
+                                            <div style={{ marginTop: '18px', pt: '15px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <div style={{ fontSize: '10px', opacity: 0.5, fontWeight: '800', letterSpacing: '0.5px' }}>
+                                                    HELPFUL? <span style={{ cursor: 'pointer', marginLeft: '10px' }}>⭐</span> <span style={{ cursor: 'pointer', marginLeft: '5px' }}>💎</span>
+                                                </div>
+                                                <div style={{ display: 'flex', gap: '10px' }}>
+                                                    <button onClick={() => speak(m.text)} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', width: '32px', height: '32px', borderRadius: '10px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>📢</button>
+                                                    <button onClick={() => { navigator.clipboard.writeText(m.text); toast.success("Copied to clipboard!"); }} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', width: '32px', height: '32px', borderRadius: '10px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>📋</button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div style={{ fontSize: '10px', opacity: 0.4, alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start', padding: '0 12px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                        {m.role === 'ai' ? '🔹 CLINICAL BRAIN' : '🔸 YOU'} • {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </div>
                                 </div>
                             );
                         })}
-                        {isLoading && <div style={{ fontSize: '11px', color: '#94a3b8' }}>Clinical Brain Thinking...</div>}
+                        
+                        <style>{`@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }`}</style>
+                        
+                        {isLoading && (
+                            <div style={{ display: 'flex', gap: '15px', alignItems: 'center', padding: '12px' }}>
+                                <div style={{ display: 'flex', gap: '4px' }}>
+                                    {[0, 1, 2].map(dot => <div key={dot} style={{ width: '8px', height: '8px', backgroundColor: '#0066FF', borderRadius: '50%', animation: `bounce 1s infinite ${dot * 0.2}s` }} />)}
+                                </div>
+                                <div style={{ fontSize: '11px', fontWeight: '900', color: '#94a3b8', letterSpacing: '1.5px', textTransform: 'uppercase' }}>Analyzing Clinical Nodes...</div>
+                            </div>
+                        )}
+                        
+                        {!isLoading && (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px' }}>
+                                {[
+                                    { label: '💊 Active Meds', query: 'What are my active prescriptions?', color: '#0066FF' },
+                                    { label: '🚑 Live ER', query: 'Find the nearest emergency room', color: '#ef4444' },
+                                    { label: '👨‍⚕️ Top Doctors', query: 'Show me available specialists for a checkup', color: '#059669' },
+                                    { label: '🏥 Nav Guide', query: 'Tell me about the hospital layout and reception', color: '#7c3aed' }
+                                ].map((chip, ci) => (
+                                    <button 
+                                        key={ci} 
+                                        onClick={() => handleSend(chip.query)}
+                                        style={{ padding: '12px 20px', borderRadius: '15px', backgroundColor: 'white', border: `2px solid ${chip.color}20`, fontSize: '12px', fontWeight: '800', color: chip.color, cursor: 'pointer', transition: '0.3s', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}
+                                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = `${chip.color}10`; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'white'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                                    >
+                                        {chip.label}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Input */}
-                    <div style={{ padding: '24px', borderTop: '1px solid #f1f5f9', display: 'flex', gap: '12px' }}>
-                        <button onClick={startListening} style={{ width: '45px', height: '45px', borderRadius: '14px', border: 'none', backgroundColor: isListening ? '#ef4444' : '#f1f5f9', cursor: 'pointer' }}>
+                    <div style={{ padding: '20px 24px', borderTop: '1px solid #f1f5f9', display: 'flex', gap: '12px', backgroundColor: 'white' }}>
+                        <button onClick={startListening} style={{ width: '48px', height: '48px', borderRadius: '16px', border: 'none', backgroundColor: isListening ? '#fee2e2' : '#f8fafc', color: isListening ? '#ef4444' : '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.3s' }}>
                             {isListening ? '🛑' : '🎤'}
                         </button>
-                        <input value={input} onChange={(e) => setInput(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleSend()} placeholder="Ask anything..." style={{ flex: 1, padding: '12px', borderRadius: '14px', border: '1px solid #e2e8f0', outline: 'none' }} />
-                        <button onClick={() => handleSend()} style={{ width: '45px', height: '45px', backgroundColor: '#0066FF', color: 'white', border: 'none', borderRadius: '14px', cursor: 'pointer' }}>➔</button>
+                        <div style={{ flex: 1, position: 'relative' }}>
+                            <input 
+                                value={input} 
+                                onChange={(e) => setInput(e.target.value)} 
+                                onKeyPress={(e) => e.key === 'Enter' && handleSend()} 
+                                placeholder="Describe symptoms or ask about doctors..." 
+                                style={{ width: '100%', padding: '14px 18px', borderRadius: '16px', border: '1px solid #e2e8f0', outline: 'none', fontSize: '13px', fontWeight: '500', backgroundColor: '#f8fafc' }} 
+                            />
+                        </div>
+                        <button onClick={() => handleSend()} style={{ width: '48px', height: '48px', backgroundColor: '#0066FF', color: 'white', border: 'none', borderRadius: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,102,255,0.2)' }}>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 14 0"/><path d="m12 5 7 7-7 7"/></svg>
+                        </button>
                     </div>
                 </div>
             )}

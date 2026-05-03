@@ -97,11 +97,18 @@ public class AiService {
                 "User Role: " + (isDoctor ? "Doctor" : "Patient") + ". " +
                 "Language: " + language + ". " +
                 "Style: Be highly interactive and use appropriate medical emojis. " +
-                "STRICT GROUNDING RULES:\n" +
-                "1. ONLY reference the following APPROVED DOCTORS currently in the building:\n" + doctorList + "\n" +
-                "2. If a user asks for a doctor or specialist NOT in this list, say 'I couldn't find that specific doctor, but here are our available specialists.'\n" +
-                "3. NEVER invent names like 'Dr. Smith' or fake room numbers.\n" +
-                "4. If you don't know something about the hospital layout, suggest asking at the Physical Reception ✨.\n\n" +
+                "STRICT FORMATTING RULES:\n" +
+                "1. NEVER use long paragraphs. Responses MUST be divided into clear Topic Sections.\n" +
+                "2. EVERY single piece of information MUST be a bullet point (-).\n" +
+                "3. Use Markdown headers (### Topic) for sections.\n" +
+                "4. Example Format:\n" +
+                "   ### 🏥 Greeting\n" +
+                "   - Hello! I am here to help.\n" +
+                "   ### 🩺 Clinical Advice\n" +
+                "   - Rest well.\n" +
+                "   - Drink fluids.\n\n" +
+                "5. You are a FULLY FUNCTIONAL Clinical AI. Answer ANY question correctly and thoroughly, including health tips, disease explanations, and clinical logistics.\n" +
+                "6. If you don't know something about the hospital layout, suggest asking at the Physical Reception ✨.\n\n" +
                 "Query: " + query;
             
             String neuralResponse = groqAiService.getCompletion(prompt);
@@ -113,7 +120,7 @@ public class AiService {
         }
 
         // 5. Default Greeting (If Neural fails)
-        return translate("Hello! I am your MediSync Clinical Concierge. How can I help you today?", language);
+        return translate("### 🏥 Hello!\n- I am your MediSync Clinical Concierge.\n- How can I help you today?", language);
     }
 
     private String detectLanguage(String query) {
@@ -128,18 +135,16 @@ public class AiService {
 
     private String translate(String text, String lang) {
         if ("tamil".equals(lang)) {
-            if (text.contains("Hello")) return "வணக்கம்! நான் உங்கள் MediSync மருத்துவ உதவியாளர். நான் உங்களுக்கு எப்படி உதவ முடியும்?";
-            if (text.contains("Specialist Recommendation")) return "மருத்துவ நிபுணர் பரிந்துரை";
-            if (text.contains("Active Meds")) return "தற்போதைய மருந்துகள்";
-            if (text.contains("ER")) return "🚨 **அவசரநிலை!** தயவுசெய்து உடனடியாக மருத்துவமனைக்குச் செல்லவும்.";
-            if (text.contains("dental")) return "பல் தொடர்பான பிரச்சனைகளுக்கு, சூடான அல்லது குளிர்ந்த உணவைத் தவிர்க்கவும்.";
-            if (text.contains("cardiology")) return "இதயத் துடிப்பைக் கண்காணித்து, கடினமான வேலைகளைத் தவிர்க்கவும்.";
-            if (text.contains("approved")) return "தற்போது இந்த பிரிவில் மருத்துவர்கள் இல்லை. பொது மருத்துவரை அணுகவும்.";
-            return "உங்களுக்கு உதவ நான் தயாராக உள்ளேன். உங்கள் அறிகுறிகளை விவரிக்கவும்.";
+            if (text.contains("Hello")) return "### 🏥 வணக்கம்!\n- நான் உங்கள் MediSync மருத்துவ உதவியாளர்.\n- நான் உங்களுக்கு எப்படி உதவ முடியும்?";
+            if (text.contains("Specialist Recommendation")) return "### 🩺 மருத்துவ நிபுணர் பரிந்துரை";
+            if (text.contains("Active Meds")) return "### 💊 தற்போதைய மருந்துகள்";
+            if (text.contains("ER")) return "### 🚨 அவசரநிலை!\n- தயவுசெய்து உடனடியாக மருத்துவமனைக்குச் செல்லவும்.";
+            if (text.contains("approved")) return "### ⚠️ அறிவிப்பு\n- தற்போது இந்த பிரிவில் மருத்துவர்கள் இல்லை.\n- பொது மருத்துவரை அணுகவும்.";
+            return "### 🏥 உதவி\n- உங்களுக்கு உதவ நான் தயாராக உள்ளேன்.\n- உங்கள் அறிகுறிகளை விவரிக்கவும்.";
         }
         if ("hindi".equals(lang)) {
-            if (text.contains("Hello")) return "नमस्ते! मैं आपका MediSync क्लिनिकल कंसीयज हूँ। मैं आपकी कैसे मदद कर सकता हूँ?";
-            return "मैं आपकी मदद के लिए यहाँ हूँ। कृपया अपने लक्षणों के बारे में बताएं।";
+            if (text.contains("Hello")) return "### 🏥 नमस्ते!\n- मैं आपका MediSync क्लिनिकल कंसीयज हूँ।\n- मैं आपकी कैसे मदद कर सकता हूँ?";
+            return "### 🏥 सहायता\n- मैं आपकी मदद के लिए यहाँ हूँ।\n- कृपया अपने लक्षणों के बारे में बताएं।";
         }
         return text;
     }
@@ -165,7 +170,15 @@ public class AiService {
     }
 
     private boolean isEmergency(String query) {
-        return query.contains("stroke") || query.contains("cannot breathe") || query.contains("blood");
+        // High-precision emergency detection (Avoid false positives for 'blood bank' or 'blood test')
+        if (query.contains("blood bank") || query.contains("blood test") || query.contains("blood group")) return false;
+        
+        return query.contains("stroke") || 
+               query.contains("cannot breathe") || 
+               query.contains("unconscious") || 
+               query.contains("heart attack") ||
+               query.contains("heavy bleeding") ||
+               query.contains("choking");
     }
 
     public String getLatestBrief(String email) {
