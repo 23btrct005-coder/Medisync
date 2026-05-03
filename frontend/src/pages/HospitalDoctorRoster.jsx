@@ -338,6 +338,40 @@ const HospitalDoctorRoster = () => {
                                     <label className={labelClass}>License Document</label>
                                     <DropZone onFileSelect={setLicenseFile} label="Upload Credentials" type="document" accept=".pdf,image/*" />
                                 </div>
+                            <div className="space-y-8">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                    <h4 className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">3. Institutional Mapping</h4>
+                                </div>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div><label className={labelClass}>Employee ID</label><input type="text" required value={onboardData.employeeId} onChange={(e) => setOnboardData({...onboardData, employeeId: e.target.value})} className={inputClass} placeholder="EMP-2026-001" /></div>
+                                    <div><label className={labelClass}>OPD Room No.</label><input type="text" required value={onboardData.opdRoomNumber} onChange={(e) => setOnboardData({...onboardData, opdRoomNumber: e.target.value})} className={inputClass} placeholder="OPD-204" /></div>
+                                </div>
+                                <div className="space-y-6">
+                                    <label className={labelClass}>Working Days</label>
+                                    <div className="flex flex-wrap gap-3">
+                                        {daysOfWeek.map(day => (
+                                            <button
+                                                key={day}
+                                                type="button"
+                                                onClick={() => handleDayToggle(day)}
+                                                className={`px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.1em] transition-all duration-300 ${
+                                                    onboardData.workingDaysArray.includes(day)
+                                                        ? 'bg-primary text-white shadow-lg'
+                                                        : 'bg-slate-50 text-slate-400'
+                                                }`}
+                                            >
+                                                {day}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                    <div><label className={labelClass}>Shift Starts</label><input type="time" required value={onboardData.startTime} onChange={(e) => setOnboardData({...onboardData, startTime: e.target.value})} className={inputClass} /></div>
+                                    <div><label className={labelClass}>Shift Ends</label><input type="time" required value={onboardData.endTime} onChange={(e) => setOnboardData({...onboardData, endTime: e.target.value})} className={inputClass} /></div>
+                                    <div><label className={labelClass}>Break Time</label><input type="text" required value={onboardData.breakTimings} onChange={(e) => setOnboardData({...onboardData, breakTimings: e.target.value})} className={inputClass} placeholder="13:00 - 14:00" /></div>
+                                    <div><label className={labelClass}>Slot (Min)</label><input type="number" required value={onboardData.slotDuration} onChange={(e) => setOnboardData({...onboardData, slotDuration: e.target.value})} className={inputClass} /></div>
+                                </div>
                             </div>
                         </form>
 
@@ -415,9 +449,10 @@ const HospitalDoctorRoster = () => {
 
                                 <div className="space-y-4">
                                     <label className={labelClass}>Shift Timing Slots</label>
-                                    <div className="grid grid-cols-3 gap-6">
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                                         <div><label className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-2 block">Starts</label><input type="time" value={editData.startTime} onChange={(e) => setEditData({...editData, startTime: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold" /></div>
                                         <div><label className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-2 block">Ends</label><input type="time" value={editData.endTime} onChange={(e) => setEditData({...editData, endTime: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold" /></div>
+                                        <div><label className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-2 block">Break (e.g. 1-2PM)</label><input type="text" value={editData.breakTimings || ''} onChange={(e) => setEditData({...editData, breakTimings: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold" placeholder="13:00 - 14:00" /></div>
                                         <div><label className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-2 block">Slot (Min)</label><input type="number" value={editData.slotDuration || '15'} onChange={(e) => setEditData({...editData, slotDuration: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold" /></div>
                                     </div>
                                 </div>

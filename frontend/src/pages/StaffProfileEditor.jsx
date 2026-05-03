@@ -265,9 +265,10 @@ const StaffProfileEditor = () => {
                                 })}
                             </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-6">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                             <div><label className={labelClass}>Shift Start</label><input type="time" name="startTime" value={formData.startTime} onChange={handleChange} className={inputClass} /></div>
                             <div><label className={labelClass}>Shift End</label><input type="time" name="endTime" value={formData.endTime} onChange={handleChange} className={inputClass} /></div>
+                            <div><label className={labelClass}>Break Timings</label><input type="text" name="breakTimings" value={formData.breakTimings} onChange={handleChange} className={inputClass} placeholder="13:00 - 14:00" /></div>
                             <div><label className={labelClass}>Slot Duration (Min)</label><input type="number" name="slotDuration" value={formData.slotDuration} onChange={handleChange} className={inputClass} /></div>
                             <div><label className={labelClass}>Max Patients/Day</label><input type="number" name="maxPatientsPerDay" value={formData.maxPatientsPerDay} onChange={handleChange} className={inputClass} /></div>
                         </div>
