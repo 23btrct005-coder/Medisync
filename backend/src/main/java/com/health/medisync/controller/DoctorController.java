@@ -184,4 +184,47 @@ public class DoctorController {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
+
+    @GetMapping("/institutional-contacts")
+    public ResponseEntity<?> getInstitutionalContacts(Authentication authentication) {
+        try {
+            Doctor doctor = doctorService.getDoctorProfile(authentication.getName());
+            if (doctor.getHospitalEntity() == null) {
+                return ResponseEntity.ok(List.of());
+            }
+            
+            java.util.List<java.util.Map<String, Object>> contacts = new java.util.ArrayList<>();
+            
+            // 1. Add Hospital Admin
+            hospitalService.getAdminByHospital(doctor.getHospitalEntity()).ifPresent(admin -> {
+                java.util.Map<String, Object> m = new java.util.HashMap<>();
+                m.put("id", admin.getId());
+                m.put("userId", admin.getUser().getId());
+                m.put("name", admin.getName() + " (Institutional Admin)");
+                m.put("role", "HOSPITAL_ADMIN");
+                m.put("profilePictureUrl", admin.getProfilePictureUrl());
+                m.put("position", admin.getPosition());
+                contacts.add(m);
+            });
+            
+            // 2. Add Other Doctors
+            List<Doctor> colleagues = hospitalService.getHospitalDoctors(doctor.getHospitalEntity());
+            for (Doctor d : colleagues) {
+                if (!d.getId().equals(doctor.getId())) {
+                    java.util.Map<String, Object> m = new java.util.HashMap<>();
+                    m.put("id", d.getId());
+                    m.put("userId", d.getUser().getId());
+                    m.put("name", d.getName());
+                    m.put("role", "DOCTOR");
+                    m.put("profilePictureUrl", d.getProfilePictureUrl());
+                    m.put("specialization", d.getSpecialization());
+                    contacts.add(m);
+                }
+            }
+            
+            return ResponseEntity.ok(contacts);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
 }

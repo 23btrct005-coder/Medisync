@@ -50,6 +50,10 @@ public class HospitalService {
                 .orElseThrow(() -> new RuntimeException("Hospital Administrator profile not found"));
     }
 
+    public java.util.Optional<HospitalAdmin> getAdminByHospital(Hospital hospital) {
+        return hospitalAdminRepository.findByHospital(hospital);
+    }
+
     public Map<String, Object> getHospitalStats(Hospital hospital) {
         Map<String, Object> stats = new HashMap<>();
         List<Doctor> doctors = doctorRepository.findByHospitalEntity(hospital);

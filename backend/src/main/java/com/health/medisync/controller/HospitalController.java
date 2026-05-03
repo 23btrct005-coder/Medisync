@@ -98,6 +98,29 @@ public class HospitalController {
         return ResponseEntity.ok(hospitalService.getHospitalPatients(admin.getHospital()));
     }
 
+    @GetMapping("/staff-contacts")
+    public ResponseEntity<?> getStaffContacts(@AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        HospitalAdmin admin = hospitalService.getAdminByUser(user);
+        List<Doctor> doctors = hospitalService.getHospitalDoctors(admin.getHospital());
+        
+        // Transform doctors to a common contact format
+        List<Map<String, Object>> contacts = doctors.stream()
+                .map(d -> {
+                    Map<String, Object> m = new java.util.HashMap<>();
+                    m.put("id", d.getId());
+                    m.put("userId", d.getUser().getId());
+                    m.put("name", d.getName());
+                    m.put("role", "DOCTOR");
+                    m.put("profilePictureUrl", d.getProfilePictureUrl());
+                    m.put("specialization", d.getSpecialization());
+                    return m;
+                })
+                .toList();
+        return ResponseEntity.ok(contacts);
+    }
+
     @GetMapping("/profile")
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<?> getProfile(@AuthenticationPrincipal UserDetails userDetails) {

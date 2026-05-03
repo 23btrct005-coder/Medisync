@@ -7,4 +7,5 @@ import java.util.Optional;
 public interface HospitalAdminRepository extends JpaRepository<HospitalAdmin, Long> {
     Optional<HospitalAdmin> findByUserId(Long userId);
     Optional<HospitalAdmin> findByUserUsernameIgnoreCase(String username);
+    Optional<HospitalAdmin> findByHospital(com.health.medisync.model.Hospital hospital);
 }
