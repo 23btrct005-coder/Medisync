@@ -316,4 +316,7 @@ public class Hospital {
 
     public String getPreferredPaymentMode() { return preferredPaymentMode; }
     public void setPreferredPaymentMode(String preferredPaymentMode) { this.preferredPaymentMode = preferredPaymentMode; }
+
+    public List<HospitalAdmin> getAdmins() { return admins; }
+    public void setAdmins(List<HospitalAdmin> admins) { this.admins = admins; }
 }
