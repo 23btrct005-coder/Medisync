@@ -174,6 +174,14 @@ const HospitalLedger = () => {
                                             </span>
                                         </div>
                                     </td>
+                                    <td className="p-6 text-right">
+                                        <button 
+                                            onClick={() => setSelectedAudit(tx)}
+                                            className="px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[9px] font-black uppercase tracking-widest border border-slate-100 hover:bg-slate-100 transition-all"
+                                        >
+                                            Audit
+                                        </button>
+                                    </td>
                                 </tr>
                             )) : (
                                 <tr>
