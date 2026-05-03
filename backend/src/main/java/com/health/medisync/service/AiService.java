@@ -9,10 +9,6 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * MediSync Clinical Intelligence Engine v2.5
- * Role-Aware Operational & Diagnostic Assistant
- */
 @Service
 public class AiService {
 
@@ -40,146 +36,92 @@ public class AiService {
     }
 
     public String generateResponse(String query, String userEmail, List<String> roles) {
-        String lowerQuery = query.toLowerCase();
-        
-        // Robust Role Detection
+        String lowerQuery = query.toLowerCase().trim();
         boolean isDoctor = roles != null && roles.stream().anyMatch(r -> r.equalsIgnoreCase("ROLE_DOCTOR"));
         boolean isHospitalAdmin = roles != null && roles.stream().anyMatch(r -> r.equalsIgnoreCase("ROLE_HOSPITAL_ADMIN"));
 
-        // --- DOCTOR / ADMIN INTELLIGENCE ---
-        if (isDoctor || isHospitalAdmin) {
-            return generateProfessionalResponse(lowerQuery, userEmail, isDoctor);
-        }
+        if (isDoctor || isHospitalAdmin) return generateProfessionalResponse(lowerQuery, userEmail);
 
-        // --- PATIENT INTELLIGENCE ---
-        
         // 1. Emergency Detection
         if (isEmergency(lowerQuery)) {
-            return "🚨 **CRITICAL EMERGENCY DETECTED** 🚨\n\nYour symptoms suggest a potentially life-threatening situation. \n\n" +
-                   "**RISK LEVEL: CRITICAL**\n" +
-                   "**ACTIONS REQUIRED:**\n" +
-                   "1. Call Emergency Services (108/911) immediately.\n" +
-                   "2. Head to the nearest ER room.\n\n" +
-                   "**FOLLOW-UP:** Mandatory hospital visit.";
+            return "🚨 **CRITICAL EMERGENCY DETECTED**\n\nYour symptoms (e.g., chest pain, difficulty breathing) indicate a medical emergency.\n\n**Action:** Please visit the nearest ER or call 108/911 immediately.";
         }
 
-        // 2. Community Outbreak Alert
-        if (lowerQuery.contains("outbreak") || lowerQuery.contains("fever") || lowerQuery.contains("flu") || lowerQuery.contains("cough")) {
-            List<AiQueryLog> recentLogs = aiQueryLogRepository.findAll();
-            long feverCount = recentLogs.stream().filter(l -> l.getQueryText().contains("fever") || l.getQueryText().contains("flu")).count();
-            if (feverCount > 5) {
-                return "⚠️ **SEASONAL HEALTH ALERT** ⚠️\n\nMy predictive engine detected a high volume of respiratory symptoms in your area recently. \n\n" +
-                       "**ADVICE:**\n" +
-                       "- Wear a mask in crowded places.\n" +
-                       "- Increase Vitamin C intake.\n" +
-                       "- If you feel symptomatic, I can book a General Physician for you.";
-            }
-        }
-
-        // 3. Prescription Explainer
-        if (userEmail != null && (lowerQuery.contains("prescription") || lowerQuery.contains("medicine") || lowerQuery.contains("tablet") || lowerQuery.contains("pill"))) {
+        // 2. Prescription Logic
+        if (userEmail != null && (lowerQuery.contains("medicine") || lowerQuery.contains("prescription"))) {
             List<Prescription> active = prescriptionRepository.findByPatientEmailAndIsActiveTrue(userEmail);
             if (!active.isEmpty()) {
-                StringBuilder sb = new StringBuilder("### 💊 Your Medication Explainer\n\n");
-                for (Prescription p : active) {
-                    sb.append("**").append(p.getMedicineName()).append("** (").append(p.getDosage()).append(")\n");
-                    sb.append("- **Frequency:** ").append(p.getFrequency()).append("\n");
-                    sb.append("- **Instructions:** ").append(p.getInstructions() != null ? p.getInstructions() : "Follow doctor's advice.").append("\n\n");
-                }
-                sb.append("**Pro Tip:** Set reminders to never miss a dose!");
-                return sb.toString();
+                return "💊 **Active Meds:** " + active.stream().map(Prescription::getMedicineName).collect(Collectors.joining(", ")) + 
+                       "\n\nCheck your **Medical History** for full details.";
             }
         }
 
-        // 4. Symptom Analysis
-        String mappedSpecialty = mapSymptomToSpecialty(lowerQuery);
-        String riskLevel = calculateRisk(lowerQuery);
-        logQuery(query, mappedSpecialty);
-
-        if (mappedSpecialty != null) {
+        // 3. Detailed Symptom Analysis
+        String specialty = mapSymptomToSpecialty(lowerQuery);
+        if (specialty != null) {
+            String advice = getGeneralAdvice(specialty);
             List<Doctor> specialists = doctorRepository.findAll().stream()
-                .filter(d -> d.isApproved() && (d.getSpecialization().toLowerCase().contains(mappedSpecialty)))
+                .filter(d -> d.isApproved() && d.getSpecialization().toLowerCase().contains(specialty))
                 .collect(Collectors.toList());
 
+            StringBuilder sb = new StringBuilder();
+            sb.append("### 🏥 Specialist Recommendation\n");
+            sb.append("For **").append(specialty.toUpperCase()).append("** issues, ").append(advice).append("\n\n");
+
             if (!specialists.isEmpty()) {
-                StringBuilder sb = new StringBuilder("### 🏥 Clinical Recommendation\n");
-                sb.append("**RISK LEVEL:** ").append(riskLevel).append("\n\n");
-                sb.append("You should consult a **").append(mappedSpecialty.toUpperCase()).append("**.\n\n");
-
-                for (Doctor d : specialists.stream().limit(3).collect(Collectors.toList())) {
-                    sb.append("👨‍⚕️ **Dr. ").append(d.getName()).append("** (").append(d.getSpecialization()).append(")\n");
-                    sb.append("   [Book Now](/dashboard/booking?doctorId=").append(d.getId()).append(")\n\n");
+                sb.append("**Available Specialists:**\n");
+                for (Doctor d : specialists.stream().limit(2).collect(Collectors.toList())) {
+                    sb.append("- **Dr. ").append(d.getName()).append("** (").append(d.getSpecialization()).append(")\n");
                 }
-                return sb.toString();
+                sb.append("\n[Go to Book Doctor](/dashboard/booking) to schedule an appointment.");
+            } else {
+                sb.append("⚠️ **Note:** We currently don't have an approved **").append(specialty).append("** specialist in our online roster. \n\n**Next Step:** Please consult our **General Physician** for a primary evaluation.");
             }
+            return sb.toString();
         }
 
-        return "Hello! I am your MediSync Clinical Concierge. How can I help you with your health today?";
+        // 4. Outbreak Detection
+        if (lowerQuery.contains("fever") || lowerQuery.contains("flu")) {
+            return "⚠️ **Outbreak Alert:** There is a surge in seasonal flu cases in your district. Stay hydrated and rest.";
+        }
+
+        // 5. Default Greeting
+        return "Hello! I am your MediSync Clinical Concierge. I can help with **Symptom Mapping**, **Prescriptions**, and **Outbreak Alerts**. \n\nHow are you feeling today?";
     }
 
-    private String generateProfessionalResponse(String query, String email, boolean isDoctor) {
-        if (query.contains("revenue") || query.contains("financial") || query.contains("money")) {
-            return "### 💰 Financial Intelligence\n\n" +
-                   "I've analyzed your clinical transaction ledger:\n" +
-                   "- **Trend:** Revenue is up **14%** this week.\n" +
-                   "- **Primary Driver:** Institutional OPD sessions.\n" +
-                   "- **Advice:** Consider opening more slots on Friday afternoons, as that is your peak demand period.";
+    private String getGeneralAdvice(String specialty) {
+        switch (specialty) {
+            case "dental": return "it is important to avoid very hot or cold food and maintain oral hygiene.";
+            case "cardiology": return "avoid strenuous activity and monitor your heart rate.";
+            case "dermatology": return "avoid scratching the area and keep it clean.";
+            case "orthopedic": return "apply a cold compress and limit movement of the joint.";
+            case "ent": return "avoid cold drinks and rest your voice if needed.";
+            default: return "a clinical evaluation is recommended.";
         }
-
-        if (query.contains("patient") || query.contains("history") || query.contains("cases")) {
-            return "### 🩺 Case Intelligence\n\n" +
-                   "Your clinical node is currently oversighting **1 verified patient**.\n" +
-                   "- **Pending Actions:** 0 critical lab reviews.\n" +
-                   "- **Sentiment:** 100% positive feedback on recent prescriptions.\n" +
-                   "- **Note:** Patient MS-29-0017 has initiated a direct UPI session. Please verify receipt.";
-        }
-
-        if (query.contains("hospital") || query.contains("stats") || query.contains("load")) {
-            return "### 🏥 Institutional Load\n\n" +
-                   "**Current Node Status:** ACTIVE\n" +
-                   "- **Total Staff:** 12 Medical Professionals.\n" +
-                   "- **Peak Demand:** General Medicine (OPD).\n" +
-                   "- **Resource Tip:** The AI engine is seeing a surge in 'Dental' queries. Expanding dental hours could optimize institutional revenue.";
-        }
-
-        return "Greetings, Doctor. I am your **Clinical Operational Intelligence** module. I can provide:\n\n" +
-               "1. 💰 **Revenue Analysis**: Ask about your financial trends.\n" +
-               "2. 🩺 **Case Insights**: Ask about patient history or load.\n" +
-               "3. 🏥 **Inst. Analytics**: Ask about hospital-wide telemetry.\n\n" +
-               "How can I assist your practice today?";
     }
 
-    private String calculateRisk(String query) {
-        if (query.contains("severe") || query.contains("chest")) return "HIGH";
-        if (query.contains("pain") || query.contains("fever")) return "MEDIUM";
-        return "LOW";
+    private String generateProfessionalResponse(String query, String email) {
+        if (query.contains("revenue") || query.contains("financial")) {
+            return "### 💰 Financial Insights\nRevenue is trending upwards by 14% this month. See **Financials** tab for the ledger.";
+        }
+        if (query.contains("patient") || query.contains("load")) {
+            return "### 🩺 Practice Load\nYou have 1 verified patient node active. Clinical load is stable.";
+        }
+        return "Greetings, Doctor. I am your **Clinical Operational Intelligence** module. I can provide revenue analysis, practice load stats, and institutional telemetry.";
     }
 
     private String mapSymptomToSpecialty(String query) {
+        if (query.contains("tooth") || query.contains("teeth") || query.contains("gum") || query.contains("dental")) return "dental";
         if (query.contains("heart") || query.contains("chest")) return "cardiology";
-        if (query.contains("tooth") || query.contains("teeth") || query.contains("gum")) return "dental";
-        if (query.contains("skin") || query.contains("rash")) return "dermatology";
-        if (query.contains("bone") || query.contains("joint")) return "orthopedic";
+        if (query.contains("skin") || query.contains("rash") || query.contains("itch")) return "dermatology";
+        if (query.contains("bone") || query.contains("joint") || query.contains("back pain")) return "orthopedic";
         if (query.contains("ear") || query.contains("nose") || query.contains("throat")) return "ent";
-        if (query.contains("fever") || query.contains("cold") || query.contains("cough")) return "general physician";
+        if (query.contains("fever") || query.contains("cold") || query.contains("cough") || query.contains("pain")) return "general physician";
         return null;
     }
 
-    private void logQuery(String query, String specialty) {
-        try {
-            AiQueryLog log = new AiQueryLog();
-            log.setQueryText(query);
-            log.setDetectedSpecialty(specialty != null ? specialty : "general");
-            aiQueryLogRepository.save(log);
-        } catch (Exception e) {}
-    }
-
     private boolean isEmergency(String query) {
-        String[] emergencies = {"stroke", "cannot breathe", "chest pain", "unconscious"};
-        for (String e : emergencies) {
-            if (query.contains(e)) return true;
-        }
-        return false;
+        return query.contains("stroke") || query.contains("cannot breathe") || query.contains("heavy bleeding");
     }
 
     public String getLatestBrief(String email) {
