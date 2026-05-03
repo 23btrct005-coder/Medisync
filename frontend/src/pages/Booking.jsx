@@ -348,6 +348,16 @@ const Booking = () => {
                       <span className="text-xs font-medium text-slate-400 italic">Experience</span>
                       <span className="text-xs font-black uppercase tracking-widest underline decoration-primary decoration-2">{selectedDoctor.yearsOfExperience || '8+'} Years</span>
                     </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex flex-col items-center justify-center p-3 bg-white/5 rounded-2xl border border-white/5">
+                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Duration</span>
+                        <span className="text-[10px] font-bold text-blue-400">{selectedDoctor.slotDuration || 15}m</span>
+                      </div>
+                      <div className="flex flex-col items-center justify-center p-3 bg-white/5 rounded-2xl border border-white/5">
+                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Gap</span>
+                        <span className="text-[10px] font-bold text-indigo-400">{selectedDoctor.slotBuffer || 0}m</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
