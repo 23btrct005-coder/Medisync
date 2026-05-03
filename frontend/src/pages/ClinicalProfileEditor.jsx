@@ -498,7 +498,7 @@ const EditDoctorProfile = () => {
             </div>
             <div>
               <label className={labelClass}>Sub-Specialties</label>
-              <input type="text" name="subSpecialties" value={formData.subSpecialties} onChange={handleChange} readOnly={isAffiliated} className={isAffiliated ? readOnlyInputClass : inputClass} placeholder="e.g. Diabetes, Hypertension" />
+              <input type="text" name="subSpecialties" value={formData.subSpecialties} onChange={handleChange} className={inputClass} placeholder="e.g. Diabetes, Hypertension" />
             </div>
             <div>
               <label className={labelClass}>Medical Degree</label>
@@ -532,19 +532,19 @@ const EditDoctorProfile = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label className={labelClass}>Procedures Handled</label>
-                        <textarea name="proceduresHandled" rows="2" value={formData.proceduresHandled} onChange={handleChange} readOnly={isAffiliated} className={isAffiliated ? readOnlyInputClass : inputClass} placeholder="e.g. Angioplasty, Stent Placement" />
+                        <textarea name="proceduresHandled" rows="2" value={formData.proceduresHandled} onChange={handleChange} className={inputClass} placeholder="e.g. Angioplasty, Stent Placement" />
                     </div>
                     <div>
                         <label className={labelClass}>Treatment Focus</label>
-                        <textarea name="treatmentFocus" rows="2" value={formData.treatmentFocus} onChange={handleChange} readOnly={isAffiliated} className={isAffiliated ? readOnlyInputClass : inputClass} placeholder="e.g. Chronic Heart Failure" />
+                        <textarea name="treatmentFocus" rows="2" value={formData.treatmentFocus} onChange={handleChange} className={inputClass} placeholder="e.g. Chronic Heart Failure" />
                     </div>
                     <div>
                         <label className={labelClass}>Languages Spoken</label>
-                        <input type="text" name="languagesSpoken" value={formData.languagesSpoken} onChange={handleChange} readOnly={isAffiliated} className={isAffiliated ? readOnlyInputClass : inputClass} placeholder="e.g. English, Hindi, Kannada" />
+                        <input type="text" name="languagesSpoken" value={formData.languagesSpoken} onChange={handleChange} className={inputClass} placeholder="e.g. English, Hindi, Kannada" />
                     </div>
                     <div>
                         <label className={labelClass}>Scientific Publications</label>
-                        <input type="text" name="publications" value={formData.publications} onChange={handleChange} readOnly={isAffiliated} className={isAffiliated ? readOnlyInputClass : inputClass} placeholder="Link to research or journal" />
+                        <input type="text" name="publications" value={formData.publications} onChange={handleChange} className={inputClass} placeholder="Link to research or journal" />
                     </div>
                 </div>
             </div>
