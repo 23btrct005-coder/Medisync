@@ -34,9 +34,13 @@ const HospitalDoctorRoster = () => {
     }, []);
 
     const handleDeleteDoctor = async (id) => {
+        if (!id || id === 'undefined') {
+            toast.error("Identification failure: Invalid physician ID");
+            return;
+        }
         if (!window.confirm("CRITICAL: Purging this record will permanently revoke institutional access. Continue?")) return;
         try {
-            await api.delete(`/api/hospital/delete-doctor/${id}`);
+            await api.delete(`/hospital/delete-doctor/${id}`);
             toast.success("Physician record purged successfully");
             setDoctors(doctors.filter(d => d.id !== id));
         } catch (err) {
@@ -46,6 +50,10 @@ const HospitalDoctorRoster = () => {
 
     const handleUpdateDoctor = async (e) => {
         if (e) e.preventDefault();
+        if (!editingDoctor?.id) {
+            toast.error("Synchronization target not identified");
+            return;
+        }
         setSubmitting(true);
         try {
             const workingDays = editData.workingDaysArray?.join(', ') || '';
