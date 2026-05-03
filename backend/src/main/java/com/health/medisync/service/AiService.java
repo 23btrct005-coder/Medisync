@@ -18,6 +18,7 @@ public class AiService {
     private final PrescriptionRepository prescriptionRepository;
     private final AppointmentRepository appointmentRepository;
     private final DoctorService doctorService;
+    private final GroqAiService groqAiService;
     
     private static final Map<String, String> sessionSummaries = new HashMap<>();
 
@@ -26,13 +27,15 @@ public class AiService {
                      AiQueryLogRepository aiQueryLogRepository,
                      PrescriptionRepository prescriptionRepository,
                      AppointmentRepository appointmentRepository,
-                     @Lazy DoctorService doctorService) {
+                     @Lazy DoctorService doctorService,
+                     GroqAiService groqAiService) {
         this.doctorRepository = doctorRepository;
         this.hospitalRepository = hospitalRepository;
         this.aiQueryLogRepository = aiQueryLogRepository;
         this.prescriptionRepository = prescriptionRepository;
         this.appointmentRepository = appointmentRepository;
         this.doctorService = doctorService;
+        this.groqAiService = groqAiService;
     }
 
     public String generateResponse(String query, String userEmail, List<String> roles) {
@@ -82,7 +85,23 @@ public class AiService {
             return sb.toString();
         }
 
-        // 5. Default Greeting
+        // --- NEURAL REASONING FALLBACK (Groq Llama-3.3-70b) ---
+        try {
+            String prompt = "You are the MediSync Clinical Assistant. " +
+                "User Role: " + (isDoctor ? "Doctor" : "Patient") + ". " +
+                "Language: " + language + ". " +
+                "Context: You are integrated into a Hospital Operating System. " +
+                "Query: " + query;
+            
+            String neuralResponse = groqAiService.getCompletion(prompt);
+            if (neuralResponse != null && !neuralResponse.contains("error")) {
+                return neuralResponse;
+            }
+        } catch (Exception e) {
+            System.err.println("NEURAL_HUB_ERROR: " + e.getMessage());
+        }
+
+        // 5. Default Greeting (If Neural fails)
         return translate("Hello! I am your MediSync Clinical Concierge. How can I help you today?", language);
     }
 

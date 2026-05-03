@@ -16,4 +16,9 @@ public interface AiProvider {
      * Gets the name of the AI provider for UI display.
      */
     String getProviderName();
+
+    /**
+     * Performs a general text completion/chat request.
+     */
+    String getCompletion(String prompt);
 }
