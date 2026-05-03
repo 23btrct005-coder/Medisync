@@ -498,7 +498,7 @@ const EditDoctorProfile = () => {
             </div>
             <div>
               <label className={labelClass}>Sub-Specialties</label>
-              <input type="text" name="subSpecialties" value={formData.subSpecialties} onChange={handleChange} className={inputClass} placeholder="e.g. Diabetes, Hypertension" />
+              <input type="text" name="subSpecialties" value={formData.subSpecialties} onChange={handleChange} readOnly={isAffiliated} className={isAffiliated ? readOnlyInputClass : inputClass} placeholder="e.g. Diabetes, Hypertension" />
             </div>
             <div>
               <label className={labelClass}>Medical Degree</label>
@@ -532,19 +532,19 @@ const EditDoctorProfile = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label className={labelClass}>Procedures Handled</label>
-                        <textarea name="proceduresHandled" rows="2" value={formData.proceduresHandled} onChange={handleChange} className={inputClass} placeholder="e.g. Angioplasty, Stent Placement" />
+                        <textarea name="proceduresHandled" rows="2" value={formData.proceduresHandled} onChange={handleChange} readOnly={isAffiliated} className={isAffiliated ? readOnlyInputClass : inputClass} placeholder="e.g. Angioplasty, Stent Placement" />
                     </div>
                     <div>
                         <label className={labelClass}>Treatment Focus</label>
-                        <textarea name="treatmentFocus" rows="2" value={formData.treatmentFocus} onChange={handleChange} className={inputClass} placeholder="e.g. Chronic Heart Failure" />
+                        <textarea name="treatmentFocus" rows="2" value={formData.treatmentFocus} onChange={handleChange} readOnly={isAffiliated} className={isAffiliated ? readOnlyInputClass : inputClass} placeholder="e.g. Chronic Heart Failure" />
                     </div>
                     <div>
                         <label className={labelClass}>Languages Spoken</label>
-                        <input type="text" name="languagesSpoken" value={formData.languagesSpoken} onChange={handleChange} className={inputClass} placeholder="e.g. English, Hindi, Kannada" />
+                        <input type="text" name="languagesSpoken" value={formData.languagesSpoken} onChange={handleChange} readOnly={isAffiliated} className={isAffiliated ? readOnlyInputClass : inputClass} placeholder="e.g. English, Hindi, Kannada" />
                     </div>
                     <div>
                         <label className={labelClass}>Scientific Publications</label>
-                        <input type="text" name="publications" value={formData.publications} onChange={handleChange} className={inputClass} placeholder="Link to research or journal" />
+                        <input type="text" name="publications" value={formData.publications} onChange={handleChange} readOnly={isAffiliated} className={isAffiliated ? readOnlyInputClass : inputClass} placeholder="Link to research or journal" />
                     </div>
                 </div>
             </div>
@@ -572,7 +572,7 @@ const EditDoctorProfile = () => {
             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                     <label className={labelClass}>Slot Size (Minutes)</label>
-                    <select name="slotDuration" value={formData.slotDuration} onChange={handleChange} className={inputClass}>
+                    <select name="slotDuration" value={formData.slotDuration} onChange={handleChange} disabled={isAffiliated} className={isAffiliated ? readOnlyInputClass : inputClass}>
                         <option value={10}>10 Minutes</option>
                         <option value={15}>15 Minutes</option>
                         <option value={30}>30 Minutes</option>
@@ -581,14 +581,14 @@ const EditDoctorProfile = () => {
                 </div>
                 <div>
                     <label className={labelClass}>Max Daily Patients</label>
-                    <input type="number" name="maxPatientsPerDay" value={formData.maxPatientsPerDay} onChange={handleChange} className={inputClass} placeholder="e.g. 40" min="0" />
+                    <input type="number" name="maxPatientsPerDay" value={formData.maxPatientsPerDay} onChange={handleChange} readOnly={isAffiliated} className={isAffiliated ? readOnlyInputClass : inputClass} placeholder="e.g. 40" min="0" />
                 </div>
                 <div>
                     <label className={labelClass}>Break Timings</label>
-                    <input type="text" name="breakTimings" value={formData.breakTimings} onChange={handleChange} className={inputClass} placeholder="e.g. 13:00 - 14:00" />
+                    <input type="text" name="breakTimings" value={formData.breakTimings} onChange={handleChange} readOnly={isAffiliated} className={isAffiliated ? readOnlyInputClass : inputClass} placeholder="e.g. 13:00 - 14:00" />
                 </div>
             </div>
-            <div>
+            <div className={isAffiliated ? 'opacity-50 pointer-events-none' : ''}>
               <label className={labelClass}>
                 Working Days
                 {(formData.appointmentsEnabled || formData.onlineConsultation) && <span className="text-red-500 ml-1 font-bold">*</span>}
@@ -610,7 +610,7 @@ const EditDoctorProfile = () => {
                 ))}
               </div>
             </div>
-            <div className="md:col-span-2">
+            <div className={`md:col-span-2 ${isAffiliated ? 'opacity-50 pointer-events-none' : ''}`}>
               <label className={labelClass}>
                 Consultation Timings
                 {(formData.appointmentsEnabled || formData.onlineConsultation) && <span className="text-red-500 ml-1 font-bold">*</span>}
@@ -623,7 +623,8 @@ const EditDoctorProfile = () => {
                     name="startTime" 
                     value={formData.startTime} 
                     onChange={handleChange} 
-                    className={`${inputClass} pl-14`} 
+                    readOnly={isAffiliated}
+                    className={`${isAffiliated ? readOnlyInputClass : inputClass} pl-14`} 
                   />
                 </div>
                 <div className="relative">
@@ -633,7 +634,8 @@ const EditDoctorProfile = () => {
                     name="endTime" 
                     value={formData.endTime} 
                     onChange={handleChange} 
-                    className={`${inputClass} pl-14`} 
+                    readOnly={isAffiliated}
+                    className={`${isAffiliated ? readOnlyInputClass : inputClass} pl-14`} 
                   />
                 </div>
               </div>
