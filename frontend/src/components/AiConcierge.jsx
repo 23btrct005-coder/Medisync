@@ -1,9 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../api/axiosConfig';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
 
 const AiConcierge = () => {
+    const { user } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
+    
+    // Auth Guard: Only show AI Concierge after a secure session is established
+    if (!user) return null;
+
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [messages, setMessages] = useState([
         { role: 'ai', text: 'Hello! I am your MediSync Clinical Concierge. I can help with Symptom Analysis, Hospital Comparisons, and Emergency Triage. How are you feeling today?' }
