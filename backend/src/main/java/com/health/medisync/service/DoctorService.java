@@ -297,6 +297,7 @@ public class DoctorService {
         if (updates.containsKey("languagesSpoken")) doctor.setLanguagesSpoken((String) updates.get("languagesSpoken"));
         if (updates.containsKey("publications")) doctor.setPublications((String) updates.get("publications"));
         if (updates.containsKey("services")) doctor.setServices((String) updates.get("services"));
+        if (updates.containsKey("serviceFees") && !doctor.isInstitutional()) doctor.setServiceFees((String) updates.get("serviceFees"));
         
         if (updates.containsKey("slotDuration")) {
             Object duration = updates.get("slotDuration");

@@ -96,6 +96,9 @@ public class Doctor {
     @Column(name = "profile_picture_url")
     private String profilePictureUrl;
 
+    @Column(columnDefinition = "TEXT")
+    private String serviceFees; // JSON mapping serviceName -> fee
+
     // Administrative Fields (Admin Only)
     private String staffId;
     private String joiningDate;
@@ -307,4 +310,7 @@ public class Doctor {
 
     public String getServices() { return services; }
     public void setServices(String services) { this.services = services; }
+
+    public String getServiceFees() { return serviceFees; }
+    public void setServiceFees(String serviceFees) { this.serviceFees = serviceFees; }
 }

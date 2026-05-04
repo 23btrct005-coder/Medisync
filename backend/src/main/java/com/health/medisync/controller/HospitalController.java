@@ -186,6 +186,9 @@ public class HospitalController {
             hMap.put("googleMapsUrl", hospital.getGoogleMapsUrl());
             hMap.put("medicalDirectorName", hospital.getMedicalDirectorName());
             hMap.put("medicalDirectorEmail", hospital.getMedicalDirectorEmail());
+            hMap.put("serviceFees", hospital.getServiceFees());
+            hMap.put("services", hospital.getServices());
+            hMap.put("departments", hospital.getDepartments());
             
             // Financial Details
             hMap.put("razorpayAccountId", hospital.getRazorpayAccountId());
@@ -270,6 +273,9 @@ public class HospitalController {
             if (data.get("departments") != null) hospital.setDepartments(String.valueOf(data.get("departments")));
             if (data.get("billingContactEmail") != null) hospital.setBillingContactEmail(String.valueOf(data.get("billingContactEmail")));
             if (data.get("billingContactPhone") != null) hospital.setBillingContactPhone(String.valueOf(data.get("billingContactPhone")));
+            if (data.get("serviceFees") != null) {
+                hospital.setServiceFees(mapper.writeValueAsString(data.get("serviceFees")));
+            }
 
             if (data.get("googleMapsUrl") != null) hospital.setGoogleMapsUrl(String.valueOf(data.get("googleMapsUrl")));
             if (data.get("facebookUrl")   != null) hospital.setFacebookUrl(String.valueOf(data.get("facebookUrl")));

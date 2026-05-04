@@ -92,6 +92,14 @@ const HospitalProfile = () => {
         fetchProfile();
     }, []);
 
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const tab = params.get('tab');
+        if (tab && ['identity', 'compliance', 'location', 'operations', 'environment', 'governance', 'fees', 'settlements'].includes(tab)) {
+            setActiveTab(tab);
+        }
+    }, [location.search]);
+
     const fetchProfile = async () => {
         setLoading(true);
         try {

@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../api/axiosConfig';
 import {
   Stethoscope, Mail, Phone, GraduationCap, BadgeCheck,
   Building2, Clock, Activity, AlertCircle, User, Users, Star,
-  Calendar, CheckCircle, XCircle, Video, Edit3, MapPin, CreditCard, Wallet
+  Calendar, CheckCircle, XCircle, Video, Edit3, MapPin, CreditCard, Wallet, DollarSign
 } from 'lucide-react';
 import ClinicMap from '../components/ClinicMap';
 import toast from 'react-hot-toast';
@@ -58,8 +58,19 @@ const DoctorProfile = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('identity');
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState({
+    serviceFees: {}
+  });
   const [saving, setSaving] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    if (tab && tabs.some(t => t.id === tab)) {
+        setActiveTab(tab);
+    }
+  }, [location.search]);
 
   const startEditing = () => {
     setFormData({
@@ -71,6 +82,7 @@ const DoctorProfile = () => {
       onlineConsultation: user.onlineConsultation || false,
       appointmentsEnabled: user.appointmentsEnabled || false,
       services: user.services || '',
+      serviceFees: user.serviceFees ? (typeof user.serviceFees === 'string' ? JSON.parse(user.serviceFees) : user.serviceFees) : {}
     });
     setIsEditing(true);
   };
@@ -78,7 +90,10 @@ const DoctorProfile = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await api.post('/doctor/profile/sync', formData);
+      await api.post('/doctor/profile/sync', {
+        ...formData,
+        serviceFees: JSON.stringify(formData.serviceFees)
+      });
       toast.success("Profile synchronized successfully");
       await refreshUser();
       setIsEditing(false);
@@ -110,6 +125,7 @@ const DoctorProfile = () => {
     { id: 'professional', label: 'Professional', icon: GraduationCap },
     { id: 'expertise', label: 'Expertise', icon: Stethoscope },
     { id: 'practice', label: 'Practice', icon: Clock },
+    ...(!user?.institutional ? [{ id: 'fees', label: 'Fees', icon: DollarSign }] : []),
     { id: 'transactional', label: 'Settlements', icon: Wallet },
   ];
 
@@ -161,17 +177,25 @@ const DoctorProfile = () => {
                         disabled={saving}
                         className="flex items-center justify-center gap-3 bg-blue-600 text-white font-black uppercase tracking-widest text-[10px] px-8 py-4 rounded-[2rem] hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 active:scale-95 disabled:opacity-50"
                     >
-                        <Save size={16} /> {saving ? 'Syncing...' : 'Save Changes'}
+                        <Save size={16} /> {saving ? 'Syncing...' : 'Save Configuration'}
                     </button>
                 </div>
-            ) : !user.institutional ? (
-                <button 
-                    onClick={() => navigate('/doctor-dashboard/profile/edit')}
-                    className="flex items-center justify-center gap-3 bg-slate-900 text-white font-black uppercase tracking-widest text-[10px] px-8 py-4 rounded-[2rem] hover:bg-blue-600 transition-all shadow-xl shadow-slate-900/20 active:scale-95 group"
-                >
-                    <Edit3 size={16} className="group-hover:rotate-12 transition-transform" />
-                    Modify Clinical Profile
-                </button>
+            ) : !user.institutional || activeTab === 'fees' ? (
+                <div className="flex gap-2">
+                    <button 
+                        onClick={() => setIsEditing(false)}
+                        className="flex items-center justify-center gap-3 bg-slate-100 text-slate-500 font-black uppercase tracking-widest text-[10px] px-6 py-4 rounded-[2rem] hover:bg-slate-200 transition-all active:scale-95"
+                    >
+                        <X size={16} /> Discard
+                    </button>
+                    <button 
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="flex items-center justify-center gap-3 bg-blue-600 text-white font-black uppercase tracking-widest text-[10px] px-8 py-4 rounded-[2rem] hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 active:scale-95 disabled:opacity-50"
+                    >
+                        <Save size={16} /> {saving ? 'Syncing...' : 'Save Configuration'}
+                    </button>
+                </div>
             ) : (
                 <div className="flex items-center gap-3">
                     <button 
@@ -477,6 +501,66 @@ const DoctorProfile = () => {
                 </div>
             )}
 
+            {activeTab === 'fees' && (
+                <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="flex items-center gap-4 mb-8">
+                        <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
+                            <CreditCard size={24} />
+                        </div>
+                        <div className="flex-1">
+                            <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Service <span className="not-italic text-emerald-600">Fee Registry</span></h3>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Configure Pricing for Clinical Services</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 mb-8">
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-2">
+                                <ShieldCheck size={14} className="text-blue-600" /> Active Service Nodes
+                            </p>
+                            <p className="text-xs text-slate-400 mt-2 italic leading-relaxed">
+                                Set your professional consultation and diagnostic fees. These values are used for automated patient billing and digital concierge triage.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {(user.services || formData.services)?.split(', ').filter(s => s).map((service, idx) => (
+                                <div key={idx} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm group hover:border-emerald-200 transition-all">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block mb-3">{service}</label>
+                                    <div className="relative">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</div>
+                                        <input 
+                                            type="number"
+                                            value={formData.serviceFees?.[service] || (user.serviceFees ? (typeof user.serviceFees === 'string' ? JSON.parse(user.serviceFees) : user.serviceFees)[service] : '') || ''}
+                                            onChange={(e) => {
+                                                const newFees = { ...formData.serviceFees, [service]: e.target.value };
+                                                setFormData({ ...formData, serviceFees: newFees });
+                                                if (!isEditing) setIsEditing(true);
+                                            }}
+                                            placeholder="Set Fee (e.g. 500)"
+                                            className="w-full pl-10 pr-6 py-4 bg-slate-50 border-none rounded-2xl text-sm font-black text-slate-800 focus:ring-2 ring-emerald-100"
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+
+                            {!(user.services || formData.services) && (
+                                <div className="md:col-span-2 text-center py-20 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
+                                    <Activity size={48} className="mx-auto text-slate-200 mb-4" />
+                                    <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">No Clinical Services Enabled</p>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setActiveTab('expertise')}
+                                        className="mt-4 text-blue-600 text-[10px] font-black uppercase hover:underline"
+                                    >
+                                        Go to Expertise to enable services
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+            )}
+            
             {activeTab === 'transactional' && (
                 <Section title="Transactional Identity" icon={Wallet}>
                     <div className="py-6 border-b border-slate-50">

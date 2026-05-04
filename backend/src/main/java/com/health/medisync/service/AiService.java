@@ -171,8 +171,9 @@ public class AiService {
                     String address = d.getClinicAddress() != null ? d.getClinicAddress() : "Consultation Node";
                     String services = (d.getProceduresHandled() != null ? d.getProceduresHandled() : "") + 
                                      (d.getTreatmentFocus() != null ? " | Focus: " + d.getTreatmentFocus() : "");
-                    return String.format("- Dr. %s (%s) [%s] - Address: %s - Services: %s", 
-                         d.getName(), d.getSpecialization(), affiliation, address, services.isEmpty() ? "General Clinical Care" : services);
+                    String feeRegistry = d.getServiceFees() != null ? " | Fee Registry: " + d.getServiceFees() : "";
+                    return String.format("- Dr. %s (%s) [%s] - Address: %s - Services: %s%s", 
+                         d.getName(), d.getSpecialization(), affiliation, address, services.isEmpty() ? "General Clinical Care" : services, feeRegistry);
                 })
                 .collect(Collectors.joining("\n"));
 
@@ -184,12 +185,13 @@ public class AiService {
                         h.getCity() != null ? h.getCity() : "",
                         h.getState() != null ? h.getState() : "",
                         h.getPinCode() != null ? h.getPinCode() : "").trim();
-                    return String.format("- %s (Type: %s) - Address: %s - Departments: %s - Clinical Facilities: %s", 
+                    return String.format("- %s (Type: %s) - Address: %s - Departments: %s - Clinical Facilities: %s - Pricing: %s", 
                         h.getName(), 
                         h.getHospitalType() != null ? h.getHospitalType() : "General",
                         fullAddress.isEmpty() ? h.getLocation() : fullAddress,
                         h.getDepartments() != null ? h.getDepartments() : "General Medicine",
-                        h.getServices() != null ? h.getServices() : "Emergency Triage");
+                        h.getServices() != null ? h.getServices() : "Emergency Triage",
+                        h.getServiceFees() != null ? h.getServiceFees() : "Contact for pricing");
                 })
                 .collect(Collectors.joining("\n"));
 

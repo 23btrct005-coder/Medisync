@@ -13,6 +13,7 @@ public class DoctorDTO {
     private String profilePictureUrl;
     private boolean approved;
     private String services;
+    private String serviceFees;
 
     // Institutional Sync Fields
     private String consultationFee;
@@ -89,6 +90,7 @@ public class DoctorDTO {
         this.profilePictureUrl = d.getProfilePictureUrl();
         this.approved = d.isApproved();
         this.services = d.getServices();
+        this.serviceFees = d.getServiceFees();
         
         // Populate Institutional Sync Fields
         this.consultationFee = d.getConsultationFee();
@@ -319,4 +321,7 @@ public class DoctorDTO {
 
     public String getServices() { return services; }
     public void setServices(String services) { this.services = services; }
+
+    public String getServiceFees() { return serviceFees; }
+    public void setServiceFees(String serviceFees) { this.serviceFees = serviceFees; }
 }

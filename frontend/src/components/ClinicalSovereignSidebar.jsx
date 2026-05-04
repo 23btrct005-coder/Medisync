@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, LogOut, Activity, UserCircle, Calendar, Building2, TrendingUp, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, Activity, UserCircle, Calendar, Building2, TrendingUp, MessageSquare, DollarSign } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import api from '../api/axiosConfig';
@@ -49,6 +49,12 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
       path: `${prefix}/messages`, 
       icon: <MessageSquare size={20} />,
       badge: unreadChatCount
+    },
+    { 
+      name: 'Fee Structure', 
+      path: isAdmin ? `${prefix}/institutional-profile?tab=fees` : `${prefix}/profile?tab=fees`, 
+      icon: <DollarSign size={20} />,
+      hidden: !isAdmin && user?.institutional
     },
     ...(isAdmin ? [
       {
