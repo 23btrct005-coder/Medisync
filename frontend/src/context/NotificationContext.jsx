@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import { useAuth } from './AuthContext';
@@ -14,6 +14,7 @@ export const NotificationProvider = ({ children }) => {
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [lastMessage, setLastMessage] = useState(null);
   const [stompClient, setStompClient] = useState(null);
+  const stompClientRef = useRef(null);
 
   const fetchNotifications = useCallback(async () => {
     if (!user) return;
@@ -38,47 +39,42 @@ export const NotificationProvider = ({ children }) => {
     }
   }, [user]);
 
-  useEffect(() => {
-    if (user) {
-      fetchNotifications();
-      connectWebSocket();
-    } else {
-      disconnectWebSocket();
+  const disconnectWebSocket = useCallback(() => {
+    if (stompClientRef.current) {
+      try {
+        stompClientRef.current.disconnect();
+      } catch (e) {}
+      stompClientRef.current = null;
+      setStompClient(null);
     }
-    return () => disconnectWebSocket();
-  }, [user]);
+  }, []);
 
-  const connectWebSocket = () => {
+  const connectWebSocket = useCallback(() => {
+    if (stompClientRef.current && stompClientRef.current.connected) return;
+
     const token = localStorage.getItem('token');
-    const wsUrl = rawBaseURL.startsWith('https') 
-      ? `${rawBaseURL}/ws` 
-      : `${rawBaseURL}/ws`;
+    const wsUrl = `${rawBaseURL}/ws`;
 
     const socket = new SockJS(wsUrl);
     const client = Stomp.over(socket);
-    
-    client.debug = (msg) => {
-      if (process.env.NODE_ENV === 'development') console.log(msg);
-    };
+    client.debug = () => {};
 
-    const headers = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
     client.connect(headers, () => {
+      stompClientRef.current = client;
       setStompClient(client);
       
-      // Standard Spring User Destination subscription
-      // Spring automatically maps /user/queue/notifications to the authenticated user's private queue
       client.subscribe(`/user/queue/notifications`, (message) => {
         const newNotification = JSON.parse(message.body);
-        setNotifications(prev => [newNotification, ...prev]);
+        setNotifications(prev => {
+          if (prev.some(n => n.id === newNotification.id)) return prev;
+          return [newNotification, ...prev];
+        });
         setUnreadCount(prev => prev + 1);
         
-        // Instant visual feedback for incoming signals
         toast.custom((t) => (
-          <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-white/90 backdrop-blur-xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] rounded-2xl pointer-events-auto flex ring-1 ring-black ring-opacity-5 border-l-4 border-primary overflow-hidden`}>
+          <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-white/90 backdrop-blur-xl shadow-2xl rounded-2xl pointer-events-auto flex ring-1 ring-black ring-opacity-5 border-l-4 border-primary overflow-hidden`}>
             <div className="flex-1 w-0 p-4">
               <div className="flex items-start">
                 <div className="ml-3 flex-1">
@@ -89,18 +85,12 @@ export const NotificationProvider = ({ children }) => {
               </div>
             </div>
             <div className="flex border-l border-slate-100">
-              <button
-                onClick={() => toast.dismiss(t.id)}
-                className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-xs font-bold text-slate-400 hover:text-slate-600 focus:outline-none"
-              >
-                Dismiss
-              </button>
+              <button onClick={() => toast.dismiss(t.id)} className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-xs font-bold text-slate-400 hover:text-slate-600 focus:outline-none">Dismiss</button>
             </div>
           </div>
-        ), { duration: 6000 });
+        ), { duration: 6000, id: `notif-${newNotification.id}` });
       });
 
-      // Subscribe to Chat Messages
       client.subscribe(`/user/queue/messages`, (message) => {
           const newMsg = JSON.parse(message.body);
           setUnreadChatCount(prev => prev + 1);
@@ -109,23 +99,23 @@ export const NotificationProvider = ({ children }) => {
 
     }, (error) => {
       if (user) {
-        console.error("CRITICAL: WebSocket connection failed.");
-        console.error("Error details:", error);
-        if (error && error.type === 'close') {
-           console.error("Connection closed by remote peer or network reset.");
-        }
-        console.log("Retrying WebSocket connection in 5s...");
+        stompClientRef.current = null;
+        setStompClient(null);
         setTimeout(connectWebSocket, 5000);
       }
     });
-  };
+  }, [user]);
 
-  const disconnectWebSocket = () => {
-    if (stompClient) {
-      stompClient.disconnect();
-      setStompClient(null);
+  useEffect(() => {
+    if (user) {
+      fetchNotifications();
+      fetchUnreadChatCount();
+      connectWebSocket();
+    } else {
+      disconnectWebSocket();
     }
-  };
+    return () => disconnectWebSocket();
+  }, [user, connectWebSocket, disconnectWebSocket, fetchNotifications, fetchUnreadChatCount]);
 
   const markAsRead = async (id) => {
     try {
