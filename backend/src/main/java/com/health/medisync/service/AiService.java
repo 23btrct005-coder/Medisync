@@ -47,7 +47,7 @@ public class AiService {
         this.reportRepository = reportRepository;
     }
 
-    public String generateResponse(String query, String userEmail, List<String> roles, String location) {
+    public String generateResponse(String query, List<Map<String, String>> history, String userEmail, List<String> roles, String location) {
         String lowerQuery = query.toLowerCase().trim();
         boolean isDoctor = roles != null && roles.stream().anyMatch(r -> r.equalsIgnoreCase("ROLE_DOCTOR"));
         boolean isHospitalAdmin = roles != null && roles.stream().anyMatch(r -> r.equalsIgnoreCase("ROLE_HOSPITAL_ADMIN"));
@@ -153,6 +153,15 @@ public class AiService {
             }
         }
 
+        // --- CONVERSATION HISTORY ---
+        StringBuilder historyContext = new StringBuilder();
+        if (history != null && !history.isEmpty()) {
+            historyContext.append("Previous Conversation Context:\n");
+            for (Map<String, String> msg : history) {
+                historyContext.append(msg.get("role").toUpperCase()).append(": ").append(msg.get("text")).append("\n");
+            }
+        }
+
         // --- NEURAL REASONING (Expert Physician Profile) ---
         try {
             List<Doctor> allDoctors = doctorRepository.findByApprovedTrue();
@@ -189,6 +198,7 @@ public class AiService {
                 "Patient Clinical Profile: " + clinicalHistory.toString() + ". " +
                 "Current Location: " + (location != null ? location : "Unknown") + ". " +
                 "Language: " + language + ". " +
+                (historyContext.length() > 0 ? historyContext.toString() : "") + "\n" +
                 "STRICT PROTOCOLS:\n" +
                 "1. NO PARAGRAPHS. NO GREETINGS. NO DISCLAIMERS. NO INTRODUCTIONS.\n" +
                 "2. PRIORITIZE HISTORY: If the patient has a history of ENT issues or symptoms like ear pain, recommend ENT specialists first. DO NOT show Cardiology unless it's relevant to the query.\n" +

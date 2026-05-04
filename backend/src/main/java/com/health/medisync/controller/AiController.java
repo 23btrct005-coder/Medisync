@@ -23,10 +23,12 @@ public class AiController {
     }
 
     @PostMapping("/chat")
-    public ResponseEntity<?> chat(@RequestBody Map<String, String> request) {
+    public ResponseEntity<?> chat(@RequestBody Map<String, Object> request) {
         try {
-            String userMessage = request.get("message");
-            String location = request.get("location");
+            String userMessage = (String) request.get("message");
+            String location = (String) request.get("location");
+            java.util.List<Map<String, String>> history = (java.util.List<Map<String, String>>) request.get("history");
+
             if (userMessage == null || userMessage.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Message cannot be empty"));
             }
@@ -39,7 +41,7 @@ public class AiController {
                 auth.getAuthorities().forEach(a -> roles.add(a.getAuthority()));
             }
 
-            String response = aiService.generateResponse(userMessage, patientEmail, roles, location);
+            String response = aiService.generateResponse(userMessage, history, patientEmail, roles, location);
             return ResponseEntity.ok(Map.of("response", response));
         } catch (Exception e) {
             e.printStackTrace();

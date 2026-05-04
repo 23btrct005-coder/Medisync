@@ -109,7 +109,8 @@ const AiConcierge = () => {
         try {
             const res = await api.post('/ai/chat', { 
                 message: textToSend,
-                location: location ? `${location.lat},${location.lng}` : null
+                location: location ? `${location.lat},${location.lng}` : null,
+                history: messages.slice(-5) // Send last 5 messages for context
             });
             const aiMsg = { role: 'ai', text: res.data.response };
             setMessages(prev => [...prev, aiMsg]);
