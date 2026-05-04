@@ -481,7 +481,6 @@ const DoctorProfile = () => {
                                     </span>
                                 )}
                             </div>
-                            </div>
                         </div>
 
                         {/* Clinical Absence Shield */}
