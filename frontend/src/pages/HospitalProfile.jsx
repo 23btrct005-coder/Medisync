@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, Shield, CreditCard, Globe, MapPin, Phone, Mail, FileText, Camera, CheckCircle, AlertCircle, Save, Loader2, Activity, User, Navigation, DollarSign, Clock } from 'lucide-react';
+import { Building2, Shield, CreditCard, Globe, MapPin, Phone, Mail, FileText, Camera, CheckCircle, AlertCircle, Save, Loader2, Activity, User, Navigation, DollarSign, Clock, Monitor } from 'lucide-react';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -922,60 +922,87 @@ const HospitalProfile = () => {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {formData.services.split(', ').filter(s => s).map((service, idx) => (
-                                        <div key={idx} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm group hover:border-emerald-200 transition-all">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block mb-3">{service}</label>
-                                            <div className="grid grid-cols-3 gap-3">
-                                                <div className="relative">
-                                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</div>
-                                                    <input 
-                                                        type="number"
-                                                        min="0"
-                                                        required
-                                                        value={formData.serviceFees[service] || ''}
-                                                        onChange={(e) => {
-                                                            const val = e.target.value;
-                                                            if (val < 0) return;
-                                                            const newFees = { ...formData.serviceFees, [service]: val };
-                                                            setFormData({ ...formData, serviceFees: newFees });
-                                                        }}
-                                                        placeholder="Fee"
-                                                        className="w-full pl-7 pr-3 py-3 bg-slate-50 border-none rounded-xl text-xs font-black text-slate-800 focus:ring-2 ring-emerald-100"
-                                                    />
+                                        <div key={idx} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm group hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 transition-all animate-in fade-in zoom-in-95 duration-500" style={{ animationDelay: `${idx * 50}ms` }}>
+                                            <div className="flex items-center justify-between mb-6">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2.5 bg-slate-50 text-slate-400 group-hover:bg-primary/10 group-hover:text-primary rounded-xl transition-colors">
+                                                        <Activity size={18} />
+                                                    </div>
+                                                    <h4 className="text-[11px] font-black text-slate-700 uppercase tracking-tight leading-none">{service}</h4>
                                                 </div>
-                                                <div className="relative">
-                                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-[10px]">Min</div>
-                                                    <input 
-                                                        type="number"
-                                                        min="0"
-                                                        required
-                                                        value={formData.serviceDurations[service] || ''}
-                                                        onChange={(e) => {
-                                                            const val = e.target.value;
-                                                            if (val < 0) return;
-                                                            const newDurations = { ...formData.serviceDurations, [service]: val };
-                                                            setFormData({ ...formData, serviceDurations: newDurations });
-                                                        }}
-                                                        placeholder="Time"
-                                                        className="w-full pl-3 pr-9 py-3 bg-slate-50 border-none rounded-xl text-xs font-black text-slate-800 focus:ring-2 ring-emerald-100"
-                                                    />
+                                                <span className="text-[8px] font-black px-2 py-1 bg-emerald-50 text-emerald-600 rounded-lg uppercase tracking-widest">Active</span>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 gap-4">
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                        <DollarSign size={10} /> Base Consultation Fee
+                                                    </label>
+                                                    <div className="relative">
+                                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 font-black text-sm">₹</div>
+                                                        <input 
+                                                            type="number"
+                                                            min="0"
+                                                            required
+                                                            value={formData.serviceFees[service] || ''}
+                                                            onChange={(e) => {
+                                                                const val = e.target.value;
+                                                                if (val < 0) return;
+                                                                const newFees = { ...formData.serviceFees, [service]: val };
+                                                                setFormData({ ...formData, serviceFees: newFees });
+                                                            }}
+                                                            placeholder="0.00"
+                                                            className="w-full pl-8 pr-4 py-4 bg-slate-50 border border-transparent rounded-2xl text-sm font-black text-slate-800 focus:bg-white focus:border-primary/20 focus:ring-4 ring-primary/5 transition-all outline-none"
+                                                        />
+                                                    </div>
                                                 </div>
-                                                <div className="relative">
-                                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-[10px]">Sys</div>
-                                                    <input 
-                                                        type="number"
-                                                        min="1"
-                                                        required
-                                                        value={formData.serviceCapacity?.[service] || '1'}
-                                                        onChange={(e) => {
-                                                            const val = e.target.value;
-                                                            if (val < 1) return;
-                                                            const newCapacity = { ...formData.serviceCapacity, [service]: val };
-                                                            setFormData({ ...formData, serviceCapacity: newCapacity });
-                                                        }}
-                                                        placeholder="Count"
-                                                        title="Number of machines/systems available"
-                                                        className="w-full pl-3 pr-9 py-3 bg-slate-50 border-none rounded-xl text-xs font-black text-slate-800 focus:ring-2 ring-emerald-100"
-                                                    />
+
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-1.5">
+                                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                            <Clock size={10} /> Time Slot
+                                                        </label>
+                                                        <div className="relative">
+                                                            <input 
+                                                                type="number"
+                                                                min="0"
+                                                                required
+                                                                value={formData.serviceDurations[service] || ''}
+                                                                onChange={(e) => {
+                                                                    const val = e.target.value;
+                                                                    if (val < 0) return;
+                                                                    const newDurations = { ...formData.serviceDurations, [service]: val };
+                                                                    setFormData({ ...formData, serviceDurations: newDurations });
+                                                                }}
+                                                                placeholder="Mins"
+                                                                className="w-full px-4 py-4 bg-slate-50 border border-transparent rounded-2xl text-sm font-black text-slate-800 focus:bg-white focus:border-primary/20 focus:ring-4 ring-primary/5 transition-all outline-none"
+                                                            />
+                                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-[10px] pointer-events-none">MIN</div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-1.5">
+                                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                            <Monitor size={10} /> Capacity
+                                                        </label>
+                                                        <div className="relative">
+                                                            <input 
+                                                                type="number"
+                                                                min="1"
+                                                                required
+                                                                value={formData.serviceCapacity?.[service] || '1'}
+                                                                onChange={(e) => {
+                                                                    const val = e.target.value;
+                                                                    if (val < 1) return;
+                                                                    const newCapacity = { ...formData.serviceCapacity, [service]: val };
+                                                                    setFormData({ ...formData, serviceCapacity: newCapacity });
+                                                                }}
+                                                                placeholder="Systems"
+                                                                className="w-full px-4 py-4 bg-slate-50 border border-transparent rounded-2xl text-sm font-black text-slate-800 focus:bg-white focus:border-primary/20 focus:ring-4 ring-primary/5 transition-all outline-none"
+                                                            />
+                                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-[10px] pointer-events-none">SYS</div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
