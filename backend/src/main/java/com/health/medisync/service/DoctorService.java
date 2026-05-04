@@ -205,10 +205,32 @@ public class DoctorService {
         return saved;
     }
 
+    @Transactional
     public Doctor updateProfile(String doctorUsername, Map<String, Object> updates) {
         Doctor doctor = getDoctorProfile(doctorUsername);
         System.out.println("DEBUG: Profile sync for " + doctorUsername);
         System.out.println("DEBUG: Incoming updates: " + updates);
+
+        List<String> changedFields = new ArrayList<>();
+        
+        // Track Changes for Governance
+        trackChange("Name", doctor.getName(), (String) updates.get("name"), changedFields);
+        trackChange("Phone", doctor.getPhone(), (String) updates.get("phone"), changedFields);
+        trackChange("Specialization", doctor.getSpecialization(), (String) updates.get("specialization"), changedFields);
+        trackChange("Consultation Fee", doctor.getConsultationFee(), updates.get("consultationFee") != null ? updates.get("consultationFee").toString() : null, changedFields);
+        trackChange("Clinical Window", doctor.getConsultationTimings(), (String) updates.get("consultationTimings"), changedFields);
+        trackChange("Clinic Address", doctor.getClinicAddress(), (String) updates.get("clinicAddress"), changedFields);
+        trackChange("Clinical Services", doctor.getServices(), (String) updates.get("services"), changedFields);
+        
+        // Handle Numeric conversions with care
+        if (updates.containsKey("yearsOfExperience")) {
+            Integer oldExp = doctor.getYearsOfExperience();
+            try {
+                Object exp = updates.get("yearsOfExperience");
+                Integer newExp = (exp instanceof Number) ? ((Number) exp).intValue() : Integer.parseInt(exp.toString().trim());
+                if (!Objects.equals(oldExp, newExp)) changedFields.add("Experience (" + newExp + " years)");
+            } catch (Exception e) {}
+        }
         
         if (updates.containsKey("name")) doctor.setName((String) updates.get("name"));
         if (updates.containsKey("phone")) doctor.setPhone((String) updates.get("phone"));
@@ -323,7 +345,39 @@ public class DoctorService {
             }
         }
 
-        return doctorRepository.save(doctor);
+        doctorRepository.save(doctor);
+        
+        // Institutional Governance: Notify Admin of changes
+        if (!changedFields.isEmpty() && doctor.getHospitalEntity() != null) {
+            String changeSummary = String.join(", ", changedFields);
+            Hospital hospital = doctor.getHospitalEntity();
+            
+            System.out.println("INFO: Notifying Admins of " + hospital.getName() + " about profile changes for Dr. " + doctor.getName());
+            
+            if (hospital.getAdmins() != null) {
+                for (HospitalAdmin admin : hospital.getAdmins()) {
+                    if (admin.isApproved()) {
+                        notificationService.sendNotification(
+                            admin.getUser().getId(),
+                            "INSTITUTIONAL",
+                            "Staff Profile Update",
+                            "Dr. " + doctor.getName() + " has updated clinical profile parameters: " + changeSummary,
+                            "/hospital-dashboard/staff",
+                            "Review Staff"
+                        );
+                    }
+                }
+            }
+        }
+
+        return doctor;
+    }
+
+    private void trackChange(String fieldName, Object oldVal, Object newVal, List<String> changes) {
+        if (newVal == null) return;
+        if (!Objects.equals(oldVal, newVal)) {
+            changes.add(fieldName);
+        }
     }
 
     public void updateProfilePhoto(String username, org.springframework.web.multipart.MultipartFile photo) {
