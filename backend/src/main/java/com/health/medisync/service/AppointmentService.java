@@ -85,15 +85,25 @@ public class AppointmentService {
             throw new RuntimeException("This doctor is not accepting appointments at the moment.");
         }
 
-        // Concurrency check (Harden: Final Conflict Shield)
+        // Concurrency & Resource Capacity Shield
         LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(10);
-        List<Appointment> conflicts = appointmentRepository.findConflictingAppointments(doctor, date, slot, expiryTime);
-        if (!conflicts.isEmpty()) {
-            boolean hasBooked = conflicts.stream().anyMatch(a -> a.getStatus() == Appointment.AppointmentStatus.BOOKED);
-            if (hasBooked) {
-                throw new RuntimeException("This slot is already officially booked by another patient. Please select another cloud window.");
-            }
-            throw new RuntimeException("This slot is currently being authorized by another patient. Please wait a few minutes or choose another time.");
+        List<Appointment> conflicts = appointmentRepository.findConflictingClinicServiceAppointments(doctor.getId(), null, date, slot, expiryTime);
+        
+        int capacity = 1;
+        String capacityJson = doctor.getServiceCapacity();
+        if (capacityJson != null) {
+            try {
+                org.json.JSONObject capacities = new org.json.JSONObject(capacityJson);
+                if (capacities.has("General Consultation")) {
+                    capacity = capacities.getInt("General Consultation");
+                } else if (capacities.has("Consultation")) {
+                    capacity = capacities.getInt("Consultation");
+                }
+            } catch (Exception e) {}
+        }
+        
+        if (conflicts.size() >= capacity) {
+            throw new RuntimeException("This clinical slot is now fully booked or under authorization. Please select another cloud window.");
         }
 
         Double fee = (type == ConsultationType.ONLINE) ? doctor.getOnlineConsultationFee() : doctor.getOfflineConsultationFee();
@@ -180,26 +190,6 @@ public class AppointmentService {
             throw new RuntimeException("This doctor is currently not accepting virtual consultations.");
         }
 
-        // 4. Conflict & Capacity Check
-        LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(10);
-        List<Appointment> conflicts = appointmentRepository.findConflictingClinicServiceAppointments(doctor.getId(), null, date, slot, expiryTime);
-        
-        int capacity = 1;
-        String capacityJson = doctor.getServiceCapacity();
-        if (capacityJson != null) {
-            try {
-                org.json.JSONObject capacities = new org.json.JSONObject(capacityJson);
-                if (capacities.has("General Consultation")) {
-                    capacity = capacities.getInt("General Consultation");
-                } else if (capacities.has("Consultation")) {
-                    capacity = capacities.getInt("Consultation");
-                }
-            } catch (Exception e) {}
-        }
-        
-        if (conflicts.size() >= capacity) {
-            throw new RuntimeException("This clinical slot is now fully booked or under authorization. Please select another time.");
-        }
 
         Appointment appointment = new Appointment();
         appointment.setDoctor(doctor);
