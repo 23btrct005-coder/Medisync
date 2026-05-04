@@ -20,6 +20,8 @@ public class AiService {
     private final DoctorService doctorService;
     private final GroqAiService groqAiService;
     private final UserRepository userRepository;
+    private final PatientRepository patientRepository;
+    private final ReportRepository reportRepository;
     
     private static final Map<String, String> sessionSummaries = new HashMap<>();
 
@@ -30,7 +32,9 @@ public class AiService {
                      AppointmentRepository appointmentRepository,
                      @Lazy DoctorService doctorService,
                      GroqAiService groqAiService,
-                     UserRepository userRepository) {
+                     UserRepository userRepository,
+                     PatientRepository patientRepository,
+                     ReportRepository reportRepository) {
         this.doctorRepository = doctorRepository;
         this.hospitalRepository = hospitalRepository;
         this.aiQueryLogRepository = aiQueryLogRepository;
@@ -39,6 +43,8 @@ public class AiService {
         this.doctorService = doctorService;
         this.groqAiService = groqAiService;
         this.userRepository = userRepository;
+        this.patientRepository = patientRepository;
+        this.reportRepository = reportRepository;
     }
 
     public String generateResponse(String query, String userEmail, List<String> roles, String location) {
@@ -107,8 +113,32 @@ public class AiService {
                     .collect(Collectors.toList());
                 if (!todayAppts.isEmpty()) {
                     clinicalHistory.append("Today's Schedule: ")
-                        .append(todayAppts.stream().map(a -> "- Dr. " + a.getDoctor().getName() + " at " + a.getTimeSlot()).collect(Collectors.joining("; ")));
+                        .append(todayAppts.stream().map(a -> "- Dr. " + a.getDoctor().getName() + " at " + a.getTimeSlot()).collect(Collectors.joining("; ")))
+                        .append(". ");
                 }
+
+                // --- INTEGRATE LATEST REPORT ---
+                patientRepository.findByUserId(userOpt.get().getId()).ifPresent(p -> {
+                    List<Report> reports = reportRepository.findByPatientId(p.getId());
+                    if (!reports.isEmpty()) {
+                        Report latest = reports.stream()
+                            .filter(r -> r.getAiSummary() != null && !r.getAiSummary().isEmpty())
+                            .sorted((a, b) -> {
+                                LocalDate da = a.getDocumentDate() != null ? a.getDocumentDate() : a.getUploadDate();
+                                LocalDate db = b.getDocumentDate() != null ? b.getDocumentDate() : b.getUploadDate();
+                                return db.compareTo(da);
+                            })
+                            .findFirst().orElse(null);
+                        
+                        if (latest != null) {
+                            clinicalHistory.append("Latest Medical Report Analysis (")
+                                .append(latest.getFileName())
+                                .append("): ")
+                                .append(latest.getAiSummary())
+                                .append(". ");
+                        }
+                    }
+                });
             }
         }
 
