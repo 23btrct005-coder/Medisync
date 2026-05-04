@@ -398,8 +398,9 @@ const Booking = () => {
                 </>
             ) : (
                 <div className="space-y-10">
-                    {/* Service Selection */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                    {/* Service Selection Step */}
+                    {!selectedService && (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
                         {PREDEFINED_INSTITUTIONAL_SERVICES.map(service => (
                             <button
                                 key={service}
@@ -415,13 +416,28 @@ const Booking = () => {
                                 <span className="text-[10px] font-black uppercase tracking-widest">{service}</span>
                             </button>
                         ))}
-                    </div>
+                        </div>
+                    )}
 
                     {selectedService && (
-                        <div className="space-y-6">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-xl font-black text-slate-900 tracking-tight">Hospitals Offering {selectedService}</h3>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{serviceHospitals.length} Facilities Found</p>
+                        <div className="space-y-8 animate-in slide-in-from-right duration-500">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div className="flex items-center gap-4">
+                                    <button 
+                                        onClick={() => setSelectedService(null)}
+                                        className="p-3 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-2xl transition-all active:scale-90"
+                                    >
+                                        <ArrowLeft size={20} />
+                                    </button>
+                                    <div>
+                                        <h3 className="text-2xl font-black text-slate-900 tracking-tight">{selectedService}</h3>
+                                        <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mt-0.5">Clinical Protocol Active</p>
+                                    </div>
+                                </div>
+                                <div className="px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Available Institutions</p>
+                                    <p className="text-sm font-black text-slate-800">{serviceHospitals.length} Nodes Found</p>
+                                </div>
                             </div>
 
                             {loadingHospitals ? (
