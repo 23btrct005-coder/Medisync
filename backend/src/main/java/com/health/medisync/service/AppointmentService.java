@@ -235,6 +235,11 @@ public class AppointmentService {
             conflicts = appointmentRepository.findConflictingServiceAppointments(hId, serviceName, date, slot, expiryTime);
             upiId = hospital.getUpiId();
             preferredPaymentMode = hospital.getPreferredPaymentMode() != null ? hospital.getPreferredPaymentMode() : "UPI";
+            
+            // Safety Fallback: Assign the first available doctor from the hospital to satisfy NOT NULL constraints
+            if (!hospital.getDoctors().isEmpty()) {
+                doctor = hospital.getDoctors().get(0);
+            }
         } else if (facilityId.startsWith("doc_")) {
             Long dId = Long.valueOf(facilityId.substring(4));
             doctor = doctorRepository.findById(dId)
@@ -249,6 +254,10 @@ public class AppointmentService {
             conflicts = appointmentRepository.findConflictingServiceAppointments(hId, serviceName, date, slot, expiryTime);
             upiId = hospital.getUpiId();
             preferredPaymentMode = hospital.getPreferredPaymentMode() != null ? hospital.getPreferredPaymentMode() : "UPI";
+            
+            if (!hospital.getDoctors().isEmpty()) {
+                doctor = hospital.getDoctors().get(0);
+            }
         }
 
         if (!conflicts.isEmpty()) {
