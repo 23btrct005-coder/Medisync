@@ -113,4 +113,7 @@ public class Appointment {
 
     public String getAiClinicalBrief() { return aiClinicalBrief; }
     public void setAiClinicalBrief(String aiClinicalBrief) { this.aiClinicalBrief = aiClinicalBrief; }
+
+    public String getTransactionId() { return transactionId; }
+    public void setTransactionId(String transactionId) { this.transactionId = transactionId; }
 }

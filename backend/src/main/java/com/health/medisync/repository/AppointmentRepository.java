@@ -24,6 +24,12 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<Appointment> findByHospitalId(Long hospitalId);
     List<Appointment> findByHospitalIdAndStatusIn(Long hospitalId, List<AppointmentStatus> statuses);
 
+    void deleteByDoctorId(Long doctorId);
+    List<Appointment> findByAppointmentDate(LocalDate date);
+
+    @Query("SELECT a FROM Appointment a WHERE a.doctor.id = :doctorId AND (a.status = 'BOOKED' OR a.status = 'COMPLETED')")
+    List<Appointment> findRevenueAppointments(Long doctorId);
+
     @Query("SELECT a FROM Appointment a WHERE a.hospital.id = :hospitalId AND (a.status = 'BOOKED' OR a.status = 'COMPLETED')")
     List<Appointment> findHospitalRevenueAppointments(Long hospitalId);
 
