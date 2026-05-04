@@ -338,6 +338,15 @@ public class Hospital {
     public String getServiceDurations() { return serviceDurations; }
     public void setServiceDurations(String serviceDurations) { this.serviceDurations = serviceDurations; }
 
+    public String getConsultationTimings() { return consultationTimings; }
+    public void setConsultationTimings(String consultationTimings) { this.consultationTimings = consultationTimings; }
+
+    public Boolean getWalkInAllowed() { return walkInAllowed; }
+    public void setWalkInAllowed(Boolean walkInAllowed) { this.walkInAllowed = walkInAllowed; }
+
+    public Integer getAvgWaitingTime() { return avgWaitingTime; }
+    public void setAvgWaitingTime(Integer avgWaitingTime) { this.avgWaitingTime = avgWaitingTime; }
+
     public String getDepartments() { return departments; }
     public void setDepartments(String departments) { this.departments = departments; }
 }
