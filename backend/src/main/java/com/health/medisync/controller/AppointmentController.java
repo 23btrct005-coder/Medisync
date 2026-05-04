@@ -19,10 +19,12 @@ public class AppointmentController {
 
     private final AppointmentService appointmentService;
     private final DoctorService doctorService;
+    private final com.health.medisync.repository.HospitalRepository hospitalRepository;
 
-    public AppointmentController(AppointmentService appointmentService, DoctorService doctorService) {
+    public AppointmentController(AppointmentService appointmentService, DoctorService doctorService, com.health.medisync.repository.HospitalRepository hospitalRepository) {
         this.appointmentService = appointmentService;
         this.doctorService = doctorService;
+        this.hospitalRepository = hospitalRepository;
     }
 
     @GetMapping("/doctors")
@@ -107,6 +109,34 @@ public class AppointmentController {
                 "message", errorMessage,
                 "errorType", e.getClass().getSimpleName()
             ));
+        }
+    }
+
+    @GetMapping("/hospitals-by-service")
+    public ResponseEntity<?> getHospitalsByService(@RequestParam String service) {
+        List<com.health.medisync.model.Hospital> hospitals = hospitalRepository.findAll();
+        List<com.health.medisync.model.Hospital> filtered = hospitals.stream()
+            .filter(h -> h.getServices() != null && h.getServices().toLowerCase().contains(service.toLowerCase()))
+            .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(filtered);
+    }
+
+    @PostMapping("/book-service")
+    public ResponseEntity<?> initiateServiceBooking(
+            Authentication authentication,
+            @RequestBody Map<String, Object> request) {
+        try {
+            if (authentication == null) throw new RuntimeException("Authentication required");
+            
+            Long hospitalId = Long.valueOf(request.get("hospitalId").toString());
+            String serviceName = (String) request.get("serviceName");
+            LocalDate date = LocalDate.parse(request.get("date").toString());
+            String slot = (String) request.get("slot");
+
+            Map<String, Object> response = appointmentService.initiateServiceBooking(authentication.getName(), hospitalId, serviceName, date, slot);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
 

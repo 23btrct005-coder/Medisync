@@ -29,6 +29,7 @@ public class AppointmentService {
     private final UserRepository userRepository;
     private final NotificationService notificationService;
     private final RatingRepository ratingRepository;
+    private final HospitalRepository hospitalRepository;
 
     @Value("${razorpay.key.id:}")
     private String razorpayKeyId;
@@ -41,13 +42,15 @@ public class AppointmentService {
                               PatientRepository patientRepository,
                               UserRepository userRepository,
                               NotificationService notificationService,
-                              RatingRepository ratingRepository) {
+                              RatingRepository ratingRepository,
+                              HospitalRepository hospitalRepository) {
         this.appointmentRepository = appointmentRepository;
         this.doctorRepository = doctorRepository;
         this.patientRepository = patientRepository;
         this.userRepository = userRepository;
         this.notificationService = notificationService;
         this.ratingRepository = ratingRepository;
+        this.hospitalRepository = hospitalRepository;
     }
 
     public boolean hasBookedAppointment(Long doctorId, Long patientId) {
@@ -207,6 +210,55 @@ public class AppointmentService {
         response.put("isDemo", isDemoMode);
         response.put("preferredPaymentMode", doctor.getPreferredPaymentMode());
         response.put("upiId", doctor.getUpiId());
+
+        return response;
+    }
+
+    @Transactional
+    public Map<String, Object> initiateServiceBooking(String rawEmail, Long hospitalId, String serviceName, LocalDate date, String slot) throws Exception {
+        final String patientEmail = (rawEmail != null) ? rawEmail.trim().toLowerCase() : null;
+        Patient patient = patientRepository.findByUserUsernameIgnoreCase(patientEmail)
+            .orElseThrow(() -> new RuntimeException("Patient profile not found for: " + patientEmail));
+        
+        Hospital hospital = hospitalRepository.findById(hospitalId)
+            .orElseThrow(() -> new RuntimeException("Hospital not found"));
+
+        // Concurrency check for services
+        LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(10);
+        List<Appointment> conflicts = appointmentRepository.findConflictingServiceAppointments(hospitalId, serviceName, date, slot, expiryTime);
+        if (!conflicts.isEmpty()) {
+            throw new RuntimeException("This service slot is currently being authorized by another patient. Please choose another time.");
+        }
+
+        // Diagnostic Service Fee Calculation (Simple default for now, could be in JSON)
+        Double fee = 500.0; // Default service fee
+        if (serviceName.toUpperCase().contains("MRI") || serviceName.toUpperCase().contains("CT")) fee = 2500.0;
+        if (serviceName.toUpperCase().contains("BLOOD") || serviceName.toUpperCase().contains("LAB")) fee = 300.0;
+
+        boolean isDemoMode = (razorpayKeyId == null || razorpayKeyId.isEmpty());
+        String orderId = isDemoMode ? "demo_service_" + System.currentTimeMillis() : "REAL_SERVICE_ORDER"; // Logic for real would go here
+
+        Appointment appointment = new Appointment();
+        appointment.setHospital(hospital);
+        appointment.setPatient(patient);
+        appointment.setServiceName(serviceName);
+        appointment.setAppointmentDate(date);
+        appointment.setTimeSlot(slot);
+        appointment.setConsultationType(ConsultationType.OFFLINE); // Services are always offline
+        appointment.setAmount(fee);
+        appointment.setRazorpayOrderId(orderId);
+        appointment.setStatus(AppointmentStatus.PENDING);
+
+        Appointment saved = appointmentRepository.save(appointment);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("appointmentId", saved.getId());
+        response.put("razorpayOrderId", orderId);
+        response.put("amount", fee);
+        response.put("razorpayKeyId", razorpayKeyId);
+        response.put("isDemo", isDemoMode);
+        response.put("preferredPaymentMode", hospital.getPreferredPaymentMode() != null ? hospital.getPreferredPaymentMode() : "UPI");
+        response.put("upiId", hospital.getUpiId());
 
         return response;
     }

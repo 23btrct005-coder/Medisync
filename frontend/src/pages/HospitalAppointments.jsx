@@ -84,12 +84,12 @@ const HospitalAppointments = () => {
                                         </td>
                                         <td className="px-8 py-6">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                                                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${app.serviceName ? 'bg-emerald-100 text-emerald-600' : 'bg-primary/10 text-primary'}`}>
                                                     <Activity size={16} />
                                                 </div>
                                                 <div>
-                                                    <p className="font-bold text-slate-700 text-sm">{app.doctor?.name}</p>
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">{app.doctor?.specialization}</p>
+                                                    <p className="font-bold text-slate-700 text-sm">{app.serviceName || app.doctor?.name || "Unassigned"}</p>
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">{app.serviceName ? "Diagnostic Service" : (app.doctor?.specialization || "Clinical Consultation")}</p>
                                                 </div>
                                             </div>
                                         </td>

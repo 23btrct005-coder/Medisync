@@ -36,6 +36,17 @@ const Booking = () => {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [consultationType, setConsultationType] = useState('ONLINE');
 
+  const [bookingMode, setBookingMode] = useState('doctor'); // 'doctor' or 'service'
+  const [selectedService, setSelectedService] = useState(null);
+  const [serviceHospitals, setServiceHospitals] = useState([]);
+  const [loadingHospitals, setLoadingHospitals] = useState(false);
+
+  const PREDEFINED_INSTITUTIONAL_SERVICES = [
+    "MRI Scan", "CT Scan", "X-Ray", "Ultrasound", "Blood Test", 
+    "ECG", "EEG", "Dialysis", "Chemotherapy", "Physiotherapy",
+    "Pharmacy", "Emergency/ER", "ICU", "NICU", "Blood Bank"
+  ];
+
   useEffect(() => {
     fetchDoctors();
   }, []);
@@ -45,6 +56,24 @@ const Booking = () => {
       fetchSlots();
     }
   }, [selectedDoctor, bookingDate]);
+
+  useEffect(() => {
+    if (selectedService) {
+        fetchHospitalsByService(selectedService);
+    }
+  }, [selectedService]);
+
+  const fetchHospitalsByService = async (service) => {
+    setLoadingHospitals(true);
+    try {
+        const res = await api.get(`appointments/hospitals-by-service?service=${service}`);
+        setServiceHospitals(res.data || []);
+    } catch (e) {
+        toast.error("Failed to fetch hospitals for this service.");
+    } finally {
+        setLoadingHospitals(false);
+    }
+  };
 
   const fetchDoctors = async () => {
     try {
@@ -59,6 +88,13 @@ const Booking = () => {
   };
 
   const fetchSlots = async () => {
+    if (bookingMode === 'service') {
+        // Default clinical windows for hospital services
+        setAvailableSlots(["09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM"]);
+        setSelectedSlot(null);
+        return;
+    }
+
     if (!selectedDoctor?.id || selectedDoctor.id === 'undefined') {
       console.warn("Skipping slot retrieval: doctorId is invalid", selectedDoctor);
       return;
@@ -76,24 +112,58 @@ const Booking = () => {
   };
 
   const handleBook = async () => {
-    if (!selectedDoctor || !selectedDoctor.id || selectedDoctor.id === 'undefined') {
-      toast.error("Physician selection invalid. Please re-select from marketplace.");
-      setBookingStep('list');
-      return;
+    if (bookingMode === 'doctor') {
+        if (!selectedDoctor || !selectedDoctor.id || selectedDoctor.id === 'undefined') {
+          toast.error("Physician selection invalid. Please re-select from marketplace.");
+          setBookingStep('list');
+          return;
+        }
+        if (!selectedSlot) {
+          toast.error("Cloud window not selected. Please choose a time.");
+          return;
+        }
+        setIsBooking(true);
+        try {
+          const { data: order } = await api.post('appointments/book', {
+            doctorId: selectedDoctor.id,
+            date: bookingDate,
+            slot: selectedSlot,
+            type: consultationType
+          });
+          processOrder(order);
+        } catch (err) {
+          toast.error(err.response?.data?.message || "Cloud synchronization failed.");
+        } finally {
+          setIsBooking(false);
+        }
+    } else {
+        // Institutional Service Booking
+        if (!selectedDoctor || !selectedDoctor.id) {
+            toast.error("Hospital selection invalid.");
+            return;
+        }
+        if (!selectedSlot) {
+            toast.error("Please select a time slot.");
+            return;
+        }
+        setIsBooking(true);
+        try {
+            const { data: order } = await api.post('appointments/book-service', {
+                hospitalId: selectedDoctor.id,
+                serviceName: selectedService,
+                date: bookingDate,
+                slot: selectedSlot
+            });
+            processOrder(order);
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Service booking failed.");
+        } finally {
+            setIsBooking(false);
+        }
     }
-    if (!selectedSlot) {
-      toast.error("Cloud window not selected. Please choose a time.");
-      return;
-    }
-    setIsBooking(true);
-    try {
-      const { data: order } = await api.post('appointments/book', {
-        doctorId: selectedDoctor.id,
-        date: bookingDate,
-        slot: selectedSlot,
-        type: consultationType
-      });
+  };
 
+  const processOrder = (order) => {
       console.log("SECURE_ORDER_SYNC: Order created", order);
 
       if (order.isDemo) {
@@ -113,7 +183,7 @@ const Booking = () => {
         amount: order.amount * 100,
         currency: "INR",
         name: "MEDISYNC HEALTH",
-        description: `Consultation with Dr. ${selectedDoctor.name}`,
+        description: `Consultation/Service with ${selectedDoctor.name}`,
         image: "/icon.svg",
         order_id: order.razorpayOrderId,
         handler: async (response) => {
@@ -149,13 +219,6 @@ const Booking = () => {
 
       const rzp = new window.Razorpay(options);
       rzp.open();
-
-    } catch (err) {
-      console.error("BOOKING_CRITICAL_FAILURE:", err);
-      toast.error(err.response?.data?.message || "Cloud synchronization failed. Please try again.");
-    } finally {
-      setIsBooking(false);
-    }
   };
 
   const handleSync = async () => {
@@ -193,8 +256,24 @@ const Booking = () => {
             <Sparkles size={12} />
             Real-time Scheduling
           </div>
-          <h1 className="text-4xl font-black text-slate-900 tracking-tight">Book Appointment</h1>
-          <p className="text-slate-500 font-medium mt-2 max-w-lg">Discover board-certified physicians and schedule your health sync instantly.</p>
+          <h1 className="text-4xl font-black text-slate-900 tracking-tight">Full Service Booking</h1>
+          <p className="text-slate-500 font-medium mt-2 max-w-lg">Discover board-certified physicians and institutional diagnostic services.</p>
+        </div>
+        
+        {/* Mode Toggle */}
+        <div className="flex p-1 bg-slate-100 rounded-2xl border border-slate-200 shadow-inner">
+            <button 
+                onClick={() => { setBookingMode('doctor'); setBookingStep('list'); }}
+                className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${bookingMode === 'doctor' ? 'bg-white text-primary shadow-sm' : 'text-slate-400'}`}
+            >
+                Physicians
+            </button>
+            <button 
+                onClick={() => { setBookingMode('service'); setBookingStep('list'); setSelectedService(null); }}
+                className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${bookingMode === 'service' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400'}`}
+            >
+                Diagnostic Services
+            </button>
         </div>
       </div>
 
@@ -207,93 +286,169 @@ const Booking = () => {
             exit={{ opacity: 0, y: -20 }}
             className="space-y-8"
           >
-            {/* Search & Filter Hub (SMART ROW MODEL) */}
-            <div className="glass-panel p-4 md:p-6 space-y-4 bg-white/70 backdrop-blur-md border-slate-200/60 sticky top-4 z-40 shadow-sm">
-              <div className="flex gap-2 items-center">
-                <div className="relative flex-1 group">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={18} />
-                  <input
-                    type="text"
-                    placeholder="Search name or specialty..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-primary/30 focus:bg-white outline-none transition-all font-medium text-slate-700 placeholder:text-slate-400 text-sm"
-                  />
-                </div>
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className={`flex items-center justify-center h-[52px] px-4 md:px-6 rounded-2xl border-2 font-black uppercase tracking-widest text-[10px] sm:text-xs transition-all ${showFilters || filterSpecialty !== 'All'
-                      ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20'
-                      : 'bg-white border-slate-100 text-slate-500 hover:border-primary/20 hover:text-primary'
-                    }`}
-                >
-                  <Filter size={18} />
-                  <span className="hidden sm:inline ml-2">{filterSpecialty !== 'All' ? filterSpecialty : 'Filter'}</span>
-                </button>
-              </div>
-
-              <AnimatePresence>
-                {showFilters && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide pt-2">
-                      {specialties.map(s => (
-                        <button
-                          key={s}
-                          onClick={() => { setFilterSpecialty(s); setShowFilters(false); }}
-                          className={`px-6 py-3 rounded-xl border-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${filterSpecialty === s
-                              ? 'bg-primary/10 border-primary text-primary'
-                              : 'bg-white border-slate-50 text-slate-400 hover:border-slate-200 hover:text-slate-600'
-                            }`}
-                        >
-                          {s}
-                        </button>
-                      ))}
+            {bookingMode === 'doctor' ? (
+                <>
+                {/* Search & Filter Hub (SMART ROW MODEL) */}
+                <div className="glass-panel p-4 md:p-6 space-y-4 bg-white/70 backdrop-blur-md border-slate-200/60 sticky top-4 z-40 shadow-sm">
+                  <div className="flex gap-2 items-center">
+                    <div className="relative flex-1 group">
+                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={18} />
+                      <input
+                        type="text"
+                        placeholder="Search name or specialty..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-primary/30 focus:bg-white outline-none transition-all font-medium text-slate-700 placeholder:text-slate-400 text-sm"
+                      />
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                    <button
+                      onClick={() => setShowFilters(!showFilters)}
+                      className={`flex items-center justify-center h-[52px] px-4 md:px-6 rounded-2xl border-2 font-black uppercase tracking-widest text-[10px] sm:text-xs transition-all ${showFilters || filterSpecialty !== 'All'
+                          ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20'
+                          : 'bg-white border-slate-100 text-slate-500 hover:border-primary/20 hover:text-primary'
+                        }`}
+                    >
+                      <Filter size={18} />
+                      <span className="hidden sm:inline ml-2">{filterSpecialty !== 'All' ? filterSpecialty : 'Filter'}</span>
+                    </button>
+                  </div>
 
-            {/* Doctor Grid */}
-            {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {[1, 2, 3, 4, 5, 6].map(i => <div key={i} className="h-48 bg-slate-100 rounded-[2.5rem] animate-pulse" />)}
-              </div>
-            ) : filteredDoctors.length === 0 ? (
-              <div className="text-center py-24 glass-panel border-dashed border-slate-200">
-                <User size={64} className="mx-auto text-slate-200 mb-4" />
-                <h3 className="text-xl font-bold text-slate-800">No Physicians Found</h3>
-                <p className="text-slate-500 font-medium mt-1 mb-8">Try adjusting your filters or search keywords.</p>
-
-                <div className="flex flex-col items-center gap-4 bg-slate-50 p-6 rounded-3xl border border-slate-100 max-w-sm mx-auto">
-                  <div className="p-2 bg-primary/10 text-primary rounded-xl"><Sparkles size={20} /></div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Clinical Sync Utility</p>
-                  <p className="text-xs text-slate-500 text-center leading-relaxed">Incoming doctors may require administrative verification. Synchronize to enable instant access.</p>
-                  <button
-                    onClick={handleSync}
-                    disabled={isSyncing}
-                    className="w-full btn-premium bg-slate-900 text-white py-4 text-xs flex items-center justify-center gap-2"
-                  >
-                    {isSyncing ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
-                    {isSyncing ? 'Synchronizing...' : 'Verify & Sync Directory'}
-                  </button>
+                  <AnimatePresence>
+                    {showFilters && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide pt-2">
+                          {specialties.map(s => (
+                            <button
+                              key={s}
+                              onClick={() => { setFilterSpecialty(s); setShowFilters(false); }}
+                              className={`px-6 py-3 rounded-xl border-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${filterSpecialty === s
+                                  ? 'bg-primary/10 border-primary text-primary'
+                                  : 'bg-white border-slate-50 text-slate-400 hover:border-slate-200 hover:text-slate-600'
+                                }`}
+                            >
+                              {s}
+                            </button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
-              </div>
+
+                {/* Doctor Grid */}
+                {loading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {[1, 2, 3, 4, 5, 6].map(i => <div key={i} className="h-48 bg-slate-100 rounded-[2.5rem] animate-pulse" />)}
+                  </div>
+                ) : filteredDoctors.length === 0 ? (
+                  <div className="text-center py-24 glass-panel border-dashed border-slate-200">
+                    <User size={64} className="mx-auto text-slate-200 mb-4" />
+                    <h3 className="text-xl font-bold text-slate-800">No Physicians Found</h3>
+                    <p className="text-slate-500 font-medium mt-1 mb-8">Try adjusting your filters or search keywords.</p>
+
+                    <div className="flex flex-col items-center gap-4 bg-slate-50 p-6 rounded-3xl border border-slate-100 max-w-sm mx-auto">
+                      <div className="p-2 bg-primary/10 text-primary rounded-xl"><Sparkles size={20} /></div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Clinical Sync Utility</p>
+                      <p className="text-xs text-slate-500 text-center leading-relaxed">Incoming doctors may require administrative verification. Synchronize to enable instant access.</p>
+                      <button
+                        onClick={handleSync}
+                        disabled={isSyncing}
+                        className="w-full btn-premium bg-slate-900 text-white py-4 text-xs flex items-center justify-center gap-2"
+                      >
+                        {isSyncing ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
+                        {isSyncing ? 'Synchronizing...' : 'Verify & Sync Directory'}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {filteredDoctors.map(doctor => (
+                      <DoctorCard
+                        key={doctor.id}
+                        doctor={doctor}
+                        onSelect={() => { setSelectedDoctor(doctor); setBookingStep('slots'); }}
+                      />
+                    ))}
+                  </div>
+                )}
+                </>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredDoctors.map(doctor => (
-                  <DoctorCard
-                    key={doctor.id}
-                    doctor={doctor}
-                    onSelect={() => { setSelectedDoctor(doctor); setBookingStep('slots'); }}
-                  />
-                ))}
-              </div>
+                <div className="space-y-10">
+                    {/* Service Selection */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                        {PREDEFINED_INSTITUTIONAL_SERVICES.map(service => (
+                            <button
+                                key={service}
+                                onClick={() => setSelectedService(service)}
+                                className={`p-4 rounded-3xl border-2 text-center transition-all ${selectedService === service 
+                                    ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-lg shadow-emerald-500/10' 
+                                    : 'bg-white border-slate-100 text-slate-500 hover:border-emerald-200'}`}
+                            >
+                                <Activity size={24} className={`mx-auto mb-3 ${selectedService === service ? 'text-emerald-600' : 'text-slate-300'}`} />
+                                <span className="text-[10px] font-black uppercase tracking-widest">{service}</span>
+                            </button>
+                        ))}
+                    </div>
+
+                    {selectedService && (
+                        <div className="space-y-6">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-xl font-black text-slate-900 tracking-tight">Hospitals Offering {selectedService}</h3>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{serviceHospitals.length} Facilities Found</p>
+                            </div>
+
+                            {loadingHospitals ? (
+                                <div className="p-20 text-center"><Loader2 className="animate-spin mx-auto text-emerald-500" /></div>
+                            ) : serviceHospitals.length === 0 ? (
+                                <div className="p-20 text-center bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
+                                    <MapPin size={48} className="mx-auto text-slate-200 mb-4" />
+                                    <p className="text-slate-400 font-bold italic uppercase tracking-widest text-xs">No institutions found matching this protocol.</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {serviceHospitals.map(h => (
+                                        <div 
+                                            key={h.id}
+                                            onClick={() => { setSelectedDoctor(h); setBookingStep('slots'); }}
+                                            className="glass-panel p-6 bg-white hover:border-emerald-400 transition-all cursor-pointer group"
+                                        >
+                                            <div className="flex items-center gap-4 mb-4">
+                                                <div className="w-16 h-16 bg-slate-100 rounded-2xl overflow-hidden border-2 border-white shadow-inner flex items-center justify-center">
+                                                    {h.logoUrl ? <img src={h.logoUrl} className="w-full h-full object-cover" /> : <Activity size={32} className="text-slate-300" />}
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-lg font-black text-slate-900 group-hover:text-emerald-600 transition-colors">{h.name}</h4>
+                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{h.hospitalType || 'Medical Facility'}</p>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2 mb-6">
+                                                <div className="flex items-center gap-2 text-slate-500 text-[11px] font-medium">
+                                                    <MapPin size={12} className="text-slate-400" />
+                                                    <span>{h.city}, {h.state}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2 text-emerald-600 text-[10px] font-black uppercase tracking-widest">
+                                                    <CheckCircle2 size={12} />
+                                                    Instant Booking Active
+                                                </div>
+                                            </div>
+                                            <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                                                <span className="text-sm font-black text-slate-900">₹{selectedService.includes('MRI') ? '2500' : '500'}*</span>
+                                                <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                                                    <ChevronRight size={18} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
             )}
           </motion.div>
         ) : (

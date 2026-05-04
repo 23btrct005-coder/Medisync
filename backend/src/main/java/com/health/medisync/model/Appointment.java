@@ -13,9 +13,16 @@ public class Appointment {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "doctor_id", nullable = false)
+    @JoinColumn(name = "doctor_id", nullable = true)
     @JsonIgnoreProperties({"appointments", "password", "specialization", "bio"})
     private Doctor doctor;
+
+    @ManyToOne
+    @JoinColumn(name = "hospital_id", nullable = true)
+    @JsonIgnoreProperties({"doctors", "admins", "appointments"})
+    private Hospital hospital;
+
+    private String serviceName; // e.g., "MRI Scan", "Blood Test"
 
     @ManyToOne
     @JoinColumn(name = "patient_id", nullable = false)
@@ -95,8 +102,11 @@ public class Appointment {
     public String getPatientUpiId() { return patientUpiId; }
     public void setPatientUpiId(String patientUpiId) { this.patientUpiId = patientUpiId; }
 
-    public String getTransactionId() { return transactionId; }
-    public void setTransactionId(String transactionId) { this.transactionId = transactionId; }
+    public Hospital getHospital() { return hospital; }
+    public void setHospital(Hospital hospital) { this.hospital = hospital; }
+
+    public String getServiceName() { return serviceName; }
+    public void setServiceName(String serviceName) { this.serviceName = serviceName; }
 
     public boolean isRated() { return rated; }
     public void setRated(boolean rated) { this.rated = rated; }

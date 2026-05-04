@@ -21,13 +21,15 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<Appointment> findByPatientIdAndStatusIn(Long patientId, List<AppointmentStatus> statuses);
     boolean existsByDoctorIdAndPatientIdAndStatus(Long doctorId, Long patientId, AppointmentStatus status);
     Optional<Appointment> findByRazorpayOrderId(String orderId);
-    void deleteByDoctorId(Long doctorId);
+    List<Appointment> findByHospitalId(Long hospitalId);
+    List<Appointment> findByHospitalIdAndStatusIn(Long hospitalId, List<AppointmentStatus> statuses);
 
-    List<Appointment> findByAppointmentDate(LocalDate date);
-
-    @Query("SELECT a FROM Appointment a WHERE a.doctor.id = :doctorId AND (a.status = 'BOOKED' OR a.status = 'COMPLETED')")
-    List<Appointment> findRevenueAppointments(Long doctorId);
+    @Query("SELECT a FROM Appointment a WHERE a.hospital.id = :hospitalId AND (a.status = 'BOOKED' OR a.status = 'COMPLETED')")
+    List<Appointment> findHospitalRevenueAppointments(Long hospitalId);
 
     @Query("SELECT a FROM Appointment a WHERE a.doctor = :doctor AND a.appointmentDate = :date AND a.timeSlot = :slot AND (a.status = 'BOOKED' OR (a.status = 'PENDING' AND a.createdAt > :expiry))")
     List<Appointment> findConflictingAppointments(Doctor doctor, LocalDate date, String slot, java.time.LocalDateTime expiry);
+
+    @Query("SELECT a FROM Appointment a WHERE a.hospital.id = :hospitalId AND a.serviceName = :serviceName AND a.appointmentDate = :date AND a.timeSlot = :slot AND (a.status = 'BOOKED' OR (a.status = 'PENDING' AND a.createdAt > :expiry))")
+    List<Appointment> findConflictingServiceAppointments(Long hospitalId, String serviceName, LocalDate date, String slot, java.time.LocalDateTime expiry);
 }
