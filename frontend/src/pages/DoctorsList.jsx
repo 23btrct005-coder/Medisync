@@ -5,6 +5,7 @@ import {
   ChevronRight, Activity, Clock, ShieldX, UserMinus, MessageSquare 
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/axiosConfig';
 import ClinicalChatBox from '../components/ClinicalChatBox';
 
