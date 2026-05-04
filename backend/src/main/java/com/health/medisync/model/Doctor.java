@@ -312,11 +312,18 @@ public class Doctor {
     public void setCanManageAppointments(boolean canManageAppointments) { this.canManageAppointments = canManageAppointments; }
 
     public String getServices() { return services; }
-    public void setServices(String services) { this.services = services; }
+    @Column(columnDefinition = "TEXT")
+    private String serviceDurations; // JSON mapping serviceName -> duration (mins)
+
+    @Column(columnDefinition = "TEXT")
+    private String serviceCapacity; // JSON mapping serviceName -> system/machine count
 
     public String getServiceFees() { return serviceFees; }
     public void setServiceFees(String serviceFees) { this.serviceFees = serviceFees; }
 
     public String getServiceDurations() { return serviceDurations; }
     public void setServiceDurations(String serviceDurations) { this.serviceDurations = serviceDurations; }
+
+    public String getServiceCapacity() { return serviceCapacity; }
+    public void setServiceCapacity(String serviceCapacity) { this.serviceCapacity = serviceCapacity; }
 }

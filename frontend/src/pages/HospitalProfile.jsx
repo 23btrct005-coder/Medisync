@@ -85,8 +85,12 @@ const HospitalProfile = () => {
         preferredPaymentMode: 'RAZORPAY',
         services: '',
         departments: '',
+        consultationTimings: '',
+        startTime: '09:00',
+        endTime: '17:00',
         serviceFees: {},
-        serviceDurations: {}
+        serviceDurations: {},
+        serviceCapacity: {}
     });
 
     useEffect(() => {
@@ -153,8 +157,12 @@ const HospitalProfile = () => {
                 preferredPaymentMode: h.preferredPaymentMode || 'RAZORPAY',
                 services: h.services || '',
                 departments: h.departments || '',
+                consultationTimings: h.consultationTimings || '09:00 - 17:00',
+                startTime: h.consultationTimings ? h.consultationTimings.split(' - ')[0] : '09:00',
+                endTime: h.consultationTimings ? h.consultationTimings.split(' - ')[1] : '17:00',
                 serviceFees: h.serviceFees ? (typeof h.serviceFees === 'string' ? JSON.parse(h.serviceFees) : h.serviceFees) : {},
-                serviceDurations: h.serviceDurations ? (typeof h.serviceDurations === 'string' ? JSON.parse(h.serviceDurations) : h.serviceDurations) : {}
+                serviceDurations: h.serviceDurations ? (typeof h.serviceDurations === 'string' ? JSON.parse(h.serviceDurations) : h.serviceDurations) : {},
+                serviceCapacity: h.serviceCapacity ? (typeof h.serviceCapacity === 'string' ? JSON.parse(h.serviceCapacity) : h.serviceCapacity) : {}
             });
             if (h.logoUrl) {
                 console.log("DEBUG: Logo detected:", h.logoUrl);
@@ -191,7 +199,11 @@ const HospitalProfile = () => {
             }
 
             const data = new FormData();
-            data.append('data', JSON.stringify(formData));
+            const submissionData = {
+                ...formData,
+                consultationTimings: `${formData.startTime} - ${formData.endTime}`
+            };
+            data.append('data', JSON.stringify(submissionData));
             if (logo) {
                 data.append('logo', logo);
             }
@@ -676,6 +688,39 @@ const HospitalProfile = () => {
                                     />
                                 </div>
                             </div>
+
+                            {/* Operating Hours */}
+                            <div className="mt-10 pt-10 border-t border-slate-100 space-y-6">
+                                <div className="flex items-center gap-3">
+                                    <Clock className="text-primary" size={18} />
+                                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900">Clinical Operating Hours</h4>
+                                </div>
+                                <div className="grid grid-cols-2 gap-6 bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Opening Time</label>
+                                        <input 
+                                            type="time" 
+                                            value={formData.startTime} 
+                                            onChange={(e) => setFormData({...formData, startTime: e.target.value})}
+                                            className="w-full px-5 py-4 bg-white border-none rounded-2xl text-sm font-bold shadow-sm focus:ring-2 ring-primary/20 transition-all"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Closing Time</label>
+                                        <input 
+                                            type="time" 
+                                            value={formData.endTime} 
+                                            onChange={(e) => setFormData({...formData, endTime: e.target.value})}
+                                            className="w-full px-5 py-4 bg-white border-none rounded-2xl text-sm font-bold shadow-sm focus:ring-2 ring-primary/20 transition-all"
+                                        />
+                                    </div>
+                                    <div className="col-span-2">
+                                        <p className="text-[10px] text-slate-400 font-medium italic mt-1 ml-1 flex items-center gap-2">
+                                            <AlertCircle size={12} /> This window defines the "Cloud Windows" shown to patients.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                             <div className="mt-8 p-6 bg-emerald-50/50 rounded-3xl border border-emerald-100/50 flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                     <AlertCircle className="text-emerald-600" size={20} />
@@ -879,7 +924,7 @@ const HospitalProfile = () => {
                                     {formData.services.split(', ').filter(s => s).map((service, idx) => (
                                         <div key={idx} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm group hover:border-emerald-200 transition-all">
                                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block mb-3">{service}</label>
-                                            <div className="grid grid-cols-2 gap-3">
+                                            <div className="grid grid-cols-3 gap-3">
                                                 <div className="relative">
                                                     <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</div>
                                                     <input 
@@ -911,6 +956,24 @@ const HospitalProfile = () => {
                                                             setFormData({ ...formData, serviceDurations: newDurations });
                                                         }}
                                                         placeholder="Time"
+                                                        className="w-full pl-3 pr-9 py-3 bg-slate-50 border-none rounded-xl text-xs font-black text-slate-800 focus:ring-2 ring-emerald-100"
+                                                    />
+                                                </div>
+                                                <div className="relative">
+                                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-[10px]">Sys</div>
+                                                    <input 
+                                                        type="number"
+                                                        min="1"
+                                                        required
+                                                        value={formData.serviceCapacity?.[service] || '1'}
+                                                        onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            if (val < 1) return;
+                                                            const newCapacity = { ...formData.serviceCapacity, [service]: val };
+                                                            setFormData({ ...formData, serviceCapacity: newCapacity });
+                                                        }}
+                                                        placeholder="Count"
+                                                        title="Number of machines/systems available"
                                                         className="w-full pl-3 pr-9 py-3 bg-slate-50 border-none rounded-xl text-xs font-black text-slate-800 focus:ring-2 ring-emerald-100"
                                                     />
                                                 </div>

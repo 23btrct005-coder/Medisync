@@ -603,16 +603,38 @@ public class AppointmentService {
             existing = appointmentRepository.findByDoctorIdAndAppointmentDate(entityId, date);
         }
 
-        Set<String> takenSlots = existing.stream()
+        // Get Capacity for this service
+        int capacity = 1;
+        String capacityJson = null;
+        if (isHospital) {
+            Hospital hospital = hospitalRepository.findById(entityId).orElse(null);
+            if (hospital != null) capacityJson = hospital.getServiceCapacity();
+        } else {
+            Doctor doctor = doctorRepository.findById(entityId).orElse(null);
+            if (doctor != null) capacityJson = doctor.getServiceCapacity();
+        }
+
+        if (serviceName != null && capacityJson != null) {
+            try {
+                JSONObject capacities = new JSONObject(capacityJson);
+                if (capacities.has(serviceName)) {
+                    capacity = capacities.getInt(serviceName);
+                }
+            } catch (Exception e) {}
+        }
+        if (capacity < 1) capacity = 1;
+
+        Map<String, Long> slotCounts = existing.stream()
             .filter(a -> a.getStatus() == Appointment.AppointmentStatus.BOOKED || 
                         a.getStatus() == Appointment.AppointmentStatus.AWAITING_VERIFICATION ||
                         (a.getStatus() == Appointment.AppointmentStatus.PENDING && a.getCreatedAt() != null && a.getCreatedAt().isAfter(expiryTime)))
             .map(a -> a.getTimeSlot())
             .filter(Objects::nonNull)
-            .collect(Collectors.toSet());
+            .collect(Collectors.groupingBy(slot -> slot, Collectors.counting()));
 
+        final int finalCapacity = capacity;
         return allSlots.stream()
-            .filter(slot -> !takenSlots.contains(slot))
+            .filter(slot -> slotCounts.getOrDefault(slot, 0L) < finalCapacity)
             .collect(Collectors.toList());
     }
 

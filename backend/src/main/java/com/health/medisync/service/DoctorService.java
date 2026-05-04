@@ -246,6 +246,9 @@ public class DoctorService {
         if (updates.containsKey("upiId")) doctor.setUpiId((String) updates.get("upiId"));
         if (updates.containsKey("preferredPaymentMode")) doctor.setPreferredPaymentMode((String) updates.get("preferredPaymentMode"));
         if (updates.containsKey("appointmentsEnabled")) doctor.setAppointmentsEnabled((Boolean) updates.get("appointmentsEnabled"));
+        if (updates.containsKey("services")) doctor.setServices((String) updates.get("services"));
+        if (updates.containsKey("serviceDurations")) doctor.setServiceDurations((String) updates.get("serviceDurations"));
+        if (updates.containsKey("serviceCapacity")) doctor.setServiceCapacity((String) updates.get("serviceCapacity"));
         
         if (updates.containsKey("onlineConsultationFee")) {
             Object fee = updates.get("onlineConsultationFee");

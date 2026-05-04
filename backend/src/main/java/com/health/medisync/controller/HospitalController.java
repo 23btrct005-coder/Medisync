@@ -280,6 +280,12 @@ public class HospitalController {
             if (data.get("serviceDurations") != null) {
                 hospital.setServiceDurations(mapper.writeValueAsString(data.get("serviceDurations")));
             }
+            if (data.get("serviceCapacity") != null) {
+                hospital.setServiceCapacity(mapper.writeValueAsString(data.get("serviceCapacity")));
+            }
+            if (data.get("consultationTimings") != null) {
+                hospital.setConsultationTimings(String.valueOf(data.get("consultationTimings")));
+            }
 
             if (data.get("googleMapsUrl") != null) hospital.setGoogleMapsUrl(String.valueOf(data.get("googleMapsUrl")));
             if (data.get("facebookUrl")   != null) hospital.setFacebookUrl(String.valueOf(data.get("facebookUrl")));
