@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { X, Send, Sparkles, AlertCircle, Bot, User, Loader2 } from 'lucide-react';
+import { X, Send, Sparkles, AlertCircle, Bot, User, Loader2, Maximize2, Minimize2 } from 'lucide-react';
 
 const AiChatSidebar = ({ isOpen, onClose, reportData }) => {
+  const [isMaximized, setIsMaximized] = useState(false);
   const [messages, setMessages] = useState([
     { role: 'assistant', content: `Hello! I've analyzed your ${reportData?.fileName || 'report'}. I can help explain the clinical terms, the AI summary, or the doctor's notes. What would you like to know?`, time: 'Just now' }
   ]);
@@ -40,7 +41,7 @@ const AiChatSidebar = ({ isOpen, onClose, reportData }) => {
       )}
 
       {/* Sidebar */}
-      <div className={`fixed top-0 right-0 h-full w-full md:w-[450px] bg-white shadow-2xl z-[120] transform transition-transform duration-500 ease-out flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full bg-white shadow-2xl z-[120] transform transition-all duration-500 ease-out flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'} ${isMaximized ? 'w-full md:w-[90%] lg:w-[80%]' : 'w-full md:w-[450px]'}`}>
         
         {/* Header */}
         <div className="p-6 border-b border-slate-100 bg-gradient-to-r from-primary/5 to-transparent flex items-center justify-between">
@@ -53,9 +54,18 @@ const AiChatSidebar = ({ isOpen, onClose, reportData }) => {
               <p className="text-[10px] font-black uppercase tracking-widest text-emerald-500">AI Active • HIPAA Compliant</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-colors">
-            <X size={24} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setIsMaximized(!isMaximized)} 
+              className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-colors hidden md:block"
+              title={isMaximized ? "Restore" : "Maximize"}
+            >
+              {isMaximized ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+            </button>
+            <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-colors">
+              <X size={24} />
+            </button>
+          </div>
         </div>
 
         {/* Chat Area */}

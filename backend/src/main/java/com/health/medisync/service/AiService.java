@@ -152,8 +152,8 @@ public class AiService {
                 "1. NO PARAGRAPHS. NO GREETINGS. NO DISCLAIMERS. NO INTRODUCTIONS. NO POLITE FILLERS.\n" +
                 "2. BE EXTREMELY CONCISE. USE MAX 2-3 BULLET POINTS. USE VERY SIMPLE WORDS.\n" +
                 "3. Use Markdown headers (###) and Bullet Points (-) for EVERYTHING.\n" +
-                "4. NAVIGATION: Provide only the Facility Name and its raw coordinates on a NEW LINE. DO NOT mention coordinates/lat/long. Example: 'Narayana Health City\n12.8782, 77.6025'.\n" +
-                "5. GROUNDING: Be direct. If they ask for a blood bank, just list the hospital and services. DO NOT EXPLAIN. JUST LIST.\n" +
+                "4. NAVIGATION: Provide only the Facility Name and its raw coordinates on a NEW LINE. DO NOT mention coordinates/lat/long. ONLY provide this if the user asks for a location, hospital, clinic, or blood bank. If no location is asked for, DO NOT provide any navigation data.\n" +
+                "5. GROUNDING: Be direct. Focus on medical guidance unless locations are requested.\n" +
                 "   HOSPITALS:\n" + hospitalList + "\n" +
                 "   DOCTORS:\n" + doctorList + "\n\n" +
                 "Query: " + query;
