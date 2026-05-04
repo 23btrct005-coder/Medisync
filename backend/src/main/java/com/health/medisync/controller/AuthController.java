@@ -720,6 +720,8 @@ public class AuthController {
         hospital.setNabhId(request.get("nabhId") != null ? String.valueOf(request.get("nabhId")) : null);
         hospital.setIsoId(request.get("isoId") != null ? String.valueOf(request.get("isoId")) : null);
         hospital.setInsuranceProviders(request.get("insuranceProviders") != null ? String.valueOf(request.get("insuranceProviders")) : null);
+        hospital.setDepartments(request.get("departments") != null ? String.valueOf(request.get("departments")) : null);
+        hospital.setServices(request.get("services") != null ? String.valueOf(request.get("services")) : null);
 
         if (request.get("icuBeds") != null && !String.valueOf(request.get("icuBeds")).isEmpty()) {
             hospital.setIcuBeds(Integer.parseInt(String.valueOf(request.get("icuBeds"))));

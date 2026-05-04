@@ -4,6 +4,21 @@ import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Plus, X } from 'lucide-react';
+
+const PREDEFINED_SERVICES = [
+    "24/7 Emergency", "MRI Scan", "CT Scan", "X-Ray", "Blood Bank", 
+    "ICU (Intensive Care Unit)", "NICU", "Dialysis", "Physiotherapy", 
+    "Pathology Lab", "In-house Pharmacy", "Ambulance", "Operation Theater",
+    "Telemedicine", "Vaccination Center", "Home Care Services"
+];
+
+const HOSPITAL_DEPARTMENTS = [
+    "Cardiology", "Neurology", "Pediatrics", "Orthopedics", "Oncology", 
+    "Gynecology", "Dermatology", "Urology", "Ophthalmology", "ENT", 
+    "Psychiatry", "Emergency Medicine", "Radiology", "General Surgery",
+    "Dental Surgery", "Nephrology", "Pulmonology", "Gastroenterology"
+];
 
 const HospitalProfile = () => {
     const [profile, setProfile] = useState(null);
@@ -68,7 +83,8 @@ const HospitalProfile = () => {
         razorpayKeySecret: '',
         upiId: '',
         preferredPaymentMode: 'RAZORPAY',
-        services: ''
+        services: '',
+        departments: ''
     });
 
     useEffect(() => {
@@ -125,7 +141,8 @@ const HospitalProfile = () => {
                 razorpayKeySecret: h.razorpayKeySecret || '',
                 upiId: h.upiId || '',
                 preferredPaymentMode: h.preferredPaymentMode || 'RAZORPAY',
-                services: h.services || ''
+                services: h.services || '',
+                departments: h.departments || ''
             });
             if (h.logoUrl) {
                 console.log("DEBUG: Logo detected:", h.logoUrl);
@@ -376,20 +393,138 @@ const HospitalProfile = () => {
                                 </div>
                             </div>
 
+                            {/* Medical Departments Section */}
+                            <div className="mt-10 pt-10 border-t border-slate-100 space-y-6">
+                                <div className="flex items-center gap-3">
+                                    <Activity className="text-blue-600" size={18} />
+                                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900">Medical Departments</h4>
+                                </div>
+                                
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    {HOSPITAL_DEPARTMENTS.map(dept => {
+                                        const isSelected = formData.departments.split(', ').includes(dept);
+                                        return (
+                                            <button
+                                                key={dept}
+                                                type="button"
+                                                onClick={() => {
+                                                    const current = formData.departments ? formData.departments.split(', ').filter(s => s) : [];
+                                                    const updated = isSelected 
+                                                        ? current.filter(s => s !== dept)
+                                                        : [...current, dept];
+                                                    setFormData({...formData, departments: updated.join(', ')});
+                                                }}
+                                                className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-[9px] font-black uppercase tracking-wider transition-all text-left ${
+                                                    isSelected 
+                                                    ? 'bg-blue-50 border-blue-200 text-blue-600' 
+                                                    : 'bg-slate-50 border-transparent text-slate-400 hover:bg-slate-100'
+                                                }`}
+                                            >
+                                                <div className={`w-3 h-3 rounded border flex items-center justify-center transition-all ${isSelected ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-200'}`}>
+                                                    {isSelected && <CheckCircle size={8} />}
+                                                </div>
+                                                {dept}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
                             {/* Clinical Services (Moved for visibility) */}
-                            <div className="mt-10 pt-10 border-t border-slate-100 space-y-4">
+                            <div className="mt-10 pt-10 border-t border-slate-100 space-y-6">
                                 <div className="flex items-center gap-3">
                                     <Activity className="text-primary" size={18} />
                                     <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900">Clinical & Diagnostic Services</h4>
                                 </div>
-                                <textarea 
-                                    value={formData.services}
-                                    onChange={(e) => setFormData({...formData, services: e.target.value})}
-                                    placeholder="e.g. 24/7 MRI, CT Scan, Blood Bank, Pediatric Surgery, ICU Availability"
-                                    className="w-full px-8 py-6 bg-slate-50 border-2 border-transparent focus:border-primary/20 rounded-[2.5rem] text-sm font-bold text-slate-800 outline-none transition-all min-h-[150px] resize-none"
-                                />
+                                
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                    {PREDEFINED_SERVICES.map(service => {
+                                        const isSelected = formData.services.split(', ').includes(service);
+                                        return (
+                                            <button
+                                                key={service}
+                                                type="button"
+                                                onClick={() => {
+                                                    const currentServices = formData.services ? formData.services.split(', ').filter(s => s) : [];
+                                                    const newServices = isSelected 
+                                                        ? currentServices.filter(s => s !== service)
+                                                        : [...currentServices, service];
+                                                    setFormData({...formData, services: newServices.join(', ')});
+                                                }}
+                                                className={`flex items-center gap-3 px-4 py-3 rounded-2xl border text-[10px] font-bold uppercase tracking-wider transition-all text-left ${
+                                                    isSelected 
+                                                    ? 'bg-primary/10 border-primary text-primary shadow-sm' 
+                                                    : 'bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100'
+                                                }`}
+                                            >
+                                                <div className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${isSelected ? 'bg-primary border-primary text-white' : 'bg-white border-slate-200'}`}>
+                                                    {isSelected && <CheckCircle size={10} />}
+                                                </div>
+                                                {service}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Other Specialized Services</label>
+                                    <div className="flex gap-2">
+                                        <input 
+                                            type="text" 
+                                            id="otherServiceInput"
+                                            placeholder="e.g. Laser Eye Surgery, Robotic Rehab"
+                                            className="flex-1 px-6 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-800 outline-none"
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    e.preventDefault();
+                                                    const val = e.target.value.trim();
+                                                    if (val && !formData.services.includes(val)) {
+                                                        const current = formData.services ? formData.services.split(', ').filter(s => s) : [];
+                                                        setFormData({...formData, services: [...current, val].join(', ')});
+                                                        e.target.value = '';
+                                                    }
+                                                }
+                                            }}
+                                        />
+                                        <button 
+                                            type="button"
+                                            onClick={() => {
+                                                const input = document.getElementById('otherServiceInput');
+                                                const val = input.value.trim();
+                                                if (val && !formData.services.includes(val)) {
+                                                    const current = formData.services ? formData.services.split(', ').filter(s => s) : [];
+                                                    setFormData({...formData, services: [...current, val].join(', ')});
+                                                    input.value = '';
+                                                }
+                                            }}
+                                            className="p-3 bg-slate-900 text-white rounded-2xl hover:scale-105 transition-all"
+                                        >
+                                            <Plus size={18} />
+                                        </button>
+                                    </div>
+                                    
+                                    {/* Selected Custom Services Chips */}
+                                    <div className="flex flex-wrap gap-2 mt-3">
+                                        {formData.services.split(', ').filter(s => s && !PREDEFINED_SERVICES.includes(s)).map(customService => (
+                                            <span key={customService} className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-[9px] font-black uppercase tracking-widest border border-slate-200">
+                                                {customService}
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => {
+                                                        const current = formData.services.split(', ').filter(s => s !== customService);
+                                                        setFormData({...formData, services: current.join(', ')});
+                                                    }}
+                                                    className="hover:text-red-500 transition-colors"
+                                                >
+                                                    <X size={12} />
+                                                </button>
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+
                                 <p className="text-[10px] text-slate-400 font-medium italic ml-2">
-                                    List your primary services (MRI, Blood Bank, etc.). This data allows the AI Concierge to confirm availability to patients in real-time.
+                                    Select your primary services or add specialized ones. This data allows the AI Concierge to confirm availability to patients in real-time.
                                 </p>
                             </div>
                         </div>

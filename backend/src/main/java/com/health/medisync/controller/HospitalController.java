@@ -266,6 +266,8 @@ public class HospitalController {
                 hospital.setEmergencyServicesAvailable(Boolean.parseBoolean(data.get("emergencyServicesAvailable").toString()));
 
             if (data.get("insuranceProviders") != null) hospital.setInsuranceProviders(String.valueOf(data.get("insuranceProviders")));
+            if (data.get("services") != null) hospital.setServices(String.valueOf(data.get("services")));
+            if (data.get("departments") != null) hospital.setDepartments(String.valueOf(data.get("departments")));
             if (data.get("billingContactEmail") != null) hospital.setBillingContactEmail(String.valueOf(data.get("billingContactEmail")));
             if (data.get("billingContactPhone") != null) hospital.setBillingContactPhone(String.valueOf(data.get("billingContactPhone")));
 

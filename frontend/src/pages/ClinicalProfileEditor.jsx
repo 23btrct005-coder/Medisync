@@ -7,8 +7,10 @@ import {
   User, Stethoscope, BadgeCheck, GraduationCap, Building2,
   Clock, Activity, Save, ArrowLeft, Mail, Phone, Calendar,
   CheckCircle, AlertCircle, Video, Briefcase, Camera, Upload, Target, Navigation, MapPin,
-  Wallet, CreditCard
+  Wallet, CreditCard, Plus, X, Globe, Heart
 } from 'lucide-react';
+
+const COMMON_LANGUAGES = ["English", "Hindi", "Kannada", "Tamil", "Telugu", "Malayalam", "Marathi", "Bengali", "Gujarati", "Punjabi", "Spanish", "French", "German"];
 import ClinicMap from '../components/ClinicMap';
 
 const EditDoctorProfile = () => {
@@ -530,20 +532,140 @@ const EditDoctorProfile = () => {
             </div>
 
             <div className="md:col-span-2 pt-4 border-t border-slate-50">
-                <p className="text-[10px] font-black text-purple-600 uppercase tracking-widest mb-4">Clinical Depth</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
+                <p className="text-[10px] font-black text-purple-600 uppercase tracking-widest mb-4">Clinical Depth & Expertise</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Procedures Handled */}
+                    <div className="space-y-4">
                         <label className={labelClass}>Procedures Handled</label>
-                        <textarea name="proceduresHandled" rows="2" value={formData.proceduresHandled} onChange={handleChange} className={inputClass} placeholder="e.g. Angioplasty, Stent Placement" />
+                        <div className="flex gap-2">
+                            <input 
+                                type="text" 
+                                id="procedureInput"
+                                placeholder="e.g. Angioplasty"
+                                className="flex-1 px-4 py-2.5 bg-slate-50 border-none rounded-xl text-xs font-bold text-slate-800 outline-none"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        const val = e.target.value.trim();
+                                        if (val && !formData.proceduresHandled.includes(val)) {
+                                            const current = formData.proceduresHandled ? formData.proceduresHandled.split(', ').filter(s => s) : [];
+                                            setFormData({...formData, proceduresHandled: [...current, val].join(', ')});
+                                            e.target.value = '';
+                                        }
+                                    }
+                                }}
+                            />
+                            <button 
+                                type="button"
+                                onClick={() => {
+                                    const input = document.getElementById('procedureInput');
+                                    const val = input.value.trim();
+                                    if (val && !formData.proceduresHandled.includes(val)) {
+                                        const current = formData.proceduresHandled ? formData.proceduresHandled.split(', ').filter(s => s) : [];
+                                        setFormData({...formData, proceduresHandled: [...current, val].join(', ')});
+                                        input.value = '';
+                                    }
+                                }}
+                                className="p-2.5 bg-purple-600 text-white rounded-xl hover:scale-105 transition-all"
+                            >
+                                <Plus size={16} />
+                            </button>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            {formData.proceduresHandled.split(', ').filter(s => s).map(p => (
+                                <span key={p} className="flex items-center gap-2 px-3 py-1 bg-purple-50 text-purple-700 rounded-lg text-[9px] font-black uppercase tracking-widest border border-purple-100">
+                                    {p}
+                                    <button type="button" onClick={() => {
+                                        const current = formData.proceduresHandled.split(', ').filter(s => s !== p);
+                                        setFormData({...formData, proceduresHandled: current.join(', ')});
+                                    }}><X size={10} /></button>
+                                </span>
+                            ))}
+                        </div>
                     </div>
-                    <div>
+
+                    {/* Treatment Focus */}
+                    <div className="space-y-4">
                         <label className={labelClass}>Treatment Focus</label>
-                        <textarea name="treatmentFocus" rows="2" value={formData.treatmentFocus} onChange={handleChange} className={inputClass} placeholder="e.g. Chronic Heart Failure" />
+                        <div className="flex gap-2">
+                            <input 
+                                type="text" 
+                                id="focusInput"
+                                placeholder="e.g. Heart Failure"
+                                className="flex-1 px-4 py-2.5 bg-slate-50 border-none rounded-xl text-xs font-bold text-slate-800 outline-none"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        const val = e.target.value.trim();
+                                        if (val && !formData.treatmentFocus.includes(val)) {
+                                            const current = formData.treatmentFocus ? formData.treatmentFocus.split(', ').filter(s => s) : [];
+                                            setFormData({...formData, treatmentFocus: [...current, val].join(', ')});
+                                            e.target.value = '';
+                                        }
+                                    }
+                                }}
+                            />
+                            <button 
+                                type="button"
+                                onClick={() => {
+                                    const input = document.getElementById('focusInput');
+                                    const val = input.value.trim();
+                                    if (val && !formData.treatmentFocus.includes(val)) {
+                                        const current = formData.treatmentFocus ? formData.treatmentFocus.split(', ').filter(s => s) : [];
+                                        setFormData({...formData, treatmentFocus: [...current, val].join(', ')});
+                                        input.value = '';
+                                    }
+                                }}
+                                className="p-2.5 bg-blue-600 text-white rounded-xl hover:scale-105 transition-all"
+                            >
+                                <Plus size={16} />
+                            </button>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            {formData.treatmentFocus.split(', ').filter(s => s).map(f => (
+                                <span key={f} className="flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-[9px] font-black uppercase tracking-widest border border-blue-100">
+                                    {f}
+                                    <button type="button" onClick={() => {
+                                        const current = formData.treatmentFocus.split(', ').filter(s => s !== f);
+                                        setFormData({...formData, treatmentFocus: current.join(', ')});
+                                    }}><X size={10} /></button>
+                                </span>
+                            ))}
+                        </div>
                     </div>
-                    <div>
+
+                    {/* Languages Spoken (Dropdown + Chips) */}
+                    <div className="space-y-4">
                         <label className={labelClass}>Languages Spoken</label>
-                        <input type="text" name="languagesSpoken" value={formData.languagesSpoken} onChange={handleChange} className={inputClass} placeholder="e.g. English, Hindi, Kannada" />
+                        <select 
+                            className={inputClass}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                if (val && !formData.languagesSpoken.includes(val)) {
+                                    const current = formData.languagesSpoken ? formData.languagesSpoken.split(', ').filter(s => s) : [];
+                                    setFormData({...formData, languagesSpoken: [...current, val].join(', ')});
+                                }
+                                e.target.value = '';
+                            }}
+                        >
+                            <option value="">Select Language</option>
+                            {COMMON_LANGUAGES.map(lang => (
+                                <option key={lang} value={lang}>{lang}</option>
+                            ))}
+                        </select>
+                        <div className="flex flex-wrap gap-2">
+                            {formData.languagesSpoken.split(', ').filter(s => s).map(l => (
+                                <span key={l} className="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-[9px] font-black uppercase tracking-widest border border-emerald-100">
+                                    {l}
+                                    <button type="button" onClick={() => {
+                                        const current = formData.languagesSpoken.split(', ').filter(s => s !== l);
+                                        setFormData({...formData, languagesSpoken: current.join(', ')});
+                                    }}><X size={10} /></button>
+                                </span>
+                            ))}
+                        </div>
                     </div>
+
                     <div>
                         <label className={labelClass}>Scientific Publications</label>
                         <input type="text" name="publications" value={formData.publications} onChange={handleChange} className={inputClass} placeholder="Link to research or journal" />

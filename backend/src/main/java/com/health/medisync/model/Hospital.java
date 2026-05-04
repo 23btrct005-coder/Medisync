@@ -325,4 +325,7 @@ public class Hospital {
 
     public String getServices() { return services; }
     public void setServices(String services) { this.services = services; }
+
+    public String getDepartments() { return departments; }
+    public void setDepartments(String departments) { this.departments = departments; }
 }
