@@ -230,10 +230,27 @@ public class AppointmentService {
             throw new RuntimeException("This service slot is currently being authorized by another patient. Please choose another time.");
         }
 
-        // Diagnostic Service Fee Calculation (Simple default for now, could be in JSON)
-        Double fee = 500.0; // Default service fee
-        if (serviceName.toUpperCase().contains("MRI") || serviceName.toUpperCase().contains("CT")) fee = 2500.0;
-        if (serviceName.toUpperCase().contains("BLOOD") || serviceName.toUpperCase().contains("LAB")) fee = 300.0;
+        // Diagnostic Service Fee Calculation
+        Double fee = 500.0; // Default base service fee
+        
+        try {
+            if (hospital.getServiceFees() != null && !hospital.getServiceFees().isEmpty()) {
+                org.json.JSONObject feesJson = new org.json.JSONObject(hospital.getServiceFees());
+                if (feesJson.has(serviceName)) {
+                    fee = feesJson.getDouble(serviceName);
+                } else if (serviceName.toUpperCase().contains("MRI") || serviceName.toUpperCase().contains("CT")) {
+                    fee = 2500.0;
+                } else if (serviceName.toUpperCase().contains("BLOOD") || serviceName.toUpperCase().contains("LAB")) {
+                    fee = 300.0;
+                }
+            } else {
+                // Fallback to global defaults if hospital has not configured specific fees
+                if (serviceName.toUpperCase().contains("MRI") || serviceName.toUpperCase().contains("CT")) fee = 2500.0;
+                if (serviceName.toUpperCase().contains("BLOOD") || serviceName.toUpperCase().contains("LAB")) fee = 300.0;
+            }
+        } catch (Exception e) {
+            System.err.println("FEE_CALCULATION_ERROR: " + e.getMessage());
+        }
 
         boolean isDemoMode = (razorpayKeyId == null || razorpayKeyId.isEmpty());
         String orderId = isDemoMode ? "demo_service_" + System.currentTimeMillis() : "REAL_SERVICE_ORDER"; // Logic for real would go here
