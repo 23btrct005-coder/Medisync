@@ -135,7 +135,7 @@ public class AppointmentController {
             });
 
         // Doctors/Clinics (e.g. Amarthya's Clinic)
-        doctorService.getAllApprovedDoctors().stream()
+        appointmentService.getAllApprovedDoctors().stream()
             .filter(d -> d.getServices() != null && d.getServices().toLowerCase().contains(service.toLowerCase()))
             .forEach(d -> {
                 Map<String, Object> map = new java.util.HashMap<>();
