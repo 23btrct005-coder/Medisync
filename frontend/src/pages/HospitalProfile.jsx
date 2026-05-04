@@ -180,6 +180,16 @@ const HospitalProfile = () => {
         e.preventDefault();
         setSaving(true);
         try {
+            // Validation: Every service must have both fee and duration
+            const services = formData.services.split(', ').filter(s => s);
+            for (const service of services) {
+                if (!formData.serviceFees[service] || !formData.serviceDurations[service]) {
+                    toast.error(`Required: Please provide both Fee and Duration for "${service}"`);
+                    setSaving(false);
+                    return;
+                }
+            }
+
             const data = new FormData();
             data.append('data', JSON.stringify(formData));
             if (logo) {
@@ -875,6 +885,7 @@ const HospitalProfile = () => {
                                                     <input 
                                                         type="number"
                                                         min="0"
+                                                        required
                                                         value={formData.serviceFees[service] || ''}
                                                         onChange={(e) => {
                                                             const val = e.target.value;
@@ -891,6 +902,7 @@ const HospitalProfile = () => {
                                                     <input 
                                                         type="number"
                                                         min="0"
+                                                        required
                                                         value={formData.serviceDurations[service] || ''}
                                                         onChange={(e) => {
                                                             const val = e.target.value;

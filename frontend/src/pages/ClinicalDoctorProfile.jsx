@@ -92,6 +92,20 @@ const DoctorProfile = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
+      // Validation: Every service must have both fee and duration
+      const services = Array.from(new Set([
+        "General Consultation", 
+        "Telemedicine", 
+        ...((user.services || formData.services)?.split(', ').filter(s => s) || [])
+      ]));
+      for (const service of services) {
+        if (!formData.serviceFees[service] || !formData.serviceDurations[service]) {
+          toast.error(`Required: Please provide both Fee and Duration for "${service}"`);
+          setSaving(false);
+          return;
+        }
+      }
+
       await api.post('/doctor/profile/sync', {
         ...formData,
         serviceFees: JSON.stringify(formData.serviceFees),
@@ -522,6 +536,7 @@ const DoctorProfile = () => {
                                             <input 
                                                 type="number"
                                                 min="0"
+                                                required
                                                 value={formData.serviceFees?.[service] || (user.serviceFees ? (typeof user.serviceFees === 'string' ? JSON.parse(user.serviceFees) : user.serviceFees)[service] : '') || ''}
                                                 onChange={(e) => {
                                                     const val = e.target.value;
@@ -539,6 +554,7 @@ const DoctorProfile = () => {
                                             <input 
                                                 type="number"
                                                 min="0"
+                                                required
                                                 value={formData.serviceDurations?.[service] || (user.serviceDurations ? (typeof user.serviceDurations === 'string' ? JSON.parse(user.serviceDurations) : user.serviceDurations)[service] : '') || ''}
                                                 onChange={(e) => {
                                                     const val = e.target.value;
