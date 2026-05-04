@@ -348,15 +348,19 @@ const Booking = () => {
                       <span className="text-xs font-medium text-slate-400 italic">Experience</span>
                       <span className="text-xs font-black uppercase tracking-widest underline decoration-primary decoration-2">{selectedDoctor.yearsOfExperience || '8+'} Years</span>
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="flex flex-col items-center justify-center p-3 bg-white/5 rounded-2xl border border-white/5">
-                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Duration</span>
-                        <span className="text-[10px] font-bold text-blue-400">{selectedDoctor.slotDuration || 15}m</span>
-                      </div>
-                      <div className="flex flex-col items-center justify-center p-3 bg-white/5 rounded-2xl border border-white/5">
-                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Gap</span>
-                        <span className="text-[10px] font-bold text-indigo-400">{selectedDoctor.slotBuffer || 0}m</span>
-                      </div>
+                  </div>
+
+                  {/* Clinical Services & Infrastructure */}
+                  <div className="w-full mt-6 space-y-4 text-left">
+                    <div>
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Clinical Capabilities</p>
+                        <div className="flex flex-wrap gap-2">
+                            {selectedDoctor.services ? selectedDoctor.services.split(', ').map(s => (
+                                <span key={s} className="px-3 py-1.5 bg-white/5 text-slate-300 text-[10px] font-bold uppercase tracking-tight rounded-xl border border-white/10">
+                                    {s}
+                                </span>
+                            )) : <span className="text-slate-500 italic text-[10px]">General Medical Services</span>}
+                        </div>
                     </div>
                   </div>
                 </div>

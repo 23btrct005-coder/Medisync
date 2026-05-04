@@ -346,14 +346,29 @@ const DoctorProfile = () => {
                             <>
                                 <InfoRow icon={Activity} label="Procedures Managed" value={user.proceduresHandled} color="text-indigo-600" />
                                  <InfoRow icon={Activity} label="Treatment Focus" value={user.treatmentFocus} color="text-rose-600" />
-                                 <div className="py-4 border-t border-slate-50 mt-4">
-                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Medical Services Offered</p>
-                                     <div className="flex flex-wrap gap-2">
-                                         {user.services ? user.services.split(', ').map(s => (
-                                             <span key={s} className="px-4 py-2 bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded-xl border border-emerald-100 shadow-sm">
-                                                 {s}
-                                             </span>
-                                         )) : <span className="text-slate-300 italic text-sm">No specific services listed</span>}
+                                 <div className="py-4 border-t border-slate-50 mt-4 space-y-6">
+                                     <div>
+                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Clinical & Consultation Services</p>
+                                         <div className="flex flex-wrap gap-2">
+                                             {user.services ? user.services.split(', ').filter(s => PREDEFINED_DOCTOR_SERVICES.includes(s)).map(s => (
+                                                 <span key={s} className="px-4 py-2 bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded-xl border border-blue-100 shadow-sm">
+                                                     {s}
+                                                 </span>
+                                             )) : null}
+                                             {(!user.services || !user.services.split(', ').some(s => PREDEFINED_DOCTOR_SERVICES.includes(s))) && <span className="text-slate-300 italic text-sm">No clinical services listed</span>}
+                                         </div>
+                                     </div>
+
+                                     <div>
+                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 text-emerald-600">Diagnostic & Infrastructure Capabilities</p>
+                                         <div className="flex flex-wrap gap-2">
+                                             {user.services ? user.services.split(', ').filter(s => PREDEFINED_INSTITUTIONAL_SERVICES.includes(s)).map(s => (
+                                                 <span key={s} className="px-4 py-2 bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded-xl border border-emerald-100 shadow-sm">
+                                                     {s}
+                                                 </span>
+                                             )) : null}
+                                             {(!user.services || !user.services.split(', ').some(s => PREDEFINED_INSTITUTIONAL_SERVICES.includes(s))) && <span className="text-slate-300 italic text-sm">No diagnostic services listed</span>}
+                                         </div>
                                      </div>
                                  </div>
                             </>
