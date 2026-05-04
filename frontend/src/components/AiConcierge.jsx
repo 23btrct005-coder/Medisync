@@ -395,8 +395,10 @@ const AiConcierge = () => {
                                                 }
 
                                                 if (line.includes('(/dashboard')) {
-                                                    const url = line.match(/\((.*?)\)/)[1];
-                                                    return <button key={li} onClick={() => { setIsOpen(false); window.location.href = url; }} style={{ width: '100%', marginTop: '12px', padding: '14px', backgroundColor: '#0066FF', color: 'white', border: 'none', borderRadius: '16px', cursor: 'pointer', fontWeight: '900', fontSize: '11px', letterSpacing: '1px', boxShadow: '0 8px 20px rgba(0,102,255,0.2)' }}>LAUNCH CLINICAL PORTAL</button>;
+                                                    const match = line.match(/\[(.*?)\]\((.*?)\)/);
+                                                    const label = match ? match[1] : "LAUNCH CLINICAL PORTAL";
+                                                    const url = match ? match[2] : line.match(/\((.*?)\)/)[1];
+                                                    return <button key={li} onClick={() => { setIsOpen(false); window.location.href = url; }} style={{ width: '100%', marginTop: '12px', padding: '14px', backgroundColor: '#0066FF', color: 'white', border: 'none', borderRadius: '16px', cursor: 'pointer', fontWeight: '900', fontSize: '11px', letterSpacing: '1px', boxShadow: '0 8px 20px rgba(0,102,255,0.2)', textTransform: 'uppercase' }}>{label}</button>;
                                                 }
 
                                                 const parts = line.split(/(\*\*.*?\*\*)/g);

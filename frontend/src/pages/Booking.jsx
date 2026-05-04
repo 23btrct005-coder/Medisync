@@ -5,7 +5,7 @@ import {
   User, Star, MapPin, Video, CheckCircle2,
   ArrowLeft, CreditCard, Loader2, Sparkles, RefreshCw, QrCode, X, Activity
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
 import ClinicMap from '../components/ClinicMap';
@@ -58,9 +58,22 @@ const Booking = () => {
 
   const PREDEFINED_INSTITUTIONAL_SERVICES = [...SERVICES_24_7, ...SERVICES_TIME_BASED];
 
+  const [searchParams] = useSearchParams();
+  const doctorNameParam = searchParams.get('doctor');
+
   useEffect(() => {
     fetchDoctors();
   }, []);
+
+  useEffect(() => {
+    if (doctors.length > 0 && doctorNameParam) {
+        const doc = doctors.find(d => d.name.toLowerCase() === doctorNameParam.toLowerCase());
+        if (doc) {
+            setSelectedDoctor(doc);
+            setBookingStep('details');
+        }
+    }
+  }, [doctors, doctorNameParam]);
 
   useEffect(() => {
     if (selectedDoctor && bookingDate) {

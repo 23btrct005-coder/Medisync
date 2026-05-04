@@ -209,8 +209,9 @@ public class AiService {
                 "2. PRIORITIZE HISTORY: If the patient has a history of ENT issues or symptoms like ear pain, recommend ENT specialists first. DO NOT show Cardiology unless it's relevant to the query.\n" +
                 "3. BE EXTREMELY CONCISE. USE MAX 2-3 BULLET POINTS. USE VERY SIMPLE WORDS.\n" +
                 "4. Use Markdown headers (###) and Bullet Points (-) for EVERYTHING.\n" +
-                "5. NAVIGATION: Provide only the Facility Name and its raw coordinates on a NEW LINE. DO NOT mention coordinates/lat/long. ONLY provide this if the user asks for a location, hospital, clinic, or blood bank.\n" +
-                "6. GROUNDING: Match user symptoms/history to the specialization of doctors provided below.\n\n" +
+                "5. NAVIGATION: Provide only the Facility Name and its raw coordinates on a NEW LINE. ONLY provide the location of the PARTICULAR doctor/hospital mentioned. If the query asks about 'Dr. X', ONLY show Dr. X's location. DO NOT list everyone.\n" +
+                "6. BOOKING ACTION: If the user asks to book an appointment or visit a doctor, provide a line exactly like this: [BOOK NOW]((/dashboard/booking?doctor=DOCTOR_NAME)). Replace DOCTOR_NAME with the exact name provided in the list below.\n" +
+                "7. GROUNDING: Match user symptoms/history to the specialization of doctors provided below.\n\n" +
                 "   HOSPITALS:\n" + hospitalList + "\n" +
                 "   DOCTORS:\n" + doctorList + "\n\n" +
                 "Query: " + query;
