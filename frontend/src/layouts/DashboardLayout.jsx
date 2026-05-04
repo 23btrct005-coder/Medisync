@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { useAuth } from '../context/AuthContext';
 import { useState, useEffect } from 'react';
@@ -28,7 +28,7 @@ const DashboardLayout = () => {
         };
     }, []);
 
-    const photoUrl = user?.id ? `${api.defaults.baseURL}/auth/patient/photo/${user.id}` : null;
+    const photoUrl = user?.profilePictureUrl || (user?.id ? `${api.defaults.baseURL}/auth/patient/photo/${user.id}` : null);
 
     return (
         <div className="flex h-[100dvh] bg-slate-50 overflow-hidden font-inter">
@@ -77,13 +77,13 @@ const DashboardLayout = () => {
 
                         <NotificationBell />
 
-                        <div className="flex items-center gap-3 md:pl-6 md:border-l md:border-slate-200">
+                        <Link to="/dashboard/profile" className="flex items-center gap-3 md:pl-6 md:border-l md:border-slate-200 group hover:opacity-80 transition-opacity">
                             <div className="hidden sm:block text-right min-w-0">
-                                <p className="text-xs font-black text-slate-400 uppercase tracking-tighter leading-none">Patient ID: {user?.patientId || `MS-${String(user?.id || '').padStart(4, '0')}`}</p>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter leading-none group-hover:text-primary transition-colors">Patient ID: {user?.patientId || `MS-${String(user?.id || '').padStart(4, '0')}`}</p>
                                 <p className="text-sm font-extrabold text-slate-800 truncate">{user?.name || "Patient"}</p>
                             </div>
                             
-                            <div className="h-9 w-9 md:h-11 md:w-11 rounded-xl md:rounded-2xl overflow-hidden border-2 border-white bg-slate-100 shadow-sm transition-transform hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center">
+                            <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl overflow-hidden border-2 border-white bg-slate-100 shadow-sm transition-all group-hover:scale-105 group-active:scale-95 flex items-center justify-center ring-2 ring-slate-100 group-hover:ring-primary/20">
                                 {photoUrl ? (
                                     <img 
                                         src={photoUrl} 
@@ -91,14 +91,14 @@ const DashboardLayout = () => {
                                         className="h-full w-full object-cover"
                                         onError={(e) => {
                                             e.target.style.display = 'none';
-                                            e.target.nextSibling.style.display = 'block';
+                                            const fallback = e.target.parentElement.querySelector('.fallback-icon');
+                                            if (fallback) fallback.style.display = 'block';
                                         }}
                                     />
                                 ) : null}
-                                <UserCircle size={24} className={`${photoUrl ? 'hidden' : 'block'} text-slate-400 md:hidden`} />
-                                <UserCircle size={32} className={`${photoUrl ? 'hidden' : 'block'} text-slate-400 hidden md:block`} />
+                                <UserCircle size={32} className={`fallback-icon ${photoUrl ? 'hidden' : 'block'} text-slate-400`} />
                             </div>
-                        </div>
+                        </Link>
                     </div>
                 </header>
 
