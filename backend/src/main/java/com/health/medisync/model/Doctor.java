@@ -102,6 +102,9 @@ public class Doctor {
     @Column(columnDefinition = "TEXT")
     private String serviceDurations; // JSON mapping serviceName -> duration (mins)
 
+    @Column(columnDefinition = "TEXT")
+    private String serviceCapacity; // JSON mapping serviceName -> system/machine count
+
     // Administrative Fields (Admin Only)
     private String staffId;
     private String joiningDate;
@@ -312,11 +315,7 @@ public class Doctor {
     public void setCanManageAppointments(boolean canManageAppointments) { this.canManageAppointments = canManageAppointments; }
 
     public String getServices() { return services; }
-    @Column(columnDefinition = "TEXT")
-    private String serviceDurations; // JSON mapping serviceName -> duration (mins)
-
-    @Column(columnDefinition = "TEXT")
-    private String serviceCapacity; // JSON mapping serviceName -> system/machine count
+    public void setServices(String services) { this.services = services; }
 
     public String getServiceFees() { return serviceFees; }
     public void setServiceFees(String serviceFees) { this.serviceFees = serviceFees; }
