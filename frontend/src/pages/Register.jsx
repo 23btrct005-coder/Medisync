@@ -578,6 +578,21 @@ const Register = () => {
                           </select>
                         </div>
                         <div><label className={labelClass}>PIN Code <span className="text-red-500">*</span></label><input type="text" name="pinCode" required value={formData.pinCode} onChange={handleChange} className={inputClass} placeholder="6-digit PIN" /></div>
+                        
+                        {/* Emergency Contact Fields */}
+                        <div className="md:col-span-2 pt-6 border-t border-slate-100 mt-4">
+                            <p className="text-[10px] font-black text-primary-700 uppercase tracking-[0.2em] mb-6">Emergency Contact (Required)</p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div><label className={labelClass}>Emergency Contact Name <span className="text-red-500">*</span></label><input type="text" name="emergencyContactName" required value={formData.emergencyContactName} onChange={handleChange} className={inputClass} placeholder="Full Name" /></div>
+                                <div><label className={labelClass}>Relationship <span className="text-red-500">*</span></label>
+                                    <select name="emergencyContactRelationship" required value={formData.emergencyContactRelationship} onChange={handleChange} className={inputClass}>
+                                        <option value="">Select Relationship</option>
+                                        {['Spouse', 'Parent', 'Sibling', 'Guardian', 'Friend', 'Other'].map(r => <option key={r} value={r}>{r}</option>)}
+                                    </select>
+                                </div>
+                                <div className="md:col-span-2"><label className={labelClass}>Emergency Primary Phone <span className="text-red-500">*</span></label><input type="tel" name="emergencyContactPhone" required value={formData.emergencyContactPhone} onChange={handleChange} className={inputClass} placeholder="Contact Phone" /></div>
+                            </div>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -632,7 +647,32 @@ const Register = () => {
                     {currentStep > 1 && <button type="button" onClick={prevStep} className="flex items-center gap-2 text-sm font-black text-slate-400 uppercase tracking-widest hover:text-slate-600"><ArrowLeft size={18} /> Previous</button>}
                     <div className="flex-1" />
                     {currentStep < totalSteps ? (
-                      <button type="button" onClick={nextStep} className="flex items-center gap-2 bg-primary-600 text-white px-10 py-4 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-primary-700 transition-all shadow-xl shadow-primary-100 active:scale-95">Continue <ChevronRight size={18} /></button>
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                            if (currentStep === 2) {
+                                if (!formData.name || !formData.gender || !formData.dateOfBirth) {
+                                    setError('Name, Gender, and Date of Birth are required.');
+                                    return;
+                                }
+                            }
+                            if (currentStep === 4) {
+                                if (!formData.phone || !formData.street || !formData.state || !formData.city || !formData.pinCode) {
+                                    setError('Contact and Residency details are required.');
+                                    return;
+                                }
+                                if (!formData.emergencyContactName || !formData.emergencyContactRelationship || !formData.emergencyContactPhone) {
+                                    setError('Emergency contact name, relationship, and phone are required.');
+                                    return;
+                                }
+                            }
+                            setError('');
+                            nextStep();
+                        }} 
+                        className="flex items-center gap-2 bg-primary-600 text-white px-10 py-4 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-primary-700 transition-all shadow-xl shadow-primary-100 active:scale-95"
+                      >
+                        Continue <ChevronRight size={18} />
+                      </button>
                     ) : (
                       <button type="submit" disabled={loading} className="flex items-center gap-2 bg-green-600 text-white px-12 py-4 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-green-700 transition-all shadow-xl shadow-green-100 active:scale-95 disabled:opacity-50">{loading ? 'Processing...' : 'Complete Registration'} <CheckCircle size={18} /></button>
                     )}

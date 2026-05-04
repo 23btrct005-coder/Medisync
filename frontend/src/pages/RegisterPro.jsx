@@ -275,6 +275,7 @@ const RegisterPro = () => {
                   <h2 className="text-2xl font-black text-slate-800 tracking-tight">Social Network</h2>
                   <p className="text-slate-400 text-sm">Where we can reach you and your emergency circle.</p>
                 </div>
+                {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-xs font-bold border border-red-100 mb-4">{error}</div>}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <InputField label="Primary Mobile" name="phone" placeholder="10 Digits" />
                   <InputField label="Occupation" name="occupation" />
@@ -283,17 +284,30 @@ const RegisterPro = () => {
                   <div className="md:col-span-2"><InputField label="Street / Residential Area" name="street" /></div>
                   <InputField label="PIN Code" name="pinCode" placeholder="6 Digits" />
                   <div className="md:col-span-2 pt-4 border-t border-slate-100 mt-2">
-                    <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] mb-4">Emergency Contact</p>
+                    <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] mb-4">Emergency Contact (Required)</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <InputField label="Full Name" name="emergencyContactName" />
-                      <InputField label="Relationship" name="emergencyContactRelationship" options={['Spouse', 'Parent', 'Sibling', 'Guardian']} />
-                      <InputField label="Primary Phone" name="emergencyContactPhone" />
+                      <InputField label="Full Name *" name="emergencyContactName" />
+                      <InputField label="Relationship *" name="emergencyContactRelationship" options={['Spouse', 'Parent', 'Sibling', 'Guardian', 'Friend', 'Other']} />
+                      <InputField label="Primary Phone *" name="emergencyContactPhone" />
                     </div>
                   </div>
                 </div>
                 <div className="flex gap-4 pt-4">
                   <button onClick={prevStep} className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-200 transition-all">Back</button>
-                  <button onClick={nextStep} className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10">Proceed</button>
+                  <button 
+                    onClick={() => {
+                        if (!formData.emergencyContactName || !formData.emergencyContactRelationship || !formData.emergencyContactPhone) {
+                            setError('Emergency contact name, relationship, and phone are required.');
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                            return;
+                        }
+                        setError('');
+                        nextStep();
+                    }} 
+                    className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10"
+                  >
+                    Proceed
+                  </button>
                 </div>
               </motion.div>
             )}
