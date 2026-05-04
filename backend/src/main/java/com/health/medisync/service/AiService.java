@@ -116,8 +116,10 @@ public class AiService {
         try {
             List<Doctor> allDoctors = doctorRepository.findByApprovedTrue();
             String doctorList = allDoctors.stream()
-                .map(d -> "- Dr. " + d.getName() + " (" + d.getSpecialization() + ") - Affiliated Hospital: " + 
-                         (d.getHospitalEntity() != null ? d.getHospitalEntity().getName() : "Private Practice"))
+                .map(d -> String.format("- Dr. %s (%s) [%s]", 
+                         d.getName(), 
+                         d.getSpecialization(),
+                         d.getHospitalEntity() != null ? "INSTITUTIONAL: " + d.getHospitalEntity().getName() : "PRIVATE PRACTITIONER"))
                 .collect(Collectors.joining("\n"));
 
             List<Hospital> allHospitals = hospitalRepository.findAll();
@@ -135,7 +137,7 @@ public class AiService {
                 "2. PROVIDE DEEP CLINICAL INSIGHTS. Act as a board-certified MD.\n" +
                 "3. Use Markdown headers (###) and Bullet Points (-) for EVERYTHING.\n" +
                 "4. NAVIGATION: Provide ONLY the location name or coordinates. DO NOT provide text-based directions. Let the system render the map.\n" +
-                "5. GROUNDING: Reference the Institutional Registry below:\n" +
+                "5. GROUNDING: Reference the Clinical Registry below. CRITICAL: Distinguish between Institutional Doctors (affiliated with a hospital) and Private Practitioners (independent). DO NOT group private practitioners under 'Institutional' headers.\n" +
                 "   HOSPITALS:\n" + hospitalList + "\n" +
                 "   DOCTORS:\n" + doctorList + "\n\n" +
                 "Query: " + query;
