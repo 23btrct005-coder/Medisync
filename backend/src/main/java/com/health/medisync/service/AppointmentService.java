@@ -180,6 +180,27 @@ public class AppointmentService {
             throw new RuntimeException("This doctor is currently not accepting virtual consultations.");
         }
 
+        // 4. Conflict & Capacity Check
+        LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(10);
+        List<Appointment> conflicts = appointmentRepository.findConflictingClinicServiceAppointments(doctor.getId(), null, date, slot, expiryTime);
+        
+        int capacity = 1;
+        String capacityJson = doctor.getServiceCapacity();
+        if (capacityJson != null) {
+            try {
+                org.json.JSONObject capacities = new org.json.JSONObject(capacityJson);
+                if (capacities.has("General Consultation")) {
+                    capacity = capacities.getInt("General Consultation");
+                } else if (capacities.has("Consultation")) {
+                    capacity = capacities.getInt("Consultation");
+                }
+            } catch (Exception e) {}
+        }
+        
+        if (conflicts.size() >= capacity) {
+            throw new RuntimeException("This clinical slot is now fully booked or under authorization. Please select another time.");
+        }
+
         Appointment appointment = new Appointment();
         appointment.setDoctor(doctor);
         appointment.setPatient(patient);
@@ -260,8 +281,24 @@ public class AppointmentService {
             }
         }
 
-        if (!conflicts.isEmpty()) {
-            throw new RuntimeException("This service slot is currently being authorized by another patient. Please choose another time.");
+        // Resource Capacity Logic
+        int capacity = 1;
+        String capacityJson = null;
+        if (hospital != null) capacityJson = hospital.getServiceCapacity();
+        else if (doctor != null) capacityJson = doctor.getServiceCapacity();
+
+        if (serviceName != null && capacityJson != null) {
+            try {
+                org.json.JSONObject capacities = new org.json.JSONObject(capacityJson);
+                if (capacities.has(serviceName)) {
+                    capacity = capacities.getInt(serviceName);
+                }
+            } catch (Exception e) {}
+        }
+        if (capacity < 1) capacity = 1;
+
+        if (conflicts.size() >= capacity) {
+            throw new RuntimeException("All " + capacity + " systems for " + serviceName + " are currently occupied at this time. Please select a different window.");
         }
 
         // Diagnostic Service Fee Calculation
