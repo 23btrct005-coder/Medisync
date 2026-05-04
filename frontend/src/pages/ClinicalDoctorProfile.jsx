@@ -521,9 +521,12 @@ const DoctorProfile = () => {
                                             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</div>
                                             <input 
                                                 type="number"
+                                                min="0"
                                                 value={formData.serviceFees?.[service] || (user.serviceFees ? (typeof user.serviceFees === 'string' ? JSON.parse(user.serviceFees) : user.serviceFees)[service] : '') || ''}
                                                 onChange={(e) => {
-                                                    const newFees = { ...formData.serviceFees, [service]: e.target.value };
+                                                    const val = e.target.value;
+                                                    if (val < 0) return;
+                                                    const newFees = { ...formData.serviceFees, [service]: val };
                                                     setFormData({ ...formData, serviceFees: newFees });
                                                     if (!isEditing) setIsEditing(true);
                                                 }}
@@ -535,9 +538,12 @@ const DoctorProfile = () => {
                                             <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-[10px]">Min</div>
                                             <input 
                                                 type="number"
+                                                min="0"
                                                 value={formData.serviceDurations?.[service] || (user.serviceDurations ? (typeof user.serviceDurations === 'string' ? JSON.parse(user.serviceDurations) : user.serviceDurations)[service] : '') || ''}
                                                 onChange={(e) => {
-                                                    const newDurations = { ...formData.serviceDurations, [service]: e.target.value };
+                                                    const val = e.target.value;
+                                                    if (val < 0) return;
+                                                    const newDurations = { ...formData.serviceDurations, [service]: val };
                                                     setFormData({ ...formData, serviceDurations: newDurations });
                                                     if (!isEditing) setIsEditing(true);
                                                 }}

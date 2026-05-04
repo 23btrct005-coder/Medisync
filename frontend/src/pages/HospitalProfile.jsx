@@ -585,8 +585,13 @@ const HospitalProfile = () => {
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Total Beds</label>
                                     <input 
                                         type="number"
+                                        min="0"
                                         value={formData.totalBeds}
-                                        onChange={(e) => setFormData({...formData, totalBeds: e.target.value})}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            if (val < 0) return;
+                                            setFormData({...formData, totalBeds: val});
+                                        }}
                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-emerald-100"
                                     />
                                 </div>
@@ -594,8 +599,13 @@ const HospitalProfile = () => {
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">ICU Beds</label>
                                     <input 
                                         type="number"
+                                        min="0"
                                         value={formData.icuBeds}
-                                        onChange={(e) => setFormData({...formData, icuBeds: e.target.value})}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            if (val < 0) return;
+                                            setFormData({...formData, icuBeds: val});
+                                        }}
                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-emerald-100"
                                     />
                                 </div>
@@ -603,8 +613,13 @@ const HospitalProfile = () => {
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">OT Count</label>
                                     <input 
                                         type="number"
+                                        min="0"
                                         value={formData.operationTheatersCount}
-                                        onChange={(e) => setFormData({...formData, operationTheatersCount: e.target.value})}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            if (val < 0) return;
+                                            setFormData({...formData, operationTheatersCount: val});
+                                        }}
                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-emerald-100"
                                     />
                                 </div>
@@ -612,8 +627,13 @@ const HospitalProfile = () => {
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Ambulances</label>
                                     <input 
                                         type="number"
+                                        min="0"
                                         value={formData.ambulanceCount}
-                                        onChange={(e) => setFormData({...formData, ambulanceCount: e.target.value})}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            if (val < 0) return;
+                                            setFormData({...formData, ambulanceCount: val});
+                                        }}
                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-emerald-100"
                                     />
                                 </div>
@@ -621,8 +641,13 @@ const HospitalProfile = () => {
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nurse Count</label>
                                     <input 
                                         type="number"
+                                        min="0"
                                         value={formData.nurseCount}
-                                        onChange={(e) => setFormData({...formData, nurseCount: e.target.value})}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            if (val < 0) return;
+                                            setFormData({...formData, nurseCount: val});
+                                        }}
                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-emerald-100"
                                     />
                                 </div>
@@ -630,8 +655,13 @@ const HospitalProfile = () => {
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">General Staff</label>
                                     <input 
                                         type="number"
+                                        min="0"
                                         value={formData.generalStaffCount}
-                                        onChange={(e) => setFormData({...formData, generalStaffCount: e.target.value})}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            if (val < 0) return;
+                                            setFormData({...formData, generalStaffCount: val});
+                                        }}
                                         className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-emerald-100"
                                     />
                                 </div>
@@ -844,9 +874,12 @@ const HospitalProfile = () => {
                                                     <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</div>
                                                     <input 
                                                         type="number"
+                                                        min="0"
                                                         value={formData.serviceFees[service] || ''}
                                                         onChange={(e) => {
-                                                            const newFees = { ...formData.serviceFees, [service]: e.target.value };
+                                                            const val = e.target.value;
+                                                            if (val < 0) return;
+                                                            const newFees = { ...formData.serviceFees, [service]: val };
                                                             setFormData({ ...formData, serviceFees: newFees });
                                                         }}
                                                         placeholder="Fee"
@@ -857,9 +890,12 @@ const HospitalProfile = () => {
                                                     <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-[10px]">Min</div>
                                                     <input 
                                                         type="number"
+                                                        min="0"
                                                         value={formData.serviceDurations[service] || ''}
                                                         onChange={(e) => {
-                                                            const newDurations = { ...formData.serviceDurations, [service]: e.target.value };
+                                                            const val = e.target.value;
+                                                            if (val < 0) return;
+                                                            const newDurations = { ...formData.serviceDurations, [service]: val };
                                                             setFormData({ ...formData, serviceDurations: newDurations });
                                                         }}
                                                         placeholder="Time"

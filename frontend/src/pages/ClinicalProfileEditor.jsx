@@ -340,6 +340,7 @@ const EditDoctorProfile = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    if (type === 'number' && value < 0) return;
     setFormData(prev => ({ 
         ...prev, 
         [name]: type === 'checkbox' ? checked : value 
@@ -531,7 +532,7 @@ const EditDoctorProfile = () => {
             </div>
             <div>
               <label className={labelClass}>Years of Experience</label>
-              <input type="number" name="yearsOfExperience" value={formData.yearsOfExperience} readOnly className={readOnlyInputClass} placeholder="e.g. 12" />
+              <input type="number" name="yearsOfExperience" value={formData.yearsOfExperience} readOnly className={readOnlyInputClass} placeholder="e.g. 12" min="0" />
             </div>
             
             <div className="md:col-span-2 pt-4 border-t border-slate-50">
