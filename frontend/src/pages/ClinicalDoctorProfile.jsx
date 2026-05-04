@@ -503,9 +503,16 @@ const DoctorProfile = () => {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {(user.services || formData.services)?.split(', ').filter(s => s).map((service, idx) => (
+                            {/* Always include core consultation services if not already present */}
+                            {Array.from(new Set([
+                                "General Consultation", 
+                                "Telemedicine", 
+                                ...((user.services || formData.services)?.split(', ').filter(s => s) || [])
+                            ])).map((service, idx) => (
                                 <div key={idx} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm group hover:border-emerald-200 transition-all">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block mb-3">{service}</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block mb-3">
+                                        {service} {service === 'Telemedicine' ? '(Online)' : service === 'General Consultation' ? '(In-Person)' : ''}
+                                    </label>
                                     <div className="relative">
                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</div>
                                         <input 
