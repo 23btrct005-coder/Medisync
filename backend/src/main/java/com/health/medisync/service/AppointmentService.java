@@ -528,6 +528,100 @@ public class AppointmentService {
             System.err.println("FATAL: Marketplace Sync Failed!");
             e.printStackTrace();
             throw e;
+    }
+
+    public List<String> getAvailableSlots(String facilityId, String serviceName, LocalDate date) {
+        String timings;
+        int duration = 15;
+        int buffer = 0;
+        Long entityId;
+        boolean isHospital = false;
+
+        if (facilityId.startsWith("hosp_")) {
+            entityId = Long.valueOf(facilityId.substring(5).split("\\.")[0]);
+            Hospital hospital = hospitalRepository.findById(entityId)
+                .orElseThrow(() -> new RuntimeException("Hospital not found"));
+            timings = hospital.getConsultationTimings();
+            
+            if (serviceName != null && hospital.getServiceDurations() != null) {
+                try {
+                    JSONObject durations = new JSONObject(hospital.getServiceDurations());
+                    if (durations.has(serviceName)) {
+                        duration = durations.getInt(serviceName);
+                    }
+                } catch (Exception e) {}
+            }
+            isHospital = true;
+        } else {
+            String dIdStr = facilityId;
+            if (dIdStr.startsWith("doc_")) dIdStr = dIdStr.substring(4);
+            entityId = Long.valueOf(dIdStr.split("\\.")[0]);
+            Doctor doctor = doctorRepository.findById(entityId)
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+            timings = doctor.getConsultationTimings();
+            duration = (doctor.getSlotDuration() != null && doctor.getSlotDuration() > 0) ? doctor.getSlotDuration() : 15;
+            buffer = (doctor.getSlotBuffer() != null) ? doctor.getSlotBuffer() : 0;
+
+            if (serviceName != null && doctor.getServiceDurations() != null) {
+                try {
+                    JSONObject durations = new JSONObject(doctor.getServiceDurations());
+                    if (durations.has(serviceName)) {
+                        duration = durations.getInt(serviceName);
+                    }
+                } catch (Exception e) {}
+            }
         }
+
+        if (timings == null || timings.trim().isEmpty() || !timings.contains("-")) {
+            return Collections.emptyList();
+        }
+
+        List<String> allSlots = new ArrayList<>();
+        try {
+            String[] parts = timings.split("-");
+            java.time.LocalTime startTime = parseRobustTime(parts[0].trim());
+            java.time.LocalTime endTime = parseRobustTime(parts[1].trim());
+
+            if (startTime != null && endTime != null) {
+                DateTimeFormatter displayFormatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);
+                java.time.LocalTime current = startTime;
+                while (current.isBefore(endTime)) {
+                    allSlots.add(current.format(displayFormatter));
+                    current = current.plusMinutes(duration + buffer);
+                }
+            }
+        } catch (Exception e) {
+            return Collections.emptyList();
+        }
+
+        LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(10);
+        List<Appointment> existing;
+        if (isHospital) {
+            existing = appointmentRepository.findByHospitalIdAndAppointmentDate(entityId, date);
+        } else {
+            existing = appointmentRepository.findByDoctorIdAndAppointmentDate(entityId, date);
+        }
+
+        Set<String> takenSlots = existing.stream()
+            .filter(a -> a.getStatus() == Appointment.AppointmentStatus.BOOKED || 
+                        a.getStatus() == Appointment.AppointmentStatus.AWAITING_VERIFICATION ||
+                        (a.getStatus() == Appointment.AppointmentStatus.PENDING && a.getCreatedAt() != null && a.getCreatedAt().isAfter(expiryTime)))
+            .map(a -> a.getTimeSlot())
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
+
+        return allSlots.stream()
+            .filter(slot -> !takenSlots.contains(slot))
+            .collect(Collectors.toList());
+    }
+
+    private java.time.LocalTime parseRobustTime(String timeStr) {
+        String[] formats = {"hh:mm a", "h:mm a", "HH:mm", "H:mm", "hh:mma", "h:mma"};
+        for (String format : formats) {
+            try {
+                return java.time.LocalTime.parse(timeStr.toUpperCase(), DateTimeFormatter.ofPattern(format, Locale.ENGLISH));
+            } catch (Exception e) {}
+        }
+        return null;
     }
 }

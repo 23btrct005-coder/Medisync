@@ -88,26 +88,21 @@ const Booking = () => {
   };
 
   const fetchSlots = async () => {
-    if (bookingMode === 'service' && !selectedDoctor?.id?.toString().startsWith('doc_')) {
-        // Default clinical windows for institutional hospital services
-        setAvailableSlots(["09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM"]);
-        setSelectedSlot(null);
-        return;
-    }
-
     if (!selectedDoctor?.id || selectedDoctor.id === 'undefined') {
       console.warn("Skipping slot retrieval: doctorId is invalid", selectedDoctor);
       return;
     }
-    setLoadingSlots(true);
+
     try {
-      const res = await api.get(`appointments/slots?doctorId=${selectedDoctor.id}&date=${bookingDate}`);
+      setLoading(true);
+      setAvailableSlots([]);
+      const serviceParam = selectedService ? `&serviceName=${encodeURIComponent(selectedService)}` : '';
+      const res = await api.get(`appointments/slots?doctorId=${selectedDoctor.id}&date=${bookingDate}${serviceParam}`);
       setAvailableSlots(res.data || []);
-      setSelectedSlot(null);
     } catch (e) {
-      toast.error("Cloud sync failed for time slots.");
+      toast.error("Failed to synchronize available clinical windows.");
     } finally {
-      setLoadingSlots(false);
+      setLoading(false);
     }
   };
 

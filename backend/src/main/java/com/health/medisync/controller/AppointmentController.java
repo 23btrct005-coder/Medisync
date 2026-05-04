@@ -41,17 +41,13 @@ public class AppointmentController {
     @GetMapping("/slots")
     public ResponseEntity<?> getAvailableSlots(
             @RequestParam(required = false) String doctorId,
+            @RequestParam(required = false) String serviceName,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         try {
             if (doctorId == null || doctorId.trim().isEmpty() || doctorId.equalsIgnoreCase("undefined") || doctorId.equalsIgnoreCase("null")) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Invalid or missing doctorId parameter"));
             }
-            String idStr = doctorId;
-            if (idStr.startsWith("doc_")) idStr = idStr.substring(4);
-            else if (idStr.startsWith("hosp_")) idStr = idStr.substring(5);
-            
-            Long id = Long.valueOf(idStr.split("\\.")[0]);
-            return ResponseEntity.ok(doctorService.getAvailableSlots(id, date));
+            return ResponseEntity.ok(appointmentService.getAvailableSlots(doctorId, serviceName, date));
         } catch (Exception e) {
             String errorMsg = e.getClass().getSimpleName() + ": " + e.getMessage();
             System.err.println("ERROR: Slot retrieval failed for doc " + doctorId + " on " + date + ": " + errorMsg);
