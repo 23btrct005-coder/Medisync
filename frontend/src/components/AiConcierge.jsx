@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const AiConcierge = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const [isFullscreen, setIsFullscreen] = useState(false);
     const [messages, setMessages] = useState([
         { role: 'ai', text: 'Hello! I am your MediSync Clinical Concierge. I can help with Symptom Analysis, Hospital Comparisons, and Emergency Triage. How are you feeling today?' }
     ]);
@@ -38,7 +39,7 @@ const AiConcierge = () => {
 
     useEffect(() => {
         if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }, [messages, isOpen]);
+    }, [messages, isOpen, isFullscreen]);
 
     const speak = (text) => {
         if (!isVoiceEnabled) return;
@@ -107,9 +108,15 @@ const AiConcierge = () => {
         setIsLoading(true);
 
         try {
+            const context = {
+                path: window.location.pathname,
+                title: document.title
+            };
+            
             const res = await api.post('/ai/chat', { 
                 message: textToSend,
                 location: location ? `${location.lat},${location.lng}` : null,
+                context: context, // Provide current page context to AI
                 history: messages.slice(-5) // Send last 5 messages for context
             });
             const aiMsg = { role: 'ai', text: res.data.response };
@@ -239,14 +246,19 @@ const AiConcierge = () => {
                     <motion.div 
                         className="ai-chat-container"
                         initial={{ y: 100, opacity: 0, scale: 0.9 }}
-                        animate={{ y: 0, opacity: 1, scale: 1 }}
+                        animate={{ 
+                            y: 0, 
+                            opacity: 1, 
+                            scale: 1,
+                            width: isFullscreen ? 'min(1200px, calc(100vw - 60px))' : '400px',
+                            height: isFullscreen ? 'calc(100vh - 60px)' : 'min(700px, calc(100vh - 60px))'
+                        }}
                         exit={{ y: 100, opacity: 0, scale: 0.9 }}
+                        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                         style={{ 
                             position: 'fixed',
                             bottom: '30px',
                             right: '30px',
-                            width: '400px', 
-                            height: 'min(700px, calc(100vh - 60px))', 
                             backgroundColor: 'white', 
                             borderRadius: '32px', 
                             boxShadow: '0 30px 100px rgba(0,0,0,0.3)', 
@@ -260,25 +272,43 @@ const AiConcierge = () => {
                     >
                         {/* Header */}
                         <div style={{ padding: '20px 24px', backgroundColor: '#0066FF', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                 <div style={{ width: '10px', height: '10px', backgroundColor: '#4ade80', borderRadius: '50%', boxShadow: '0 0 10px #4ade80', animation: 'pulse 2s infinite' }}></div>
                                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <span style={{ fontWeight: '900', fontSize: '13px', letterSpacing: '1px' }}>CLINICAL AI 2.0</span>
-                                    <span style={{ fontSize: '9px', opacity: 0.7, fontWeight: '800' }}>LIVE SAT-LINK • REAL-TIME</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <span style={{ fontWeight: '900', fontSize: '13px', letterSpacing: '1px' }}>CLINICAL AI 2.0</span>
+                                        <span style={{ fontSize: '8px', padding: '2px 6px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '6px', fontWeight: '800' }}>BETA</span>
+                                    </div>
+                                    <span style={{ fontSize: '9px', opacity: 0.7, fontWeight: '800', letterSpacing: '0.5px' }}>CONTEXT: {window.location.pathname.toUpperCase() || 'HOME'}</span>
                                 </div>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                                 <button 
-                                    onClick={() => {
-                                        setIsVoiceEnabled(!isVoiceEnabled);
-                                        if (!isVoiceEnabled) speak("Voice enabled.");
-                                        else window.speechSynthesis.cancel();
-                                    }} 
-                                    style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '18px', opacity: isVoiceEnabled ? 1 : 0.4 }}
+                                    onClick={() => setIsVoiceEnabled(!isVoiceEnabled)} 
+                                    title={isVoiceEnabled ? 'Disable Voice' : 'Enable Voice'}
+                                    style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '18px', opacity: isVoiceEnabled ? 1 : 0.4, transition: '0.2s', padding: '4px' }}
                                 >
                                     {isVoiceEnabled ? '🔊' : '🔈'}
                                 </button>
-                                <button onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '24px', lineHeight: 1 }}>✕</button>
+                                <div style={{ width: '1px', height: '20px', backgroundColor: 'rgba(255,255,255,0.1)' }}></div>
+                                <button 
+                                    onClick={() => setIsFullscreen(!isFullscreen)} 
+                                    title={isFullscreen ? 'Minimize View' : 'Maximize View'}
+                                    style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '14px', transition: '0.2s', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                >
+                                    {isFullscreen ? (
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14h6m0 0v6m0-6-6 6M20 10h-6m0 0V4m0 6 6-6"/></svg>
+                                    ) : (
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6m0 0v6m0-6L14 10M9 21H3m0 0v-6m0 6 7-7"/></svg>
+                                    )}
+                                </button>
+                                <button 
+                                    onClick={() => setIsOpen(false)} 
+                                    title="Close Concierge"
+                                    style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '20px', lineHeight: 1, padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                >
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                </button>
                             </div>
                         </div>
 
