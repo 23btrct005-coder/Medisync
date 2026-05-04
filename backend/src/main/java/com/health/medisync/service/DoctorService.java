@@ -221,6 +221,8 @@ public class DoctorService {
         trackChange("Clinical Window", doctor.getConsultationTimings(), (String) updates.get("consultationTimings"), changedFields);
         trackChange("Clinic Address", doctor.getClinicAddress(), (String) updates.get("clinicAddress"), changedFields);
         trackChange("Clinical Services", doctor.getServices(), (String) updates.get("services"), changedFields);
+        trackChange("Direct UPI", doctor.getUpiId(), (String) updates.get("upiId"), changedFields);
+        trackChange("Settlement Account", doctor.getRazorpayAccountId(), (String) updates.get("razorpayAccountId"), changedFields);
         
         // Handle Numeric conversions with care
         if (updates.containsKey("yearsOfExperience")) {
@@ -378,8 +380,11 @@ public class DoctorService {
     }
 
     private void trackChange(String fieldName, Object oldVal, Object newVal, List<String> changes) {
-        if (newVal == null) return;
-        if (!Objects.equals(oldVal, newVal)) {
+        if (newVal == null && oldVal == null) return;
+        String sOld = oldVal != null ? oldVal.toString().trim() : "";
+        String sNew = newVal != null ? newVal.toString().trim() : "";
+        
+        if (!sOld.equals(sNew)) {
             changes.add(fieldName);
         }
     }
