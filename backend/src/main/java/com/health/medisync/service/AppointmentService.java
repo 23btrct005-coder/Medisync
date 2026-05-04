@@ -41,7 +41,8 @@ public class AppointmentService {
         "Emergency & Trauma Care", "Ambulance Services", "ICU (Intensive Care Unit)", 
         "NICU (Neonatal ICU)", "Operation Theatre (Emergency)", "Casualty Department", 
         "24/7 Pharmacy", "Blood Bank", "Emergency CT Scan", "Emergency Lab Tests",
-        "Oxygen & Ventilator Support", "Emergency Dialysis"
+        "Oxygen & Ventilator Support", "Emergency Dialysis",
+        "Emergency Room", "ICU Admission", "Trauma Care", "Ambulance Response"
     );
 
     public AppointmentService(AppointmentRepository appointmentRepository, 
@@ -256,6 +257,7 @@ public class AppointmentService {
             hospital = hospitalRepository.findById(hId)
                 .orElseThrow(() -> new RuntimeException("Hospital not found"));
             preferredPaymentMode = hospital.getPreferredPaymentMode() != null ? hospital.getPreferredPaymentMode() : "UPI";
+            upiId = hospital.getUpiId();
             
             boolean is247 = serviceName != null && SERVICES_24_7.contains(serviceName);
             if (is247 && "IMMEDIATE".equals(slot)) {
