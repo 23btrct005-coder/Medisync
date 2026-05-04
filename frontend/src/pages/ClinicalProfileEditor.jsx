@@ -792,7 +792,6 @@ const EditDoctorProfile = () => {
                 </div>
             </div>
           </div>
-        </div>
 
         {/* ── Section 2: Clinical Practice ── */}
         <div className={sectionClass}>
