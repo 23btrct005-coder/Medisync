@@ -34,6 +34,31 @@ const AiConcierge = () => {
         if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }, [messages, isOpen, isFullscreen]);
 
+    const [streamingText, setStreamingText] = useState({});
+
+    useEffect(() => {
+        const latestMsg = messages[messages.length - 1];
+        if (latestMsg && latestMsg.role === 'ai') {
+            const msgId = messages.length - 1;
+            let i = 0;
+            const fullText = latestMsg.text;
+            
+            // Fast streaming feel
+            const interval = setInterval(() => {
+                setStreamingText(prev => ({
+                    ...prev,
+                    [msgId]: fullText.slice(0, i + 30)
+                }));
+                i += 30;
+                if (i >= fullText.length) {
+                    clearInterval(interval);
+                    setStreamingText(prev => ({ ...prev, [msgId]: fullText }));
+                }
+            }, 30);
+            return () => clearInterval(interval);
+        }
+    }, [messages]);
+
     // Auth Guard: Only show AI Concierge after a secure session is established
     if (!user) return null;
 
@@ -134,31 +159,6 @@ const AiConcierge = () => {
         }
     };
 
-    const [streamingText, setStreamingText] = useState({});
-
-    useEffect(() => {
-        const latestMsg = messages[messages.length - 1];
-        if (latestMsg && latestMsg.role === 'ai') {
-            const msgId = messages.length - 1;
-            let i = 0;
-            const fullText = latestMsg.text;
-            
-            // Fast streaming feel
-            const interval = setInterval(() => {
-                setStreamingText(prev => ({
-                    ...prev,
-                    [msgId]: fullText.slice(0, i + 30)
-                }));
-                i += 30;
-                if (i >= fullText.length) {
-                    clearInterval(interval);
-                    setStreamingText(prev => ({ ...prev, [msgId]: fullText }));
-                }
-            }, 30);
-            return () => clearInterval(interval);
-        }
-    }, [messages]);
-
     const startListening = () => {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) return alert('Speech recognition not supported in this browser. Please use Chrome.');
@@ -173,7 +173,6 @@ const AiConcierge = () => {
         recognition.onresult = (e) => {
             const transcript = e.results[0][0].transcript;
             setInput(transcript);
-            // Removed auto-send as per user request
         };
         recognition.start();
     };
