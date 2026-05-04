@@ -685,74 +685,7 @@ const EditDoctorProfile = () => {
                         </div>
                     </div>
 
-                    <div className="md:col-span-2 pt-6 border-t border-slate-50 mt-4">
-                        <label className={labelClass}>Diagnostic & Infrastructure Capabilities</label>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
-                            {PREDEFINED_INSTITUTIONAL_SERVICES.map(service => (
-                                <label key={service} className={`flex flex-col items-center justify-center p-4 rounded-3xl border transition-all cursor-pointer group ${formData.services?.includes(service) ? 'bg-emerald-50 border-emerald-500 shadow-sm' : 'bg-slate-50 border-transparent hover:border-slate-200'}`}>
-                                    <input 
-                                        type="checkbox" 
-                                        className="hidden"
-                                        checked={formData.services?.includes(service) || false}
-                                        onChange={(e) => {
-                                            const current = formData.services ? formData.services.split(', ').filter(s => s) : [];
-                                            const next = e.target.checked ? [...current, service] : current.filter(s => s !== service);
-                                            setFormData({...formData, services: next.join(', ')});
-                                        }}
-                                    />
-                                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center mb-3 transition-all ${formData.services?.includes(service) ? 'bg-emerald-600 text-white' : 'bg-white text-slate-400 group-hover:text-slate-600 shadow-sm'}`}>
-                                        <Activity size={18} />
-                                    </div>
-                                    <span className={`text-[10px] font-black uppercase text-center tracking-tighter leading-tight ${formData.services?.includes(service) ? 'text-emerald-700' : 'text-slate-500'}`}>{service}</span>
-                                </label>
-                            ))}
-                        </div>
-                        </div>
-                    </div>
 
-                    {/* Service Resource Allocation (Fix for machine count request) */}
-                    {(formData.services && formData.services.split(', ').filter(s => s).length > 0) && (
-                        <div className="md:col-span-2 mt-8 p-8 bg-blue-900 rounded-[2.5rem] text-white shadow-xl shadow-blue-900/20 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 -mr-16 -mt-16 rounded-full blur-2xl" />
-                            <div className="relative z-10">
-                                <div className="flex items-center gap-3 mb-6">
-                                    <Activity className="text-blue-300" size={20} />
-                                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em]">Service Resource Allocation</h4>
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {formData.services.split(', ').filter(s => s).map(service => (
-                                        <div key={service} className="bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-white/10 hover:bg-white/20 transition-all group">
-                                            <div className="flex justify-between items-start mb-3">
-                                                <span className="text-[10px] font-black uppercase tracking-tighter text-blue-100 leading-none">{service}</span>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex-1">
-                                                    <label className="text-[8px] font-black uppercase text-blue-300 tracking-widest block mb-1">Systems / Machines</label>
-                                                    <input 
-                                                        type="number" 
-                                                        min="1"
-                                                        value={formData.serviceCapacity?.[service] || 1}
-                                                        onChange={(e) => {
-                                                            const val = parseInt(e.target.value, 10) || 1;
-                                                            if (val < 1) return;
-                                                            setFormData(prev => ({
-                                                                ...prev,
-                                                                serviceCapacity: { ...prev.serviceCapacity, [service]: val }
-                                                            }));
-                                                        }}
-                                                        className="w-full bg-blue-800/50 border-none rounded-xl text-xs font-black py-2 px-3 focus:ring-1 ring-blue-400 text-white"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <p className="text-[9px] text-blue-300/70 font-medium italic mt-6 flex items-center gap-2">
-                                    <Shield size={10} /> Define the number of concurrent patients this service can handle per time slot.
-                                </p>
-                            </div>
-                        </div>
-                    )}
 
                     {/* Languages Spoken (Dropdown + Chips) */}
                     <div className="space-y-4">

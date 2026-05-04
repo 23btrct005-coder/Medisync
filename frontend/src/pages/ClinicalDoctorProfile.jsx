@@ -386,21 +386,10 @@ const DoctorProfile = () => {
                                          </div>
                                      </div>
 
-                                     <div>
-                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 text-emerald-600">Diagnostic & Infrastructure Capabilities</p>
-                                         <div className="flex flex-wrap gap-2">
-                                             {user.services ? user.services.split(', ').filter(s => PREDEFINED_INSTITUTIONAL_SERVICES.includes(s)).map(s => (
-                                                 <span key={s} className="px-4 py-2 bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded-xl border border-emerald-100 shadow-sm">
-                                                     {s}
-                                                 </span>
-                                             )) : null}
-                                             {(!user.services || !user.services.split(', ').some(s => PREDEFINED_INSTITUTIONAL_SERVICES.includes(s))) && <span className="text-slate-300 italic text-sm">No diagnostic services listed</span>}
-                                         </div>
-                                     </div>
                                  </div>
-                            </>
-                        )}
-                    </Section>
+                             </>
+                         )}
+                     </Section>
                                     
                     <Section title="Professional Assets" icon={Star}>
                         {isEditing ? (
@@ -491,6 +480,94 @@ const DoctorProfile = () => {
                                         {user.appointmentsEnabled ? 'Accepting' : 'Paused'}
                                     </span>
                                 )}
+                            </div>
+                            </div>
+                        </div>
+
+                        {/* Clinical Absence Shield */}
+                        <div className="py-8 border-t border-slate-50">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="p-2.5 bg-red-50 text-red-600 rounded-xl">
+                                    <Calendar size={22} />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-slate-900 tracking-tight">Clinical Absence Shield</h3>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5 leading-none">Declare scheduled unavailability</p>
+                                </div>
+                            </div>
+                            
+                            <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Mark Absence Date</label>
+                                        <div className="flex gap-2">
+                                            <input 
+                                                type="date" 
+                                                id="newAbsenceDate"
+                                                min={new Date().toISOString().split('T')[0]}
+                                                className="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                                            />
+                                            <button 
+                                                type="button"
+                                                onClick={async () => {
+                                                    const date = document.getElementById('newAbsenceDate').value;
+                                                    if (date) {
+                                                        const currentDates = user.absenceDates ? user.absenceDates.split(',').filter(d => d) : [];
+                                                        if (!currentDates.includes(date)) {
+                                                            try {
+                                                                const nextDates = [...currentDates, date].join(',');
+                                                                await api.post('/doctor/profile/sync', { absenceDates: nextDates });
+                                                                toast.success("Absence date synchronized");
+                                                                await refreshUser();
+                                                                document.getElementById('newAbsenceDate').value = '';
+                                                            } catch (err) {
+                                                                toast.error("Failed to sync absence node");
+                                                            }
+                                                        }
+                                                    }
+                                                }}
+                                                className="px-6 py-3 bg-red-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-red-600 shadow-lg shadow-red-500/20 transition-all active:scale-95"
+                                            >
+                                                Mark Absent
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Active Absence Log</label>
+                                        <div className="flex flex-wrap gap-2 max-h-[120px] overflow-y-auto p-1">
+                                            {user.absenceDates && user.absenceDates.split(',').filter(d => d).length > 0 ? (
+                                                user.absenceDates.split(',').filter(d => d).sort().map(date => (
+                                                    <div key={date} className="flex items-center gap-2 px-3 py-2 bg-white text-red-600 border border-red-100 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">
+                                                        <Calendar size={12} className="opacity-60" />
+                                                        {new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                        <button 
+                                                            type="button"
+                                                            onClick={async () => {
+                                                                try {
+                                                                    const dates = user.absenceDates.split(',').filter(d => d && d !== date);
+                                                                    await api.post('/doctor/profile/sync', { absenceDates: dates.join(',') });
+                                                                    toast.success("Absence window removed");
+                                                                    await refreshUser();
+                                                                } catch (err) {
+                                                                    toast.error("Failed to update clinical timeline");
+                                                                }
+                                                            }}
+                                                            className="ml-1 p-1 hover:bg-red-50 rounded-lg transition-colors text-red-400 hover:text-red-700"
+                                                        >
+                                                            <X size={12} />
+                                                        </button>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="w-full py-8 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center bg-white/50">
+                                                    <CheckCircle size={24} className="text-slate-200 mb-2" />
+                                                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">No Scheduled Absence</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </Section>
