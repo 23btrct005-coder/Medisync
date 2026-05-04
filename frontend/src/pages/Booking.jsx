@@ -518,20 +518,36 @@ const Booking = () => {
               <div className="glass-panel p-8 bg-slate-900 text-white border-none overflow-hidden relative group">
                 <div className="absolute -right-10 -top-10 w-40 h-40 bg-primary/20 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
                 <div className="relative z-10 flex flex-col items-center text-center">
-                  <div className="w-24 h-24 rounded-3xl overflow-hidden border-4 border-white/10 mb-6 shadow-2xl">
-                    {selectedDoctor.profilePictureUrl ? (
-                      <img src={selectedDoctor.profilePictureUrl} className="w-full h-full object-cover" alt="" />
-                    ) : (
-                      <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedDoctor.name}`} alt="" className="w-full h-full object-cover" />
-                    )}
-                  </div>
-                  <h2 className="text-3xl font-black tracking-tight leading-none mb-2">Dr. {selectedDoctor.name}</h2>
-                  <p className="text-primary-400 font-bold uppercase tracking-[0.2em] text-[10px] mb-4">{selectedDoctor.specialization}</p>
+                  {(() => {
+                    const isHospital = !!selectedDoctor.hospitalType || !!selectedDoctor.logoUrl;
+                    const profileImg = isHospital ? selectedDoctor.logoUrl : selectedDoctor.profilePictureUrl;
+                    const fallbackImg = isHospital 
+                        ? `https://api.dicebear.com/7.x/identicon/svg?seed=${selectedDoctor.name}` 
+                        : `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedDoctor.name}`;
+
+                    return (
+                        <>
+                        <div className="w-24 h-24 rounded-3xl overflow-hidden border-4 border-white/10 mb-6 shadow-2xl">
+                            {profileImg ? (
+                            <img src={profileImg} className="w-full h-full object-cover" alt="" />
+                            ) : (
+                            <img src={fallbackImg} alt="" className="w-full h-full object-cover" />
+                            )}
+                        </div>
+                        <h2 className="text-3xl font-black tracking-tight leading-none mb-2">
+                            {isHospital ? "" : "Dr. "}{selectedDoctor.name}
+                        </h2>
+                        <p className="text-primary-400 font-bold uppercase tracking-[0.2em] text-[10px] mb-4">
+                            {selectedDoctor.specialization || selectedDoctor.hospitalType || "Medical Facility"}
+                        </p>
+                        </>
+                    );
+                  })()}
 
                   {selectedDoctor.absenceDates && selectedDoctor.absenceDates.includes(localToday) && (
                     <div className="mb-6 px-4 py-1.5 bg-red-500/20 text-red-400 border border-red-500/30 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
                         <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                        Physician Absent Today
+                        {selectedDoctor.hospitalType ? "Facility Closed Today" : "Physician Absent Today"}
                     </div>
                   )}
 
