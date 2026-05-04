@@ -86,7 +86,8 @@ const EditDoctorProfile = () => {
     endTime: '17:00',
     services: '',
     serviceDurations: {},
-    serviceCapacity: {}
+    serviceCapacity: {},
+    absenceDates: ''
   });
 
   const convertTo24Hour = (timeStr) => {
@@ -890,6 +891,81 @@ const EditDoctorProfile = () => {
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Clinical Absence Shield */}
+            <div className="md:col-span-2 space-y-4 mt-4 mb-8">
+                <div className="flex items-center gap-3 mb-2">
+                    <div className="p-2.5 bg-red-50 text-red-600 rounded-xl">
+                        <Calendar size={22} />
+                    </div>
+                    <div>
+                        <h3 className="text-xl font-bold text-slate-900 tracking-tight">Clinical Absence Shield</h3>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5 leading-none">Declare scheduled unavailability</p>
+                    </div>
+                </div>
+                
+                <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-4">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Mark Absence Date</label>
+                            <div className="flex gap-2">
+                                <input 
+                                    type="date" 
+                                    id="newAbsenceDate"
+                                    min={new Date().toISOString().split('T')[0]}
+                                    className="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                                />
+                                <button 
+                                    type="button"
+                                    onClick={() => {
+                                        const date = document.getElementById('newAbsenceDate').value;
+                                        if (date) {
+                                            const currentDates = formData.absenceDates ? formData.absenceDates.split(',').filter(d => d) : [];
+                                            if (!currentDates.includes(date)) {
+                                                setFormData(prev => ({ ...prev, absenceDates: [...currentDates, date].join(',') }));
+                                            }
+                                            document.getElementById('newAbsenceDate').value = '';
+                                        }
+                                    }}
+                                    className="px-6 py-3 bg-red-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-red-600 shadow-lg shadow-red-500/20 transition-all active:scale-95"
+                                >
+                                    Mark Absent
+                                </button>
+                            </div>
+                            <p className="text-[9px] text-slate-400 font-bold uppercase ml-1 italic">Note: All slots for selected dates will be automatically collapsed.</p>
+                        </div>
+                        
+                        <div className="space-y-4">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Current Absence Log</label>
+                            <div className="flex flex-wrap gap-2 max-h-[120px] overflow-y-auto p-1">
+                                {formData.absenceDates && formData.absenceDates.split(',').filter(d => d).length > 0 ? (
+                                    formData.absenceDates.split(',').filter(d => d).sort().map(date => (
+                                        <div key={date} className="flex items-center gap-2 px-3 py-2 bg-white text-red-600 border border-red-100 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">
+                                            <Calendar size={12} className="opacity-60" />
+                                            {new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                            <button 
+                                                type="button"
+                                                onClick={() => {
+                                                    const dates = formData.absenceDates.split(',').filter(d => d && d !== date);
+                                                    setFormData(prev => ({ ...prev, absenceDates: dates.join(',') }));
+                                                }}
+                                                className="ml-1 p-1 hover:bg-red-50 rounded-lg transition-colors text-red-400 hover:text-red-700"
+                                            >
+                                                <X size={12} />
+                                            </button>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="w-full py-8 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center bg-white/50">
+                                        <CheckCircle size={24} className="text-slate-200 mb-2" />
+                                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">No Scheduled Absence</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {/* Clinic Map Terminal */}

@@ -497,7 +497,14 @@ const Booking = () => {
                     )}
                   </div>
                   <h2 className="text-3xl font-black tracking-tight leading-none mb-2">Dr. {selectedDoctor.name}</h2>
-                  <p className="text-primary-400 font-bold uppercase tracking-[0.2em] text-[10px] mb-8">{selectedDoctor.specialization}</p>
+                  <p className="text-primary-400 font-bold uppercase tracking-[0.2em] text-[10px] mb-4">{selectedDoctor.specialization}</p>
+
+                  {selectedDoctor.absenceDates && selectedDoctor.absenceDates.includes(localToday) && (
+                    <div className="mb-6 px-4 py-1.5 bg-red-500/20 text-red-400 border border-red-500/30 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
+                        <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                        Physician Absent Today
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-2 w-full gap-4 mb-8">
                     <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
@@ -553,8 +560,23 @@ const Booking = () => {
                     min={localToday}
                     value={bookingDate}
                     onChange={(e) => setBookingDate(e.target.value)}
-                    className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-primary outline-none font-bold text-slate-800"
+                    className={`w-full p-4 bg-slate-50 border-2 rounded-2xl outline-none font-bold text-slate-800 transition-all ${
+                        selectedDoctor.absenceDates && selectedDoctor.absenceDates.includes(bookingDate)
+                        ? 'border-red-300 ring-4 ring-red-500/5'
+                        : 'border-slate-100 focus:border-primary'
+                    }`}
                   />
+                  {selectedDoctor.absenceDates && selectedDoctor.absenceDates.includes(bookingDate) && (
+                    <div className="p-5 bg-red-50 border-2 border-red-100 rounded-[2rem] flex items-center gap-4 animate-pulse">
+                        <div className="p-3 bg-red-500 text-white rounded-2xl shadow-xl shadow-red-500/20">
+                            <AlertCircle size={24} />
+                        </div>
+                        <div>
+                            <h4 className="text-xs font-black text-red-700 uppercase tracking-widest">Physician Absent</h4>
+                            <p className="text-[10px] text-red-600/70 font-bold uppercase mt-1 leading-none">Not accepting bookings for {new Date(bookingDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</p>
+                        </div>
+                    </div>
+                  )}
                 </section>
 
                 {/* Modality Selection */}

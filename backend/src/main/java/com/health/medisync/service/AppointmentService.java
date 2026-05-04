@@ -179,6 +179,11 @@ public class AppointmentService {
             throw new RuntimeException("Cannot book appointments for past dates.");
         }
 
+        // Check for Doctor Absence
+        if (doctor.getAbsenceDates() != null && doctor.getAbsenceDates().contains(date.toString())) {
+            throw new RuntimeException("Dr. " + doctor.getName() + " is scheduled to be absent on this date. Please select another clinical window.");
+        }
+
         // 2. Block past time slots for today
         if (date.isEqual(today)) {
             try {
@@ -637,6 +642,13 @@ public class AppointmentService {
             entityId = Long.valueOf(dIdStr.split("\\.")[0]);
             Doctor doctor = doctorRepository.findById(entityId)
                 .orElseThrow(() -> new RuntimeException("Doctor not found"));
+            
+            // Clinical Absence Shield
+            if (doctor.getAbsenceDates() != null && doctor.getAbsenceDates().contains(date.toString())) {
+                System.out.println("INFO: Absence detected for Dr. " + doctor.getName() + " on " + date + ". Collapsing all clinical windows.");
+                return Collections.emptyList();
+            }
+
             timings = doctor.getConsultationTimings();
             duration = (doctor.getSlotDuration() != null && doctor.getSlotDuration() > 0) ? doctor.getSlotDuration() : 15;
             buffer = (doctor.getSlotBuffer() != null) ? doctor.getSlotBuffer() : 0;

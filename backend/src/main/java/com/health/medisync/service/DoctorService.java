@@ -338,6 +338,10 @@ public class DoctorService {
             }
         }
         if (updates.containsKey("breakTimings")) doctor.setBreakTimings((String) updates.get("breakTimings"));
+        if (updates.containsKey("absenceDates")) {
+            trackChange("Leave Schedule", doctor.getAbsenceDates(), (String) updates.get("absenceDates"), changedFields);
+            doctor.setAbsenceDates((String) updates.get("absenceDates"));
+        }
         if (updates.containsKey("slotBuffer")) {
             Object buffer = updates.get("slotBuffer");
             if (buffer != null && !buffer.toString().isEmpty()) {

@@ -78,6 +78,9 @@ public class Doctor {
     private Boolean onlineConsultation;
     private boolean approved = false;
     private Boolean appointmentsEnabled = true;
+    
+    @Column(columnDefinition = "TEXT")
+    private String absenceDates; // Comma-separated YYYY-MM-DD
 
     // Institutional Flag
     private boolean institutional = false;
@@ -325,4 +328,7 @@ public class Doctor {
 
     public String getServiceCapacity() { return serviceCapacity; }
     public void setServiceCapacity(String serviceCapacity) { this.serviceCapacity = serviceCapacity; }
+
+    public String getAbsenceDates() { return absenceDates; }
+    public void setAbsenceDates(String absenceDates) { this.absenceDates = absenceDates; }
 }
