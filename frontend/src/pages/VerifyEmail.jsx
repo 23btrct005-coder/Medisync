@@ -11,6 +11,18 @@ const VerifyEmail = () => {
     const [otp, setOtp] = useState('');
     const [loading, setLoading] = useState(false);
     const [sending, setSending] = useState(false);
+    const [resendCooldown, setResendCooldown] = useState(0);
+    const [resendCount, setResendCount] = useState(0);
+
+    useEffect(() => {
+        let timer;
+        if (resendCooldown > 0) {
+            timer = setInterval(() => {
+                setResendCooldown(prev => prev - 1);
+            }, 1000);
+        }
+        return () => clearInterval(timer);
+    }, [resendCooldown]);
 
     useEffect(() => {
         if (!user) {
@@ -24,10 +36,20 @@ const VerifyEmail = () => {
     }, [user, navigate]);
 
     const handleSendOTP = async () => {
+        if (resendCooldown > 0) return;
         setSending(true);
         try {
             await api.post('/auth/request-otp', { email: user.email || user.user?.email });
             toast.success("Verification code sent to your professional email.");
+            
+            const nextCount = resendCount + 1;
+            setResendCount(nextCount);
+            
+            let cooldownTime = 30;
+            if (nextCount === 2) cooldownTime = 60;
+            if (nextCount >= 3) cooldownTime = 120;
+            
+            setResendCooldown(cooldownTime);
         } catch (err) {
             toast.error(err.response?.data?.message || "Failed to send code.");
         } finally {
@@ -116,11 +138,11 @@ const VerifyEmail = () => {
                             <button 
                                 type="button"
                                 onClick={handleSendOTP}
-                                disabled={sending}
-                                className="w-full py-4 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:text-primary transition-colors flex items-center justify-center gap-2"
+                                disabled={sending || resendCooldown > 0}
+                                className="w-full py-4 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:text-primary transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                             >
                                 {sending ? <Activity className="animate-spin" size={14} /> : <Mail size={14} />}
-                                {sending ? "Sending Code..." : "Resend Verification Code"}
+                                {sending ? "Sending Code..." : resendCooldown > 0 ? `Resend available in ${resendCooldown}s` : "Resend Verification Code"}
                             </button>
                         </div>
                     </form>
