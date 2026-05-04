@@ -619,49 +619,71 @@ const Booking = () => {
                 {/* Time Slots */}
                 <section className="space-y-4">
                   <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                    <Clock size={18} className="text-emerald-500" /> Available Cloud Windows
+                    <Clock size={18} className={SERVICES_24_7.includes(selectedService) ? 'text-red-500 animate-pulse' : 'text-emerald-500'} /> 
+                    {SERVICES_24_7.includes(selectedService) ? 'Emergency Availability' : 'Available Cloud Windows'}
                   </h3>
-                  {loadingSlots ? (
-                    <div className="p-8 text-center"><Loader2 className="animate-spin mx-auto text-primary" /></div>
-                  ) : availableSlots.length === 0 ? (
-                    <div className="p-8 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center">
-                      <Clock className="mx-auto text-slate-300 mb-2" size={32} />
-                      <p className="text-xs font-bold text-slate-400 italic">No windows open for this date.</p>
+                  
+                  {SERVICES_24_7.includes(selectedService) ? (
+                    <div className="p-8 bg-red-50 rounded-[2.5rem] border-2 border-red-100 text-center space-y-4 shadow-sm">
+                        <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-red-500/20 animate-pulse">
+                            <Activity className="text-white" size={32} />
+                        </div>
+                        <div>
+                            <h4 className="text-sm font-black text-red-700 uppercase tracking-widest">Immediate / On-Demand Access</h4>
+                            <p className="text-[10px] text-red-600/70 font-bold uppercase mt-1">24/7 Emergency Service: No Slot Booking Required</p>
+                        </div>
+                        <button 
+                            onClick={() => setSelectedSlot('IMMEDIATE')}
+                            className={`w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${selectedSlot === 'IMMEDIATE' ? 'bg-red-500 text-white shadow-xl shadow-red-500/30' : 'bg-white text-red-500 border-2 border-red-200 hover:bg-red-50'}`}
+                        >
+                            {selectedSlot === 'IMMEDIATE' ? '✓ Immediate Access Requested' : 'Confirm Immediate Access'}
+                        </button>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                      {availableSlots.map(slot => {
-                        // Logic to disable past time slots for today
-                        let isPast = false;
-                        if (bookingDate === localToday) {
-                          try {
-                            const [time, period] = slot.split(' ');
-                            let [hours, minutes] = time.split(':').map(Number);
-                            if (period === 'PM' && hours !== 12) hours += 12;
-                            if (period === 'AM' && hours === 12) hours = 0;
-                            const slotDate = new Date();
-                            slotDate.setHours(hours, minutes, 0, 0);
-                            // Add a 5 minute safety buffer
-                            isPast = slotDate.getTime() < (new Date().getTime() + 5 * 60 * 1000);
-                          } catch (e) { isPast = false; }
-                        }
+                    <>
+                      {loadingSlots ? (
+                        <div className="p-8 text-center"><Loader2 className="animate-spin mx-auto text-primary" /></div>
+                      ) : availableSlots.length === 0 ? (
+                        <div className="p-8 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center">
+                          <Clock className="mx-auto text-slate-300 mb-2" size={32} />
+                          <p className="text-xs font-bold text-slate-400 italic">No windows open for this date.</p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                          {availableSlots.map(slot => {
+                            const isToday = bookingDate === localToday;
+                            const isPast = isToday && (() => {
+                              try {
+                                const [time, period] = slot.split(' ');
+                                let [hours, minutes] = time.split(':').map(Number);
+                                if (period === 'PM' && hours !== 12) hours += 12;
+                                if (period === 'AM' && hours === 12) hours = 0;
+                                const slotDate = new Date();
+                                slotDate.setHours(hours, minutes, 0, 0);
+                                return slotDate < new Date();
+                              } catch (e) { return false; }
+                            })();
 
-                        return (
-                          <button
-                            key={slot}
-                            disabled={isPast}
-                            onClick={() => setSelectedSlot(slot)}
-                            className={`py-3 rounded-xl border-2 text-xs font-bold transition-all ${isPast ? 'opacity-30 cursor-not-allowed border-slate-100 text-slate-300' :
-                                selectedSlot === slot
-                                  ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20 scale-105'
-                                  : 'bg-white border-slate-100 text-slate-600 hover:border-emerald-200 hover:text-emerald-600'
-                              }`}
-                          >
-                            {slot}
-                          </button>
-                        );
-                      })}
-                    </div>
+                            return (
+                              <button
+                                key={slot}
+                                disabled={isPast}
+                                onClick={() => setSelectedSlot(slot)}
+                                className={`px-4 py-4 rounded-2xl border-2 text-[10px] font-black uppercase tracking-widest transition-all ${
+                                  selectedSlot === slot 
+                                    ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-lg shadow-emerald-500/10' 
+                                    : isPast
+                                      ? 'bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed opacity-50'
+                                      : 'bg-white border-slate-100 text-slate-600 hover:border-emerald-200'
+                                }`}
+                              >
+                                {slot}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </>
                   )}
                 </section>
 

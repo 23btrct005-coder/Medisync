@@ -250,9 +250,15 @@ public class AppointmentService {
             Long hId = Long.valueOf(facilityId.substring(5));
             hospital = hospitalRepository.findById(hId)
                 .orElseThrow(() -> new RuntimeException("Hospital not found"));
-            conflicts = appointmentRepository.findConflictingServiceAppointments(hId, serviceName, date, slot, expiryTime);
-            upiId = hospital.getUpiId();
             preferredPaymentMode = hospital.getPreferredPaymentMode() != null ? hospital.getPreferredPaymentMode() : "UPI";
+            
+            boolean is247 = serviceName != null && SERVICES_24_7.contains(serviceName);
+            if (is247 && "IMMEDIATE".equals(slot)) {
+                System.out.println("DEBUG: Emergency Service 'IMMEDIATE' detected. Skipping institutional conflict checks.");
+                conflicts = new ArrayList<>(); // Emergency bypass
+            } else {
+                conflicts = appointmentRepository.findConflictingServiceAppointments(hId, serviceName, date, slot, expiryTime);
+            }
             
             // Safety Fallback: Assign the first available doctor from the hospital to satisfy NOT NULL constraints
             if (!hospital.getDoctors().isEmpty()) {
@@ -265,6 +271,12 @@ public class AppointmentService {
             conflicts = appointmentRepository.findConflictingClinicServiceAppointments(dId, serviceName, date, slot, expiryTime);
             upiId = doctor.getUpiId();
             preferredPaymentMode = doctor.getPreferredPaymentMode() != null ? doctor.getPreferredPaymentMode() : "UPI";
+            
+            boolean is247 = serviceName != null && SERVICES_24_7.contains(serviceName);
+            if (is247 && "IMMEDIATE".equals(slot)) {
+                System.out.println("DEBUG: Emergency Service 'IMMEDIATE' detected for Clinic. Skipping conflict checks.");
+                conflicts = new ArrayList<>(); // Emergency bypass
+            }
         } else {
             Long hId = Long.valueOf(facilityId);
             hospital = hospitalRepository.findById(hId)
@@ -364,15 +376,39 @@ public class AppointmentService {
         appointment.setCreatedAt(LocalDateTime.now()); // Reset timestamp to mark as confirmed
         Appointment booked = appointmentRepository.save(appointment);
 
+        boolean isEmergency = booked.getServiceName() != null && SERVICES_24_7.contains(booked.getServiceName());
+        String notificationType = isEmergency ? "EMERGENCY" : "APPOINTMENT";
+        String notificationTitle = isEmergency ? "🚨 EMERGENCY SERVICE TRIGGERED" : "New Clinical Session Booked";
+        String description = isEmergency 
+            ? "URGENT: " + booked.getPatient().getName() + " has triggered an immediate " + booked.getServiceName() + " request."
+            : booked.getPatient().getName() + " has scheduled an appointment on " + booked.getAppointmentDate() + " at " + booked.getTimeSlot();
+
         // Notify Doctor
         notificationService.sendNotification(
             booked.getDoctor().getUser().getId(),
-            "APPOINTMENT",
-            "New Clinical Session Booked",
-             booked.getPatient().getName() + " has scheduled an appointment on " + booked.getAppointmentDate() + " at " + booked.getTimeSlot(),
+            notificationType,
+            notificationTitle,
+            description,
             "/doctor-dashboard/appointments",
             "Open Schedule"
         );
+
+        // Notify Hospital Admins if institutional
+        if (isEmergency && booked.getDoctor().isInstitutional() && booked.getDoctor().getHospitalEntity() != null) {
+            Hospital hospital = booked.getDoctor().getHospitalEntity();
+            for (HospitalAdmin admin : hospital.getAdmins()) {
+                if (admin.isApproved()) {
+                    notificationService.sendNotification(
+                        admin.getUser().getId(),
+                        "EMERGENCY",
+                        "🚨 INSTITUTIONAL EMERGENCY",
+                        "URGENT: " + booked.getPatient().getName() + " requires immediate " + booked.getServiceName() + ". Deploy resources now.",
+                        "/hospital/appointments",
+                        "Deploy Now"
+                    );
+                }
+            }
+        }
 
         // Notify Patient
         notificationService.sendNotification(
@@ -398,31 +434,39 @@ public class AppointmentService {
 
         Doctor doctor = booked.getDoctor();
         boolean isInstitutional = doctor.isInstitutional() && doctor.getHospitalEntity() != null;
+        boolean isEmergency = booked.getServiceName() != null && SERVICES_24_7.contains(booked.getServiceName());
+        String notificationType = isEmergency ? "EMERGENCY" : "APPOINTMENT";
+        String notificationTitle = isEmergency ? "🚨 EMERGENCY REQUEST (UPI)" : "New Session (Direct UPI)";
+        String description = isEmergency 
+            ? "URGENT: " + booked.getPatient().getName() + " initiated " + booked.getServiceName() + " via UPI. Txn ID: " + transactionId + ". Deploy resources immediately."
+            : booked.getPatient().getName() + " initiated a booking with Dr. " + doctor.getName() + " via Direct UPI. Txn ID: " + transactionId + ".";
 
         if (isInstitutional) {
             Hospital hospital = doctor.getHospitalEntity();
             // Notify all admins of this hospital
             for (HospitalAdmin admin : hospital.getAdmins()) {
-                notificationService.sendNotification(
-                    admin.getUser().getId(),
-                    "APPOINTMENT",
-                    "New Institutional Session (Direct UPI)",
-                    booked.getPatient().getName() + " has initiated a booking with Dr. " + doctor.getName() + " via Direct UPI. Txn ID: " + transactionId + ". Please verify in Hospital Ledger.",
-                    "/hospital/appointments",
-                    "Verify Payment"
-                );
+                if (admin.isApproved()) {
+                    notificationService.sendNotification(
+                        admin.getUser().getId(),
+                        notificationType,
+                        notificationTitle,
+                        description,
+                        "/hospital/appointments",
+                        "Verify & Deploy"
+                    );
+                }
             }
-        } else {
-            // Notify Doctor directly for independent practice
-            notificationService.sendNotification(
-                doctor.getUser().getId(),
-                "APPOINTMENT",
-                "New Clinical Session (Direct UPI)",
-                 booked.getPatient().getName() + " has initiated an appointment via Direct UPI on " + booked.getAppointmentDate() + ". Txn ID: " + transactionId + ". Please verify payment receipt.",
-                "/doctor-dashboard/appointments",
-                "Open Schedule"
-            );
         }
+        
+        // Notify Doctor
+        notificationService.sendNotification(
+            doctor.getUser().getId(),
+            notificationType,
+            notificationTitle,
+            description,
+            "/doctor-dashboard/appointments",
+            "Review Emergency"
+        );
 
         // Notify Patient
         notificationService.sendNotification(
