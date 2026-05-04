@@ -349,7 +349,8 @@ public class AppointmentService {
                 if (hospital != null) rzpAccountId = hospital.getRazorpayAccountId();
                 else if (doctor != null) rzpAccountId = doctor.getRazorpayAccountId();
 
-                if (rzpAccountId != null && !rzpAccountId.isEmpty()) {
+                // Razorpay Route validation: account ID must be exactly 18 characters (e.g., acc_XXXXXXXXXXXXXXXX)
+                if (rzpAccountId != null && rzpAccountId.length() == 18) {
                     JSONArray transfers = new JSONArray();
                     JSONObject transfer = new JSONObject();
                     transfer.put("account", rzpAccountId);
@@ -357,6 +358,8 @@ public class AppointmentService {
                     transfer.put("currency", "INR");
                     transfers.put(transfer);
                     orderRequest.put("transfers", transfers);
+                } else if (rzpAccountId != null && !rzpAccountId.isEmpty()) {
+                    System.err.println("GATEWAY_ID_MISMATCH: Provided Razorpay Account ID [" + rzpAccountId + "] is invalid. Length must be exactly 18.");
                 }
 
                 Order order = client.orders.create(orderRequest);
