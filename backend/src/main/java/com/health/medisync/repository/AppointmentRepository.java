@@ -38,4 +38,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     @Query("SELECT a FROM Appointment a WHERE a.hospital.id = :hospitalId AND a.serviceName = :serviceName AND a.appointmentDate = :date AND a.timeSlot = :slot AND (a.status = 'BOOKED' OR (a.status = 'PENDING' AND a.createdAt > :expiry))")
     List<Appointment> findConflictingServiceAppointments(Long hospitalId, String serviceName, LocalDate date, String slot, java.time.LocalDateTime expiry);
+
+    @Query("SELECT a FROM Appointment a WHERE a.doctor.id = :doctorId AND a.serviceName = :serviceName AND a.appointmentDate = :date AND a.timeSlot = :slot AND (a.status = 'BOOKED' OR (a.status = 'PENDING' AND a.createdAt > :expiry))")
+    List<Appointment> findConflictingClinicServiceAppointments(Long doctorId, String serviceName, LocalDate date, String slot, java.time.LocalDateTime expiry);
 }

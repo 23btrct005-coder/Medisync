@@ -46,7 +46,11 @@ public class AppointmentController {
             if (doctorId == null || doctorId.trim().isEmpty() || doctorId.equalsIgnoreCase("undefined") || doctorId.equalsIgnoreCase("null")) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Invalid or missing doctorId parameter"));
             }
-            Long id = Long.valueOf(doctorId.split("\\.")[0]);
+            String idStr = doctorId;
+            if (idStr.startsWith("doc_")) idStr = idStr.substring(4);
+            else if (idStr.startsWith("hosp_")) idStr = idStr.substring(5);
+            
+            Long id = Long.valueOf(idStr.split("\\.")[0]);
             return ResponseEntity.ok(doctorService.getAvailableSlots(id, date));
         } catch (Exception e) {
             String errorMsg = e.getClass().getSimpleName() + ": " + e.getMessage();
@@ -114,11 +118,37 @@ public class AppointmentController {
 
     @GetMapping("/hospitals-by-service")
     public ResponseEntity<?> getHospitalsByService(@RequestParam String service) {
-        List<com.health.medisync.model.Hospital> hospitals = hospitalRepository.findAll();
-        List<com.health.medisync.model.Hospital> filtered = hospitals.stream()
+        List<Map<String, Object>> facilities = new java.util.ArrayList<>();
+        
+        // Hospitals
+        hospitalRepository.findAll().stream()
             .filter(h -> h.getServices() != null && h.getServices().toLowerCase().contains(service.toLowerCase()))
-            .collect(java.util.stream.Collectors.toList());
-        return ResponseEntity.ok(filtered);
+            .forEach(h -> {
+                Map<String, Object> map = new java.util.HashMap<>();
+                map.put("id", "hosp_" + h.getId());
+                map.put("name", h.getName());
+                map.put("logoUrl", h.getLogoUrl());
+                map.put("hospitalType", h.getHospitalType() != null ? h.getHospitalType() : "Medical Center");
+                map.put("city", h.getCity());
+                map.put("state", h.getState());
+                facilities.add(map);
+            });
+
+        // Doctors/Clinics (e.g. Amarthya's Clinic)
+        doctorService.getAllApprovedDoctors().stream()
+            .filter(d -> d.getServices() != null && d.getServices().toLowerCase().contains(service.toLowerCase()))
+            .forEach(d -> {
+                Map<String, Object> map = new java.util.HashMap<>();
+                map.put("id", "doc_" + d.getId());
+                map.put("name", d.getName() + (d.getName().toLowerCase().contains("clinic") ? "" : "'s clinic"));
+                map.put("logoUrl", d.getProfilePictureUrl());
+                map.put("hospitalType", "Independent Clinic");
+                map.put("city", d.getClinicCity());
+                map.put("state", d.getClinicState());
+                facilities.add(map);
+            });
+
+        return ResponseEntity.ok(facilities);
     }
 
     @PostMapping("/book-service")
@@ -128,14 +158,15 @@ public class AppointmentController {
         try {
             if (authentication == null) throw new RuntimeException("Authentication required");
             
-            Long hospitalId = Long.valueOf(request.get("hospitalId").toString());
+            String facilityId = request.get("hospitalId").toString();
             String serviceName = (String) request.get("serviceName");
             LocalDate date = LocalDate.parse(request.get("date").toString());
             String slot = (String) request.get("slot");
 
-            Map<String, Object> response = appointmentService.initiateServiceBooking(authentication.getName(), hospitalId, serviceName, date, slot);
+            Map<String, Object> response = appointmentService.initiateServiceBooking(authentication.getName(), facilityId, serviceName, date, slot);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }

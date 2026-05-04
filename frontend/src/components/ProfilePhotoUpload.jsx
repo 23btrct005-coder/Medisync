@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { Camera, Upload, X, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const ProfilePhotoUpload = ({ onFileSelect, initialPreview = null, gender = '' }) => {
+const ProfilePhotoUpload = ({ onFileSelect, initialPreview = null, gender = '', required = false }) => {
   const [preview, setPreview] = useState(initialPreview);
   const fileInputRef = useRef(null);
 
@@ -65,7 +65,7 @@ const ProfilePhotoUpload = ({ onFileSelect, initialPreview = null, gender = '' }
           onClick={() => fileInputRef.current?.click()}
           className="flex items-center gap-2 text-primary-600 hover:text-primary-700 font-bold text-xs uppercase tracking-wider transition-colors"
         >
-          <Upload size={14} /> Upload Profile Photo
+          <Upload size={14} /> Upload Profile Photo {required && <span className="text-red-500 ml-1">*</span>}
         </button>
       )}
 

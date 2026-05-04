@@ -215,36 +215,57 @@ public class AppointmentService {
     }
 
     @Transactional
-    public Map<String, Object> initiateServiceBooking(String rawEmail, Long hospitalId, String serviceName, LocalDate date, String slot) throws Exception {
+    public Map<String, Object> initiateServiceBooking(String rawEmail, String facilityId, String serviceName, LocalDate date, String slot) throws Exception {
         final String patientEmail = (rawEmail != null) ? rawEmail.trim().toLowerCase() : null;
         Patient patient = patientRepository.findByUserUsernameIgnoreCase(patientEmail)
             .orElseThrow(() -> new RuntimeException("Patient profile not found for: " + patientEmail));
         
-        Hospital hospital = hospitalRepository.findById(hospitalId)
-            .orElseThrow(() -> new RuntimeException("Hospital not found"));
-
-        // Concurrency check for services
+        Hospital hospital = null;
+        Doctor doctor = null;
+        List<Appointment> conflicts;
         LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(10);
-        List<Appointment> conflicts = appointmentRepository.findConflictingServiceAppointments(hospitalId, serviceName, date, slot, expiryTime);
+        
+        String upiId = null;
+        String preferredPaymentMode = "UPI";
+
+        if (facilityId.startsWith("hosp_")) {
+            Long hId = Long.valueOf(facilityId.substring(5));
+            hospital = hospitalRepository.findById(hId)
+                .orElseThrow(() -> new RuntimeException("Hospital not found"));
+            conflicts = appointmentRepository.findConflictingServiceAppointments(hId, serviceName, date, slot, expiryTime);
+            upiId = hospital.getUpiId();
+            preferredPaymentMode = hospital.getPreferredPaymentMode() != null ? hospital.getPreferredPaymentMode() : "UPI";
+        } else if (facilityId.startsWith("doc_")) {
+            Long dId = Long.valueOf(facilityId.substring(4));
+            doctor = doctorRepository.findById(dId)
+                .orElseThrow(() -> new RuntimeException("Clinic not found"));
+            conflicts = appointmentRepository.findConflictingClinicServiceAppointments(dId, serviceName, date, slot, expiryTime);
+            upiId = doctor.getUpiId();
+            preferredPaymentMode = doctor.getPreferredPaymentMode() != null ? doctor.getPreferredPaymentMode() : "UPI";
+        } else {
+            Long hId = Long.valueOf(facilityId);
+            hospital = hospitalRepository.findById(hId)
+                .orElseThrow(() -> new RuntimeException("Facility ID resolution failure"));
+            conflicts = appointmentRepository.findConflictingServiceAppointments(hId, serviceName, date, slot, expiryTime);
+            upiId = hospital.getUpiId();
+            preferredPaymentMode = hospital.getPreferredPaymentMode() != null ? hospital.getPreferredPaymentMode() : "UPI";
+        }
+
         if (!conflicts.isEmpty()) {
             throw new RuntimeException("This service slot is currently being authorized by another patient. Please choose another time.");
         }
 
         // Diagnostic Service Fee Calculation
-        Double fee = 500.0; // Default base service fee
-        
+        Double fee = 500.0;
         try {
-            if (hospital.getServiceFees() != null && !hospital.getServiceFees().isEmpty()) {
+            if (hospital != null && hospital.getServiceFees() != null && !hospital.getServiceFees().isEmpty()) {
                 org.json.JSONObject feesJson = new org.json.JSONObject(hospital.getServiceFees());
                 if (feesJson.has(serviceName)) {
                     fee = feesJson.getDouble(serviceName);
                 } else if (serviceName.toUpperCase().contains("MRI") || serviceName.toUpperCase().contains("CT")) {
                     fee = 2500.0;
-                } else if (serviceName.toUpperCase().contains("BLOOD") || serviceName.toUpperCase().contains("LAB")) {
-                    fee = 300.0;
                 }
             } else {
-                // Fallback to global defaults if hospital has not configured specific fees
                 if (serviceName.toUpperCase().contains("MRI") || serviceName.toUpperCase().contains("CT")) fee = 2500.0;
                 if (serviceName.toUpperCase().contains("BLOOD") || serviceName.toUpperCase().contains("LAB")) fee = 300.0;
             }
@@ -253,15 +274,16 @@ public class AppointmentService {
         }
 
         boolean isDemoMode = (razorpayKeyId == null || razorpayKeyId.isEmpty());
-        String orderId = isDemoMode ? "demo_service_" + System.currentTimeMillis() : "REAL_SERVICE_ORDER"; // Logic for real would go here
+        String orderId = isDemoMode ? "demo_service_" + System.currentTimeMillis() : "REAL_SERVICE_ORDER";
 
         Appointment appointment = new Appointment();
         appointment.setHospital(hospital);
+        appointment.setDoctor(doctor);
         appointment.setPatient(patient);
         appointment.setServiceName(serviceName);
         appointment.setAppointmentDate(date);
         appointment.setTimeSlot(slot);
-        appointment.setConsultationType(ConsultationType.OFFLINE); // Services are always offline
+        appointment.setConsultationType(ConsultationType.OFFLINE);
         appointment.setAmount(fee);
         appointment.setRazorpayOrderId(orderId);
         appointment.setStatus(AppointmentStatus.PENDING);
@@ -274,8 +296,8 @@ public class AppointmentService {
         response.put("amount", fee);
         response.put("razorpayKeyId", razorpayKeyId);
         response.put("isDemo", isDemoMode);
-        response.put("preferredPaymentMode", hospital.getPreferredPaymentMode() != null ? hospital.getPreferredPaymentMode() : "UPI");
-        response.put("upiId", hospital.getUpiId());
+        response.put("preferredPaymentMode", preferredPaymentMode);
+        response.put("upiId", upiId);
 
         return response;
     }

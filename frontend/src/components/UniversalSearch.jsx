@@ -16,7 +16,7 @@ export const SearchResultsDropdown = ({ query, onClose }) => {
         { name: 'Medical History', path: '/dashboard/records', icon: <ClipboardList size={18} /> },
         { name: 'Reports & Briefs', path: '/dashboard/reports', icon: <FileText size={18} /> },
         { name: 'My Appointments', path: '/dashboard/sessions', icon: <Calendar size={18} /> },
-        { name: 'Book Doctor', path: '/dashboard/booking', icon: <CalendarPlus size={18} /> },
+        { name: 'Book Appointment', path: '/dashboard/booking', icon: <CalendarPlus size={18} /> },
         { name: 'My Doctors', path: '/dashboard/doctors', icon: <UserCheck size={18} /> },
         { name: 'Health Wallet', path: '/dashboard/wallet', icon: <Wallet size={18} /> },
         { name: 'Security Ledger', path: '/dashboard/security', icon: <ShieldCheck size={18} /> },

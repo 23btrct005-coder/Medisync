@@ -88,8 +88,8 @@ const Booking = () => {
   };
 
   const fetchSlots = async () => {
-    if (bookingMode === 'service') {
-        // Default clinical windows for hospital services
+    if (bookingMode === 'service' && !selectedDoctor?.id?.toString().startsWith('doc_')) {
+        // Default clinical windows for institutional hospital services
         setAvailableSlots(["09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM"]);
         setSelectedSlot(null);
         return;

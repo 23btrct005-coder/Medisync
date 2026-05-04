@@ -397,6 +397,7 @@ const Register = () => {
     if (role === 'ROLE_PATIENT' && !aiDisclaimerAccepted) { setError('Accept the AI Clinical Disclaimer.'); return; }
     if (formData.password !== formData.confirmPassword) { setError('Passwords do not match.'); return; }
     if (formData.password.length < 6) { setError('Password must be at least 6 characters.'); return; }
+    if (!profilePicture && role !== 'ROLE_HOSPITAL_ADMIN') { setError('Profile photo is required.'); return; }
 
     setLoading(true);
     try {
@@ -511,7 +512,7 @@ const Register = () => {
                   {currentStep === 2 && (
                     <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                       <h3 className={sectionHeadClass}><User size={16} /> 2. Personal Profile</h3>
-                      <div className="flex flex-col items-center gap-4 py-4"><ProfilePhotoUpload onFileSelect={setProfilePicture} /></div>
+                      <div className="flex flex-col items-center gap-4 py-4"><ProfilePhotoUpload onFileSelect={setProfilePicture} required={true} /></div>
                       <div className="space-y-6">
                         <div><label className={labelClass}>Full Name <span className="text-red-500">*</span></label><input type="text" name="name" required value={formData.name} onChange={handleChange} className={inputClass} placeholder="Enter your full name" /></div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
@@ -660,7 +661,7 @@ const Register = () => {
                   {role === 'ROLE_DOCTOR' && (
                     <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                       <h3 className={sectionHeadClass}><User size={16} /> 2. Personal Details</h3>
-                      <div className="flex flex-col items-center gap-4 py-4"><ProfilePhotoUpload onFileSelect={setProfilePicture} /></div>
+                      <div className="flex flex-col items-center gap-4 py-4"><ProfilePhotoUpload onFileSelect={setProfilePicture} required={true} /></div>
                       <div className="space-y-6">
                           <div><label className={labelClass}>Full Name <span className="text-red-500">*</span></label><input type="text" name="name" required value={formData.name} onChange={handleChange} className={inputClass} placeholder="Dr. John Smith" /></div>
                           <div className="grid grid-cols-2 gap-6">
