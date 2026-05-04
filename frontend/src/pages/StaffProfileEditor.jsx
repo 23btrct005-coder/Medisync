@@ -10,6 +10,19 @@ import {
 } from 'lucide-react';
 import DropZone from '../components/DropZone';
 
+const PREDEFINED_DOCTOR_SERVICES = [
+    "General Consultation", "Specialist Consultation", "Emergency Care",
+    "Home Visit", "Telemedicine", "Vaccination", "Diagnostic Review",
+    "Minor Procedures", "Second Opinion", "Health Screening"
+];
+
+const PREDEFINED_INSTITUTIONAL_SERVICES = [
+    "24/7 Emergency", "MRI Scan", "CT Scan", "X-Ray", "Blood Bank", 
+    "ICU (Intensive Care Unit)", "NICU", "Dialysis", "Physiotherapy", 
+    "Pathology Lab", "In-house Pharmacy", "Ambulance", "Operation Theater",
+    "Telemedicine", "Vaccination Center", "Home Care Services"
+];
+
 const StaffProfileEditor = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -55,7 +68,8 @@ const StaffProfileEditor = () => {
         slotDuration: '15',
         slotBuffer: '0',
         maxPatientsPerDay: '30',
-        breakTimings: '13:00 - 14:00'
+        breakTimings: '13:00 - 14:00',
+        services: ''
     });
 
     const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -342,6 +356,66 @@ const StaffProfileEditor = () => {
                                 {formData[perm.key] && <div className="mt-1 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />}
                             </label>
                         ))}
+                    </div>
+                </div>
+
+                {/* Section 6: Clinical Services */}
+                <div className={`${sectionClass} border-emerald-100 bg-emerald-50/10`}>
+                    <div className="flex items-center gap-3">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        <h4 className="text-[11px] font-black text-emerald-600 uppercase tracking-[0.3em]">6. Clinical & Diagnostic Services</h4>
+                    </div>
+                    
+                    <div className="space-y-10">
+                        <div className="space-y-4">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Consultation & Clinical Services</p>
+                            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                                {PREDEFINED_DOCTOR_SERVICES.map(service => {
+                                    const isSelected = formData.services?.split(', ').includes(service);
+                                    return (
+                                        <button
+                                            key={service}
+                                            type="button"
+                                            onClick={() => {
+                                                const current = formData.services ? formData.services.split(', ').filter(s => s) : [];
+                                                const next = isSelected ? current.filter(s => s !== service) : [...current, service];
+                                                setFormData({ ...formData, services: next.join(', ') });
+                                            }}
+                                            className={`px-4 py-3 rounded-2xl border text-[9px] font-black uppercase tracking-widest transition-all ${
+                                                isSelected ? 'bg-white border-emerald-500 text-emerald-600 shadow-sm' : 'bg-slate-50 border-transparent text-slate-400'
+                                            }`}
+                                        >
+                                            {service}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Diagnostic & Institutional Capabilities</p>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                {PREDEFINED_INSTITUTIONAL_SERVICES.map(service => {
+                                    const isSelected = formData.services?.split(', ').includes(service);
+                                    return (
+                                        <button
+                                            key={service}
+                                            type="button"
+                                            onClick={() => {
+                                                const current = formData.services ? formData.services.split(', ').filter(s => s) : [];
+                                                const next = isSelected ? current.filter(s => s !== service) : [...current, service];
+                                                setFormData({ ...formData, services: next.join(', ') });
+                                            }}
+                                            className={`px-4 py-3 rounded-2xl border text-[9px] font-black uppercase tracking-widest transition-all ${
+                                                isSelected ? 'bg-white border-blue-500 text-blue-600 shadow-sm' : 'bg-slate-50 border-transparent text-slate-400'
+                                            }`}
+                                        >
+                                            {service}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </form>

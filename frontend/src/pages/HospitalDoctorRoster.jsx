@@ -9,6 +9,19 @@ import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
 import PremiumDropdown from '../components/PremiumDropdown';
 
+const PREDEFINED_DOCTOR_SERVICES = [
+    "General Consultation", "Specialist Consultation", "Emergency Care",
+    "Home Visit", "Telemedicine", "Vaccination", "Diagnostic Review",
+    "Minor Procedures", "Second Opinion", "Health Screening"
+];
+
+const PREDEFINED_INSTITUTIONAL_SERVICES = [
+    "24/7 Emergency", "MRI Scan", "CT Scan", "X-Ray", "Blood Bank", 
+    "ICU (Intensive Care Unit)", "NICU", "Dialysis", "Physiotherapy", 
+    "Pathology Lab", "In-house Pharmacy", "Ambulance", "Operation Theater",
+    "Telemedicine", "Vaccination Center", "Home Care Services"
+];
+
 const HospitalDoctorRoster = () => {
     const navigate = useNavigate();
     const [doctors, setDoctors] = useState([]);
@@ -311,6 +324,30 @@ const HospitalDoctorRoster = () => {
                                                     }`}
                                                 >
                                                     {day}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                                <div className="space-y-4">
+                                    <label className={labelClass}>Clinical Services</label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {[...PREDEFINED_DOCTOR_SERVICES, ...PREDEFINED_INSTITUTIONAL_SERVICES].map(service => {
+                                            const isSelected = editData.services?.split(', ').includes(service);
+                                            return (
+                                                <button
+                                                    key={service}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const current = editData.services ? editData.services.split(', ').filter(s => s) : [];
+                                                        const next = isSelected ? current.filter(s => s !== service) : [...current, service];
+                                                        setEditData({ ...editData, services: next.join(', ') });
+                                                    }}
+                                                    className={`px-4 py-2 rounded-xl text-[8px] font-black uppercase tracking-widest border transition-all ${
+                                                        isSelected ? 'bg-primary text-white border-primary shadow-md' : 'bg-slate-50 text-slate-400 border-slate-100'
+                                                    }`}
+                                                >
+                                                    {service}
                                                 </button>
                                             );
                                         })}

@@ -98,16 +98,28 @@ public class AiService {
         final StringBuilder clinicalHistory = new StringBuilder(userEmail != null ? "" : "None");
         
         if (userEmail != null) {
-            List<Prescription> pastMeds = prescriptionRepository.findByPatientEmailAndIsActiveTrue(userEmail);
-            if (!pastMeds.isEmpty()) {
-                clinicalHistory.append("Past Diagnoses: ")
-                    .append(pastMeds.stream().map(Prescription::getMedicineName).collect(Collectors.joining(", ")))
-                    .append(". ");
-            }
-            
             Optional<User> userOpt = userRepository.findByUsernameIgnoreCase(userEmail);
             if (userOpt.isPresent()) {
-                List<Appointment> todayAppts = appointmentRepository.findByPatientId(userOpt.get().getId()).stream()
+                User u = userOpt.get();
+                patientRepository.findByUserId(u.getId()).ifPresent(p -> {
+                    clinicalHistory.append("Patient Profile: ")
+                        .append(p.getGender() != null ? p.getGender() + ", " : "")
+                        .append(p.getAge() != null ? p.getAge() + " years old. " : "");
+                    
+                    if (p.getExistingDiseases() != null) clinicalHistory.append("Conditions: ").append(p.getExistingDiseases()).append(". ");
+                    if (p.getAllergies() != null) clinicalHistory.append("Allergies: ").append(p.getAllergies()).append(". ");
+                    if (p.getPastSurgeries() != null) clinicalHistory.append("History: ").append(p.getPastSurgeries()).append(". ");
+                    if (p.getMedicalInfo() != null) clinicalHistory.append("Notes: ").append(p.getMedicalInfo()).append(". ");
+                });
+
+                List<Prescription> activeMeds = prescriptionRepository.findByPatientEmailAndIsActiveTrue(userEmail);
+                if (!activeMeds.isEmpty()) {
+                    clinicalHistory.append("Active Medications: ")
+                        .append(activeMeds.stream().map(Prescription::getMedicineName).collect(Collectors.joining(", ")))
+                        .append(". ");
+                }
+                
+                List<Appointment> todayAppts = appointmentRepository.findByPatientId(u.getId()).stream()
                     .filter(a -> a.getAppointmentDate().isEqual(LocalDate.now()))
                     .collect(Collectors.toList());
                 if (!todayAppts.isEmpty()) {
@@ -117,7 +129,7 @@ public class AiService {
                 }
 
                 // --- INTEGRATE LATEST REPORT ---
-                patientRepository.findByUserId(userOpt.get().getId()).ifPresent(p -> {
+                patientRepository.findByUserId(u.getId()).ifPresent(p -> {
                     List<Report> reports = reportRepository.findByPatientId(p.getId());
                     if (!reports.isEmpty()) {
                         Report latest = reports.stream()
@@ -130,7 +142,7 @@ public class AiService {
                             .findFirst().orElse(null);
                         
                         if (latest != null) {
-                            clinicalHistory.append("Latest Medical Report Analysis (")
+                            clinicalHistory.append("Latest Report Analysis (")
                                 .append(latest.getFileName())
                                 .append("): ")
                                 .append(latest.getAiSummary())
@@ -178,11 +190,12 @@ public class AiService {
                 "Current Location: " + (location != null ? location : "Unknown") + ". " +
                 "Language: " + language + ". " +
                 "STRICT PROTOCOLS:\n" +
-                "1. NO PARAGRAPHS. NO GREETINGS. NO DISCLAIMERS. NO INTRODUCTIONS. NO POLITE FILLERS.\n" +
-                "2. BE EXTREMELY CONCISE. USE MAX 2-3 BULLET POINTS. USE VERY SIMPLE WORDS.\n" +
-                "3. Use Markdown headers (###) and Bullet Points (-) for EVERYTHING.\n" +
-                "4. NAVIGATION: Provide only the Facility Name and its raw coordinates on a NEW LINE. DO NOT mention coordinates/lat/long. ONLY provide this if the user asks for a location, hospital, clinic, or blood bank. If no location is asked for, DO NOT provide any navigation data.\n" +
-                "5. GROUNDING: Be direct. Focus on medical guidance unless locations are requested.\n" +
+                "1. NO PARAGRAPHS. NO GREETINGS. NO DISCLAIMERS. NO INTRODUCTIONS.\n" +
+                "2. PRIORITIZE HISTORY: If the patient has a history of ENT issues or symptoms like ear pain, recommend ENT specialists first. DO NOT show Cardiology unless it's relevant to the query.\n" +
+                "3. BE EXTREMELY CONCISE. USE MAX 2-3 BULLET POINTS. USE VERY SIMPLE WORDS.\n" +
+                "4. Use Markdown headers (###) and Bullet Points (-) for EVERYTHING.\n" +
+                "5. NAVIGATION: Provide only the Facility Name and its raw coordinates on a NEW LINE. DO NOT mention coordinates/lat/long. ONLY provide this if the user asks for a location, hospital, clinic, or blood bank.\n" +
+                "6. GROUNDING: Match user symptoms/history to the specialization of doctors provided below.\n\n" +
                 "   HOSPITALS:\n" + hospitalList + "\n" +
                 "   DOCTORS:\n" + doctorList + "\n\n" +
                 "Query: " + query;
@@ -234,6 +247,8 @@ public class AiService {
         switch (specialty) {
             case "dental": return "Avoid hot or cold food. See a dentist.";
             case "cardiology": return "Rest and avoid heavy work. See a heart doctor.";
+            case "ent": return "Avoid cold drinks and allergens. See an ENT specialist.";
+            case "dermatology": return "Avoid scratching and keep area clean. See a dermatologist.";
             default: return "Please visit a doctor for a checkup.";
         }
     }
@@ -243,10 +258,15 @@ public class AiService {
     }
 
     private String mapSymptomToSpecialty(String query) {
-        // English + Tamil + Hindi Keywords
-        if (query.contains("tooth") || query.contains("teeth") || query.contains("பல்") || query.contains("दांत")) return "dental";
-        if (query.contains("heart") || query.contains("chest") || query.contains("இதயம்") || query.contains("दिल")) return "cardiology";
-        if (query.contains("fever") || query.contains("cold") || query.contains("காய்ச்சல்") || query.contains("बुखार") || query.contains("வலி") || query.contains("pain")) return "general physician";
+        // English + Tamil + Hindi Keywords + Expanded Specialties
+        if (query.contains("tooth") || query.contains("teeth") || query.contains("பல்") || query.contains("दांत") || query.contains("gum")) return "dental";
+        if (query.contains("heart") || query.contains("chest") || query.contains("இதயம்") || query.contains("दिल") || query.contains("bp") || query.contains("cardiac")) return "cardiology";
+        if (query.contains("ear") || query.contains("nose") || query.contains("throat") || query.contains("hearing") || query.contains("sinus") || query.contains("tonsil") || query.contains("காது") || query.contains("कान")) return "ent";
+        if (query.contains("skin") || query.contains("rash") || query.contains("itch") || query.contains("தோல்") || query.contains("त्वचा")) return "dermatology";
+        if (query.contains("bone") || query.contains("joint") || query.contains("fracture") || query.contains("muscle") || query.contains("எலும்பு") || query.contains("हड्डी")) return "orthopedics";
+        if (query.contains("eye") || query.contains("vision") || query.contains("blind") || query.contains("கண்") || query.contains("आंख")) return "ophthalmology";
+        if (query.contains("child") || query.contains("baby") || query.contains("infant") || query.contains("குழந்தை") || query.contains("बच्चा")) return "pediatrics";
+        if (query.contains("fever") || query.contains("cold") || query.contains("காய்ச்சல்") || query.contains("बुखार") || query.contains("வலி") || query.contains("pain") || query.contains("cough")) return "general physician";
         return null;
     }
 

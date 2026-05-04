@@ -11,6 +11,19 @@ import toast from 'react-hot-toast';
 import DropZone from '../components/DropZone';
 import PremiumDropdown from '../components/PremiumDropdown';
 
+const PREDEFINED_DOCTOR_SERVICES = [
+    "General Consultation", "Specialist Consultation", "Emergency Care",
+    "Home Visit", "Telemedicine", "Vaccination", "Diagnostic Review",
+    "Minor Procedures", "Second Opinion", "Health Screening"
+];
+
+const PREDEFINED_INSTITUTIONAL_SERVICES = [
+    "24/7 Emergency", "MRI Scan", "CT Scan", "X-Ray", "Blood Bank", 
+    "ICU (Intensive Care Unit)", "NICU", "Dialysis", "Physiotherapy", 
+    "Pathology Lab", "In-house Pharmacy", "Ambulance", "Operation Theater",
+    "Telemedicine", "Vaccination Center", "Home Care Services"
+];
+
 const StaffOnboarding = () => {
     const navigate = useNavigate();
     const [submitting, setSubmitting] = useState(false);
@@ -38,9 +51,9 @@ const StaffOnboarding = () => {
         onlineConsultationFee: '', offlineConsultationFee: '',
         onlineConsultation: true, appointmentsEnabled: true,
         
-        // 5. Governance & Permissions
         canPrescribe: true, canEditPatientData: false, 
-        canAccessReports: true, canManageAppointments: true
+        canAccessReports: true, canManageAppointments: true,
+        services: ''
     });
 
     const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -315,6 +328,69 @@ const StaffOnboarding = () => {
                                 </label>
                             </div>
                         ))}
+                    </div>
+                </div>
+
+                {/* 6. Clinical Services */}
+                <div className={`${sectionClass} border-emerald-200 bg-emerald-50/5`}>
+                    <div className="absolute top-0 right-0 p-12 opacity-[0.03] text-emerald-600 pointer-events-none">
+                        <Zap size={120} />
+                    </div>
+                    <div className="flex items-center gap-4 mb-10 relative z-10">
+                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                        <h3 className="text-[14px] font-black text-slate-900 uppercase tracking-[0.5em]">6. Clinical & Diagnostic Services</h3>
+                    </div>
+
+                    <div className="space-y-12 relative z-10">
+                        <div className="space-y-6">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Clinical Consultations</p>
+                            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                {PREDEFINED_DOCTOR_SERVICES.map(service => {
+                                    const isSelected = onboardData.services?.split(', ').includes(service);
+                                    return (
+                                        <button
+                                            key={service}
+                                            type="button"
+                                            onClick={() => {
+                                                const current = onboardData.services ? onboardData.services.split(', ').filter(s => s) : [];
+                                                const next = isSelected ? current.filter(s => s !== service) : [...current, service];
+                                                setOnboardData({ ...onboardData, services: next.join(', ') });
+                                            }}
+                                            className={`px-6 py-4 rounded-[1.5rem] border text-[10px] font-black uppercase tracking-widest transition-all ${
+                                                isSelected ? 'bg-primary text-white border-primary shadow-xl shadow-primary/20 scale-105' : 'bg-white border-slate-100 text-slate-400 hover:bg-slate-50'
+                                            }`}
+                                        >
+                                            {service}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        <div className="space-y-6">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Diagnostic Infrastructure</p>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {PREDEFINED_INSTITUTIONAL_SERVICES.map(service => {
+                                    const isSelected = onboardData.services?.split(', ').includes(service);
+                                    return (
+                                        <button
+                                            key={service}
+                                            type="button"
+                                            onClick={() => {
+                                                const current = onboardData.services ? onboardData.services.split(', ').filter(s => s) : [];
+                                                const next = isSelected ? current.filter(s => s !== service) : [...current, service];
+                                                setOnboardData({ ...onboardData, services: next.join(', ') });
+                                            }}
+                                            className={`px-6 py-4 rounded-[1.5rem] border text-[10px] font-black uppercase tracking-widest transition-all ${
+                                                isSelected ? 'bg-slate-900 text-white border-slate-900 shadow-xl shadow-slate-900/20 scale-105' : 'bg-white border-slate-100 text-slate-400 hover:bg-slate-50'
+                                            }`}
+                                        >
+                                            {service}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
