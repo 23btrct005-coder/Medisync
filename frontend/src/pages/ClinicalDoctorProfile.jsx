@@ -432,17 +432,10 @@ const DoctorProfile = () => {
                         </div>
                         <InfoRow icon={Clock} label="Daily Timings" value={user.consultationTimings} color="text-blue-500" isLocked={user.institutional} />
                         <InfoRow icon={Clock} label="Break Intervals" value={user.breakTimings} color="text-slate-400" isLocked={user.institutional} />
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pb-4 border-b border-slate-50">
                             <InfoRow icon={Activity} label="Slot Duration" value={`${user.slotDuration || 15} Min`} color="text-blue-600" isLocked={user.institutional} />
                             <InfoRow icon={Activity} label="Clinical Gap" value={`${user.slotBuffer || 0} Min`} color="text-indigo-600" isLocked={user.institutional} />
                             <InfoRow icon={Users} label="Max Daily Load" value={`${user.maxPatientsPerDay || 0} Patients`} color="text-emerald-600" isLocked={user.institutional} />
-                        </div>
-                    </Section>
-
-                    <Section title="Practice Economics" icon={Wallet}>
-                        <div className="grid grid-cols-2 gap-4">
-                            <InfoRow icon={CreditCard} label="Online Fee" value={user.onlineConsultationFee ? `₹ ${user.onlineConsultationFee}` : null} color="text-emerald-600" isLocked={user.institutional} />
-                            <InfoRow icon={MapPin} label="In-Person Fee" value={user.offlineConsultationFee ? `₹ ${user.offlineConsultationFee}` : null} color="text-blue-600" isLocked={user.institutional} />
                         </div>
                         <div className="py-4 space-y-6">
                             <div className="flex items-center justify-between">
