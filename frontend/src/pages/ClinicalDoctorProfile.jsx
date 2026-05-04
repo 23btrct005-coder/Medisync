@@ -180,36 +180,22 @@ const DoctorProfile = () => {
                         <Save size={16} /> {saving ? 'Syncing...' : 'Save Configuration'}
                     </button>
                 </div>
-            ) : !user.institutional || activeTab === 'fees' ? (
-                <div className="flex gap-2">
-                    <button 
-                        onClick={() => setIsEditing(false)}
-                        className="flex items-center justify-center gap-3 bg-slate-100 text-slate-500 font-black uppercase tracking-widest text-[10px] px-6 py-4 rounded-[2rem] hover:bg-slate-200 transition-all active:scale-95"
-                    >
-                        <X size={16} /> Discard
-                    </button>
-                    <button 
-                        onClick={handleSave}
-                        disabled={saving}
-                        className="flex items-center justify-center gap-3 bg-blue-600 text-white font-black uppercase tracking-widest text-[10px] px-8 py-4 rounded-[2rem] hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 active:scale-95 disabled:opacity-50"
-                    >
-                        <Save size={16} /> {saving ? 'Syncing...' : 'Save Configuration'}
-                    </button>
-                </div>
             ) : (
                 <div className="flex items-center gap-3">
                     <button 
                         onClick={startEditing}
                         className="flex items-center justify-center gap-3 bg-blue-600 text-white font-black uppercase tracking-widest text-[10px] px-8 py-4 rounded-[2rem] hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 active:scale-95 group"
                     >
-                        <Edit3 size={16} /> Manage Expertise
+                        <Edit3 size={16} /> {user.institutional ? 'Manage Expertise' : 'Edit Profile'}
                     </button>
-                    <div className="flex flex-col items-end">
-                        <div className="flex items-center gap-2 px-6 py-3 bg-blue-50 text-blue-700 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm border border-blue-100">
-                            <Building2 size={16} /> Institutional Profile
+                    {user.institutional && (
+                        <div className="flex flex-col items-end">
+                            <div className="flex items-center gap-2 px-6 py-3 bg-blue-50 text-blue-700 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm border border-blue-100">
+                                <Building2 size={16} /> Institutional Profile
+                            </div>
+                            <p className="text-[9px] text-slate-400 mt-2 font-bold uppercase tracking-tighter">Controlled by {user.hospital || 'Institution'}</p>
                         </div>
-                        <p className="text-[9px] text-slate-400 mt-2 font-bold uppercase tracking-tighter">Controlled by {user.hospital || 'Institution'}</p>
-                    </div>
+                    )}
                 </div>
             )}
         </div>
