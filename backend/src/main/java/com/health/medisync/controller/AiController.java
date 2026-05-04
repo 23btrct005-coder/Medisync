@@ -16,10 +16,12 @@ public class AiController {
 
     private final AiService aiService;
     private final AiQueryLogRepository aiQueryLogRepository;
+    private final com.health.medisync.repository.HospitalAdminRepository hospitalAdminRepository;
 
-    public AiController(AiService aiService, AiQueryLogRepository aiQueryLogRepository) {
+    public AiController(AiService aiService, AiQueryLogRepository aiQueryLogRepository, com.health.medisync.repository.HospitalAdminRepository hospitalAdminRepository) {
         this.aiService = aiService;
         this.aiQueryLogRepository = aiQueryLogRepository;
+        this.hospitalAdminRepository = hospitalAdminRepository;
     }
 
     @PostMapping("/chat")
@@ -57,19 +59,16 @@ public class AiController {
             if ("current".equalsIgnoreCase(hospitalId)) {
                 var auth = SecurityContextHolder.getContext().getAuthentication();
                 String email = auth.getName();
-                // We need to find the hospital for this admin. 
-                // However, AiController doesn't have HospitalService. 
-                // Let's just return all logs for now as it was doing, 
-                // or I should add HospitalService/Repository.
-                return ResponseEntity.ok(aiQueryLogRepository.findAll());
+                var admin = hospitalAdminRepository.findByUserUsernameIgnoreCase(email)
+                        .orElseThrow(() -> new RuntimeException("Institutional node not found for administrator"));
+                id = admin.getHospital().getId();
             } else {
                 id = Long.valueOf(hospitalId);
-                // In a real scenario, we'd filter by hospitalId. 
-                // For now, let's stick to the current behavior but fix the type mismatch.
-                return ResponseEntity.ok(aiQueryLogRepository.findAll());
             }
+            return ResponseEntity.ok(aiQueryLogRepository.findByHospitalIdOrderByCreatedAtDesc(id));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Invalid ID format"));
+            e.printStackTrace(); // Log for 500 debugging
+            return ResponseEntity.status(500).body(Map.of("error", "Analytics Retrieval Error: " + e.getMessage()));
         }
     }
 }

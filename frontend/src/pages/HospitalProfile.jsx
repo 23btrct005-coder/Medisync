@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, Shield, CreditCard, Globe, MapPin, Phone, Mail, FileText, Camera, CheckCircle, AlertCircle, Save, Loader2, Activity, User, Navigation } from 'lucide-react';
+import { Building2, Shield, CreditCard, Globe, MapPin, Phone, Mail, FileText, Camera, CheckCircle, AlertCircle, Save, Loader2, Activity, User, Navigation, DollarSign } from 'lucide-react';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
