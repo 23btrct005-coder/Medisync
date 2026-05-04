@@ -11,6 +11,18 @@ import {
 } from 'lucide-react';
 
 const COMMON_LANGUAGES = ["English", "Hindi", "Kannada", "Tamil", "Telugu", "Malayalam", "Marathi", "Bengali", "Gujarati", "Punjabi", "Spanish", "French", "German"];
+const PREDEFINED_DOCTOR_SERVICES = [
+    "General Consultation",
+    "Specialist Consultation",
+    "Emergency Care",
+    "Home Visit",
+    "Telemedicine",
+    "Vaccination",
+    "Diagnostic Review",
+    "Minor Procedures",
+    "Second Opinion",
+    "Health Screening"
+];
 import ClinicMap from '../components/ClinicMap';
 
 const EditDoctorProfile = () => {
@@ -64,7 +76,8 @@ const EditDoctorProfile = () => {
     preferredPaymentMode: 'RAZORPAY',
     appointmentsEnabled: true,
     startTime: '09:00',
-    endTime: '17:00'
+    endTime: '17:00',
+    services: ''
   });
 
   const convertTo24Hour = (timeStr) => {
@@ -124,6 +137,7 @@ const EditDoctorProfile = () => {
         appointmentsEnabled: user.appointmentsEnabled !== false,
         startTime: convertTo24Hour(rawStart),
         endTime: convertTo24Hour(rawEnd),
+        services: user.services || ''
       });
       setPhotoPreview(`${api.defaults.baseURL}/auth/doctor/photo/${user.id}?t=${Date.now()}`);
     }
@@ -630,6 +644,30 @@ const EditDoctorProfile = () => {
                                         setFormData({...formData, treatmentFocus: current.join(', ')});
                                     }}><X size={10} /></button>
                                 </span>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="md:col-span-2 pt-6 border-t border-slate-50">
+                        <label className={labelClass}>Clinical Services Provided</label>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mt-4">
+                            {PREDEFINED_DOCTOR_SERVICES.map(service => (
+                                <label key={service} className={`flex flex-col items-center justify-center p-4 rounded-3xl border transition-all cursor-pointer group ${formData.services?.includes(service) ? 'bg-blue-50 border-blue-500 shadow-sm' : 'bg-slate-50 border-transparent hover:border-slate-200'}`}>
+                                    <input 
+                                        type="checkbox" 
+                                        className="hidden"
+                                        checked={formData.services?.includes(service) || false}
+                                        onChange={(e) => {
+                                            const current = formData.services ? formData.services.split(', ').filter(s => s) : [];
+                                            const next = e.target.checked ? [...current, service] : current.filter(s => s !== service);
+                                            setFormData({...formData, services: next.join(', ')});
+                                        }}
+                                    />
+                                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center mb-3 transition-all ${formData.services?.includes(service) ? 'bg-blue-600 text-white' : 'bg-white text-slate-400 group-hover:text-slate-600 shadow-sm'}`}>
+                                        <Heart size={18} fill={formData.services?.includes(service) ? 'currentColor' : 'none'} />
+                                    </div>
+                                    <span className={`text-[10px] font-black uppercase text-center tracking-tighter leading-tight ${formData.services?.includes(service) ? 'text-blue-700' : 'text-slate-500'}`}>{service}</span>
+                                </label>
                             ))}
                         </div>
                     </div>

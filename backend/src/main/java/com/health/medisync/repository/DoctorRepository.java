@@ -19,7 +19,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     @org.springframework.data.jpa.repository.Query(value = "SELECT * FROM doctors WHERE approved = true", nativeQuery = true)
     java.util.List<Doctor> findByApprovedTrue();
 
-    @org.springframework.data.jpa.repository.Query("SELECT d FROM Doctor d WHERE d.approved = true AND (LOWER(d.name) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(d.specialization) LIKE LOWER(CONCAT('%', :query, '%')))")
+    @org.springframework.data.jpa.repository.Query("SELECT d FROM Doctor d WHERE d.approved = true AND (LOWER(d.name) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(d.specialization) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(d.services) LIKE LOWER(CONCAT('%', :query, '%')))")
     java.util.List<Doctor> searchDoctors(@org.springframework.data.repository.query.Param("query") String query);
 
     java.util.List<Doctor> findByHospitalEntity(com.health.medisync.model.Hospital hospital);

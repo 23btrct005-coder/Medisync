@@ -40,6 +40,9 @@ public class Doctor {
     private String licenseExpiryDate;
     private String licenseDocumentUrl;
     private Integer registrationYear;
+    
+    @Column(columnDefinition = "TEXT")
+    private String services;
 
     // Clinical Expertise Depth
     private String subSpecialties; // Comma separated
@@ -301,4 +304,7 @@ public class Doctor {
 
     public boolean isCanManageAppointments() { return canManageAppointments; }
     public void setCanManageAppointments(boolean canManageAppointments) { this.canManageAppointments = canManageAppointments; }
+
+    public String getServices() { return services; }
+    public void setServices(String services) { this.services = services; }
 }

@@ -358,6 +358,7 @@ public class AuthController {
         doctor.setTreatmentFocus(request.get("treatmentFocus") != null ? String.valueOf(request.get("treatmentFocus")) : null);
         doctor.setLanguagesSpoken(request.get("languagesSpoken") != null ? String.valueOf(request.get("languagesSpoken")) : null);
         doctor.setPublications(request.get("publications") != null ? String.valueOf(request.get("publications")) : null);
+        if (request.containsKey("services")) doctor.setServices(String.valueOf(request.get("services")));
 
         // License & Verification
         doctor.setMedicalLicenseNumber(request.get("medicalLicenseNumber") != null ? String.valueOf(request.get("medicalLicenseNumber")) : null);

@@ -9,7 +9,19 @@ import {
 } from 'lucide-react';
 import ClinicMap from '../components/ClinicMap';
 import toast from 'react-hot-toast';
-import { ShieldCheck, Save, X } from 'lucide-react';
+import { ShieldCheck, Save, X, Heart } from 'lucide-react';
+const PREDEFINED_DOCTOR_SERVICES = [
+    "General Consultation",
+    "Specialist Consultation",
+    "Emergency Care",
+    "Home Visit",
+    "Telemedicine",
+    "Vaccination",
+    "Diagnostic Review",
+    "Minor Procedures",
+    "Second Opinion",
+    "Health Screening"
+];
 
 const InfoRow = ({ icon: Icon, label, value, color = 'text-blue-600', isLocked = false }) => (
   <div className={`flex items-start gap-3 py-3 border-b border-slate-100 last:border-0 ${isLocked ? 'opacity-40 grayscale-[0.5]' : ''}`}>
@@ -51,6 +63,7 @@ const DoctorProfile = () => {
       languagesSpoken: user.languagesSpoken || '',
       onlineConsultation: user.onlineConsultation || false,
       appointmentsEnabled: user.appointmentsEnabled || false,
+      services: user.services || '',
     });
     setIsEditing(true);
   };
@@ -281,11 +294,41 @@ const DoctorProfile = () => {
                                         onChange={(e) => setFormData({ ...formData, treatmentFocus: e.target.value })}
                                     />
                                 </div>
+                                <div className="pt-4 border-t border-slate-50">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Clinical Services Provided</p>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {PREDEFINED_DOCTOR_SERVICES.map(service => (
+                                            <label key={service} className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${formData.services?.includes(service) ? 'bg-blue-50 border-blue-200 shadow-sm' : 'bg-white border-slate-100 hover:border-slate-200'}`}>
+                                                <input 
+                                                    type="checkbox" 
+                                                    className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                                    checked={formData.services?.includes(service) || false}
+                                                    onChange={(e) => {
+                                                        const current = formData.services ? formData.services.split(', ').filter(s => s) : [];
+                                                        const next = e.target.checked ? [...current, service] : current.filter(s => s !== service);
+                                                        setFormData({...formData, services: next.join(', ')});
+                                                    }}
+                                                />
+                                                <span className={`text-[9px] font-black uppercase tracking-widest ${formData.services?.includes(service) ? 'text-blue-700' : 'text-slate-500'}`}>{service}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         ) : (
                             <>
                                 <InfoRow icon={Activity} label="Procedures Managed" value={user.proceduresHandled} color="text-indigo-600" />
-                                <InfoRow icon={Activity} label="Treatment Focus" value={user.treatmentFocus} color="text-rose-600" />
+                                 <InfoRow icon={Activity} label="Treatment Focus" value={user.treatmentFocus} color="text-rose-600" />
+                                 <div className="py-4 border-t border-slate-50 mt-4">
+                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Medical Services Offered</p>
+                                     <div className="flex flex-wrap gap-2">
+                                         {user.services ? user.services.split(', ').map(s => (
+                                             <span key={s} className="px-4 py-2 bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded-xl border border-emerald-100 shadow-sm">
+                                                 {s}
+                                             </span>
+                                         )) : <span className="text-slate-300 italic text-sm">No specific services listed</span>}
+                                     </div>
+                                 </div>
                             </>
                         )}
                     </Section>

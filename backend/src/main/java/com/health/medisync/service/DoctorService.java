@@ -296,6 +296,7 @@ public class DoctorService {
         if (updates.containsKey("treatmentFocus")) doctor.setTreatmentFocus((String) updates.get("treatmentFocus"));
         if (updates.containsKey("languagesSpoken")) doctor.setLanguagesSpoken((String) updates.get("languagesSpoken"));
         if (updates.containsKey("publications")) doctor.setPublications((String) updates.get("publications"));
+        if (updates.containsKey("services")) doctor.setServices((String) updates.get("services"));
         
         if (updates.containsKey("slotDuration")) {
             Object duration = updates.get("slotDuration");

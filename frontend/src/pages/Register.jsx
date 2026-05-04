@@ -25,6 +25,19 @@ const PREDEFINED_HOSPITAL_SERVICES = [
     "Telemedicine", "Vaccination Center", "Home Care Services"
 ];
 
+const PREDEFINED_DOCTOR_SERVICES = [
+    "General Consultation",
+    "Specialist Consultation",
+    "Emergency Care",
+    "Home Visit",
+    "Telemedicine",
+    "Vaccination",
+    "Diagnostic Review",
+    "Minor Procedures",
+    "Second Opinion",
+    "Health Screening"
+];
+
 const StepIndicator = ({ currentStep, totalSteps }) => (
   <div className="flex items-center justify-between mb-8 max-w-sm mx-auto">
     {[...Array(totalSteps)].map((_, i) => (
@@ -899,7 +912,6 @@ const Register = () => {
                                     className={inputClass}
                                     onChange={(e) => {
                                         const val = e.target.value;
-                                        const COMMON_LANGS = ["English", "Hindi", "Kannada", "Tamil", "Telugu", "Malayalam", "Marathi", "Bengali", "Gujarati", "Punjabi", "Spanish", "French", "German"];
                                         if (val && !formData.languagesSpoken.includes(val)) {
                                             const current = formData.languagesSpoken ? formData.languagesSpoken.split(', ').filter(s => s) : [];
                                             setFormData({...formData, languagesSpoken: [...current, val].join(', ')});
@@ -928,6 +940,30 @@ const Register = () => {
                             <div>
                                 <label className={labelClass}>Sub-Specialties</label>
                                 <input type="text" name="subSpecialties" value={formData.subSpecialties} onChange={handleChange} className={inputClass} placeholder="e.g. Diabetes, Hypertension" />
+                            </div>
+
+                            <div className="md:col-span-2 pt-6 border-t border-slate-50">
+                                <label className={labelClass}>Clinical Services Provided</label>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mt-4">
+                                    {PREDEFINED_DOCTOR_SERVICES.map(service => (
+                                        <label key={service} className={`flex flex-col items-center justify-center p-4 rounded-2xl border transition-all cursor-pointer group ${formData.services?.includes(service) ? 'bg-blue-50 border-blue-500 shadow-sm' : 'bg-slate-50 border-transparent hover:border-slate-200'}`}>
+                                            <input 
+                                                type="checkbox" 
+                                                className="hidden"
+                                                checked={formData.services?.includes(service) || false}
+                                                onChange={(e) => {
+                                                    const current = formData.services ? formData.services.split(', ').filter(s => s) : [];
+                                                    const next = e.target.checked ? [...current, service] : current.filter(s => s !== service);
+                                                    setFormData({...formData, services: next.join(', ')});
+                                                }}
+                                            />
+                                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-2 transition-all ${formData.services?.includes(service) ? 'bg-blue-600 text-white' : 'bg-white text-slate-400 group-hover:text-slate-600'}`}>
+                                                <Heart size={14} fill={formData.services?.includes(service) ? 'currentColor' : 'none'} />
+                                            </div>
+                                            <span className={`text-[9px] font-black uppercase text-center tracking-tighter leading-tight ${formData.services?.includes(service) ? 'text-blue-700' : 'text-slate-500'}`}>{service}</span>
+                                        </label>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                       </div>
