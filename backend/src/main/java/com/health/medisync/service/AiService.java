@@ -95,10 +95,9 @@ public class AiService {
         // 4. Real-time Context Extraction (Temporal + Clinical History)
         String currentTime = java.time.LocalTime.now().toString();
         String currentDate = java.time.LocalDate.now().toString();
-        StringBuilder clinicalHistory = new StringBuilder("None");
+        final StringBuilder clinicalHistory = new StringBuilder(userEmail != null ? "" : "None");
         
         if (userEmail != null) {
-            clinicalHistory = new StringBuilder();
             List<Prescription> pastMeds = prescriptionRepository.findByPatientEmailAndIsActiveTrue(userEmail);
             if (!pastMeds.isEmpty()) {
                 clinicalHistory.append("Past Diagnoses: ")
