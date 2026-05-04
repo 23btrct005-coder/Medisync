@@ -6,18 +6,28 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Plus, X } from 'lucide-react';
 
-const PREDEFINED_SERVICES = [
-    "24/7 Emergency", "MRI Scan", "CT Scan", "X-Ray", "Blood Bank", 
-    "ICU (Intensive Care Unit)", "NICU", "Dialysis", "Physiotherapy", 
-    "Pathology Lab", "In-house Pharmacy", "Ambulance", "Operation Theater",
-    "Telemedicine", "Vaccination Center", "Home Care Services"
+const SERVICES_24_7 = [
+    "Emergency & Trauma Care", "Ambulance Services", "ICU (Intensive Care Unit)", 
+    "NICU (Neonatal ICU)", "Operation Theatre (Emergency)", "Casualty Department", 
+    "24/7 Pharmacy", "Blood Bank", "Emergency CT Scan", "Emergency Lab Tests",
+    "Oxygen & Ventilator Support", "Emergency Dialysis"
 ];
 
+const SERVICES_TIME_BASED = [
+    "OPD (Outpatient)", "X-Ray", "MRI Scan", "Ultrasound / सोनोग्राफी", 
+    "ECG & TMT", "Physiotherapy", "Dental Services", "General Surgery (Planned)",
+    "Orthopedic Consultation", "Pediatric Consultation", "Gynecology & Obstetrics",
+    "ENT (Ear, Nose, Throat)", "Ophthalmology (Eye)", "Dermatology (Skin)",
+    "Advanced Laboratory Tests", "Health Checkup Packages"
+];
+
+const PREDEFINED_SERVICES = [...SERVICES_24_7, ...SERVICES_TIME_BASED];
+
 const HOSPITAL_DEPARTMENTS = [
-    "Cardiology", "Neurology", "Pediatrics", "Orthopedics", "Oncology", 
-    "Gynecology", "Dermatology", "Urology", "Ophthalmology", "ENT", 
-    "Psychiatry", "Emergency Medicine", "Radiology", "General Surgery",
-    "Dental Surgery", "Nephrology", "Pulmonology", "Gastroenterology"
+    "Cardiology", "Neurology", "Oncology", "Gastroenterology", "Urology", 
+    "Plastic Surgery", "Pediatrics", "Orthopedics", "Gynecology", "Dermatology",
+    "Ophthalmology", "ENT", "Psychiatry", "Emergency Medicine", "Radiology", 
+    "General Surgery", "Nephrology", "Pulmonology"
 ];
 
 const HospitalProfile = () => {
@@ -472,33 +482,78 @@ const HospitalProfile = () => {
                                     <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900">Clinical & Diagnostic Services</h4>
                                 </div>
                                 
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                    {PREDEFINED_SERVICES.map(service => {
-                                        const isSelected = formData.services.split(', ').includes(service);
-                                        return (
-                                            <button
-                                                key={service}
-                                                type="button"
-                                                onClick={() => {
-                                                    const currentServices = formData.services ? formData.services.split(', ').filter(s => s) : [];
-                                                    const newServices = isSelected 
-                                                        ? currentServices.filter(s => s !== service)
-                                                        : [...currentServices, service];
-                                                    setFormData({...formData, services: newServices.join(', ')});
-                                                }}
-                                                className={`flex items-center gap-3 px-4 py-3 rounded-2xl border text-[10px] font-bold uppercase tracking-wider transition-all text-left ${
-                                                    isSelected 
-                                                    ? 'bg-primary/10 border-primary text-primary shadow-sm' 
-                                                    : 'bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100'
-                                                }`}
-                                            >
-                                                <div className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${isSelected ? 'bg-primary border-primary text-white' : 'bg-white border-slate-200'}`}>
-                                                    {isSelected && <CheckCircle size={10} />}
-                                                </div>
-                                                {service}
-                                            </button>
-                                        );
-                                    })}
+                                <div className="space-y-8">
+                                    {/* 24/7 Category */}
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-2 ml-1">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                                            <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">24/7 Emergency Nodes</span>
+                                        </div>
+                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                            {SERVICES_24_7.map(service => {
+                                                const isSelected = formData.services.split(', ').includes(service);
+                                                return (
+                                                    <button
+                                                        key={service}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const currentServices = formData.services ? formData.services.split(', ').filter(s => s) : [];
+                                                            const newServices = isSelected 
+                                                                ? currentServices.filter(s => s !== service)
+                                                                : [...currentServices, service];
+                                                            setFormData({...formData, services: newServices.join(', ')});
+                                                        }}
+                                                        className={`flex items-center gap-3 px-4 py-3 rounded-2xl border text-[10px] font-bold uppercase tracking-wider transition-all text-left ${
+                                                            isSelected 
+                                                            ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm' 
+                                                            : 'bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100'
+                                                        }`}
+                                                    >
+                                                        <div className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${isSelected ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-200'}`}>
+                                                            {isSelected && <CheckCircle size={10} />}
+                                                        </div>
+                                                        {service}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    {/* Time-Based Category */}
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-2 ml-1">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
+                                            <span className="text-[9px] font-black text-primary uppercase tracking-widest">Scheduled Clinical Services</span>
+                                        </div>
+                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                            {SERVICES_TIME_BASED.map(service => {
+                                                const isSelected = formData.services.split(', ').includes(service);
+                                                return (
+                                                    <button
+                                                        key={service}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const currentServices = formData.services ? formData.services.split(', ').filter(s => s) : [];
+                                                            const newServices = isSelected 
+                                                                ? currentServices.filter(s => s !== service)
+                                                                : [...currentServices, service];
+                                                            setFormData({...formData, services: newServices.join(', ')});
+                                                        }}
+                                                        className={`flex items-center gap-3 px-4 py-3 rounded-2xl border text-[10px] font-bold uppercase tracking-wider transition-all text-left ${
+                                                            isSelected 
+                                                            ? 'bg-primary/10 border-primary text-primary shadow-sm' 
+                                                            : 'bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100'
+                                                        }`}
+                                                    >
+                                                        <div className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${isSelected ? 'bg-primary border-primary text-white' : 'bg-white border-slate-200'}`}>
+                                                            {isSelected && <CheckCircle size={10} />}
+                                                        </div>
+                                                        {service}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div className="space-y-3">
