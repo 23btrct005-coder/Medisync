@@ -234,6 +234,16 @@ const AiConcierge = () => {
                                                 const isLocation = line.toLowerCase().includes('location') || line.toLowerCase().includes('address') || line.toLowerCase().includes('hospital');
                                                 const hasCoords = line.match(/-?\d+\.\d+,\s*-?\d+\.\d+/);
                                                 
+                                                // Map Configuration Precision
+                                                const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+                                                const query = line.replace(/#|-|•/g, '').trim();
+                                                const encodedQuery = encodeURIComponent(query);
+                                                
+                                                // Determine the most robust map URL available
+                                                const mapUrl = (apiKey && apiKey !== "REPLACE_WITH_YOUR_GOOGLE_MAPS_API_KEY" && apiKey !== "YOUR_GOOGLE_MAPS_API_KEY") 
+                                                    ? `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${encodedQuery}`
+                                                    : `https://maps.google.com/maps?q=${encodedQuery}&output=embed&z=15`;
+
                                                 return (
                                                     <div key={li} style={{ display: 'flex', flexDirection: 'column', gap: '12px', margin: '8px 0' }}>
                                                         <div style={{ display: 'flex', gap: '10px', paddingLeft: '8px', alignItems: 'flex-start' }}>
@@ -245,20 +255,11 @@ const AiConcierge = () => {
                                                                 <iframe 
                                                                     width="100%" 
                                                                     height="200" 
-                                                                    style={{ border: 0 }} 
+                                                                    style={{ border: 0, filter: 'grayscale(0.1) contrast(1.1)' }} 
                                                                     loading="lazy" 
                                                                     allowFullScreen 
-                                                                    src={`https://www.google.com/maps/embed/v1/place?key=REPLACE_WITH_YOUR_GOOGLE_MAPS_API_KEY&q=${encodeURIComponent(line.replace(/#|-|•/g, '').trim())}`}
+                                                                    src={mapUrl}
                                                                 ></iframe>
-                                                                {/* Fallback if no API key is provided - simple search link style map */}
-                                                                {!line.includes('API_KEY') && (
-                                                                    <iframe 
-                                                                        width="100%" 
-                                                                        height="200" 
-                                                                        style={{ border: 0 }} 
-                                                                        src={`https://maps.google.com/maps?q=${encodeURIComponent(line.replace(/#|-|•/g, '').trim())}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
-                                                                    ></iframe>
-                                                                )}
                                                             </div>
                                                         )}
                                                     </div>
