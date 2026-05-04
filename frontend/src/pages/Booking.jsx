@@ -41,11 +41,22 @@ const Booking = () => {
   const [serviceHospitals, setServiceHospitals] = useState([]);
   const [loadingHospitals, setLoadingHospitals] = useState(false);
 
-  const PREDEFINED_INSTITUTIONAL_SERVICES = [
-    "MRI Scan", "CT Scan", "X-Ray", "Ultrasound", "Blood Test", 
-    "ECG", "EEG", "Dialysis", "Chemotherapy", "Physiotherapy",
-    "Pharmacy", "Emergency/ER", "ICU", "NICU", "Blood Bank"
+  const SERVICES_24_7 = [
+    "Emergency & Trauma Care", "Ambulance Services", "ICU (Intensive Care Unit)", 
+    "NICU (Neonatal ICU)", "Operation Theatre (Emergency)", "Casualty Department", 
+    "24/7 Pharmacy", "Blood Bank", "Emergency CT Scan", "Emergency Lab Tests",
+    "Oxygen & Ventilator Support", "Emergency Dialysis"
   ];
+
+  const SERVICES_TIME_BASED = [
+    "OPD (Outpatient)", "X-Ray", "MRI Scan", "Ultrasound / सोनोग्राफी", 
+    "ECG & TMT", "Physiotherapy", "Dental Services", "General Surgery (Planned)",
+    "Orthopedic Consultation", "Pediatric Consultation", "Gynecology & Obstetrics",
+    "ENT (Ear, Nose, Throat)", "Ophthalmology (Eye)", "Dermatology (Skin)",
+    "Advanced Laboratory Tests", "Health Checkup Packages"
+  ];
+
+  const PREDEFINED_INSTITUTIONAL_SERVICES = [...SERVICES_24_7, ...SERVICES_TIME_BASED];
 
   useEffect(() => {
     fetchDoctors();
@@ -380,10 +391,13 @@ const Booking = () => {
                             <button
                                 key={service}
                                 onClick={() => setSelectedService(service)}
-                                className={`p-4 rounded-3xl border-2 text-center transition-all ${selectedService === service 
+                                className={`p-4 rounded-3xl border-2 text-center transition-all relative ${selectedService === service 
                                     ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-lg shadow-emerald-500/10' 
                                     : 'bg-white border-slate-100 text-slate-500 hover:border-emerald-200'}`}
                             >
+                                {SERVICES_24_7.includes(service) && (
+                                    <div className="absolute -top-2 -right-2 px-2 py-1 bg-emerald-500 text-white text-[7px] font-black rounded-full uppercase tracking-widest shadow-sm z-10">24/7</div>
+                                )}
                                 <Activity size={24} className={`mx-auto mb-3 ${selectedService === service ? 'text-emerald-600' : 'text-slate-300'}`} />
                                 <span className="text-[10px] font-black uppercase tracking-widest">{service}</span>
                             </button>

@@ -37,6 +37,13 @@ public class AppointmentService {
     @Value("${razorpay.key.secret:}")
     private String razorpayKeySecret;
 
+    private static final List<String> SERVICES_24_7 = Arrays.asList(
+        "Emergency & Trauma Care", "Ambulance Services", "ICU (Intensive Care Unit)", 
+        "NICU (Neonatal ICU)", "Operation Theatre (Emergency)", "Casualty Department", 
+        "24/7 Pharmacy", "Blood Bank", "Emergency CT Scan", "Emergency Lab Tests",
+        "Oxygen & Ventilator Support", "Emergency Dialysis"
+    );
+
     public AppointmentService(AppointmentRepository appointmentRepository, 
                               DoctorRepository doctorRepository, 
                               PatientRepository patientRepository,
@@ -598,6 +605,13 @@ public class AppointmentService {
                     }
                 } catch (Exception e) {}
             }
+        }
+
+        boolean is247 = serviceName != null && SERVICES_24_7.contains(serviceName);
+        if (is247) {
+            System.out.println("DEBUG: 24/7 Service Detected: " + serviceName + ". Overriding clinical window to 24 hours.");
+            timings = "00:00 - 23:59";
+            if (duration < 15) duration = 15; // Minimum 15m slots for emergency to prevent bloat
         }
 
         if (timings == null || timings.trim().isEmpty() || !timings.contains("-")) {
