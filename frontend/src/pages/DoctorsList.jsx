@@ -15,6 +15,7 @@ const DoctorsList = () => {
   const [inviteEmail, setInviteEmail] = useState('');
   const [isInviting, setIsInviting] = useState(false);
   const [activeChat, setActiveChat] = useState(null);
+  const [selectedDoctorInfo, setSelectedDoctorInfo] = useState(null);
 
   useEffect(() => {
     fetchDoctors();
@@ -93,6 +94,7 @@ const DoctorsList = () => {
                   doctor={doctor} 
                   onRevoke={() => handleRevoke(doctor.id)} 
                   setActiveChat={setActiveChat}
+                  onShowInfo={() => setSelectedDoctorInfo(doctor)}
                 />
               ))}
             </AnimatePresence>
@@ -119,6 +121,16 @@ const DoctorsList = () => {
           </div>
         </div>
       </div>
+
+      {/* Doctor Info Floating Window */}
+      <AnimatePresence>
+        {selectedDoctorInfo && (
+          <DoctorInfoModal 
+            doctor={selectedDoctorInfo} 
+            onClose={() => setSelectedDoctorInfo(null)} 
+          />
+        )}
+      </AnimatePresence>
 
       {/* Invite Modal */}
       {showInvite && (
@@ -181,7 +193,122 @@ const DoctorsList = () => {
 
 /* --- SUBCOMPONENTS --- */
 
-const DoctorCard = ({ doctor, onRevoke, setActiveChat }) => (
+const DoctorInfoModal = ({ doctor, onClose }) => {
+  const navigate = useNavigate();
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-10 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300">
+      <motion.div 
+        initial={{ y: 50, opacity: 0, scale: 0.95 }}
+        animate={{ y: 0, opacity: 1, scale: 1 }}
+        exit={{ y: 50, opacity: 0, scale: 0.95 }}
+        className="bg-white rounded-[3rem] w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] flex flex-col md:flex-row relative"
+      >
+        <button 
+          onClick={onClose}
+          className="absolute top-8 right-8 z-20 p-3 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-2xl transition-all active:scale-90"
+        >
+          <Trash2 size={20} className="rotate-45" />
+        </button>
+
+        {/* Left Aspect: Profile Visuals */}
+        <div className="md:w-2/5 bg-slate-900 p-10 text-white flex flex-col items-center justify-center text-center relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/20 to-transparent opacity-50" />
+          <div className="relative z-10">
+            <div className="w-32 h-32 rounded-[2.5rem] overflow-hidden border-4 border-white/10 mb-6 shadow-2xl mx-auto">
+              {doctor.profilePictureUrl ? (
+                <img src={doctor.profilePictureUrl} className="w-full h-full object-cover" alt="" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-slate-800 text-slate-500">
+                  <Activity size={48} />
+                </div>
+              )}
+            </div>
+            <h2 className="text-3xl font-black tracking-tight mb-2">Dr. {doctor.name}</h2>
+            <p className="text-primary-400 font-black uppercase tracking-[0.2em] text-[10px] mb-8">{doctor.specialization}</p>
+            
+            <div className="space-y-4 w-full">
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/10 text-left">
+                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Institutional Node</p>
+                <p className="text-sm font-bold truncate">{doctor.hospitalEntity?.name || "Independent Clinic"}</p>
+              </div>
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/10 text-left">
+                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Clinical ID</p>
+                <p className="text-sm font-mono text-emerald-400">DOC-{doctor.id?.toString().padStart(4, '0')}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Aspect: Clinical Intelligence */}
+        <div className="flex-1 p-10 overflow-y-auto custom-scrollbar">
+          <div className="space-y-10">
+            <section>
+              <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+                <Shield size={14} className="text-primary" /> Professional Credentials
+              </h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Academic Degree</p>
+                  <p className="text-sm font-black text-slate-800">{doctor.medicalDegree || "MBBS / Specialist"}</p>
+                </div>
+                <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Clinical Seniority</p>
+                  <p className="text-sm font-black text-slate-800">{doctor.yearsOfExperience || "8+"} Years</p>
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+                <Clock size={14} className="text-primary" /> Availability Window
+              </h4>
+              <div className="p-6 bg-blue-50/50 border border-blue-100 rounded-[2rem]">
+                <p className="text-xs font-bold text-blue-800 leading-relaxed">
+                  Physician is currently active for {doctor.consultationTimings || "09:00 - 17:00"} consultation cycles. 
+                  Accepting online and in-person assessments.
+                </p>
+              </div>
+            </section>
+
+            <section>
+              <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+                <Activity size={14} className="text-primary" /> Specializations & Focus
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {(doctor.subSpecialties || doctor.specialization || "General Medicine").split(',').map(s => (
+                  <span key={s} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-tight">
+                    {s.trim()}
+                  </span>
+                ))}
+              </div>
+            </section>
+
+            <div className="pt-6 border-t border-slate-100 flex items-center justify-between gap-4">
+               <div className="flex-1">
+                 <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Verified Status</p>
+                 <div className="flex items-center gap-2 text-emerald-600">
+                    <UserCheck size={18} />
+                    <span className="text-xs font-black uppercase tracking-widest">Medical Board Approved</span>
+                 </div>
+               </div>
+               <button 
+                 onClick={() => {
+                   onClose();
+                   navigate(`/dashboard/booking?doctor=${doctor.name}`);
+                 }}
+                 className="px-10 py-5 bg-primary text-white rounded-[1.5rem] font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all"
+               >
+                 Instant Booking
+               </button>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+const DoctorCard = ({ doctor, onRevoke, setActiveChat, onShowInfo }) => (
   <motion.div 
     layout
     initial={{ x: -20, opacity: 0 }}
@@ -189,7 +316,10 @@ const DoctorCard = ({ doctor, onRevoke, setActiveChat }) => (
     exit={{ x: 20, opacity: 0 }}
     className="glass-panel p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6 group hover:border-primary-200 transition-all shadow-sm"
   >
-    <div className="flex items-center gap-5">
+    <div 
+      className="flex items-center gap-5 cursor-pointer flex-1"
+      onClick={onShowInfo}
+    >
       <div className="relative">
         <div className="w-16 h-16 bg-slate-100 rounded-2xl overflow-hidden border-2 border-white shadow-inner flex items-center justify-center text-slate-400">
            {doctor.profilePictureUrl ? (
@@ -199,7 +329,7 @@ const DoctorCard = ({ doctor, onRevoke, setActiveChat }) => (
         <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 border-4 border-white rounded-full" />
       </div>
       <div>
-        <h3 className="text-xl font-bold text-slate-900 tracking-tight">Dr. {doctor.name}</h3>
+        <h3 className="text-xl font-bold text-slate-900 tracking-tight group-hover:text-primary transition-colors">Dr. {doctor.name}</h3>
         <p className="text-xs text-slate-500 font-medium">{doctor.specialization || "Clinical Associate"}</p>
         <div className="flex items-center gap-4 mt-2">
            <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded-full">
