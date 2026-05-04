@@ -60,35 +60,36 @@ import AiConcierge from './components/AiConcierge';
 
 const ProtectedRoute = ({ children, allowedRole }) => {
   const { user, userRole, loading } = useAuth();
-  if (loading) return <div className="h-screen flex items-center justify-center text-primary-600">Loading...</div>;
+  
+  if (loading) return (
+    <div className="h-screen flex flex-col items-center justify-center bg-[#0A1A1A] text-emerald-400">
+      <Activity className="animate-spin mb-4" size={40} />
+      <p className="text-[10px] font-black uppercase tracking-[0.3em]">Synchronizing Clinical Node...</p>
+    </div>
+  );
+
   if (!user) {
+    const token = localStorage.getItem('token');
+    if (token) return (
+       <div className="h-screen flex flex-col items-center justify-center bg-[#0A1A1A] text-emerald-400">
+          <Activity className="animate-spin mb-4" size={40} />
+          <p className="text-[10px] font-black uppercase tracking-[0.3em]">Re-authorizing Identity...</p>
+       </div>
+    );
     if (allowedRole === 'ROLE_DOCTOR') return <Navigate to="/doctor-login" />;
     return <Navigate to="/login" />;
   }
+
   if (allowedRole && userRole !== allowedRole) {
     if (userRole === 'ROLE_ADMIN') return <Navigate to="/admin-dashboard" />;
     if (userRole === 'ROLE_HOSPITAL_ADMIN') return <Navigate to="/hospital-dashboard" />;
     return <Navigate to={userRole === 'ROLE_DOCTOR' ? '/doctor-dashboard' : '/'} />;
   }
 
-  // Mandatory Email Verification Gate for Professionals
   const isProfessional = userRole === 'ROLE_DOCTOR' || userRole === 'ROLE_HOSPITAL_ADMIN';
-  
-  // Extract emailVerified from nested user object or direct profile object
-  // If undefined, we assume false to be safe (redirect to verification)
   const emailVerified = user?.emailVerified === true || user?.user?.emailVerified === true;
-  
-  console.log("DEBUG: ProtectedRoute", { 
-    userRole, 
-    isProfessional, 
-    emailVerified, 
-    userObject: !!user,
-    directVerified: user?.emailVerified,
-    nestedVerified: user?.user?.emailVerified
-  });
 
   if (isProfessional && !emailVerified) {
-    console.log("DEBUG: Redirecting to /verify-email");
     return <Navigate to="/verify-email" />;
   }
 
@@ -105,12 +106,23 @@ const SmartProfileRedirect = ({ type = 'view' }) => {
 
 function App() {
   useEffect(() => {
+    // Navigation Guard: Prevent accidental refresh/leave
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = ''; // Standard for showing the browser prompt
+      return '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     // Request Push Notification Permissions on load for PWA
     if ('Notification' in window && Notification.permission === 'default') {
       setTimeout(() => {
         Notification.requestPermission();
-      }, 5000); // Ask after 5 seconds to not overwhelm initially
+      }, 5000);
     }
+
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
 
   return (
