@@ -194,7 +194,7 @@ const HospitalDashboard = () => {
                                     <div className="h-3 w-full bg-slate-50 rounded-full overflow-hidden">
                                         <div 
                                             className="h-full bg-gradient-to-r from-indigo-500 to-indigo-400 rounded-full transition-all duration-1000 ease-out" 
-                                            style={{ width: `${(count / aiInsights.length) * 100}%` }}
+                                            style={{ width: `${(count / (aiInsights.length || 1)) * 100}%` }}
                                         />
                                     </div>
                                 </div>
@@ -210,6 +210,61 @@ const HospitalDashboard = () => {
                              <p className="text-[10px] font-black text-slate-400 uppercase leading-relaxed text-center">
                                 Pro Tip: High search volume for specialties you don't offer indicates a market expansion opportunity.
                              </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {/* ── Institutional Cloud Window: Live Telemetry ── */}
+            <div className="bg-white border border-slate-100 rounded-[3.5rem] p-12 shadow-sm relative overflow-hidden group mt-8">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 -mr-32 -mt-32 rounded-full blur-3xl opacity-50" />
+                
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 relative z-10">
+                    <div className="flex items-center gap-6">
+                        <div className="p-5 bg-blue-600 text-white rounded-[2rem] shadow-xl shadow-blue-600/20">
+                            <Clock size={32} />
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-3">
+                                <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight italic">Cloud <span className="text-blue-600">Window</span></h2>
+                                <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-[9px] font-black uppercase animate-pulse">Live Telemetry</span>
+                            </div>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">Real-time Institutional Operational Capacity</p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 lg:flex-1 lg:ml-20">
+                        <div className="space-y-2">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Consultation Hours</p>
+                            <p className="text-xl font-black text-slate-800 uppercase italic flex items-center gap-3">
+                                <Calendar size={20} className="text-blue-600" />
+                                {stats?.consultationTimings || '09:00 AM - 09:00 PM'}
+                            </p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Machine / System Throughput</p>
+                            <div className="flex flex-wrap gap-3">
+                                {stats?.serviceCapacity ? (
+                                    Object.entries(typeof stats.serviceCapacity === 'string' ? JSON.parse(stats.serviceCapacity) : stats.serviceCapacity).map(([service, count], idx) => (
+                                        <div key={idx} className="px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl flex items-center gap-2 group/tag hover:bg-blue-600 hover:text-white transition-all">
+                                            <span className="text-[9px] font-black uppercase tracking-tighter text-slate-500 group-hover/tag:text-white">{service}</span>
+                                            <div className="w-[1px] h-3 bg-slate-200 group-hover/tag:bg-white/20" />
+                                            <span className="text-xs font-black text-blue-600 group-hover/tag:text-white">{count}x</span>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-xs font-bold text-slate-400 italic">No resource telemetry captured</p>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Operational Status</p>
+                            <p className="text-xl font-black text-emerald-600 uppercase italic flex items-center gap-3">
+                                <Activity size={20} className="animate-pulse" />
+                                {stats?.emergencyStatus || 'OPTIMAL'}
+                            </p>
                         </div>
                     </div>
                 </div>

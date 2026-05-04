@@ -6,10 +6,6 @@ import { useAuth } from '../context/AuthContext';
 const AiConcierge = () => {
     const { user } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
-    
-    // Auth Guard: Only show AI Concierge after a secure session is established
-    if (!user) return null;
-
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [messages, setMessages] = useState([
         { role: 'ai', text: 'Hello! I am your MediSync Clinical Concierge. I can help with Symptom Analysis, Hospital Comparisons, and Emergency Triage. How are you feeling today?' }
@@ -20,20 +16,11 @@ const AiConcierge = () => {
     const [selectedLang, setSelectedLang] = useState('en-IN');
     const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
     const [isDragging, setIsDragging] = useState(false);
-    const scrollRef = useRef(null);
-    const containerRef = useRef(null);
-
-    const languages = [
-        { code: 'en-IN', name: 'English', flag: '🇺🇸' },
-        { code: 'hi-IN', name: 'Hindi', flag: '🇮🇳' },
-        { code: 'te-IN', name: 'Telugu', flag: '🇮🇳' },
-        { code: 'ta-IN', name: 'Tamil', flag: '🇮🇳' },
-        { code: 'kn-IN', name: 'Kannada', flag: '🇮🇳' },
-        { code: 'ml-IN', name: 'Malayalam', flag: '🇮🇳' }
-    ];
-
     const [location, setLocation] = useState(null);
     const [voices, setVoices] = useState([]);
+    
+    const scrollRef = useRef(null);
+    const containerRef = useRef(null);
 
     useEffect(() => {
         const loadVoices = () => {
@@ -46,6 +33,18 @@ const AiConcierge = () => {
     useEffect(() => {
         if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }, [messages, isOpen, isFullscreen]);
+
+    // Auth Guard: Only show AI Concierge after a secure session is established
+    if (!user) return null;
+
+    const languages = [
+        { code: 'en-IN', name: 'English', flag: '🇺🇸' },
+        { code: 'hi-IN', name: 'Hindi', flag: '🇮🇳' },
+        { code: 'te-IN', name: 'Telugu', flag: '🇮🇳' },
+        { code: 'ta-IN', name: 'Tamil', flag: '🇮🇳' },
+        { code: 'kn-IN', name: 'Kannada', flag: '🇮🇳' },
+        { code: 'ml-IN', name: 'Malayalam', flag: '🇮🇳' }
+    ];
 
     const speak = (text) => {
         if (!isVoiceEnabled) return;
@@ -288,32 +287,39 @@ const AiConcierge = () => {
                                     <span style={{ fontSize: '9px', opacity: 0.7, fontWeight: '800', letterSpacing: '0.5px' }}>CONTEXT: {window.location.pathname.toUpperCase() || 'HOME'}</span>
                                 </div>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <button 
                                     onClick={() => setIsVoiceEnabled(!isVoiceEnabled)} 
                                     title={isVoiceEnabled ? 'Disable Voice' : 'Enable Voice'}
-                                    style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '18px', opacity: isVoiceEnabled ? 1 : 0.4, transition: '0.2s', padding: '4px' }}
+                                    style={{ width: '28px', height: '28px', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s', opacity: isVoiceEnabled ? 1 : 0.4 }}
                                 >
                                     {isVoiceEnabled ? '🔊' : '🔈'}
                                 </button>
-                                <div style={{ width: '1px', height: '20px', backgroundColor: 'rgba(255,255,255,0.1)' }}></div>
+                                <div style={{ width: '1px', height: '16px', backgroundColor: 'rgba(255,255,255,0.1)', margin: '0 4px' }}></div>
                                 <button 
                                     onClick={() => setIsFullscreen(!isFullscreen)} 
                                     title={isFullscreen ? 'Minimize View' : 'Maximize View'}
-                                    style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '14px', transition: '0.2s', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                    style={{ width: '28px', height: '28px', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}
                                 >
                                     {isFullscreen ? (
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14h6m0 0v6m0-6-6 6M20 10h-6m0 0V4m0 6 6-6"/></svg>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14h6m0 0v6m0-6-6 6M20 10h-6m0 0V4m0 6 6-6"/></svg>
                                     ) : (
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6m0 0v6m0-6L14 10M9 21H3m0 0v-6m0 6 7-7"/></svg>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6m0 0v6m0-6L14 10M9 21H3m0 0v-6m0 6 7-7"/></svg>
                                     )}
                                 </button>
                                 <button 
                                     onClick={() => setIsOpen(false)} 
-                                    title="Close Concierge"
-                                    style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '20px', lineHeight: 1, padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                    title="Minimize to Tray"
+                                    style={{ width: '28px', height: '28px', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}
                                 >
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                </button>
+                                <button 
+                                    onClick={() => { setIsOpen(false); setMessages([{ role: 'ai', text: 'Hello! Clinical Concierge reset. How can I assist you now?' }]); }} 
+                                    title="Close & Clear Session"
+                                    style={{ width: '28px', height: '28px', borderRadius: '8px', backgroundColor: 'rgba(225,29,72,0.5)', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}
+                                >
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                                 </button>
                             </div>
                         </div>

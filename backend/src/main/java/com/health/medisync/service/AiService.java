@@ -171,9 +171,10 @@ public class AiService {
                     String address = d.getClinicAddress() != null ? d.getClinicAddress() : "Consultation Node";
                     String services = (d.getProceduresHandled() != null ? d.getProceduresHandled() : "") + 
                                      (d.getTreatmentFocus() != null ? " | Focus: " + d.getTreatmentFocus() : "");
-                    String feeRegistry = d.getServiceFees() != null ? " | Fee Registry: " + d.getServiceFees() : "";
-                    return String.format("- Dr. %s (%s) [%s] - Address: %s - Services: %s%s", 
-                         d.getName(), d.getSpecialization(), affiliation, address, services.isEmpty() ? "General Clinical Care" : services, feeRegistry);
+                    String capacity = d.getServiceCapacity() != null ? " | THROUGHPUT (Concurrent Slots): " + d.getServiceCapacity() : " | Default Capacity: 1";
+                    String timings = d.getConsultationTimings() != null ? " | HOURS: " + d.getConsultationTimings() : "";
+                    return String.format("- Dr. %s (%s) [%s]%s%s - Address: %s - Services: %s", 
+                         d.getName(), d.getSpecialization(), affiliation, capacity, timings, address, services.isEmpty() ? "General Clinical Care" : services);
                 })
                 .collect(Collectors.joining("\n"));
 
@@ -185,13 +186,15 @@ public class AiService {
                         h.getCity() != null ? h.getCity() : "",
                         h.getState() != null ? h.getState() : "",
                         h.getPinCode() != null ? h.getPinCode() : "").trim();
-                    return String.format("- %s (Type: %s) - Address: %s - Departments: %s - Clinical Facilities: %s - Pricing: %s", 
+                    String capacity = h.getServiceCapacity() != null ? " | INSTITUTIONAL THROUGHPUT: " + h.getServiceCapacity() : "";
+                    String timings = h.getConsultationTimings() != null ? " | HOURS: " + h.getConsultationTimings() : "";
+                    return String.format("- %s (Type: %s)%s%s - Address: %s - Departments: %s - Clinical Facilities: %s", 
                         h.getName(), 
                         h.getHospitalType() != null ? h.getHospitalType() : "General",
+                        capacity, timings,
                         fullAddress.isEmpty() ? h.getLocation() : fullAddress,
                         h.getDepartments() != null ? h.getDepartments() : "General Medicine",
-                        h.getServices() != null ? h.getServices() : "Emergency Triage",
-                        h.getServiceFees() != null ? h.getServiceFees() : "Contact for pricing");
+                        h.getServices() != null ? h.getServices() : "Emergency Triage");
                 })
                 .collect(Collectors.joining("\n"));
 

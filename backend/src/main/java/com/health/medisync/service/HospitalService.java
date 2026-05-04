@@ -125,6 +125,10 @@ public class HospitalService {
         boolean emergencyActive = hospital.getEmergencyServicesAvailable() != null && hospital.getEmergencyServicesAvailable();
         stats.put("emergencyStatus", emergencyActive ? "24/7 ACTIVE" : "LIMITED");
         
+        // Institutional Telemetry
+        stats.put("consultationTimings", hospital.getConsultationTimings() != null ? hospital.getConsultationTimings() : "Not Configured");
+        stats.put("serviceCapacity", hospital.getServiceCapacity());
+        
         return stats;
     }
 
