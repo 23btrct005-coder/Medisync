@@ -334,7 +334,38 @@ public class AppointmentService {
         }
 
         boolean isDemoMode = (razorpayKeyId == null || razorpayKeyId.isEmpty());
-        String orderId = isDemoMode ? "demo_service_" + System.currentTimeMillis() : "REAL_SERVICE_ORDER";
+        String orderId = isDemoMode ? "demo_service_" + System.currentTimeMillis() : null;
+
+        if (!isDemoMode) {
+            try {
+                RazorpayClient client = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
+                JSONObject orderRequest = new JSONObject();
+                int amountInPaise = (int)(fee * 100);
+                orderRequest.put("amount", amountInPaise);
+                orderRequest.put("currency", "INR");
+                orderRequest.put("receipt", "service_" + System.currentTimeMillis());
+
+                String rzpAccountId = null;
+                if (hospital != null) rzpAccountId = hospital.getRazorpayAccountId();
+                else if (doctor != null) rzpAccountId = doctor.getRazorpayAccountId();
+
+                if (rzpAccountId != null && !rzpAccountId.isEmpty()) {
+                    JSONArray transfers = new JSONArray();
+                    JSONObject transfer = new JSONObject();
+                    transfer.put("account", rzpAccountId);
+                    transfer.put("amount", amountInPaise);
+                    transfer.put("currency", "INR");
+                    transfers.put(transfer);
+                    orderRequest.put("transfers", transfers);
+                }
+
+                Order order = client.orders.create(orderRequest);
+                orderId = order.get("id");
+            } catch (Exception e) {
+                System.err.println("FATAL: Service Razorpay failure: " + e.getMessage());
+                throw new RuntimeException("Payment gateway error: " + e.getMessage());
+            }
+        }
 
         Appointment appointment = new Appointment();
         appointment.setHospital(hospital);

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, Filter, Calendar, Clock, ChevronRight,
-  User, Star, MapPin, Video, CheckCircle2,
+  User, Star, MapPin, Video, CheckCircle2, AlertCircle,
   ArrowLeft, CreditCard, Loader2, Sparkles, RefreshCw, QrCode, X, Activity
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
