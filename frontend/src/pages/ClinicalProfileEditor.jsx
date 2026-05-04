@@ -706,6 +706,7 @@ const EditDoctorProfile = () => {
                                 </label>
                             ))}
                         </div>
+                        </div>
                     </div>
 
                     {/* Service Resource Allocation (Fix for machine count request) */}
@@ -790,6 +791,7 @@ const EditDoctorProfile = () => {
                     </div>
                 </div>
             </div>
+          </div>
         </div>
 
         {/* ── Section 2: Clinical Practice ── */}

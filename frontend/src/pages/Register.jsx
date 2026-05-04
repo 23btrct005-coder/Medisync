@@ -209,18 +209,6 @@ const Register = () => {
   const [emailVerified, setEmailVerified] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [verifying, setVerifying] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
-  const [resendCount, setResendCount] = useState(0);
-
-  useEffect(() => {
-    let timer;
-    if (resendCooldown > 0) {
-      timer = setInterval(() => {
-        setResendCooldown(prev => prev - 1);
-      }, 1000);
-    }
-    return () => clearInterval(timer);
-  }, [resendCooldown]);
 
   const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, totalSteps));
   const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
@@ -376,20 +364,12 @@ const Register = () => {
   };
 
   const handleSendOtp = async () => {
-    if (resendCooldown > 0) return;
     if(!formData.email.trim()) { setError('Enter a valid email.'); return; }
     setVerifying(true);
     try {
       await api.post('auth/request-otp', { email: formData.email.trim() });
       setOtpSent(true);
       setSuccess('Verification code sent.');
-      
-      const nextCount = resendCount + 1;
-      setResendCount(nextCount);
-      let cooldownTime = 30;
-      if (nextCount === 2) cooldownTime = 60;
-      if (nextCount >= 3) cooldownTime = 120;
-      setResendCooldown(cooldownTime);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to send OTP.');
     } finally {
@@ -705,7 +685,7 @@ const Register = () => {
                       <h3 className={sectionHeadClass}><Mail size={16} /> 1. Identity Verification</h3>
                       <div className="flex gap-3">
                         <input type="email" name="email" required disabled={emailVerified} value={formData.email} onChange={handleChange} className={`${inputClass} ${emailVerified ? 'bg-green-50 border-green-300' : ''} flex-1`} placeholder="doctor@hospital.com" />
-                        {!emailVerified && <button type="button" onClick={handleSendOtp} disabled={verifying || resendCooldown > 0} className="whitespace-nowrap bg-blue-600 text-white px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 disabled:opacity-50 shadow-lg">{verifying ? '...' : resendCooldown > 0 ? `${resendCooldown}s` : 'Send OTP'}</button>}
+                        {!emailVerified && <button type="button" onClick={handleSendOtp} disabled={verifying} className="whitespace-nowrap bg-blue-600 text-white px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 disabled:opacity-50 shadow-lg">{verifying ? '...' : 'Send OTP'}</button>}
                       </div>
                       {otpSent && !emailVerified && (
                         <div className="p-6 bg-slate-50 rounded-2xl border border-blue-100 space-y-4">

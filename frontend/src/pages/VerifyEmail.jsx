@@ -11,18 +11,10 @@ const VerifyEmail = () => {
     const [otp, setOtp] = useState('');
     const [loading, setLoading] = useState(false);
     const [sending, setSending] = useState(false);
-    const [resendCooldown, setResendCooldown] = useState(0);
-    const [resendCount, setResendCount] = useState(0);
-
-    useEffect(() => {
-        let timer;
-        if (resendCooldown > 0) {
-            timer = setInterval(() => {
-                setResendCooldown(prev => prev - 1);
-            }, 1000);
-        }
-        return () => clearInterval(timer);
-    }, [resendCooldown]);
+    const [resendTimer, setResendTimer] = useState(0);
+    const [resendCount, setResendCount] = useState(() => {
+        return parseInt(localStorage.getItem(`resend_count_${user?.id}`) || '0');
+    });
 
     useEffect(() => {
         if (!user) {
@@ -35,21 +27,33 @@ const VerifyEmail = () => {
         }
     }, [user, navigate]);
 
+    useEffect(() => {
+        let interval;
+        if (resendTimer > 0) {
+            interval = setInterval(() => {
+                setResendTimer(prev => prev - 1);
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [resendTimer]);
+
     const handleSendOTP = async () => {
-        if (resendCooldown > 0) return;
+        if (resendTimer > 0) return;
+        
         setSending(true);
         try {
             await api.post('/auth/request-otp', { email: user.email || user.user?.email });
             toast.success("Verification code sent to your professional email.");
             
+            let nextWait = 30;
+            if (resendCount === 1) nextWait = 60;
+            else if (resendCount >= 2) nextWait = 120;
+            
+            setResendTimer(nextWait);
             const nextCount = resendCount + 1;
             setResendCount(nextCount);
+            localStorage.setItem(`resend_count_${user?.id}`, nextCount);
             
-            let cooldownTime = 30;
-            if (nextCount === 2) cooldownTime = 60;
-            if (nextCount >= 3) cooldownTime = 120;
-            
-            setResendCooldown(cooldownTime);
         } catch (err) {
             toast.error(err.response?.data?.message || "Failed to send code.");
         } finally {
@@ -138,11 +142,11 @@ const VerifyEmail = () => {
                             <button 
                                 type="button"
                                 onClick={handleSendOTP}
-                                disabled={sending || resendCooldown > 0}
-                                className="w-full py-4 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:text-primary transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                                disabled={sending || resendTimer > 0}
+                                className="w-full py-4 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:text-primary transition-colors flex items-center justify-center gap-2 disabled:opacity-70"
                             >
                                 {sending ? <Activity className="animate-spin" size={14} /> : <Mail size={14} />}
-                                {sending ? "Sending Code..." : resendCooldown > 0 ? `Resend available in ${resendCooldown}s` : "Resend Verification Code"}
+                                {sending ? "Sending Code..." : resendTimer > 0 ? `Resend Code in ${resendTimer}s` : "Resend Verification Code"}
                             </button>
                         </div>
                     </form>
