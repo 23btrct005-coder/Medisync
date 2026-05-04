@@ -84,7 +84,8 @@ const HospitalProfile = () => {
         upiId: '',
         preferredPaymentMode: 'RAZORPAY',
         services: '',
-        departments: ''
+        departments: '',
+        serviceFees: {}
     });
 
     useEffect(() => {
@@ -142,7 +143,8 @@ const HospitalProfile = () => {
                 upiId: h.upiId || '',
                 preferredPaymentMode: h.preferredPaymentMode || 'RAZORPAY',
                 services: h.services || '',
-                departments: h.departments || ''
+                departments: h.departments || '',
+                serviceFees: h.serviceFees ? (typeof h.serviceFees === 'string' ? JSON.parse(h.serviceFees) : h.serviceFees) : {}
             });
             if (h.logoUrl) {
                 console.log("DEBUG: Logo detected:", h.logoUrl);
@@ -278,7 +280,7 @@ const HospitalProfile = () => {
                         Institutional Sovereignty & Compliance Registry
                     </p>
                 </div>
-                {['identity', 'operations', 'settlements', 'environment'].includes(activeTab) && (
+                {['identity', 'operations', 'settlements', 'environment', 'fees'].includes(activeTab) && (
                     <button 
                         onClick={handleSave}
                         disabled={saving}
@@ -299,6 +301,7 @@ const HospitalProfile = () => {
                     { id: 'operations', label: 'Operations', icon: Activity },
                     { id: 'environment', label: 'Environment', icon: Globe },
                     { id: 'governance', label: 'Governance', icon: User },
+                    { id: 'fees', label: 'Fees', icon: DollarSign },
                     { id: 'settlements', label: 'Settlements', icon: CreditCard },
                 ].map(tab => (
                     <button
@@ -794,6 +797,67 @@ const HospitalProfile = () => {
                                             {mode}
                                         </button>
                                     ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'fees' && (
+                        <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
+                                    <DollarSign size={24} />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Institutional <span className="not-italic text-emerald-600">Fee Registry</span></h3>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Configure Diagnostic & Service Pricing</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 mb-8">
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-2">
+                                        <Shield size={14} className="text-primary" /> Active Services Registry
+                                    </p>
+                                    <p className="text-xs text-slate-400 mt-2 italic">
+                                        Configure the consultation and diagnostic fees for services offered at your institution. 
+                                        These prices are shown to patients during the booking process.
+                                    </p>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {formData.services.split(', ').filter(s => s).map((service, idx) => (
+                                        <div key={idx} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm group hover:border-emerald-200 transition-all">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block mb-3">{service}</label>
+                                            <div className="relative">
+                                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</div>
+                                                <input 
+                                                    type="number"
+                                                    value={formData.serviceFees[service] || ''}
+                                                    onChange={(e) => {
+                                                        const newFees = { ...formData.serviceFees, [service]: e.target.value };
+                                                        setFormData({ ...formData, serviceFees: newFees });
+                                                    }}
+                                                    placeholder="Set Fee (e.g. 500)"
+                                                    className="w-full pl-10 pr-6 py-4 bg-slate-50 border-none rounded-2xl text-sm font-black text-slate-800 focus:ring-2 ring-emerald-100"
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    {formData.services.split(', ').filter(s => s).length === 0 && (
+                                        <div className="md:col-span-2 text-center py-20 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
+                                            <Activity size={48} className="mx-auto text-slate-200 mb-4" />
+                                            <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">No Services Enabled</p>
+                                            <button 
+                                                type="button"
+                                                onClick={() => setActiveTab('identity')}
+                                                className="mt-4 text-primary text-[10px] font-black uppercase hover:underline"
+                                            >
+                                                Go to Identity to enable services
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
