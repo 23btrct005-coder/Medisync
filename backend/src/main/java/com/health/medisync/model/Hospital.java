@@ -329,8 +329,14 @@ public class Hospital {
     @Column(columnDefinition = "TEXT")
     private String serviceFees; // JSON mapping serviceName -> fee
 
+    @Column(columnDefinition = "TEXT")
+    private String serviceDurations; // JSON mapping serviceName -> duration (mins)
+
     public String getServiceFees() { return serviceFees; }
     public void setServiceFees(String serviceFees) { this.serviceFees = serviceFees; }
+
+    public String getServiceDurations() { return serviceDurations; }
+    public void setServiceDurations(String serviceDurations) { this.serviceDurations = serviceDurations; }
 
     public String getDepartments() { return departments; }
     public void setDepartments(String departments) { this.departments = departments; }

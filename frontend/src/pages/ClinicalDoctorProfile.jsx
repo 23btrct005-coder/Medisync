@@ -59,7 +59,8 @@ const DoctorProfile = () => {
   const [activeTab, setActiveTab] = useState('identity');
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    serviceFees: {}
+    serviceFees: {},
+    serviceDurations: {}
   });
   const [saving, setSaving] = useState(false);
   const location = useLocation();
@@ -82,7 +83,8 @@ const DoctorProfile = () => {
       onlineConsultation: user.onlineConsultation || false,
       appointmentsEnabled: user.appointmentsEnabled || false,
       services: user.services || '',
-      serviceFees: user.serviceFees ? (typeof user.serviceFees === 'string' ? JSON.parse(user.serviceFees) : user.serviceFees) : {}
+      serviceFees: user.serviceFees ? (typeof user.serviceFees === 'string' ? JSON.parse(user.serviceFees) : user.serviceFees) : {},
+      serviceDurations: user.serviceDurations ? (typeof user.serviceDurations === 'string' ? JSON.parse(user.serviceDurations) : user.serviceDurations) : {}
     });
     setIsEditing(true);
   };
@@ -92,7 +94,8 @@ const DoctorProfile = () => {
     try {
       await api.post('/doctor/profile/sync', {
         ...formData,
-        serviceFees: JSON.stringify(formData.serviceFees)
+        serviceFees: JSON.stringify(formData.serviceFees),
+        serviceDurations: JSON.stringify(formData.serviceDurations)
       });
       toast.success("Profile synchronized successfully");
       await refreshUser();
@@ -513,19 +516,35 @@ const DoctorProfile = () => {
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block mb-3">
                                         {service} {service === 'Telemedicine' ? '(Online)' : service === 'General Consultation' ? '(In-Person)' : ''}
                                     </label>
-                                    <div className="relative">
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</div>
-                                        <input 
-                                            type="number"
-                                            value={formData.serviceFees?.[service] || (user.serviceFees ? (typeof user.serviceFees === 'string' ? JSON.parse(user.serviceFees) : user.serviceFees)[service] : '') || ''}
-                                            onChange={(e) => {
-                                                const newFees = { ...formData.serviceFees, [service]: e.target.value };
-                                                setFormData({ ...formData, serviceFees: newFees });
-                                                if (!isEditing) setIsEditing(true);
-                                            }}
-                                            placeholder="Set Fee (e.g. 500)"
-                                            className="w-full pl-10 pr-6 py-4 bg-slate-50 border-none rounded-2xl text-sm font-black text-slate-800 focus:ring-2 ring-emerald-100"
-                                        />
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="relative">
+                                            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</div>
+                                            <input 
+                                                type="number"
+                                                value={formData.serviceFees?.[service] || (user.serviceFees ? (typeof user.serviceFees === 'string' ? JSON.parse(user.serviceFees) : user.serviceFees)[service] : '') || ''}
+                                                onChange={(e) => {
+                                                    const newFees = { ...formData.serviceFees, [service]: e.target.value };
+                                                    setFormData({ ...formData, serviceFees: newFees });
+                                                    if (!isEditing) setIsEditing(true);
+                                                }}
+                                                placeholder="Fee"
+                                                className="w-full pl-7 pr-3 py-3 bg-slate-50 border-none rounded-xl text-xs font-black text-slate-800 focus:ring-2 ring-emerald-100"
+                                            />
+                                        </div>
+                                        <div className="relative">
+                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-[10px]">Min</div>
+                                            <input 
+                                                type="number"
+                                                value={formData.serviceDurations?.[service] || (user.serviceDurations ? (typeof user.serviceDurations === 'string' ? JSON.parse(user.serviceDurations) : user.serviceDurations)[service] : '') || ''}
+                                                onChange={(e) => {
+                                                    const newDurations = { ...formData.serviceDurations, [service]: e.target.value };
+                                                    setFormData({ ...formData, serviceDurations: newDurations });
+                                                    if (!isEditing) setIsEditing(true);
+                                                }}
+                                                placeholder="Time"
+                                                className="w-full pl-3 pr-9 py-3 bg-slate-50 border-none rounded-xl text-xs font-black text-slate-800 focus:ring-2 ring-emerald-100"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             ))}

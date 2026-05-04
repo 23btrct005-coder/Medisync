@@ -187,6 +187,7 @@ public class HospitalController {
             hMap.put("medicalDirectorName", hospital.getMedicalDirectorName());
             hMap.put("medicalDirectorEmail", hospital.getMedicalDirectorEmail());
             hMap.put("serviceFees", hospital.getServiceFees());
+            hMap.put("serviceDurations", hospital.getServiceDurations());
             hMap.put("services", hospital.getServices());
             hMap.put("departments", hospital.getDepartments());
             
@@ -275,6 +276,9 @@ public class HospitalController {
             if (data.get("billingContactPhone") != null) hospital.setBillingContactPhone(String.valueOf(data.get("billingContactPhone")));
             if (data.get("serviceFees") != null) {
                 hospital.setServiceFees(mapper.writeValueAsString(data.get("serviceFees")));
+            }
+            if (data.get("serviceDurations") != null) {
+                hospital.setServiceDurations(mapper.writeValueAsString(data.get("serviceDurations")));
             }
 
             if (data.get("googleMapsUrl") != null) hospital.setGoogleMapsUrl(String.valueOf(data.get("googleMapsUrl")));

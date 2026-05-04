@@ -131,6 +131,7 @@ public class AppointmentController {
                 map.put("hospitalType", h.getHospitalType() != null ? h.getHospitalType() : "Medical Center");
                 map.put("city", h.getCity());
                 map.put("state", h.getState());
+                map.put("serviceFees", h.getServiceFees());
                 facilities.add(map);
             });
 
@@ -145,6 +146,7 @@ public class AppointmentController {
                 map.put("hospitalType", "Independent Clinic");
                 map.put("city", d.getClinicCity());
                 map.put("state", d.getClinicState());
+                map.put("serviceFees", d.getServiceFees());
                 facilities.add(map);
             });
 

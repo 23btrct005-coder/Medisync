@@ -34,7 +34,7 @@ const Booking = () => {
   const [bookingDate, setBookingDate] = useState(localToday);
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
-  const [consultationType, setConsultationType] = useState('ONLINE');
+  const [consultationType, setConsultationType] = useState('OFFLINE');
 
   const [bookingMode, setBookingMode] = useState('doctor'); // 'doctor' or 'service'
   const [selectedService, setSelectedService] = useState(null);
@@ -437,7 +437,16 @@ const Booking = () => {
                                                 </div>
                                             </div>
                                             <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                                                <span className="text-sm font-black text-slate-900">₹{selectedService.includes('MRI') ? '2500' : '500'}*</span>
+                                                <span className="text-sm font-black text-slate-900">
+                                                    ₹{(() => {
+                                                        try {
+                                                            const fees = typeof h.serviceFees === 'string' ? JSON.parse(h.serviceFees) : h.serviceFees;
+                                                            return fees?.[selectedService] || (selectedService.includes('MRI') ? '2500' : '500');
+                                                        } catch(e) {
+                                                            return selectedService.includes('MRI') ? '2500' : '500';
+                                                        }
+                                                    })()}*
+                                                </span>
                                                 <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl group-hover:bg-emerald-600 group-hover:text-white transition-all">
                                                     <ChevronRight size={18} />
                                                 </div>
@@ -651,7 +660,20 @@ const Booking = () => {
                   <div>
                     <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Total Clinical Fee</p>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-black text-slate-900">₹{consultationType === 'ONLINE' ? (selectedDoctor.onlineConsultationFee || selectedDoctor.consultationFee || 500) : (selectedDoctor.offlineConsultationFee || selectedDoctor.consultationFee || 800)}</span>
+                      <span className="text-3xl font-black text-slate-900">
+                        ₹{(() => {
+                          try {
+                            const fees = typeof selectedDoctor.serviceFees === 'string' ? JSON.parse(selectedDoctor.serviceFees) : selectedDoctor.serviceFees;
+                            if (bookingMode === 'service') {
+                                return fees?.[selectedService] || (selectedService.includes('MRI') ? '2500' : '500');
+                            }
+                            const coreService = consultationType === 'ONLINE' ? 'Telemedicine' : 'General Consultation';
+                            return fees?.[coreService] || (consultationType === 'ONLINE' ? (selectedDoctor.onlineConsultationFee || 500) : (selectedDoctor.offlineConsultationFee || 800));
+                          } catch(e) {
+                            return consultationType === 'ONLINE' ? (selectedDoctor.onlineConsultationFee || 500) : (selectedDoctor.offlineConsultationFee || 800);
+                          }
+                        })()}
+                      </span>
                       <span className="text-xs font-bold text-slate-400">Total</span>
                     </div>
                   </div>

@@ -85,7 +85,8 @@ const HospitalProfile = () => {
         preferredPaymentMode: 'RAZORPAY',
         services: '',
         departments: '',
-        serviceFees: {}
+        serviceFees: {},
+        serviceDurations: {}
     });
 
     useEffect(() => {
@@ -152,7 +153,8 @@ const HospitalProfile = () => {
                 preferredPaymentMode: h.preferredPaymentMode || 'RAZORPAY',
                 services: h.services || '',
                 departments: h.departments || '',
-                serviceFees: h.serviceFees ? (typeof h.serviceFees === 'string' ? JSON.parse(h.serviceFees) : h.serviceFees) : {}
+                serviceFees: h.serviceFees ? (typeof h.serviceFees === 'string' ? JSON.parse(h.serviceFees) : h.serviceFees) : {},
+                serviceDurations: h.serviceDurations ? (typeof h.serviceDurations === 'string' ? JSON.parse(h.serviceDurations) : h.serviceDurations) : {}
             });
             if (h.logoUrl) {
                 console.log("DEBUG: Logo detected:", h.logoUrl);
@@ -837,18 +839,33 @@ const HospitalProfile = () => {
                                     {formData.services.split(', ').filter(s => s).map((service, idx) => (
                                         <div key={idx} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm group hover:border-emerald-200 transition-all">
                                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block mb-3">{service}</label>
-                                            <div className="relative">
-                                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</div>
-                                                <input 
-                                                    type="number"
-                                                    value={formData.serviceFees[service] || ''}
-                                                    onChange={(e) => {
-                                                        const newFees = { ...formData.serviceFees, [service]: e.target.value };
-                                                        setFormData({ ...formData, serviceFees: newFees });
-                                                    }}
-                                                    placeholder="Set Fee (e.g. 500)"
-                                                    className="w-full pl-10 pr-6 py-4 bg-slate-50 border-none rounded-2xl text-sm font-black text-slate-800 focus:ring-2 ring-emerald-100"
-                                                />
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div className="relative">
+                                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</div>
+                                                    <input 
+                                                        type="number"
+                                                        value={formData.serviceFees[service] || ''}
+                                                        onChange={(e) => {
+                                                            const newFees = { ...formData.serviceFees, [service]: e.target.value };
+                                                            setFormData({ ...formData, serviceFees: newFees });
+                                                        }}
+                                                        placeholder="Fee"
+                                                        className="w-full pl-7 pr-3 py-3 bg-slate-50 border-none rounded-xl text-xs font-black text-slate-800 focus:ring-2 ring-emerald-100"
+                                                    />
+                                                </div>
+                                                <div className="relative">
+                                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-[10px]">Min</div>
+                                                    <input 
+                                                        type="number"
+                                                        value={formData.serviceDurations[service] || ''}
+                                                        onChange={(e) => {
+                                                            const newDurations = { ...formData.serviceDurations, [service]: e.target.value };
+                                                            setFormData({ ...formData, serviceDurations: newDurations });
+                                                        }}
+                                                        placeholder="Time"
+                                                        className="w-full pl-3 pr-9 py-3 bg-slate-50 border-none rounded-xl text-xs font-black text-slate-800 focus:ring-2 ring-emerald-100"
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     ))}

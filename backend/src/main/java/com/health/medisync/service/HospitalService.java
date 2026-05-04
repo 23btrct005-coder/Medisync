@@ -264,6 +264,8 @@ public class HospitalService {
         if (updates.containsKey("treatmentFocus")) doctor.setTreatmentFocus(updates.get("treatmentFocus") != null ? updates.get("treatmentFocus").toString() : null);
         if (updates.containsKey("languagesSpoken")) doctor.setLanguagesSpoken(updates.get("languagesSpoken") != null ? updates.get("languagesSpoken").toString() : null);
         if (updates.containsKey("publications")) doctor.setPublications(updates.get("publications") != null ? updates.get("publications").toString() : null);
+        if (updates.containsKey("serviceFees")) doctor.setServiceFees(updates.get("serviceFees") != null ? updates.get("serviceFees").toString() : null);
+        if (updates.containsKey("serviceDurations")) doctor.setServiceDurations(updates.get("serviceDurations") != null ? updates.get("serviceDurations").toString() : null);
 
         // Advanced Availability
         if (updates.containsKey("slotDuration") && updates.get("slotDuration") != null && !updates.get("slotDuration").toString().isEmpty()) {

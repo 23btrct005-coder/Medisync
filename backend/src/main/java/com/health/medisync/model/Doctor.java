@@ -99,6 +99,9 @@ public class Doctor {
     @Column(columnDefinition = "TEXT")
     private String serviceFees; // JSON mapping serviceName -> fee
 
+    @Column(columnDefinition = "TEXT")
+    private String serviceDurations; // JSON mapping serviceName -> duration (mins)
+
     // Administrative Fields (Admin Only)
     private String staffId;
     private String joiningDate;
@@ -313,4 +316,7 @@ public class Doctor {
 
     public String getServiceFees() { return serviceFees; }
     public void setServiceFees(String serviceFees) { this.serviceFees = serviceFees; }
+
+    public String getServiceDurations() { return serviceDurations; }
+    public void setServiceDurations(String serviceDurations) { this.serviceDurations = serviceDurations; }
 }
