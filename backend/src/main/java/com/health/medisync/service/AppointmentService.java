@@ -528,6 +528,7 @@ public class AppointmentService {
             System.err.println("FATAL: Marketplace Sync Failed!");
             e.printStackTrace();
             throw e;
+        }
     }
 
     public List<String> getAvailableSlots(String facilityId, String serviceName, LocalDate date) {
