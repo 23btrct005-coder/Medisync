@@ -74,12 +74,12 @@ public class AiService {
                 .collect(Collectors.toList());
 
             StringBuilder sb = new StringBuilder();
-            sb.append("### 🏥 ").append(translate("Clinical Recommendation", language)).append("\n");
-            sb.append("- ").append(translate("For " + specialty.toUpperCase() + " issues: " + advice, language)).append("\n");
+            sb.append("### ✅ ").append(translate("Simple Guidance", language)).append("\n");
+            sb.append("- ").append(translate(advice, language)).append("\n");
 
             if (!specialists.isEmpty()) {
-                sb.append("\n### 👨‍⚕️ ").append(translate("Approved Specialists", language)).append("\n");
-                for (Doctor d : specialists.stream().limit(2).collect(Collectors.toList())) {
+                sb.append("\n### 📍 ").append(translate("Nearby Specialists", language)).append("\n");
+                for (Doctor d : specialists.stream().limit(1).collect(Collectors.toList())) {
                     sb.append("- **Dr. ").append(d.getName()).append("** (").append(d.getSpecialization()).append(")\n");
                 }
             }
@@ -149,11 +149,11 @@ public class AiService {
                 "Current Location: " + (location != null ? location : "Unknown") + ". " +
                 "Language: " + language + ". " +
                 "STRICT PROTOCOLS:\n" +
-                "1. NO PARAGRAPHS. NO GREETINGS. NO DISCLAIMERS.\n" +
-                "2. PROVIDE DEEP CLINICAL INSIGHTS. Act as a board-certified MD.\n" +
+                "1. NO PARAGRAPHS. NO GREETINGS. NO DISCLAIMERS. NO INTRODUCTIONS. NO POLITE FILLERS.\n" +
+                "2. BE EXTREMELY CONCISE. USE MAX 2-3 BULLET POINTS. USE VERY SIMPLE WORDS.\n" +
                 "3. Use Markdown headers (###) and Bullet Points (-) for EVERYTHING.\n" +
-                "4. NAVIGATION: Provide a human-readable address. APPEND the raw coordinates on a NEW LINE at the end of the hospital description. DO NOT mention the words 'latitude' or 'longitude'. Example: 'Narayana Health City\n12.8782, 77.6025'. The system will auto-render the map.\n" +
-                "5. GROUNDING: Reference the Clinical Registry below. CRITICAL: Distinguish between Institutional Doctors and Private Practitioners. Use the provided Address and Services metadata to EXPLAIN facility capabilities and locations precisely.\n" +
+                "4. NAVIGATION: Provide only the Facility Name and its raw coordinates on a NEW LINE. DO NOT mention coordinates/lat/long. Example: 'Narayana Health City\n12.8782, 77.6025'.\n" +
+                "5. GROUNDING: Be direct. If they ask for a blood bank, just list the hospital and services. DO NOT EXPLAIN. JUST LIST.\n" +
                 "   HOSPITALS:\n" + hospitalList + "\n" +
                 "   DOCTORS:\n" + doctorList + "\n\n" +
                 "Query: " + query;
@@ -203,9 +203,9 @@ public class AiService {
 
     private String getGeneralAdvice(String specialty) {
         switch (specialty) {
-            case "dental": return "it is important to avoid very hot or cold food.";
-            case "cardiology": return "avoid strenuous activity.";
-            default: return "a clinical evaluation is recommended.";
+            case "dental": return "Avoid hot or cold food. See a dentist.";
+            case "cardiology": return "Rest and avoid heavy work. See a heart doctor.";
+            default: return "Please visit a doctor for a checkup.";
         }
     }
 
