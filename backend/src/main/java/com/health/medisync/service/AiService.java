@@ -116,15 +116,31 @@ public class AiService {
         try {
             List<Doctor> allDoctors = doctorRepository.findByApprovedTrue();
             String doctorList = allDoctors.stream()
-                .map(d -> String.format("- Dr. %s (%s) [%s]", 
-                         d.getName(), 
-                         d.getSpecialization(),
-                         d.getHospitalEntity() != null ? "INSTITUTIONAL: " + d.getHospitalEntity().getName() : "PRIVATE PRACTITIONER"))
+                .map(d -> {
+                    String affiliation = d.getHospitalEntity() != null ? "INSTITUTIONAL: " + d.getHospitalEntity().getName() : "PRIVATE PRACTITIONER";
+                    String address = d.getClinicAddress() != null ? d.getClinicAddress() : "Consultation Node";
+                    String services = (d.getProceduresHandled() != null ? d.getProceduresHandled() : "") + 
+                                     (d.getTreatmentFocus() != null ? " | Focus: " + d.getTreatmentFocus() : "");
+                    return String.format("- Dr. %s (%s) [%s] - Address: %s - Services: %s", 
+                         d.getName(), d.getSpecialization(), affiliation, address, services.isEmpty() ? "General Clinical Care" : services);
+                })
                 .collect(Collectors.joining("\n"));
 
             List<Hospital> allHospitals = hospitalRepository.findAll();
             String hospitalList = allHospitals.stream()
-                .map(h -> "- " + h.getName() + " (" + (h.getLocation() != null ? h.getLocation() : "Active Node") + ")")
+                .map(h -> {
+                    String fullAddress = String.format("%s, %s, %s %s", 
+                        h.getStreet() != null ? h.getStreet() : "",
+                        h.getCity() != null ? h.getCity() : "",
+                        h.getState() != null ? h.getState() : "",
+                        h.getPinCode() != null ? h.getPinCode() : "").trim();
+                    return String.format("- %s (Type: %s) - Address: %s - Departments: %s - Clinical Facilities: %s", 
+                        h.getName(), 
+                        h.getHospitalType() != null ? h.getHospitalType() : "General",
+                        fullAddress.isEmpty() ? h.getLocation() : fullAddress,
+                        h.getDepartments() != null ? h.getDepartments() : "General Medicine",
+                        h.getServices() != null ? h.getServices() : "Emergency Triage");
+                })
                 .collect(Collectors.joining("\n"));
 
             String prompt = "You are the MediSync EXPERT CLINICAL PHYSICIAN. " +
@@ -137,7 +153,7 @@ public class AiService {
                 "2. PROVIDE DEEP CLINICAL INSIGHTS. Act as a board-certified MD.\n" +
                 "3. Use Markdown headers (###) and Bullet Points (-) for EVERYTHING.\n" +
                 "4. NAVIGATION: Provide ONLY the location name or coordinates. DO NOT provide text-based directions. Let the system render the map.\n" +
-                "5. GROUNDING: Reference the Clinical Registry below. CRITICAL: Distinguish between Institutional Doctors (affiliated with a hospital) and Private Practitioners (independent). DO NOT group private practitioners under 'Institutional' headers.\n" +
+                "5. GROUNDING: Reference the Clinical Registry below. CRITICAL: Distinguish between Institutional Doctors and Private Practitioners. Use the provided Address and Services metadata to EXPLAIN facility capabilities and locations precisely.\n" +
                 "   HOSPITALS:\n" + hospitalList + "\n" +
                 "   DOCTORS:\n" + doctorList + "\n\n" +
                 "Query: " + query;
