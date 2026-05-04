@@ -12,6 +12,7 @@ public class DoctorDTO {
     private Integer yearsOfExperience;
     private String profilePictureUrl;
     private boolean approved;
+    private String services;
 
     // Institutional Sync Fields
     private String consultationFee;
@@ -87,6 +88,7 @@ public class DoctorDTO {
         this.yearsOfExperience = d.getYearsOfExperience();
         this.profilePictureUrl = d.getProfilePictureUrl();
         this.approved = d.isApproved();
+        this.services = d.getServices();
         
         // Populate Institutional Sync Fields
         this.consultationFee = d.getConsultationFee();
@@ -314,4 +316,7 @@ public class DoctorDTO {
 
     public String getPreferredPaymentMode() { return preferredPaymentMode; }
     public void setPreferredPaymentMode(String preferredPaymentMode) { this.preferredPaymentMode = preferredPaymentMode; }
+
+    public String getServices() { return services; }
+    public void setServices(String services) { this.services = services; }
 }
