@@ -152,7 +152,7 @@ public class AiService {
                 "1. NO PARAGRAPHS. NO GREETINGS. NO DISCLAIMERS.\n" +
                 "2. PROVIDE DEEP CLINICAL INSIGHTS. Act as a board-certified MD.\n" +
                 "3. Use Markdown headers (###) and Bullet Points (-) for EVERYTHING.\n" +
-                "4. NAVIGATION: Provide ONLY the location name or coordinates. DO NOT provide text-based directions. Let the system render the map.\n" +
+                "4. NAVIGATION: Provide a human-readable address. APPEND the raw coordinates on a NEW LINE at the end of the hospital description. DO NOT mention the words 'latitude' or 'longitude'. Example: 'Narayana Health City\n12.8782, 77.6025'. The system will auto-render the map.\n" +
                 "5. GROUNDING: Reference the Clinical Registry below. CRITICAL: Distinguish between Institutional Doctors and Private Practitioners. Use the provided Address and Services metadata to EXPLAIN facility capabilities and locations precisely.\n" +
                 "   HOSPITALS:\n" + hospitalList + "\n" +
                 "   DOCTORS:\n" + doctorList + "\n\n" +
@@ -176,6 +176,10 @@ public class AiService {
         if (query.matches(".*[\\u0900-\\u097F].*")) return "hindi";
         // Telugu Range: \u0C00-\u0C7F
         if (query.matches(".*[\\u0C00-\\u0C7F].*")) return "telugu";
+        // Kannada Range: \u0CBC-\u0CFF
+        if (query.matches(".*[\\u0CBC-\\u0CFF].*")) return "kannada";
+        // Malayalam Range: \u0D00-\u0D7F
+        if (query.matches(".*[\\u0D00-\\u0D7F].*")) return "malayalam";
         return "english";
     }
 

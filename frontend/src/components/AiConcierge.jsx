@@ -17,7 +17,9 @@ const AiConcierge = () => {
         { code: 'en-IN', name: 'English', flag: '🇺🇸' },
         { code: 'hi-IN', name: 'Hindi', flag: '🇮🇳' },
         { code: 'te-IN', name: 'Telugu', flag: '🇮🇳' },
-        { code: 'ta-IN', name: 'Tamil', flag: '🇮🇳' }
+        { code: 'ta-IN', name: 'Tamil', flag: '🇮🇳' },
+        { code: 'kn-IN', name: 'Kannada', flag: '🇮🇳' },
+        { code: 'ml-IN', name: 'Malayalam', flag: '🇮🇳' }
     ];
 
     const [location, setLocation] = useState(null);
@@ -38,12 +40,26 @@ const AiConcierge = () => {
     const speak = (text) => {
         if (!isVoiceEnabled) return;
         window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text.replace(/\[.*?\]\(.*?\)/g, '').replace(/[*_]/g, ''));
         
-        // Premium Voice Selection Logic
-        const preferredVoices = voices.filter(v => 
-            v.lang.includes(selectedLang.split('-')[0]) && 
-            (v.name.includes('Google') || v.name.includes('Premium') || v.name.includes('Natural') || v.name.includes('Samantha'))
+        // Advanced Filtering: Strip emojis, markdown symbols, and technical coordinates
+        let cleanText = text
+            .replace(/\[.*?\]\(.*?\)/g, '') // Remove links
+            .replace(/[*_#]/g, '')           // Remove markdown formatting
+            .replace(/-?\d+\.\d+,\s*-?\d+\.\d+/g, '') // Suppress coordinates in speech
+            .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')  // Suppress emojis
+            .trim();
+
+        if (!cleanText) return;
+
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        
+        // Premium Voice Selection Logic - Prioritize Natural/Premium voices
+        const allVoices = window.speechSynthesis.getVoices();
+        const langCode = selectedLang.split('-')[0];
+        
+        const preferredVoices = allVoices.filter(v => 
+            v.lang.includes(langCode) && 
+            (v.name.includes('Natural') || v.name.includes('Premium') || v.name.includes('Enhanced') || v.name.includes('Google'))
         );
         
         if (preferredVoices.length > 0) {
@@ -51,8 +67,10 @@ const AiConcierge = () => {
         }
         
         utterance.lang = selectedLang;
-        utterance.rate = 1.0;
-        utterance.pitch = 1.1; // Slightly higher pitch for clarity
+        utterance.rate = 0.95; // Slightly slower for better clarity
+        utterance.pitch = 1.0; 
+        utterance.volume = 1.0;
+        
         window.speechSynthesis.speak(utterance);
     };
 
@@ -127,15 +145,19 @@ const AiConcierge = () => {
 
     const startListening = () => {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) return alert('Not supported');
+        if (!SpeechRecognition) return alert('Speech recognition not supported in this browser. Please use Chrome.');
+        
         const recognition = new SpeechRecognition();
         recognition.lang = selectedLang;
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
         recognition.onstart = () => setIsListening(true);
         recognition.onend = () => setIsListening(false);
         recognition.onresult = (e) => {
             const transcript = e.results[0][0].transcript;
             setInput(transcript);
-            handleSend(transcript);
+            // Removed auto-send as per user request
         };
         recognition.start();
     };
@@ -146,6 +168,11 @@ const AiConcierge = () => {
                 @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
                 @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
                 @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+                @keyframes wave {
+                    0% { height: 4px; }
+                    50% { height: 16px; }
+                    100% { height: 4px; }
+                }
             `}</style>
 
             {!isOpen && (
@@ -230,26 +257,31 @@ const AiConcierge = () => {
                                             }
 
                                             // Styled Lists or Proactive Point Conversion for long lines
-                                            if (line.startsWith('-') || line.startsWith('•') || line.length > 60) {
-                                                const isLocation = line.toLowerCase().includes('location') || line.toLowerCase().includes('address') || line.toLowerCase().includes('hospital');
-                                                const hasCoords = line.match(/-?\d+\.\d+,\s*-?\d+\.\d+/);
-                                                
-                                                // Map Configuration Precision
-                                                const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+                                            const coordMatch = line.match(/-?\d+\.\d+,\s*-?\d+\.\d+/);
+                                            const hasCoords = !!coordMatch;
+                                            const isLocation = line.toLowerCase().includes('location') || line.toLowerCase().includes('address') || line.toLowerCase().includes('hospital');
+
+                                            // Hide the raw coordinate line if it doesn't contain other significant text
+                                            const isPureCoordLine = hasCoords && line.trim().length < 40;
+
+                                            if (line.startsWith('-') || line.startsWith('•') || line.length > 60 || hasCoords || isLocation) {
                                                 const query = line.replace(/#|-|•/g, '').trim();
-                                                const encodedQuery = encodeURIComponent(query);
+                                                const encodedQuery = encodeURIComponent(hasCoords ? coordMatch[0] : query);
                                                 
-                                                // Determine the most robust map URL available
-                                                const mapUrl = (apiKey && apiKey !== "REPLACE_WITH_YOUR_GOOGLE_MAPS_API_KEY" && apiKey !== "YOUR_GOOGLE_MAPS_API_KEY") 
+                                                // Map Configuration
+                                                const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+                                                const mapUrl = (apiKey && apiKey !== "REPLACE_WITH_YOUR_GOOGLE_MAPS_API_KEY") 
                                                     ? `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${encodedQuery}`
                                                     : `https://maps.google.com/maps?q=${encodedQuery}&output=embed&z=15`;
 
                                                 return (
                                                     <div key={li} style={{ display: 'flex', flexDirection: 'column', gap: '12px', margin: '8px 0' }}>
-                                                        <div style={{ display: 'flex', gap: '10px', paddingLeft: '8px', alignItems: 'flex-start' }}>
-                                                            <div style={{ marginTop: '8px', width: '5px', height: '5px', borderRadius: '50%', backgroundColor: m.role === 'user' ? 'white' : '#94a3b8', flexShrink: 0 }}></div>
-                                                            <span style={{ fontWeight: '500' }}>{line.startsWith('-') || line.startsWith('•') ? line.substring(1).trim() : line}</span>
-                                                        </div>
+                                                        {!isPureCoordLine && (
+                                                            <div style={{ display: 'flex', gap: '10px', paddingLeft: '8px', alignItems: 'flex-start' }}>
+                                                                <div style={{ marginTop: '8px', width: '5px', height: '5px', borderRadius: '50%', backgroundColor: m.role === 'user' ? 'white' : '#94a3b8', flexShrink: 0 }}></div>
+                                                                <span style={{ fontWeight: '500' }}>{line.startsWith('-') || line.startsWith('•') ? line.substring(1).trim() : line}</span>
+                                                            </div>
+                                                        )}
                                                         {(isLocation || hasCoords) && (
                                                             <div style={{ borderRadius: '20px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', marginLeft: '15px' }}>
                                                                 <iframe 
@@ -340,10 +372,44 @@ const AiConcierge = () => {
                     </div>
 
                     {/* Input */}
-                    <div style={{ padding: '20px 24px', borderTop: '1px solid #f1f5f9', display: 'flex', gap: '12px', backgroundColor: 'white' }}>
-                        <button onClick={startListening} style={{ width: '48px', height: '48px', borderRadius: '16px', border: 'none', backgroundColor: isListening ? '#fee2e2' : '#f8fafc', color: isListening ? '#ef4444' : '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.3s' }}>
-                            {isListening ? '🛑' : '🎤'}
-                        </button>
+                    <div style={{ padding: '20px 24px', borderTop: '1px solid #f1f5f9', display: 'flex', gap: '12px', backgroundColor: 'white', alignItems: 'center' }}>
+                        <div style={{ position: 'relative', width: '48px', height: '48px' }}>
+                            {isListening && (
+                                <div style={{ position: 'absolute', inset: '-8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px', zIndex: 0 }}>
+                                    {[1, 2, 3, 4, 5].map(i => (
+                                        <div key={i} style={{ 
+                                            width: '3px', 
+                                            height: '10px', 
+                                            backgroundColor: '#ef4444', 
+                                            borderRadius: '10px',
+                                            animation: `wave 0.6s infinite ${i * 0.1}s ease-in-out` 
+                                        }} />
+                                    ))}
+                                </div>
+                            )}
+                            <button 
+                                onClick={isListening ? () => {} : startListening} 
+                                style={{ 
+                                    position: 'relative',
+                                    zIndex: 1,
+                                    width: '100%', 
+                                    height: '100%', 
+                                    borderRadius: '16px', 
+                                    border: 'none', 
+                                    backgroundColor: isListening ? '#fee2e2' : '#f8fafc', 
+                                    color: isListening ? '#ef4444' : '#64748b', 
+                                    cursor: 'pointer', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifySelf: 'center',
+                                    justifyContent: 'center', 
+                                    transition: '0.3s',
+                                    boxShadow: isListening ? '0 0 15px rgba(239, 68, 68, 0.2)' : 'none'
+                                }}
+                            >
+                                {isListening ? '🛑' : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>}
+                            </button>
+                        </div>
                         <div style={{ flex: 1, position: 'relative' }}>
                             <input 
                                 value={input} 
