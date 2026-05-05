@@ -94,10 +94,17 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         
-        config.setAllowedOriginPatterns(Arrays.asList("*"));
+        // Explicitly list allowed origins to ensure compliance with 'AllowCredentials'
+        config.setAllowedOrigins(Arrays.asList(
+            "https://medisync-vert-five.vercel.app",
+            "https://medisync.vercel.app",
+            "http://localhost:5173",
+            "http://localhost:3000"
+        ));
         
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        config.setAllowedHeaders(Arrays.asList("*"));
+        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers"));
+        config.setExposedHeaders(Arrays.asList("Access-Control-Allow-Origin", "Access-Control-Allow-Credentials", "Authorization"));
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);
         
