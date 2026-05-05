@@ -76,6 +76,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/health/**", "/health/**").permitAll()
                 .requestMatchers("/api/patient/profile/sync", "/patient/profile/sync").permitAll()
                 .requestMatchers("/api/admin/diagnose/**").permitAll()
+                // Permit public marketplace browsing
+                .requestMatchers("/api/appointments/slots", "/api/appointments/doctors", "/api/appointments/hospitals-by-service").permitAll()
                 .requestMatchers("/api/hospital/**").hasRole("HOSPITAL_ADMIN")
                 .requestMatchers("/api/notifications/**").authenticated()
                 .requestMatchers("/ws/**").permitAll()
@@ -94,7 +96,6 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         
-        // Explicitly list allowed origins to ensure compliance with 'AllowCredentials'
         config.setAllowedOrigins(Arrays.asList(
             "https://medisync-vert-five.vercel.app",
             "https://medisync.vercel.app",
@@ -103,8 +104,8 @@ public class SecurityConfig {
         ));
         
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", "x-supabase-user", "*"));
-        config.setExposedHeaders(Arrays.asList("Access-Control-Allow-Origin", "Access-Control-Allow-Credentials", "Authorization"));
+        config.setAllowedHeaders(Arrays.asList("*")); // Allow all headers to prevent preflight mismatches
+        config.setExposedHeaders(Arrays.asList("Authorization", "Access-Control-Allow-Origin", "Access-Control-Allow-Credentials"));
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);
         
