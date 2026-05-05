@@ -4,7 +4,7 @@ import api from '../api/axiosConfig';
 import { 
   Calendar, Clock, ChevronRight, Video, MapPin, X, 
   Loader2, Activity, User, ShieldCheck, Clipboard, Search, 
-  Target, Filter, Users
+  Target, Filter, Users, CreditCard, Copy, Check, ExternalLink
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import SkeletonCard from '../components/SkeletonCard';
@@ -17,6 +17,7 @@ const DoctorAppointments = () => {
     const [selectedAppt, setSelectedAppt] = useState(null);
     const [activeTab, setActiveTab] = useState('today'); // 'today', 'upcoming', 'past'
     const [searchTerm, setSearchTerm] = useState('');
+    const [showPaymentCard, setShowPaymentCard] = useState(null);
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -216,6 +217,18 @@ const DoctorAppointments = () => {
                     )}
                 </div>
             )}
+
+            {/* Floating Payment Verification Window */}
+            {showPaymentCard && (
+                <PaymentFloatingCard 
+                    appt={showPaymentCard}
+                    onVerified={() => {
+                        setShowPaymentCard(null);
+                        fetchAppointments();
+                    }}
+                    onDismiss={() => setShowPaymentCard(null)}
+                />
+            )}
         </div>
     );
 };
@@ -292,18 +305,9 @@ const DoctorAppointmentCard = ({ appt, onClick, active, historical }) => {
                         <div className="flex gap-2">
                              {appt.status === 'AWAITING_VERIFICATION' && !user?.institutional && (
                                 <button 
-                                    onClick={async (e) => { 
+                                    onClick={(e) => { 
                                         e.stopPropagation(); 
-                                        try {
-                                            await api.post('appointments/confirm-upi', { appointmentId: appt.id });
-                                            toast.success("Payment verified. Appointment booked.");
-                                            // Refreshing handled by parent fetchAppointments if we passed it down, 
-                                            // but for simplicity here we rely on the 30s heartbeat or manual refresh.
-                                            // Ideally we should have a callback. Let's just use window.location.reload() for instant feedback or toast guidance.
-                                            toast.success("Syncing Clinical Timeline...");
-                                        } catch (err) {
-                                            toast.error("Verification failed.");
-                                        }
+                                        setShowPaymentCard(appt);
                                     }}
                                     className="px-6 py-2.5 bg-amber-600 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-amber-500 transition-all shadow-md active:scale-95 flex items-center gap-2"
                                 >
@@ -351,6 +355,113 @@ const DoctorAppointmentCard = ({ appt, onClick, active, historical }) => {
                             </button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// ─── Payment Verification Floating Card ───────────────────────────────────────
+const PaymentFloatingCard = ({ appt, onVerified, onDismiss }) => {
+    const [verifying, setVerifying] = useState(false);
+    const [copied, setCopied] = useState(null);
+
+    const copyToClipboard = (text, field) => {
+        navigator.clipboard.writeText(text).then(() => {
+            setCopied(field);
+            setTimeout(() => setCopied(null), 2000);
+        });
+    };
+
+    const handleVerify = async () => {
+        setVerifying(true);
+        try {
+            await api.post('appointments/confirm-upi', { appointmentId: appt.id });
+            toast.success('Payment verified. Clinical slot confirmed!');
+            onVerified();
+        } catch (e) {
+            toast.error('Verification failed. Please try again.');
+        } finally {
+            setVerifying(false);
+        }
+    };
+
+    return (
+        <div className="fixed bottom-6 right-6 z-[600] w-[340px] animate-in slide-in-from-bottom-4 fade-in duration-500">
+            <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.25)] border border-amber-100 overflow-hidden">
+                {/* Header */}
+                <div className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-100">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-amber-100 rounded-xl flex items-center justify-center">
+                            <CreditCard className="text-amber-600" size={16} />
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-amber-600">Verification Pending</p>
+                            <p className="text-xs font-bold text-slate-700">Payment Protocol</p>
+                        </div>
+                    </div>
+                    <button onClick={onDismiss} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+                        <X size={14} />
+                    </button>
+                </div>
+
+                {/* Content */}
+                <div className="p-5 space-y-3">
+                    {/* Slot Time */}
+                    <div className="flex items-center justify-between bg-slate-50 rounded-2xl px-4 py-3">
+                        <div className="flex items-center gap-2">
+                            <Clock size={14} className="text-primary-500" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Scheduled Slot</span>
+                        </div>
+                        <span className="text-xs font-black text-slate-800">
+                            {appt.timeSlot}
+                        </span>
+                    </div>
+
+                    {/* UPI ID */}
+                    <div className="flex items-center justify-between bg-slate-50 rounded-2xl px-4 py-3">
+                        <div className="flex items-center gap-2">
+                            <ExternalLink size={14} className="text-emerald-500" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">UPI ID</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-black text-slate-800 tracking-tighter">
+                                {appt.patientUpiId || 'NO_ID'}
+                            </span>
+                            <button 
+                                onClick={() => copyToClipboard(appt.patientUpiId, 'upi')}
+                                className="p-1 hover:bg-white rounded-md transition-colors"
+                            >
+                                {copied === 'upi' ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} className="text-slate-400" />}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Transaction ID */}
+                    <div className="flex flex-col gap-2 bg-slate-900 rounded-2xl p-4 text-white">
+                        <div className="flex items-center justify-between">
+                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">Transaction ID</span>
+                            <button 
+                                onClick={() => copyToClipboard(appt.transactionId, 'tx')}
+                                className="p-1.5 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+                            >
+                                {copied === 'tx' ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} className="text-white/40" />}
+                            </button>
+                        </div>
+                        <p className="text-sm font-black tracking-widest break-all font-mono text-emerald-400">
+                            {appt.transactionId || 'NOT_FOUND'}
+                        </p>
+                    </div>
+
+                    {/* Verify Action */}
+                    <button 
+                        disabled={verifying}
+                        onClick={handleVerify}
+                        className="w-full py-4 bg-amber-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-amber-500/20 hover:bg-amber-700 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
+                    >
+                        {verifying ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
+                        {verifying ? 'Authenticating...' : 'Authorize Transaction'}
+                    </button>
                 </div>
             </div>
         </div>
