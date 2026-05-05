@@ -419,7 +419,14 @@ const SessionDetailModal = ({ appt, onClose, canEnter }) => {
                         <button onClick={onClose} className="flex-1 btn-premium bg-slate-900 text-white shadow-2xl hover:bg-slate-800 border-none text-sm py-4 animate-pulse-soft">
                             Acknowledge
                         </button>
-     const Sessions = () => {
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const Sessions = () => {
     const location = useLocation();
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
