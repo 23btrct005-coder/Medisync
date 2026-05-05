@@ -408,7 +408,7 @@ const DoctorAppointmentCard = ({ appt, onClick, active, historical }) => {
                                 }}
                                 className="px-6 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary transition-all shadow-md active:scale-95"
                             >
-                                Open File
+                                View History
                             </button>
                         </div>
                     </div>
