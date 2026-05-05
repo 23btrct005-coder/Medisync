@@ -69,49 +69,58 @@ public class AppointmentService {
 
     private void broadcastAppointmentUpdate(Appointment appointment) {
         try {
-            // Notify Doctor
-            if (appointment.getDoctor() != null) {
+            // 1. Notify Doctor (WebSocket Sync)
+            if (appointment.getDoctor() != null && appointment.getDoctor().getUser() != null) {
                 messagingTemplate.convertAndSendToUser(
                     appointment.getDoctor().getUser().getUsername(),
                     "/queue/appointments",
                     appointment
                 );
-                
-                // If institutional, notify hospital admins
-                if (appointment.getDoctor().isInstitutional() && appointment.getDoctor().getHospitalEntity() != null) {
-                    Hospital hospital = appointment.getDoctor().getHospitalEntity();
-                    List<HospitalAdmin> admins = hospitalAdminRepository.findByHospitalIdAndApprovedTrue(hospital.getId());
-                    for (HospitalAdmin admin : admins) {
-                        // 1. Send Notification (Persisted)
-                        notificationService.sendNotification(
-                            admin.getUser().getId(),
-                            "APPOINTMENT",
-                            "New Institutional Service Booking",
-                            "A new " + appointment.getServiceName() + " request has been initiated.",
-                            "/hospital-dashboard/appointments",
-                            "View Appointments"
-                        );
-                        
-                        // 2. Direct WebSocket Sync (for real-time UI ledger update)
-                        messagingTemplate.convertAndSendToUser(
-                            admin.getUser().getUsername(),
-                            "/queue/appointments",
-                            appointment
-                        );
-                    }
-                }
             }
             
-            // Notify Patient
-            if (appointment.getPatient() != null) {
+            // 2. Notify Patient (WebSocket Sync)
+            if (appointment.getPatient() != null && appointment.getPatient().getUser() != null) {
                 messagingTemplate.convertAndSendToUser(
                     appointment.getPatient().getUser().getUsername(),
                     "/queue/appointments",
                     appointment
                 );
             }
+
+            // 3. Notify Hospital Admins (WebSocket + DB Persistence)
+            if (appointment.getDoctor() != null && appointment.getDoctor().isInstitutional() && appointment.getDoctor().getHospitalEntity() != null) {
+                Long hospitalId = appointment.getDoctor().getHospitalEntity().getId();
+                List<HospitalAdmin> admins = hospitalAdminRepository.findByHospitalIdAndApprovedTrue(hospitalId);
+                
+                boolean isEmergency = appointment.getServiceName() != null && SERVICES_24_7.contains(appointment.getServiceName());
+                String title = isEmergency ? "🚨 EMERGENCY SERVICE TRIGGERED" : "New Institutional Booking";
+                String type = isEmergency ? "EMERGENCY" : "APPOINTMENT";
+
+                for (HospitalAdmin admin : admins) {
+                    try {
+                        // Direct WebSocket Sync
+                        messagingTemplate.convertAndSendToUser(
+                            admin.getUser().getUsername(),
+                            "/queue/appointments",
+                            appointment
+                        );
+                        
+                        // Persistent Notification
+                        notificationService.sendNotification(
+                            admin.getUser().getId(),
+                            type,
+                            title,
+                            "Request for " + appointment.getServiceName() + " from " + (appointment.getPatient() != null ? appointment.getPatient().getName() : "Patient"),
+                            "/hospital-dashboard/appointments",
+                            "View Details"
+                        );
+                    } catch (Exception adminErr) {
+                        System.err.println("WARN: Admin notification skipped: " + adminErr.getMessage());
+                    }
+                }
+            }
         } catch (Exception e) {
-            System.err.println("WS_BROADCAST_FAILURE: " + e.getMessage());
+            System.err.println("CRITICAL: Clinical broadcast synchronization failure: " + e.getMessage());
         }
     }
 
@@ -465,7 +474,7 @@ public class AppointmentService {
 
     @Transactional
     public void verifyPayment(String orderId, String paymentId, String signature) throws Exception {
-        // Verify signature
+        // 1. Verify Signature
         JSONObject attributes = new JSONObject();
         attributes.put("razorpay_order_id", orderId);
         attributes.put("razorpay_payment_id", paymentId);
@@ -474,57 +483,17 @@ public class AppointmentService {
         boolean isValid = Utils.verifyPaymentSignature(attributes, razorpayKeySecret);
         if (!isValid) throw new RuntimeException("Invalid payment signature");
 
+        // 2. Persist Status
         Appointment appointment = appointmentRepository.findByRazorpayOrderId(orderId)
             .orElseThrow(() -> new RuntimeException("Appointment not found for order: " + orderId));
 
         appointment.setRazorpayPaymentId(paymentId);
         appointment.setStatus(AppointmentStatus.BOOKED);
-        appointment.setCreatedAt(LocalDateTime.now()); // Reset timestamp to mark as confirmed
+        appointment.setCreatedAt(LocalDateTime.now());
         Appointment booked = appointmentRepository.save(appointment);
+
+        // 3. Broadcast Synchronization (Unified Stakeholder Notification)
         broadcastAppointmentUpdate(booked);
-
-        boolean isEmergency = booked.getServiceName() != null && SERVICES_24_7.contains(booked.getServiceName());
-        String notificationType = isEmergency ? "EMERGENCY" : "APPOINTMENT";
-        String notificationTitle = isEmergency ? "🚨 EMERGENCY SERVICE TRIGGERED" : "New Clinical Session Booked";
-        String description = isEmergency 
-            ? "URGENT: " + booked.getPatient().getName() + " has triggered an immediate " + booked.getServiceName() + " request."
-            : booked.getPatient().getName() + " has scheduled an appointment on " + booked.getAppointmentDate() + " at " + booked.getTimeSlot();
-
-        // Notify Doctor
-        notificationService.sendNotification(
-            booked.getDoctor().getUser().getId(),
-            notificationType,
-            notificationTitle,
-            description,
-            "/doctor-dashboard/appointments",
-            "Open Schedule"
-        );
-
-        // Notify Hospital Admins if institutional
-        if (isEmergency && booked.getDoctor().isInstitutional() && booked.getDoctor().getHospitalEntity() != null) {
-            Hospital hospital = booked.getDoctor().getHospitalEntity();
-            List<HospitalAdmin> admins = hospitalAdminRepository.findByHospitalIdAndApprovedTrue(hospital.getId());
-            for (HospitalAdmin admin : admins) {
-                notificationService.sendNotification(
-                    admin.getUser().getId(),
-                    "EMERGENCY",
-                    "URGENT: Emergency Service Triggered",
-                    "URGENT: " + booked.getPatient().getName() + " has triggered an immediate " + booked.getServiceName() + " request.",
-                    "/hospital-dashboard/appointments",
-                    "Open Schedule"
-                );
-            }
-        }
-
-        // Notify Patient
-        notificationService.sendNotification(
-            booked.getPatient().getUser().getId(),
-            "APPOINTMENT",
-            "Session Confirmed",
-            "Your appointment with Dr. " + booked.getDoctor().getName() + " on " + booked.getAppointmentDate() + " is confirmed.",
-            "/dashboard/sessions",
-            "View Details"
-        );
     }
 
     @Transactional
