@@ -8,4 +8,5 @@ public interface HospitalAdminRepository extends JpaRepository<HospitalAdmin, Lo
     Optional<HospitalAdmin> findByUserId(Long userId);
     Optional<HospitalAdmin> findByUserUsernameIgnoreCase(String username);
     Optional<HospitalAdmin> findByHospital(com.health.medisync.model.Hospital hospital);
+    java.util.List<HospitalAdmin> findByHospitalIdAndApprovedTrue(Long hospitalId);
 }

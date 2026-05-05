@@ -30,6 +30,7 @@ public class AppointmentService {
     private final NotificationService notificationService;
     private final RatingRepository ratingRepository;
     private final HospitalRepository hospitalRepository;
+    private final HospitalAdminRepository hospitalAdminRepository;
     private final org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
 
     @Value("${razorpay.key.id:}")
@@ -53,6 +54,7 @@ public class AppointmentService {
                               NotificationService notificationService,
                               RatingRepository ratingRepository,
                               HospitalRepository hospitalRepository,
+                              HospitalAdminRepository hospitalAdminRepository,
                               org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate) {
         this.appointmentRepository = appointmentRepository;
         this.doctorRepository = doctorRepository;
@@ -61,6 +63,7 @@ public class AppointmentService {
         this.notificationService = notificationService;
         this.ratingRepository = ratingRepository;
         this.hospitalRepository = hospitalRepository;
+        this.hospitalAdminRepository = hospitalAdminRepository;
         this.messagingTemplate = messagingTemplate;
     }
 
@@ -77,14 +80,24 @@ public class AppointmentService {
                 // If institutional, notify hospital admins
                 if (appointment.getDoctor().isInstitutional() && appointment.getDoctor().getHospitalEntity() != null) {
                     Hospital hospital = appointment.getDoctor().getHospitalEntity();
-                    for (HospitalAdmin admin : hospital.getAdmins()) {
-                        if (admin.isApproved()) {
-                            messagingTemplate.convertAndSendToUser(
-                                admin.getUser().getUsername(),
-                                "/queue/appointments",
-                                appointment
-                            );
-                        }
+                    List<HospitalAdmin> admins = hospitalAdminRepository.findByHospitalIdAndApprovedTrue(hospital.getId());
+                    for (HospitalAdmin admin : admins) {
+                        // 1. Send Notification (Persisted)
+                        notificationService.sendNotification(
+                            admin.getUser().getId(),
+                            "APPOINTMENT",
+                            "New Institutional Service Booking",
+                            "A new " + appointment.getServiceName() + " request has been initiated.",
+                            "/hospital-dashboard/appointments",
+                            "View Appointments"
+                        );
+                        
+                        // 2. Direct WebSocket Sync (for real-time UI ledger update)
+                        messagingTemplate.convertAndSendToUser(
+                            admin.getUser().getUsername(),
+                            "/queue/appointments",
+                            appointment
+                        );
                     }
                 }
             }
@@ -490,17 +503,16 @@ public class AppointmentService {
         // Notify Hospital Admins if institutional
         if (isEmergency && booked.getDoctor().isInstitutional() && booked.getDoctor().getHospitalEntity() != null) {
             Hospital hospital = booked.getDoctor().getHospitalEntity();
-            for (HospitalAdmin admin : hospital.getAdmins()) {
-                if (admin.isApproved()) {
-                    notificationService.sendNotification(
-                        admin.getUser().getId(),
-                        "EMERGENCY",
-                        "🚨 INSTITUTIONAL EMERGENCY",
-                        "URGENT: " + booked.getPatient().getName() + " requires immediate " + booked.getServiceName() + ". Deploy resources now.",
-                        "/hospital/appointments",
-                        "Deploy Now"
-                    );
-                }
+            List<HospitalAdmin> admins = hospitalAdminRepository.findByHospitalIdAndApprovedTrue(hospital.getId());
+            for (HospitalAdmin admin : admins) {
+                notificationService.sendNotification(
+                    admin.getUser().getId(),
+                    "EMERGENCY",
+                    "URGENT: Emergency Service Triggered",
+                    "URGENT: " + booked.getPatient().getName() + " has triggered an immediate " + booked.getServiceName() + " request.",
+                    "/hospital-dashboard/appointments",
+                    "Open Schedule"
+                );
             }
         }
 

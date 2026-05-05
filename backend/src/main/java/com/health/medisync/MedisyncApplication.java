@@ -97,12 +97,16 @@ public class MedisyncApplication {
             long count = patientRepository.findAll().stream()
                 .filter(p -> p.getPatientId() == null || p.getPatientId().startsWith("MS-") || p.getPatientId().startsWith("MS-TEMP") || p.getPatientId().startsWith("XX-") || p.getPatientId().contains("-00-"))
                 .peek(p -> {
-                    String stateCode = GeographicalMappingUtils.getStateCode(p.getState());
-                    String districtCode = GeographicalMappingUtils.getDistrictCode(p.getState(), p.getDistrict(), p.getCity());
-                    String sequence = String.format("%04d", p.getId());
-                    p.setPatientId(stateCode + "-" + districtCode + "-" + sequence);
+                    try {
+                        String stateCode = GeographicalMappingUtils.getStateCode(p.getState());
+                        String districtCode = GeographicalMappingUtils.getDistrictCode(p.getState(), p.getDistrict(), p.getCity());
+                        String sequence = String.format("%04d", p.getId());
+                        p.setPatientId(stateCode + "-" + districtCode + "-" + sequence);
+                    } catch (Exception e) {
+                        p.setPatientId("IN-GEN-" + String.format("%04d", p.getId()));
+                    }
                 })
-                .map(patientRepository::save)
+                .peek(patientRepository::save)
                 .count();
             
             if (count > 0) {
