@@ -19,9 +19,9 @@ const HospitalDepartments = [
 ];
 
 const PREDEFINED_HOSPITAL_SERVICES = [
-    "24/7 Emergency", "MRI Scan", "CT Scan", "X-Ray", "Blood Bank", 
-    "ICU (Intensive Care Unit)", "NICU", "Dialysis", "Physiotherapy", 
-    "Pathology Lab", "In-house Pharmacy", "Ambulance", "Operation Theater",
+    "Emergency & Trauma Care", "MRI Scan", "CT Scan", "X-Ray", "Blood Bank", 
+    "ICU (Intensive Care Unit)", "NICU (Neonatal ICU)", "Dialysis", "Physiotherapy", 
+    "Pathology Lab", "In-house Pharmacy", "Ambulance Services", "Operation Theater",
     "Telemedicine", "Vaccination Center", "Home Care Services"
 ];
 
