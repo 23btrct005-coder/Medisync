@@ -348,26 +348,28 @@ const DoctorProfile = () => {
                                         ))}
                                     </div>
                                 </div>
-                                <div className="pt-6 border-t border-slate-50 mt-4">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Diagnostic & Infrastructure (Clinic/Hospital)</p>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {PREDEFINED_INSTITUTIONAL_SERVICES.map(service => (
-                                            <label key={service} className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${formData.services?.includes(service) ? 'bg-emerald-50 border-emerald-200 shadow-sm' : 'bg-white border-slate-100 hover:border-slate-200'}`}>
-                                                <input 
-                                                    type="checkbox" 
-                                                    className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                                                    checked={formData.services?.includes(service) || false}
-                                                    onChange={(e) => {
-                                                        const current = formData.services ? formData.services.split(', ').filter(s => s) : [];
-                                                        const next = e.target.checked ? [...current, service] : current.filter(s => s !== service);
-                                                        setFormData({...formData, services: next.join(', ')});
-                                                    }}
-                                                />
-                                                <span className={`text-[9px] font-black uppercase tracking-widest ${formData.services?.includes(service) ? 'text-emerald-700' : 'text-slate-500'}`}>{service}</span>
-                                            </label>
-                                        ))}
+                                {user?.institutional && (
+                                    <div className="pt-6 border-t border-slate-50 mt-4">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Diagnostic & Infrastructure (Clinic/Hospital)</p>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            {PREDEFINED_INSTITUTIONAL_SERVICES.map(service => (
+                                                <label key={service} className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${formData.services?.includes(service) ? 'bg-emerald-50 border-emerald-200 shadow-sm' : 'bg-white border-slate-100 hover:border-slate-200'}`}>
+                                                    <input 
+                                                        type="checkbox" 
+                                                        className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                                                        checked={formData.services?.includes(service) || false}
+                                                        onChange={(e) => {
+                                                            const current = formData.services ? formData.services.split(', ').filter(s => s) : [];
+                                                            const next = e.target.checked ? [...current, service] : current.filter(s => s !== service);
+                                                            setFormData({...formData, services: next.join(', ')});
+                                                        }}
+                                                    />
+                                                    <span className={`text-[9px] font-black uppercase tracking-widest ${formData.services?.includes(service) ? 'text-emerald-700' : 'text-slate-500'}`}>{service}</span>
+                                                </label>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
+                                )}
                             </div>
                         ) : (
                             <>
@@ -600,7 +602,7 @@ const DoctorProfile = () => {
                             {Array.from(new Set([
                                 "General Consultation", 
                                 "Telemedicine", 
-                                ...((user.services || formData.services)?.split(', ').filter(s => s) || [])
+                                ...((user.services || formData.services)?.split(', ').filter(s => s && !PREDEFINED_INSTITUTIONAL_SERVICES.includes(s)) || [])
                             ])).map((service, idx) => (
                                 <div key={idx} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm group hover:border-emerald-200 transition-all">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block mb-3">

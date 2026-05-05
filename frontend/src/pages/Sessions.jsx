@@ -39,7 +39,7 @@ const SessionCard = ({ appt, onClick, active, historical, canEnter, onRate }) =>
             
             <div className="flex-1 min-w-0">
                 <h4 className={`text-base font-extrabold truncate ${historical ? 'text-slate-500' : 'text-slate-800'}`}>
-                    Dr. {appt.doctor?.name}
+                    {appt.serviceName ? appt.serviceName : `Dr. ${appt.doctor?.name}`}
                 </h4>
                 <div className="flex items-center gap-3 mt-1">
                     <p className={`text-[10px] font-bold uppercase tracking-tighter flex items-center gap-1 ${active ? 'text-primary-700' : 'text-slate-400'}`}>
@@ -307,12 +307,20 @@ const SessionDetailModal = ({ appt, onClose, canEnter }) => {
 
                     <div className="space-y-4">
                         <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-4 border border-slate-100 flex items-center gap-4 hover:border-primary-200 transition-colors group/doc">
-                            <div className="w-14 h-14 bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden shrink-0 group-hover/doc:scale-105 transition-transform">
-                                <img src={appt.doctor?.profilePictureUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${appt.doctor?.name}`} alt="" className="w-full h-full object-cover" />
+                            <div className="w-14 h-14 bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden shrink-0 group-hover/doc:scale-105 transition-transform flex items-center justify-center">
+                                {appt.serviceName ? (
+                                    <Activity className="text-primary-500" size={24} />
+                                ) : (
+                                    <img src={appt.doctor?.profilePictureUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${appt.doctor?.name}`} alt="" className="w-full h-full object-cover" />
+                                )}
                             </div>
                             <div className="min-w-0">
-                                <p className="text-[10px] font-black uppercase text-primary-600 tracking-widest mb-0.5">Attending Physician</p>
-                                <p className="text-lg font-black text-slate-900 truncate">Dr. {appt.doctor?.name}</p>
+                                <p className="text-[10px] font-black uppercase text-primary-600 tracking-widest mb-0.5">
+                                    {appt.serviceName ? 'Medical Service' : 'Attending Physician'}
+                                </p>
+                                <p className="text-lg font-black text-slate-900 truncate">
+                                    {appt.serviceName ? appt.serviceName : `Dr. ${appt.doctor?.name}`}
+                                </p>
                             </div>
                         </div>
 
@@ -422,6 +430,7 @@ const Sessions = () => {
     const [loading, setLoading] = useState(true);
     const [selectedAppt, setSelectedAppt] = useState(null);
     const [activeTab, setActiveTab] = useState('today');
+    const [activeCategory, setActiveCategory] = useState('physician');
     const [showRatingModal, setShowRatingModal] = useState(null);
     const [showPaymentCard, setShowPaymentCard] = useState(null);
 
@@ -500,9 +509,14 @@ const Sessions = () => {
     
     const safeAppointments = Array.isArray(appointments) ? appointments : [];
     
-    // Status Segregation: Split into active vs pending
-    const activeAppts = safeAppointments.filter(a => a.status === 'BOOKED');
-    const pendingAppointments = safeAppointments.filter(a => a.status === 'PENDING' || a.status === 'AWAITING_VERIFICATION');
+    // Filter by category first
+    const categoryAppointments = safeAppointments.filter(a => 
+        activeCategory === 'service' ? !!a.serviceName : !a.serviceName
+    );
+
+    // Status Segregation Tier 1: Split into active vs pending
+    const activeAppts = categoryAppointments.filter(a => a.status === 'BOOKED');
+    const pendingAppointments = categoryAppointments.filter(a => a.status === 'PENDING' || a.status === 'AWAITING_VERIFICATION');
     
     const todaysAppointments = activeAppts.filter(a => a.appointmentDate === todayString && !isPastSlot(a.appointmentDate, a.timeSlot));
     const pastAppointments = activeAppts.filter(a => a.appointmentDate < todayString || (a.appointmentDate === todayString && isPastSlot(a.appointmentDate, a.timeSlot)));
@@ -532,8 +546,32 @@ const Sessions = () => {
                 </div>
             </div>
 
-            {/* Tab Navigation */}
-            <div className="flex p-1.5 bg-slate-100 rounded-[2rem] border border-slate-200 shadow-inner w-fit max-w-full overflow-x-auto scrollbar-hide">
+            {/* Category and Tab Navigation */}
+            <div className="flex flex-col gap-6">
+                <div className="flex p-1 bg-slate-100 rounded-2xl w-fit">
+                    <button
+                        onClick={() => setActiveCategory('physician')}
+                        className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                            activeCategory === 'physician'
+                            ? 'bg-white text-primary-600 shadow-sm'
+                            : 'text-slate-500 hover:text-slate-700'
+                        }`}
+                    >
+                        Consultations
+                    </button>
+                    <button
+                        onClick={() => setActiveCategory('service')}
+                        className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                            activeCategory === 'service'
+                            ? 'bg-white text-primary-600 shadow-sm'
+                            : 'text-slate-500 hover:text-slate-700'
+                        }`}
+                    >
+                        Medical Services
+                    </button>
+                </div>
+
+                <div className="flex p-1.5 bg-slate-100 rounded-[2rem] border border-slate-200 shadow-inner w-fit max-w-full overflow-x-auto scrollbar-hide">
                 {tabs.map(tab => (
                     <button
                         key={tab.id}
