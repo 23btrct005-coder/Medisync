@@ -128,6 +128,8 @@ public class AppointmentController {
                 map.put("city", h.getCity());
                 map.put("state", h.getState());
                 map.put("serviceFees", h.getServiceFees());
+                map.put("latitude", h.getLatitude());
+                map.put("longitude", h.getLongitude());
                 facilities.add(map);
             });
 
@@ -143,6 +145,8 @@ public class AppointmentController {
                 map.put("city", d.getClinicCity());
                 map.put("state", d.getClinicState());
                 map.put("serviceFees", d.getServiceFees());
+                map.put("latitude", d.getLatitude());
+                map.put("longitude", d.getLongitude());
                 facilities.add(map);
             });
 

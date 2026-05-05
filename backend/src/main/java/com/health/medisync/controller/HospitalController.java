@@ -315,6 +315,9 @@ public class HospitalController {
             hospitalRepository.save(hospital);
             hospitalAdminRepository.save(admin);
 
+            // Trigger server-side geocoding to store lat/lng in backend
+            hospitalService.syncHospitalCoordinates(hospital);
+
             // Log administrative update
             auditLogService.log(user.getId(), admin.getName(), "INSTITUTIONAL_PROFILE_UPDATE", null, hospital.getId(), 
                                "Admin updated institutional profile for: " + hospital.getName());

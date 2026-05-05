@@ -14,9 +14,14 @@ import com.health.medisync.repository.PatientRepository;
 import com.health.medisync.model.Appointment;
 import com.health.medisync.model.Patient;
 import org.springframework.stereotype.Service;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Scanner;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class HospitalService {
@@ -346,5 +351,41 @@ public class HospitalService {
             throw new RuntimeException("Unauthorized: Physician not affiliated with your institution");
         }
         return doctor;
+    }
+
+    public void syncHospitalCoordinates(Hospital hospital) {
+        try {
+            String address = String.join(", ", 
+                hospital.getName(),
+                hospital.getStreet(),
+                hospital.getCity(),
+                hospital.getState(),
+                hospital.getPinCode()
+            ).replace(" ", "%20");
+
+            URL url = new URL("https://nominatim.openstreetmap.org/search?format=json&q=" + address + "&limit=1");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("User-Agent", "MediSync-HOS/1.0");
+
+            if (conn.getResponseCode() == 200) {
+                Scanner scanner = new Scanner(conn.getInputStream());
+                StringBuilder response = new StringBuilder();
+                while (scanner.hasNext()) response.append(scanner.nextLine());
+                scanner.close();
+
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode root = mapper.readTree(response.toString());
+                if (root.isArray() && root.size() > 0) {
+                    JsonNode location = root.get(0);
+                    hospital.setLatitude(location.get("lat").asDouble());
+                    hospital.setLongitude(location.get("lon").asDouble());
+                    hospitalRepository.save(hospital);
+                    System.out.println("DEBUG: Coordinates synchronized for " + hospital.getName() + ": " + hospital.getLatitude() + ", " + hospital.getLongitude());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("CRITICAL: Failed to geocode hospital address: " + e.getMessage());
+        }
     }
 }

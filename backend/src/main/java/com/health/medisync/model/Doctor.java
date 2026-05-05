@@ -108,6 +108,9 @@ public class Doctor {
     @Column(columnDefinition = "TEXT")
     private String serviceCapacity; // JSON mapping serviceName -> system/machine count
 
+    private Double latitude;
+    private Double longitude;
+
     // Administrative Fields (Admin Only)
     private String staffId;
     private String joiningDate;
@@ -331,4 +334,10 @@ public class Doctor {
 
     public String getAbsenceDates() { return absenceDates; }
     public void setAbsenceDates(String absenceDates) { this.absenceDates = absenceDates; }
+
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
+
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
 }

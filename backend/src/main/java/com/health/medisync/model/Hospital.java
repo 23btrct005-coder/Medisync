@@ -109,6 +109,9 @@ public class Hospital {
     @Column(columnDefinition = "TEXT")
     private String galleryUrls; // JSON string for hospital images
     private String accreditationBadges; // NABH, ISO, etc.
+    
+    private Double latitude;
+    private Double longitude;
 
     @JsonIgnore
     @OneToMany(mappedBy = "hospitalEntity", cascade = CascadeType.ALL)
@@ -355,4 +358,10 @@ public class Hospital {
 
     public String getDepartments() { return departments; }
     public void setDepartments(String departments) { this.departments = departments; }
+
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
+
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
 }

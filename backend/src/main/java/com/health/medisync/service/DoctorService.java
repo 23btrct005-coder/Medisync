@@ -11,6 +11,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.springframework.transaction.annotation.Transactional;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Scanner;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class DoctorService {
@@ -353,6 +358,9 @@ public class DoctorService {
 
         doctorRepository.save(doctor);
         
+        // Trigger server-side geocoding for independent clinic location
+        syncDoctorCoordinates(doctor);
+        
         // Institutional Governance: Notify Admin of changes
         if (!changedFields.isEmpty() && doctor.getHospitalEntity() != null) {
             String changeSummary = String.join(", ", changedFields);
@@ -572,5 +580,48 @@ public class DoctorService {
             } catch (Exception e) {}
         }
         return null;
+    }
+
+    public void syncDoctorCoordinates(Doctor doctor) {
+        if (doctor.isInstitutional()) return; // Hospital handle coordinates for their staff
+
+        try {
+            String addr = doctor.getClinicAddress();
+            if (addr == null || addr.trim().isEmpty()) {
+                addr = String.join(", ", 
+                    doctor.getClinicStreet() != null ? doctor.getClinicStreet() : "",
+                    doctor.getClinicCity() != null ? doctor.getClinicCity() : "",
+                    doctor.getClinicState() != null ? doctor.getClinicState() : "",
+                    doctor.getClinicPinCode() != null ? doctor.getClinicPinCode() : ""
+                );
+            }
+            
+            if (addr.trim().isEmpty() || addr.trim().equals(", , ,")) return;
+
+            String query = addr.replace(" ", "%20");
+            URL url = new URL("https://nominatim.openstreetmap.org/search?format=json&q=" + query + "&limit=1");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("User-Agent", "MediSync-HOS/1.0");
+
+            if (conn.getResponseCode() == 200) {
+                Scanner scanner = new Scanner(conn.getInputStream());
+                StringBuilder response = new StringBuilder();
+                while (scanner.hasNext()) response.append(scanner.nextLine());
+                scanner.close();
+
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode root = mapper.readTree(response.toString());
+                if (root.isArray() && root.size() > 0) {
+                    JsonNode location = root.get(0);
+                    doctor.setLatitude(location.get("lat").asDouble());
+                    doctor.setLongitude(location.get("lon").asDouble());
+                    doctorRepository.save(doctor);
+                    System.out.println("DEBUG: Coordinates synchronized for Dr. " + doctor.getName() + ": " + doctor.getLatitude() + ", " + doctor.getLongitude());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("CRITICAL: Failed to geocode doctor clinic: " + e.getMessage());
+        }
     }
 }
