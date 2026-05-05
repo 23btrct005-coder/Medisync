@@ -190,6 +190,7 @@ public class HospitalController {
             hMap.put("serviceDurations", hospital.getServiceDurations());
             hMap.put("services", hospital.getServices());
             hMap.put("departments", hospital.getDepartments());
+            hMap.put("bloodStock", hospital.getBloodStock());
             
             // Financial Details
             hMap.put("razorpayAccountId", hospital.getRazorpayAccountId());
@@ -285,6 +286,9 @@ public class HospitalController {
             }
             if (data.get("consultationTimings") != null) {
                 hospital.setConsultationTimings(String.valueOf(data.get("consultationTimings")));
+            }
+            if (data.get("bloodStock") != null) {
+                hospital.setBloodStock(mapper.writeValueAsString(data.get("bloodStock")));
             }
 
             if (data.get("googleMapsUrl") != null) hospital.setGoogleMapsUrl(String.valueOf(data.get("googleMapsUrl")));

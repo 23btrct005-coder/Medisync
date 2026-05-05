@@ -148,9 +148,17 @@ const Booking = () => {
         setShowAmbulanceOverlay(true);
         setLocating(true);
         navigator.geolocation.getCurrentPosition(
-            (pos) => {
+            async (pos) => {
                 const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                 setUserLocation(loc);
+                
+                // Sync with backend (Store don't just keep in frontend)
+                try {
+                    await api.post('/patient/location', { latitude: loc.lat, longitude: loc.lng });
+                } catch (e) {
+                    console.error("Failed to sync clinical location registry", e);
+                }
+
                 setLocating(false);
                 setShowAmbulanceOverlay(false);
                 setSelectedService(service);

@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, Clock, User, ChevronRight, Activity, Search, Filter } from 'lucide-react';
 import api from '../api/axiosConfig';
+import SockJS from 'sockjs-client';
+import Stomp from 'stompjs';
 import toast from 'react-hot-toast';
 
 const HospitalAppointments = () => {
@@ -8,19 +10,66 @@ const HospitalAppointments = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
-    useEffect(() => {
-        const fetchAppointments = async () => {
-            try {
-                const res = await api.get('/hospital/appointments');
-                setAppointments(res.data);
-            } catch (err) {
-                toast.error("Failed to sync institutional ledger");
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchAppointments();
+    const fetchAppointments = useCallback(async (isSilent = false) => {
+        if (!isSilent) setLoading(true);
+        try {
+            const res = await api.get('/hospital/appointments');
+            setAppointments(res.data);
+        } catch (err) {
+            if (!isSilent) toast.error("Failed to sync institutional ledger");
+        } finally {
+            if (!isSilent) setLoading(false);
+        }
     }, []);
+
+    useEffect(() => {
+        fetchAppointments();
+
+        // ── Real-time Feature: WebSocket Sync ──
+        let stompClient = null;
+        const connectWebSocket = () => {
+            try {
+                const wsUrl = `${api.defaults.baseURL.replace('/api', '')}/ws`;
+                const socket = new SockJS(wsUrl);
+                stompClient = Stomp.over(socket);
+                stompClient.debug = null; 
+
+                stompClient.connect({
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                }, () => {
+                    stompClient.subscribe('/user/queue/appointments', (msg) => {
+                        const updatedAppt = JSON.parse(msg.body);
+                        
+                        setAppointments(prev => {
+                            const index = prev.findIndex(a => a.id === updatedAppt.id);
+                            if (index !== -1) {
+                                const newAppts = [...prev];
+                                newAppts[index] = { ...newAppts[index], ...updatedAppt };
+                                return newAppts;
+                            }
+                            return [updatedAppt, ...prev];
+                        });
+                        
+                        toast.success(`Institutional Ledger Update: Session ${updatedAppt.id} is now ${updatedAppt.status}`, {
+                            icon: '🏢',
+                            duration: 4000
+                        });
+                    });
+                });
+            } catch (e) {}
+        };
+
+        connectWebSocket();
+
+        const pulseInterval = setInterval(() => {
+            fetchAppointments(true);
+        }, 60000);
+
+        return () => {
+            clearInterval(pulseInterval);
+            if (stompClient) stompClient.disconnect();
+        };
+    }, [fetchAppointments]);
 
     const filteredAppointments = (Array.isArray(appointments) ? appointments : []).filter(app => 
         app.patient?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -29,18 +78,22 @@ const HospitalAppointments = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-[60vh]">
+            <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
                 <Activity className="animate-spin text-primary" size={48} />
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Synchronizing Institutional Records...</p>
             </div>
         );
     }
 
     return (
-        <div className="p-8">
+        <div className="p-8 animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                 <div>
                     <h1 className="text-4xl font-black uppercase tracking-tight italic">Hospital <span className="not-italic text-primary">Ledger</span></h1>
-                    <p className="text-slate-400 text-xs font-black uppercase tracking-widest mt-2 ml-1">Cross-departmental appointment orchestration</p>
+                    <div className="flex items-center gap-2 mt-2 ml-1">
+                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Real-time Cross-departmental orchestration active</p>
+                    </div>
                 </div>
                 
                 <div className="relative group">
@@ -128,8 +181,8 @@ const HospitalAppointments = () => {
                                                             try {
                                                                 await api.post('appointments/confirm-upi', { appointmentId: app.id });
                                                                 toast.success("Payment verified and session authorized.");
-                                                                const res = await api.get('/hospital/appointments');
-                                                                setAppointments(res.data);
+                                                                // WebSocket will trigger update automatically, but we can call it here for faster feedback
+                                                                fetchAppointments(true);
                                                             } catch (e) {
                                                                 toast.error("Authorization failed.");
                                                             }

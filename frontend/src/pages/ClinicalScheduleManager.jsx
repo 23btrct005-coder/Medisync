@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import api from '../api/axiosConfig';
+import SockJS from 'sockjs-client';
+import Stomp from 'stompjs';
 import { 
   Calendar, Clock, ChevronRight, Video, MapPin, X, 
   Loader2, Activity, User, ShieldCheck, Clipboard, Search, 
@@ -21,19 +23,8 @@ const DoctorAppointments = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    useEffect(() => {
-        fetchAppointments();
-        
-        // Automated Telemetry Heartbeat (Real-time sync every 30s)
-        const pulseInterval = setInterval(() => {
-            fetchAppointments();
-        }, 30000); 
-
-        return () => clearInterval(pulseInterval);
-    }, []);
-
-    const fetchAppointments = async () => {
-        setLoading(true);
+    const fetchAppointments = useCallback(async (isSilent = false) => {
+        if (!isSilent) setLoading(true);
         try {
             const res = await api.get('appointments/my-appointments');
             const data = res.data || [];
@@ -53,9 +44,69 @@ const DoctorAppointments = () => {
         } catch (e) {
             console.error("Failed to fetch clinical schedule", e);
         } finally {
-            setLoading(false);
+            if (!isSilent) setLoading(false);
         }
-    };
+    }, [location.state?.autoOpenApptId]);
+
+    useEffect(() => {
+        fetchAppointments();
+        
+        // ── Real-time Feature: WebSocket Sync ──
+        let stompClient = null;
+        const connectWebSocket = () => {
+            try {
+                const wsUrl = `${api.defaults.baseURL.replace('/api', '')}/ws`;
+                const socket = new SockJS(wsUrl);
+                stompClient = Stomp.over(socket);
+                stompClient.debug = null; // Quiet logs
+
+                stompClient.connect({
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                }, () => {
+                    console.log("SECURE_WS_SYNC: Appointments channel connected");
+                    stompClient.subscribe('/user/queue/appointments', (msg) => {
+                        const updatedAppt = JSON.parse(msg.body);
+                        console.log("WS_SIGNAL: Real-time update received", updatedAppt);
+                        
+                        // Update specific appointment in state
+                        setAppointments(prev => {
+                            const index = prev.findIndex(a => a.id === updatedAppt.id);
+                            if (index !== -1) {
+                                const newAppts = [...prev];
+                                newAppts[index] = { ...newAppts[index], ...updatedAppt };
+                                return newAppts;
+                            }
+                            return [updatedAppt, ...prev];
+                        });
+
+                        // Update selected modal if open
+                        setSelectedAppt(prev => (prev && prev.id === updatedAppt.id) ? { ...prev, ...updatedAppt } : prev);
+                        
+                        toast.success(`Schedule Update: ${updatedAppt.patient?.name}'s session is now ${updatedAppt.status}`, {
+                            icon: '🔄',
+                            duration: 4000
+                        });
+                    });
+                }, (err) => {
+                    console.warn("WS_RETRY: Connection dropped, falling back to pulse polling", err);
+                });
+            } catch (e) {
+                console.error("WS_INIT_FAILURE", e);
+            }
+        };
+
+        connectWebSocket();
+
+        // Automated Telemetry Heartbeat (Fallback polling)
+        const pulseInterval = setInterval(() => {
+            fetchAppointments(true);
+        }, 60000); 
+
+        return () => {
+            clearInterval(pulseInterval);
+            if (stompClient) stompClient.disconnect();
+        };
+    }, [fetchAppointments]);
 
     const isPastSlot = (apptDate, slot) => {
         try {
@@ -101,11 +152,11 @@ const DoctorAppointments = () => {
                         <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-white/10 rounded-full border border-white/10 backdrop-blur-md">
                             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-400">
                                 <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-                                Live Telemetry Active
+                                Real-time Sync Active
                             </div>
                             <span className="text-white/20">|</span>
                             <button 
-                                onClick={fetchAppointments}
+                                onClick={() => fetchAppointments()}
                                 className="text-[10px] font-black uppercase tracking-widest text-slate-300 hover:text-white transition-colors flex items-center gap-1.5"
                             >
                                 <Activity size={12} />
@@ -223,8 +274,261 @@ const DoctorAppointments = () => {
                 <SessionDetailModal 
                     appt={selectedAppt} 
                     onClose={() => setSelectedAppt(null)} 
+                    onVerifyClick={() => {
+                        setShowPaymentCard(selectedAppt);
+                        setSelectedAppt(null);
+                    }}
                 />
             )}
+
+            {/* Floating Payment Verification Window */}
+            {showPaymentCard && (
+                <PaymentFloatingCard 
+                    appt={showPaymentCard}
+                    onVerified={() => {
+                        setShowPaymentCard(null);
+                        fetchAppointments(true);
+                    }}
+                    onDismiss={() => setShowPaymentCard(null)}
+                />
+            )}
+        </div>
+    );
+};
+
+/* --- SUBCOMPONENTS --- */
+
+const DoctorAppointmentCard = ({ appt, onClick, active, historical }) => {
+    const { user } = useAuth();
+    return (
+        <div 
+            onClick={onClick}
+            className={`group relative perspective-1000 cursor-pointer`}
+        >
+            <div className={`absolute -inset-0.5 bg-gradient-to-r ${active ? 'from-emerald-500 to-primary' : 'from-slate-200 to-slate-200'} rounded-[2.5rem] blur opacity-10 group-hover:opacity-30 transition duration-500`}></div>
+            <div className="relative p-7 bg-white border border-slate-100 rounded-[2.5rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <div className="flex items-start justify-between mb-6">
+                    <div className="flex items-center gap-4">
+                        <div className={`w-16 h-16 rounded-[1.5rem] flex flex-col items-center justify-center font-black ${
+                            active ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-slate-50 text-slate-400 border border-slate-100'
+                        }`}>
+                            <div className="text-xl leading-none">{(appt.timeSlot || '--').split(' ')[0]}</div>
+                            <div className="text-[9px] uppercase tracking-widest opacity-60 mt-1">{(appt.timeSlot || '--').split(' ')[1] || 'Slot'}</div>
+                        </div>
+                        <div className="min-w-0">
+                            <h4 className="text-lg font-black text-slate-900 truncate">{appt.patient?.name || 'Patient Identity'}</h4>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">{appt.patient?.email || 'Authorized Link'}</p>
+                        </div>
+                    </div>
+                    {active && (
+                       <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100">
+                          <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                          <span className="text-[9px] font-black uppercase tracking-widest">Live Now</span>
+                       </div>
+                    )}
+                </div>
+
+                <div className="space-y-4">
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3">
+                       <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                             <div className="p-2 bg-white rounded-xl shadow-sm"><Users size={16} className="text-slate-400" /></div>
+                             <div>
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{appt.patient?.name}</p>
+                                <p className="text-[10px] font-black text-slate-800 tracking-tight uppercase">Confirmed Patient</p>
+                             </div>
+                          </div>
+                          <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${
+                            appt.consultationType === 'ONLINE' ? 'bg-primary/5 text-primary border border-primary/10' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                          }`}>
+                            {appt.consultationType}
+                          </span>
+                       </div>
+
+                       {appt.status === 'AWAITING_VERIFICATION' && (
+                          <div className="pt-2 border-t border-slate-200/60 flex flex-col gap-1">
+                             <div className="flex items-center justify-between">
+                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Patient UPI:</span>
+                                <span className="text-[9px] font-bold text-slate-700">{appt.patientUpiId || 'Not Provided'}</span>
+                             </div>
+                             <div className="flex items-center justify-between">
+                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Transaction ID:</span>
+                                <span className="text-[9px] font-black text-primary uppercase tracking-tighter">{appt.transactionId || 'Not Provided'}</span>
+                             </div>
+                          </div>
+                       )}
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2">
+                        <div className="flex -space-x-2">
+                            {[1,2,3].map(i => (
+                                <div key={i} className="w-8 h-8 rounded-xl bg-white border-2 border-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-400">R</div>
+                            ))}
+                        </div>
+                        <div className="flex gap-2">
+                             {appt.status === 'AWAITING_VERIFICATION' && !user?.institutional && (
+                                <button 
+                                    onClick={(e) => { 
+                                        e.stopPropagation(); 
+                                        setShowPaymentCard(appt);
+                                    }}
+                                    className="px-6 py-2.5 bg-amber-600 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-amber-500 transition-all shadow-md active:scale-95 flex items-center gap-2"
+                                >
+                                    <ShieldCheck size={14} /> Verify Payment
+                                </button>
+                             )}
+                             {appt.status === 'AWAITING_VERIFICATION' && user?.institutional && (
+                                 <div className="px-4 py-2.5 bg-slate-100 text-slate-400 rounded-xl text-[8px] font-black uppercase tracking-widest border border-slate-200 italic">
+                                     Awaiting Admin Auth
+                                 </div>
+                             )}
+                             {appt.consultationType === 'ONLINE' && appt.meetLink && appt.status === 'BOOKED' && (() => {
+                                 const isExpired = (() => {
+                                     try {
+                                         const [time, period] = appt.timeSlot.split(' ');
+                                         const [hours, minutes] = time.split(':').map(Number);
+                                         let h = hours % 12;
+                                         if (period === 'PM') h += 12;
+                                         
+                                         const apptDate = new Date(appt.appointmentDate);
+                                         apptDate.setHours(h, minutes, 0);
+                                         
+                                         const now = new Date();
+                                         const expiryTime = new Date(apptDate.getTime() + (60 * 60 * 1000)); // 60 min buffer
+                                         return now > expiryTime;
+                                     } catch (e) { return false; }
+                                 })();
+
+                                 return (
+                                    <button 
+                                        disabled={isExpired}
+                                        onClick={(e) => { e.stopPropagation(); window.open(appt.meetLink, '_blank'); }}
+                                        className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-md active:scale-95 flex items-center gap-2 ${
+                                            isExpired 
+                                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed grayscale' 
+                                            : 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-emerald-200'
+                                        }`}
+                                    >
+                                        <Video size={14} /> {isExpired ? 'Session Concluded' : 'Enter Call'}
+                                    </button>
+                                 );
+                             })()}
+                            <button 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    window.location.href = `/doctor-dashboard/patients/${appt.patient?.id}`;
+                                }}
+                                className="px-6 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary transition-all shadow-md active:scale-95"
+                            >
+                                Open File
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// ─── Session Detail Modal (Floating Window) ───────────────────────────────────
+const SessionDetailModal = ({ appt, onClose, onVerifyClick }) => {
+    const { user } = useAuth();
+    return (
+        <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="bg-white rounded-[2.5rem] w-full max-w-lg p-10 shadow-2xl animate-in zoom-in-95 duration-300 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-6">
+                    <button onClick={onClose} className="p-3 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-2xl transition-all">
+                        <X size={20} />
+                    </button>
+                </div>
+
+                <div className="relative z-10">
+                    <div className="w-16 h-16 bg-primary/10 text-primary rounded-3xl flex items-center justify-center mb-6 border border-primary/20">
+                        <Calendar size={28} />
+                    </div>
+
+                    <h3 className="text-3xl font-black text-slate-900 tracking-tight leading-none mb-1">Clinical Protocol</h3>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em] mb-8">Session Details & Metadata</p>
+
+                    <div className="space-y-6">
+                        <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-4">
+                            <div className="w-16 h-16 bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden flex items-center justify-center text-slate-300">
+                                <User size={32} />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black uppercase text-primary tracking-widest mb-0.5">Patient Identity</p>
+                                <p className="text-xl font-black text-slate-900">{appt.patient?.name}</p>
+                                <p className="text-xs font-bold text-slate-400">{appt.patient?.email}</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+                                <div className="flex items-center gap-2 mb-2 text-slate-400">
+                                    <Clock size={14} />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Time Slot</span>
+                                </div>
+                                <p className="text-lg font-black text-slate-800 leading-none mb-1">{appt.timeSlot}</p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{appt.appointmentDate}</p>
+                            </div>
+                            <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+                                <div className="flex items-center gap-2 mb-2 text-slate-400">
+                                    <Target size={14} />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Status</span>
+                                </div>
+                                <p className={`text-lg font-black leading-none mb-1 ${
+                                    appt.status === 'BOOKED' ? 'text-emerald-600' : 'text-amber-600'
+                                }`}>
+                                    {appt.status.replace(/_/g, ' ')}
+                                </p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{appt.consultationType} Protocol</p>
+                            </div>
+                        </div>
+
+                        {appt.status === 'AWAITING_VERIFICATION' && (
+                            <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100 space-y-3">
+                                <div className="flex items-center gap-2 text-amber-700">
+                                    <ShieldCheck size={18} />
+                                    <span className="text-xs font-black uppercase tracking-widest">Awaiting Verification</span>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-[10px] text-slate-500 font-medium">Patient UPI ID: <span className="font-bold text-slate-700">{appt.patientUpiId}</span></p>
+                                    <p className="text-[10px] text-slate-500 font-medium">Transaction Reference: <span className="font-bold text-slate-700">{appt.transactionId}</span></p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="mt-10 pt-8 border-t border-slate-100 flex flex-col gap-3">
+                        <div className="flex gap-4">
+                            <button 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    window.location.href = `/doctor-dashboard/patients/${appt.patient?.id}`;
+                                }}
+                                className="flex-1 py-4 bg-slate-900 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl hover:bg-primary transition-all active:scale-[0.98]"
+                            >
+                                Review Medical Dossier
+                            </button>
+                            <button onClick={onClose} className="px-8 py-4 bg-slate-100 text-slate-500 text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-slate-200 transition-all">
+                                Close
+                            </button>
+                        </div>
+                        
+                        {appt.status === 'AWAITING_VERIFICATION' && !user?.institutional && (
+                            <button 
+                                onClick={onVerifyClick}
+                                className="w-full py-4 bg-amber-600 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl shadow-lg hover:bg-amber-500 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                            >
+                                <ShieldCheck size={16} /> Verify & Confirm Payment
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
 
             {/* Floating Payment Verification Window */}
             {showPaymentCard && (

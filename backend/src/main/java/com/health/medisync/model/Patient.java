@@ -253,6 +253,15 @@ public class Patient {
     public boolean isLinked() { return linked; }
     public void setLinked(boolean linked) { this.linked = linked; }
 
+    private Double latitude;
+    private Double longitude;
+
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
+
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
+
     @PrePersist
     public void ensurePatientId() {
         if (this.patientId == null || this.patientId.isEmpty()) {

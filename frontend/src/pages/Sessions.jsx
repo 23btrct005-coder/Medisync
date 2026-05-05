@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import api from '../api/axiosConfig';
-import { Calendar, Clock, ChevronRight, Video, MapPin, X, Loader2, AlertCircle, History as HistoryIcon, ShieldCheck, CreditCard, CheckCircle2, Copy, ExternalLink } from 'lucide-react';
+import SockJS from 'sockjs-client';
+import Stomp from 'stompjs';
+import { Calendar, Clock, ChevronRight, Video, MapPin, X, Loader2, AlertCircle, History as HistoryIcon, ShieldCheck, CreditCard, CheckCircle2, Copy, ExternalLink, Activity } from 'lucide-react';
 import ClinicMap from '../components/ClinicMap';
 import toast from 'react-hot-toast';
 
@@ -417,14 +419,7 @@ const SessionDetailModal = ({ appt, onClose, canEnter }) => {
                         <button onClick={onClose} className="flex-1 btn-premium bg-slate-900 text-white shadow-2xl hover:bg-slate-800 border-none text-sm py-4 animate-pulse-soft">
                             Acknowledge
                         </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const Sessions = () => {
+     const Sessions = () => {
     const location = useLocation();
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -434,14 +429,82 @@ const Sessions = () => {
     const [showRatingModal, setShowRatingModal] = useState(null);
     const [showPaymentCard, setShowPaymentCard] = useState(null);
 
+    const fetchAppointments = useCallback(async (isSilent = false) => {
+        if (!isSilent) setLoading(true);
+        try {
+            const res = await api.get('/appointments/patient');
+            const data = res.data || [];
+            setAppointments(data);
+            
+            if (location.state?.autoOpenId) {
+                const appt = data.find(a => a.id === location.state.autoOpenId);
+                if (appt) setSelectedAppt(appt);
+            }
+
+            // Auto-switch tab logic
+            const d = new Date();
+            const todayStr = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
+            const hasToday = data.some(a => a.appointmentDate === todayStr);
+            if (!hasToday && data.some(a => a.appointmentDate > todayStr)) {
+                setActiveTab('upcoming');
+            }
+        } catch (e) {
+            console.error("Failed to fetch clinical timeline", e);
+        } finally {
+            if (!isSilent) setLoading(false);
+        }
+    }, [location.state?.autoOpenId]);
+
     useEffect(() => {
         fetchAppointments();
-        const interval = setInterval(() => {
-            // Re-run the calculations every 30s for real-time transitions
-            setAppointments(prev => [...prev]);
-        }, 30000);
-        return () => clearInterval(interval);
-    }, []);
+
+        // ── Real-time Feature: WebSocket Sync ──
+        let stompClient = null;
+        const connectWebSocket = () => {
+            try {
+                const wsUrl = `${api.defaults.baseURL.replace('/api', '')}/ws`;
+                const socket = new SockJS(wsUrl);
+                stompClient = Stomp.over(socket);
+                stompClient.debug = null; 
+
+                stompClient.connect({
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                }, () => {
+                    stompClient.subscribe('/user/queue/appointments', (msg) => {
+                        const updatedAppt = JSON.parse(msg.body);
+                        
+                        setAppointments(prev => {
+                            const index = prev.findIndex(a => a.id === updatedAppt.id);
+                            if (index !== -1) {
+                                const newAppts = [...prev];
+                                newAppts[index] = { ...newAppts[index], ...updatedAppt };
+                                return newAppts;
+                            }
+                            return [updatedAppt, ...prev];
+                        });
+
+                        setSelectedAppt(prev => (prev && prev.id === updatedAppt.id) ? { ...prev, ...updatedAppt } : prev);
+                        
+                        toast.success(`Update: Your session status is now ${updatedAppt.status}`, {
+                            icon: '✅',
+                            duration: 4000
+                        });
+                    });
+                });
+            } catch (e) {}
+        };
+
+        connectWebSocket();
+
+        const pulseInterval = setInterval(() => {
+            fetchAppointments(true);
+        }, 60000);
+
+        return () => {
+            clearInterval(pulseInterval);
+            if (stompClient) stompClient.disconnect();
+        };
+    }, [fetchAppointments]);
 
     const isPastSlot = (apptDate, slot) => {
         try {
@@ -450,15 +513,10 @@ const Sessions = () => {
             let [hours, minutes] = time.split(':').map(Number);
             if (period === 'PM' && hours !== 12) hours += 12;
             if (period === 'AM' && hours === 12) hours = 0;
-            
             const sessionTime = new Date(apptDate);
             sessionTime.setHours(hours, minutes, 0);
-            
-            // A slot is past if it's more than 60 mins after the start time
             return (now - sessionTime) / (1000 * 60) > 60;
-        } catch (e) {
-            return false;
-        }
+        } catch (e) { return false; }
     };
 
     const isCallActive = (apptDate, slot) => {
@@ -468,53 +526,21 @@ const Sessions = () => {
             let [hours, minutes] = time.split(':').map(Number);
             if (period === 'PM' && hours !== 12) hours += 12;
             if (period === 'AM' && hours === 12) hours = 0;
-            
             const sessionTime = new Date(apptDate);
             sessionTime.setHours(hours, minutes, 0);
-            
             const diffMinutes = (sessionTime - now) / (1000 * 60);
-            return diffMinutes <= 10 && diffMinutes >= -60; // Active 10 mins before and up to 1 hour after
-        } catch (e) {
-            return false;
-        }
-    };
-
-    const fetchAppointments = async () => {
-        setLoading(true);
-        try {
-            const res = await api.get('appointments/my-appointments');
-            const data = res.data || [];
-            setAppointments(data);
-            
-            if (location.state?.autoOpenApptId) {
-                const apptToOpen = data.find(a => a.id === location.state.autoOpenApptId);
-                if (apptToOpen) setSelectedAppt(apptToOpen);
-            }
-
-            const d = new Date();
-            const todayStr = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
-            const hasToday = (data || []).some(a => a.appointmentDate === todayStr);
-            if (!hasToday && (data || []).some(a => a.appointmentDate > todayStr)) {
-                setActiveTab('upcoming');
-            }
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setLoading(false);
-        }
+            return diffMinutes <= 10 && diffMinutes >= -60;
+        } catch (e) { return false; }
     };
 
     const d = new Date();
     const todayString = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
     
     const safeAppointments = Array.isArray(appointments) ? appointments : [];
-    
-    // Filter by category first
     const categoryAppointments = safeAppointments.filter(a => 
         activeCategory === 'service' ? !!a.serviceName : !a.serviceName
     );
 
-    // Status Segregation Tier 1: Split into active vs pending
     const activeAppts = categoryAppointments.filter(a => a.status === 'BOOKED');
     const pendingAppointments = categoryAppointments.filter(a => a.status === 'PENDING' || a.status === 'AWAITING_VERIFICATION');
     
@@ -535,7 +561,7 @@ const Sessions = () => {
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
                     <div className="flex items-center gap-2 text-primary-600 font-black text-xs uppercase tracking-[0.2em] mb-2">
-                        <Calendar size={14} /> Clinical Schedule
+                        <Activity size={14} /> Clinical Schedule
                     </div>
                     <h2 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
                         My Appointments
@@ -612,7 +638,7 @@ const Sessions = () => {
                                         <SessionCard key={appt.id} appt={appt} onClick={() => setSelectedAppt(appt)} active canEnter={isCallActive(appt.appointmentDate, appt.timeSlot)} />
                                     ))}
                                 </div>
-                             )}
+                            )}
                         </div>
                     )}
 
@@ -636,7 +662,7 @@ const Sessions = () => {
                                         />
                                     ))}
                                 </div>
-                             )}
+                            )}
                         </div>
                     )}
 
@@ -685,7 +711,7 @@ const Sessions = () => {
             {showPaymentCard && (
                 <PaymentFloatingCard
                     appt={showPaymentCard}
-                    onVerified={() => { setShowPaymentCard(null); fetchAppointments(); }}
+                    onVerified={() => { setShowPaymentCard(null); fetchAppointments(true); }}
                     onDismiss={() => setShowPaymentCard(null)}
                 />
             )}

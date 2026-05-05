@@ -113,12 +113,25 @@ public class AppointmentController {
     }
 
     @GetMapping("/hospitals-by-service")
-    public ResponseEntity<?> getHospitalsByService(@RequestParam String service) {
+    public ResponseEntity<?> getHospitalsByService(
+            @RequestParam String service,
+            @RequestParam(required = false) String bloodGroup) {
         List<Map<String, Object>> facilities = new java.util.ArrayList<>();
+        ObjectMapper mapper = new ObjectMapper();
         
         // Hospitals
         hospitalRepository.findAll().stream()
             .filter(h -> h.getServices() != null && h.getServices().toLowerCase().contains(service.toLowerCase()))
+            .filter(h -> {
+                if (bloodGroup == null || bloodGroup.isEmpty() || !service.equalsIgnoreCase("Blood Bank")) return true;
+                if (h.getBloodStock() == null) return false;
+                try {
+                    Map<String, Integer> stock = mapper.readValue(h.getBloodStock(), Map.class);
+                    return stock.getOrDefault(bloodGroup, 0) > 0;
+                } catch (Exception e) {
+                    return false;
+                }
+            })
             .forEach(h -> {
                 Map<String, Object> map = new java.util.HashMap<>();
                 map.put("id", "hosp_" + h.getId());

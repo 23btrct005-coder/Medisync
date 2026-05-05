@@ -335,4 +335,13 @@ public class PatientService {
             patientRepository.save(patient);
         }
     }
+
+    @Transactional
+    public void updateLocation(String email, Double lat, Double lng) {
+        Patient patient = patientRepository.findByUserUsernameIgnoreCase(email)
+            .orElseThrow(() -> new RuntimeException("Patient not found"));
+        patient.setLatitude(lat);
+        patient.setLongitude(lng);
+        patientRepository.save(patient);
+    }
 }

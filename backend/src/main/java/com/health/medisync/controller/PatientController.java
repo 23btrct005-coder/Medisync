@@ -159,4 +159,16 @@ public class PatientController {
     public ResponseEntity<List<com.health.medisync.model.Prescription>> getMyMedications(Authentication authentication) {
         return ResponseEntity.ok(prescriptionService.getMyPrescriptions(authentication.getName()));
     }
+
+    @PostMapping("/location")
+    public ResponseEntity<?> updateLocation(@RequestBody Map<String, Double> location, Authentication authentication) {
+        try {
+            Double lat = location.get("latitude");
+            Double lng = location.get("longitude");
+            patientService.updateLocation(authentication.getName(), lat, lng);
+            return ResponseEntity.ok(Map.of("message", "Location updated successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
 }

@@ -100,7 +100,11 @@ const HospitalProfile = () => {
         endTime: '17:00',
         serviceFees: {},
         serviceDurations: {},
-        serviceCapacity: {}
+        serviceCapacity: {},
+        bloodStock: {
+            'A+': 0, 'A-': 0, 'B+': 0, 'B-': 0, 
+            'AB+': 0, 'AB-': 0, 'O+': 0, 'O-': 0
+        }
     });
 
     useEffect(() => {
@@ -172,7 +176,11 @@ const HospitalProfile = () => {
                 endTime: h.consultationTimings ? h.consultationTimings.split(' - ')[1] : '17:00',
                 serviceFees: h.serviceFees ? (typeof h.serviceFees === 'string' ? JSON.parse(h.serviceFees) : h.serviceFees) : {},
                 serviceDurations: h.serviceDurations ? (typeof h.serviceDurations === 'string' ? JSON.parse(h.serviceDurations) : h.serviceDurations) : {},
-                serviceCapacity: h.serviceCapacity ? (typeof h.serviceCapacity === 'string' ? JSON.parse(h.serviceCapacity) : h.serviceCapacity) : {}
+                serviceCapacity: h.serviceCapacity ? (typeof h.serviceCapacity === 'string' ? JSON.parse(h.serviceCapacity) : h.serviceCapacity) : {},
+                bloodStock: h.bloodStock ? (typeof h.bloodStock === 'string' ? JSON.parse(h.bloodStock) : h.bloodStock) : {
+                    'A+': 0, 'A-': 0, 'B+': 0, 'B-': 0, 
+                    'AB+': 0, 'AB-': 0, 'O+': 0, 'O-': 0
+                }
             });
             if (h.logoUrl) {
                 console.log("DEBUG: Logo detected:", h.logoUrl);
@@ -201,8 +209,9 @@ const HospitalProfile = () => {
             // Validation: Every service must have both fee and duration
             const services = formData.services.split(', ').filter(s => s);
             for (const service of services) {
-                if (!formData.serviceFees[service] || !formData.serviceDurations[service]) {
-                    toast.error(`Required: Please provide both Fee and Duration for "${service}"`);
+                const is247 = SERVICES_24_7.includes(service);
+                if (!formData.serviceFees[service] || (!is247 && !formData.serviceDurations[service])) {
+                    toast.error(`Required: Please provide ${!is247 ? 'both Fee and Duration' : 'Fee'} for "${service}"`);
                     setSaving(false);
                     return;
                 }
@@ -343,9 +352,10 @@ const HospitalProfile = () => {
                     { id: 'operations', label: 'Operations', icon: Activity },
                     { id: 'environment', label: 'Environment', icon: Globe },
                     { id: 'governance', label: 'Governance', icon: User },
+                    { id: 'blood-bank', label: 'Blood Bank', icon: Activity, hidden: !formData.services.includes('Blood Bank') },
                     { id: 'fees', label: 'Fees', icon: DollarSign },
                     { id: 'settlements', label: 'Settlements', icon: CreditCard },
-                ].map(tab => (
+                ].filter(t => !t.hidden).map(tab => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
@@ -1012,53 +1022,55 @@ const HospitalProfile = () => {
                                                     </div>
                                                 </div>
 
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div className="space-y-1.5">
-                                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
-                                                            <Clock size={10} /> Time Slot
-                                                        </label>
-                                                        <div className="relative">
-                                                            <input 
-                                                                type="number"
-                                                                min="0"
-                                                                required
-                                                                value={formData.serviceDurations[service] || ''}
-                                                                onChange={(e) => {
-                                                                    const val = e.target.value;
-                                                                    if (val < 0) return;
-                                                                    const newDurations = { ...formData.serviceDurations, [service]: val };
-                                                                    setFormData({ ...formData, serviceDurations: newDurations });
-                                                                }}
-                                                                placeholder="Mins"
-                                                                className="w-full px-4 py-4 bg-slate-50 border border-transparent rounded-2xl text-sm font-black text-slate-800 focus:bg-white focus:border-primary/20 focus:ring-4 ring-primary/5 transition-all outline-none"
-                                                            />
-                                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-[10px] pointer-events-none">MIN</div>
+                                                {!SERVICES_24_7.includes(service) && (
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div className="space-y-1.5">
+                                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                                <Clock size={10} /> Time Slot
+                                                            </label>
+                                                            <div className="relative">
+                                                                <input 
+                                                                    type="number"
+                                                                    min="0"
+                                                                    required
+                                                                    value={formData.serviceDurations[service] || ''}
+                                                                    onChange={(e) => {
+                                                                        const val = e.target.value;
+                                                                        if (val < 0) return;
+                                                                        const newDurations = { ...formData.serviceDurations, [service]: val };
+                                                                        setFormData({ ...formData, serviceDurations: newDurations });
+                                                                    }}
+                                                                    placeholder="Mins"
+                                                                    className="w-full px-4 py-4 bg-slate-50 border border-transparent rounded-2xl text-sm font-black text-slate-800 focus:bg-white focus:border-primary/20 focus:ring-4 ring-primary/5 transition-all outline-none"
+                                                                />
+                                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-[10px] pointer-events-none">MIN</div>
+                                                            </div>
                                                         </div>
-                                                    </div>
 
-                                                    <div className="space-y-1.5">
-                                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
-                                                            <Monitor size={10} /> Capacity
-                                                        </label>
-                                                        <div className="relative">
-                                                            <input 
-                                                                type="number"
-                                                                min="1"
-                                                                required
-                                                                value={formData.serviceCapacity?.[service] || '1'}
-                                                                onChange={(e) => {
-                                                                    const val = e.target.value;
-                                                                    if (val < 1) return;
-                                                                    const newCapacity = { ...formData.serviceCapacity, [service]: val };
-                                                                    setFormData({ ...formData, serviceCapacity: newCapacity });
-                                                                }}
-                                                                placeholder="Systems"
-                                                                className="w-full px-4 py-4 bg-slate-50 border border-transparent rounded-2xl text-sm font-black text-slate-800 focus:bg-white focus:border-primary/20 focus:ring-4 ring-primary/5 transition-all outline-none"
-                                                            />
-                                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-[10px] pointer-events-none">SYS</div>
+                                                        <div className="space-y-1.5">
+                                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                                <Monitor size={10} /> Capacity
+                                                            </label>
+                                                            <div className="relative">
+                                                                <input 
+                                                                    type="number"
+                                                                    min="1"
+                                                                    required
+                                                                    value={formData.serviceCapacity?.[service] || '1'}
+                                                                    onChange={(e) => {
+                                                                        const val = e.target.value;
+                                                                        if (val < 1) return;
+                                                                        const newCapacity = { ...formData.serviceCapacity, [service]: val };
+                                                                        setFormData({ ...formData, serviceCapacity: newCapacity });
+                                                                    }}
+                                                                    placeholder="Systems"
+                                                                    className="w-full px-4 py-4 bg-slate-50 border border-transparent rounded-2xl text-sm font-black text-slate-800 focus:bg-white focus:border-primary/20 focus:ring-4 ring-primary/5 transition-all outline-none"
+                                                                />
+                                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-[10px] pointer-events-none">SYS</div>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
+                                                )}
                                             </div>
                                         </div>
                                     ))}
@@ -1077,6 +1089,52 @@ const HospitalProfile = () => {
                                         </div>
                                     )}
                                 </div>
+                            </div>
+                        </div>
+                    )}
+                    {activeTab === 'blood-bank' && (
+                        <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-600">
+                                    <Activity size={24} />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Blood <span className="not-italic text-red-600">Stock Registry</span></h3>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Manage Availability Across All Groups</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                {Object.keys(formData.bloodStock).map(group => (
+                                    <div key={group} className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 group hover:border-red-200 transition-all">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <span className="text-lg font-black text-slate-800 tracking-tighter">{group}</span>
+                                            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                                        </div>
+                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 block mb-2">Available (Units)</label>
+                                        <input 
+                                            type="number"
+                                            min="0"
+                                            value={formData.bloodStock[group]}
+                                            onChange={(e) => {
+                                                const val = parseInt(e.target.value) || 0;
+                                                setFormData({
+                                                    ...formData,
+                                                    bloodStock: { ...formData.bloodStock, [group]: val }
+                                                });
+                                            }}
+                                            className="w-full px-4 py-3 bg-white border border-transparent rounded-xl text-sm font-black text-slate-800 focus:border-red-200 outline-none transition-all"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="mt-8 p-6 bg-red-50/50 rounded-3xl border border-red-100/50 flex items-start gap-4">
+                                <AlertCircle className="text-red-600 mt-1" size={18} />
+                                <p className="text-[10px] text-red-800 font-bold leading-relaxed italic uppercase tracking-tight">
+                                    Real-time stock levels are exposed to the AI Concierge and nearby emergency responders. 
+                                    Ensure these counts are updated regularly to prevent clinical mismatch.
+                                </p>
                             </div>
                         </div>
                     )}

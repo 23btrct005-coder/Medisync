@@ -30,6 +30,7 @@ public class AppointmentService {
     private final NotificationService notificationService;
     private final RatingRepository ratingRepository;
     private final HospitalRepository hospitalRepository;
+    private final org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
 
     @Value("${razorpay.key.id:}")
     private String razorpayKeyId;
@@ -51,7 +52,8 @@ public class AppointmentService {
                               UserRepository userRepository,
                               NotificationService notificationService,
                               RatingRepository ratingRepository,
-                              HospitalRepository hospitalRepository) {
+                              HospitalRepository hospitalRepository,
+                              org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate) {
         this.appointmentRepository = appointmentRepository;
         this.doctorRepository = doctorRepository;
         this.patientRepository = patientRepository;
@@ -59,6 +61,45 @@ public class AppointmentService {
         this.notificationService = notificationService;
         this.ratingRepository = ratingRepository;
         this.hospitalRepository = hospitalRepository;
+        this.messagingTemplate = messagingTemplate;
+    }
+
+    private void broadcastAppointmentUpdate(Appointment appointment) {
+        try {
+            // Notify Doctor
+            if (appointment.getDoctor() != null) {
+                messagingTemplate.convertAndSendToUser(
+                    appointment.getDoctor().getUser().getUsername(),
+                    "/queue/appointments",
+                    appointment
+                );
+                
+                // If institutional, notify hospital admins
+                if (appointment.getDoctor().isInstitutional() && appointment.getDoctor().getHospitalEntity() != null) {
+                    Hospital hospital = appointment.getDoctor().getHospitalEntity();
+                    for (HospitalAdmin admin : hospital.getAdmins()) {
+                        if (admin.isApproved()) {
+                            messagingTemplate.convertAndSendToUser(
+                                admin.getUser().getUsername(),
+                                "/queue/appointments",
+                                appointment
+                            );
+                        }
+                    }
+                }
+            }
+            
+            // Notify Patient
+            if (appointment.getPatient() != null) {
+                messagingTemplate.convertAndSendToUser(
+                    appointment.getPatient().getUser().getUsername(),
+                    "/queue/appointments",
+                    appointment
+                );
+            }
+        } catch (Exception e) {
+            System.err.println("WS_BROADCAST_FAILURE: " + e.getMessage());
+        }
     }
 
     public boolean hasBookedAppointment(Long doctorId, Long patientId) {
@@ -416,6 +457,7 @@ public class AppointmentService {
         appointment.setStatus(AppointmentStatus.BOOKED);
         appointment.setCreatedAt(LocalDateTime.now()); // Reset timestamp to mark as confirmed
         Appointment booked = appointmentRepository.save(appointment);
+        broadcastAppointmentUpdate(booked);
 
         boolean isEmergency = booked.getServiceName() != null && SERVICES_24_7.contains(booked.getServiceName());
         String notificationType = isEmergency ? "EMERGENCY" : "APPOINTMENT";
@@ -472,6 +514,7 @@ public class AppointmentService {
         appointment.setStatus(AppointmentStatus.AWAITING_VERIFICATION);
         appointment.setCreatedAt(LocalDateTime.now());
         Appointment booked = appointmentRepository.save(appointment);
+        broadcastAppointmentUpdate(booked);
 
         Doctor doctor = booked.getDoctor();
         boolean isInstitutional = doctor.isInstitutional() && doctor.getHospitalEntity() != null;
@@ -546,6 +589,7 @@ public class AppointmentService {
         appointment.setStatus(AppointmentStatus.BOOKED);
         appointment.setCreatedAt(LocalDateTime.now());
         Appointment booked = appointmentRepository.save(appointment);
+        broadcastAppointmentUpdate(booked);
 
         // Notify Patient
         notificationService.sendNotification(

@@ -106,6 +106,9 @@ public class Hospital {
     private String facebookUrl;
     private String twitterUrl;
     private String instagramUrl;
+
+    @Column(columnDefinition = "TEXT")
+    private String bloodStock; // JSON mapping blood group -> stock level
     @Column(columnDefinition = "TEXT")
     private String galleryUrls; // JSON string for hospital images
     private String accreditationBadges; // NABH, ISO, etc.
@@ -364,4 +367,7 @@ public class Hospital {
 
     public Double getLongitude() { return longitude; }
     public void setLongitude(Double longitude) { this.longitude = longitude; }
+
+    public String getBloodStock() { return bloodStock; }
+    public void setBloodStock(String bloodStock) { this.bloodStock = bloodStock; }
 }
