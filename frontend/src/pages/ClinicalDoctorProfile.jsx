@@ -290,8 +290,26 @@ const DoctorProfile = () => {
                                 </div>
                             )}
                         </div>
-                                <InfoRow icon={Activity} label="Languages Spoken" value={user.languagesSpoken} color="text-emerald-600" />
-                                <InfoRow icon={Activity} label="Scientific Publications" value={user.publications} color="text-blue-600" />
+                        {isEditing ? (
+                            <div className="space-y-4 py-4">
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Procedures Managed</p>
+                                    <textarea 
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                                        rows={3}
+                                        value={formData.proceduresHandled}
+                                        onChange={(e) => setFormData({ ...formData, proceduresHandled: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Treatment Focus</p>
+                                    <textarea 
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                                        rows={3}
+                                        value={formData.treatmentFocus}
+                                        onChange={(e) => setFormData({ ...formData, treatmentFocus: e.target.value })}
+                                    />
+                                </div>
                             </div>
                         ) : (
                             <>
@@ -299,7 +317,7 @@ const DoctorProfile = () => {
                                 <InfoRow icon={Activity} label="Treatment Focus" value={user.treatmentFocus} color="text-rose-600" />
                             </>
                         )}
-                     </Section>
+                    </Section>
                                     
                     <Section title="Professional Assets" icon={Star}>
                         {isEditing ? (
