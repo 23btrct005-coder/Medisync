@@ -55,12 +55,6 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
       icon: <MessageSquare size={20} />,
       badge: unreadChatCount
     },
-    { 
-      name: 'Fee Structure', 
-      path: isAdmin ? `${prefix}/institutional-profile?tab=fees` : `${prefix}/profile?tab=fees`, 
-      icon: <DollarSign size={20} />,
-      hidden: !isAdmin && user?.institutional
-    },
     ...(isAdmin ? [
       {
         name: 'Inst. Profile',

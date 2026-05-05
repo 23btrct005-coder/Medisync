@@ -82,9 +82,8 @@ const DoctorProfile = () => {
       languagesSpoken: user.languagesSpoken || '',
       onlineConsultation: user.onlineConsultation || false,
       appointmentsEnabled: user.appointmentsEnabled || false,
-      services: user.services || '',
-      serviceFees: user.serviceFees ? (typeof user.serviceFees === 'string' ? JSON.parse(user.serviceFees) : user.serviceFees) : {},
-      serviceDurations: user.serviceDurations ? (typeof user.serviceDurations === 'string' ? JSON.parse(user.serviceDurations) : user.serviceDurations) : {}
+      onlineConsultationFee: user.onlineConsultationFee || '',
+      offlineConsultationFee: user.offlineConsultationFee || ''
     });
     setIsEditing(true);
   };
@@ -92,24 +91,8 @@ const DoctorProfile = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Validation: Every service must have both fee and duration
-      const services = Array.from(new Set([
-        "General Consultation", 
-        "Telemedicine", 
-        ...((user.services || formData.services)?.split(', ').filter(s => s) || [])
-      ]));
-      for (const service of services) {
-        if (!formData.serviceFees[service] || !formData.serviceDurations[service]) {
-          toast.error(`Required: Please provide both Fee and Duration for "${service}"`);
-          setSaving(false);
-          return;
-        }
-      }
-
       await api.post('/doctor/profile/sync', {
-        ...formData,
-        serviceFees: JSON.stringify(formData.serviceFees),
-        serviceDurations: JSON.stringify(formData.serviceDurations)
+        ...formData
       });
       toast.success("Profile synchronized successfully");
       await refreshUser();
@@ -142,7 +125,6 @@ const DoctorProfile = () => {
     { id: 'professional', label: 'Professional', icon: GraduationCap },
     { id: 'expertise', label: 'Expertise', icon: Stethoscope },
     { id: 'practice', label: 'Practice', icon: Clock },
-    ...(!user?.institutional ? [{ id: 'fees', label: 'Fees', icon: DollarSign }] : []),
     { id: 'transactional', label: 'Settlements', icon: Wallet },
   ];
 
@@ -308,89 +290,15 @@ const DoctorProfile = () => {
                                 </div>
                             )}
                         </div>
-                        {isEditing ? (
-                            <div className="space-y-4 py-4">
-                                <div>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Procedures Managed</p>
-                                    <textarea 
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
-                                        rows={3}
-                                        value={formData.proceduresHandled}
-                                        onChange={(e) => setFormData({ ...formData, proceduresHandled: e.target.value })}
-                                    />
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Treatment Focus</p>
-                                    <textarea 
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
-                                        rows={3}
-                                        value={formData.treatmentFocus}
-                                        onChange={(e) => setFormData({ ...formData, treatmentFocus: e.target.value })}
-                                    />
-                                </div>
-                                <div className="pt-4 border-t border-slate-50">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Clinical Services Provided</p>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {PREDEFINED_DOCTOR_SERVICES.map(service => (
-                                            <label key={service} className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${formData.services?.includes(service) ? 'bg-blue-50 border-blue-200 shadow-sm' : 'bg-white border-slate-100 hover:border-slate-200'}`}>
-                                                <input 
-                                                    type="checkbox" 
-                                                    className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                                                    checked={formData.services?.includes(service) || false}
-                                                    onChange={(e) => {
-                                                        const current = formData.services ? formData.services.split(', ').filter(s => s) : [];
-                                                        const next = e.target.checked ? [...current, service] : current.filter(s => s !== service);
-                                                        setFormData({...formData, services: next.join(', ')});
-                                                    }}
-                                                />
-                                                <span className={`text-[9px] font-black uppercase tracking-widest ${formData.services?.includes(service) ? 'text-blue-700' : 'text-slate-500'}`}>{service}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
-                                {user?.institutional && (
-                                    <div className="pt-6 border-t border-slate-50 mt-4">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Diagnostic & Infrastructure (Clinic/Hospital)</p>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            {PREDEFINED_INSTITUTIONAL_SERVICES.map(service => (
-                                                <label key={service} className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${formData.services?.includes(service) ? 'bg-emerald-50 border-emerald-200 shadow-sm' : 'bg-white border-slate-100 hover:border-slate-200'}`}>
-                                                    <input 
-                                                        type="checkbox" 
-                                                        className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                                                        checked={formData.services?.includes(service) || false}
-                                                        onChange={(e) => {
-                                                            const current = formData.services ? formData.services.split(', ').filter(s => s) : [];
-                                                            const next = e.target.checked ? [...current, service] : current.filter(s => s !== service);
-                                                            setFormData({...formData, services: next.join(', ')});
-                                                        }}
-                                                    />
-                                                    <span className={`text-[9px] font-black uppercase tracking-widest ${formData.services?.includes(service) ? 'text-emerald-700' : 'text-slate-500'}`}>{service}</span>
-                                                </label>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
+                                <InfoRow icon={Activity} label="Languages Spoken" value={user.languagesSpoken} color="text-emerald-600" />
+                                <InfoRow icon={Activity} label="Scientific Publications" value={user.publications} color="text-blue-600" />
                             </div>
                         ) : (
                             <>
                                 <InfoRow icon={Activity} label="Procedures Managed" value={user.proceduresHandled} color="text-indigo-600" />
-                                 <InfoRow icon={Activity} label="Treatment Focus" value={user.treatmentFocus} color="text-rose-600" />
-                                 <div className="py-4 border-t border-slate-50 mt-4 space-y-6">
-                                     <div>
-                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Clinical & Consultation Services</p>
-                                         <div className="flex flex-wrap gap-2">
-                                             {user.services ? user.services.split(', ').filter(s => PREDEFINED_DOCTOR_SERVICES.includes(s)).map(s => (
-                                                 <span key={s} className="px-4 py-2 bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded-xl border border-blue-100 shadow-sm">
-                                                     {s}
-                                                 </span>
-                                             )) : null}
-                                             {(!user.services || !user.services.split(', ').some(s => PREDEFINED_DOCTOR_SERVICES.includes(s))) && <span className="text-slate-300 italic text-sm">No clinical services listed</span>}
-                                         </div>
-                                     </div>
-
-                                 </div>
-                             </>
-                         )}
+                                <InfoRow icon={Activity} label="Treatment Focus" value={user.treatmentFocus} color="text-rose-600" />
+                            </>
+                        )}
                      </Section>
                                     
                     <Section title="Professional Assets" icon={Star}>
@@ -446,7 +354,40 @@ const DoctorProfile = () => {
                             <InfoRow icon={Users} label="Max Daily Load" value={`${user.maxPatientsPerDay || 0} Patients`} color="text-emerald-600" isLocked={user.institutional} />
                         </div>
                         <div className="py-4 space-y-6">
-                            <div className="flex items-center justify-between">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Offline Consultation Fee (₹)</p>
+                                    {isEditing ? (
+                                        <input 
+                                            type="number" 
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                                            value={formData.offlineConsultationFee}
+                                            onChange={(e) => setFormData({ ...formData, offlineConsultationFee: e.target.value })}
+                                        />
+                                    ) : (
+                                        <p className="text-sm font-bold text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                            ₹{user.offlineConsultationFee || '0'}
+                                        </p>
+                                    )}
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Online Consultation Fee (₹)</p>
+                                    {isEditing ? (
+                                        <input 
+                                            type="number" 
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                                            value={formData.onlineConsultationFee}
+                                            onChange={(e) => setFormData({ ...formData, onlineConsultationFee: e.target.value })}
+                                        />
+                                    ) : (
+                                        <p className="text-sm font-bold text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                            ₹{user.onlineConsultationFee || '0'}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-4 border-t border-slate-50">
                                 <div>
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Digital Care Status</p>
                                     <p className="text-sm font-bold text-slate-700 mt-1">Telemedicine Availability</p>
