@@ -36,6 +36,11 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
         name: 'Hospital Ledger', 
         path: `${prefix}/ledger`, 
         icon: <Calendar size={20} /> 
+      },
+      { 
+        name: 'Service Bookings', 
+        path: `${prefix}/services`, 
+        icon: <Activity size={20} /> 
       }
     ] : []),
     { 

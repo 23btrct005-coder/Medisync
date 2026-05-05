@@ -50,6 +50,7 @@ import HospitalPatients from './pages/HospitalPatients';
 import HospitalProfile from './pages/HospitalProfile';
 import HospitalAnalytics from './pages/HospitalAnalytics';
 import HospitalLedger from './pages/HospitalLedger';
+import HospitalServiceBookings from './pages/HospitalServiceBookings';
 import PendingApproval from './pages/PendingApproval';
 import StaffProfileEditor from './pages/StaffProfileEditor';
 import StaffOnboarding from './pages/StaffOnboarding';
@@ -226,6 +227,7 @@ function App() {
                   <Route index element={<HospitalDashboard />} />
                   <Route path="appointments" element={<HospitalAppointments />} />
                   <Route path="ledger" element={<HospitalLedger />} />
+                  <Route path="services" element={<HospitalServiceBookings />} />
                   <Route path="patients" element={<HospitalPatients />} />
                   <Route path="profile" element={<HospitalAdminProfile />} />
                   <Route path="institutional-profile" element={<HospitalProfile />} />
