@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, Filter, Calendar, Clock, ChevronRight,
   User, Star, MapPin, Video, CheckCircle2, AlertCircle,
-  ArrowLeft, CreditCard, Loader2, Sparkles, RefreshCw, QrCode, X, Activity
+  ArrowLeft, CreditCard, Loader2, Sparkles, RefreshCw, QrCode, X, Activity,
+  Navigation, Droplets, Ambulance, Siren
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api/axiosConfig';
@@ -40,6 +41,17 @@ const Booking = () => {
   const [selectedService, setSelectedService] = useState(null);
   const [serviceHospitals, setServiceHospitals] = useState([]);
   const [loadingHospitals, setLoadingHospitals] = useState(false);
+
+  // ── Ambulance GPS State ──
+  const [userLocation, setUserLocation] = useState(null); // { lat, lng }
+  const [locating, setLocating] = useState(false);
+  const [showAmbulanceOverlay, setShowAmbulanceOverlay] = useState(false);
+
+  // ── Blood Bank State ──
+  const [showBloodGroupModal, setShowBloodGroupModal] = useState(false);
+  const [selectedBloodGroup, setSelectedBloodGroup] = useState(null);
+
+  const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
   const SERVICES_24_7 = [
     "Emergency & Trauma Care", "Ambulance Services", "ICU (Intensive Care Unit)", 
@@ -83,20 +95,82 @@ const Booking = () => {
 
   useEffect(() => {
     if (selectedService) {
-        fetchHospitalsByService(selectedService);
+        const extra = {};
+        if (selectedService === 'Blood Bank' && selectedBloodGroup) {
+            extra.bloodGroup = selectedBloodGroup;
+        }
+        fetchHospitalsByService(selectedService, extra);
     }
-  }, [selectedService]);
+  }, [selectedService, selectedBloodGroup, userLocation]);
 
-  const fetchHospitalsByService = async (service) => {
+  const fetchHospitalsByService = async (service, extraParams = {}) => {
     setLoadingHospitals(true);
     try {
-        const res = await api.get(`appointments/hospitals-by-service?service=${service}`);
-        setServiceHospitals(res.data || []);
+        const params = new URLSearchParams({ service, ...extraParams });
+        const res = await api.get(`appointments/hospitals-by-service?${params.toString()}`);
+        let hospitals = res.data || [];
+
+        // Sort by distance if user location is available
+        if (userLocation) {
+            hospitals = hospitals
+                .map(h => ({
+                    ...h,
+                    distance: h.latitude && h.longitude
+                        ? haversineKm(userLocation.lat, userLocation.lng, h.latitude, h.longitude)
+                        : null
+                }))
+                .sort((a, b) => {
+                    if (a.distance === null) return 1;
+                    if (b.distance === null) return -1;
+                    return a.distance - b.distance;
+                });
+        }
+        setServiceHospitals(hospitals);
     } catch (e) {
         toast.error("Failed to fetch hospitals for this service.");
     } finally {
         setLoadingHospitals(false);
     }
+  };
+
+  // ── Haversine Distance (km) ──
+  const haversineKm = (lat1, lng1, lat2, lng2) => {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  };
+
+  // ── Handle Service Card Click ──
+  const handleServiceSelect = (service) => {
+    if (service === 'Ambulance Services') {
+        setShowAmbulanceOverlay(true);
+        setLocating(true);
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                setUserLocation(loc);
+                setLocating(false);
+                setShowAmbulanceOverlay(false);
+                setSelectedService(service);
+                // Will trigger fetchHospitalsByService via useEffect
+            },
+            (err) => {
+                setLocating(false);
+                setShowAmbulanceOverlay(false);
+                toast.error('Location access denied. Showing all hospitals.');
+                setSelectedService(service);
+            },
+            { timeout: 10000, enableHighAccuracy: true }
+        );
+        return;
+    }
+    if (service === 'Blood Bank') {
+        setShowBloodGroupModal(true);
+        return;
+    }
+    setSelectedService(service);
   };
 
   const fetchDoctors = async () => {
@@ -404,7 +478,7 @@ const Booking = () => {
                         {PREDEFINED_INSTITUTIONAL_SERVICES.map(service => (
                             <button
                                 key={service}
-                                onClick={() => setSelectedService(service)}
+                                onClick={() => handleServiceSelect(service)}
                                 className={`p-4 rounded-3xl border-2 text-center transition-all relative ${selectedService === service 
                                     ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-lg shadow-emerald-500/10' 
                                     : 'bg-white border-slate-100 text-slate-500 hover:border-emerald-200'}`}
@@ -434,7 +508,26 @@ const Booking = () => {
                                         <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mt-0.5">Clinical Protocol Active</p>
                                     </div>
                                 </div>
-                                <div className="px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl">
+                                {selectedService === 'Ambulance Services' && userLocation && (
+                                        <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-2xl border border-blue-100 text-[10px] font-black uppercase tracking-widest">
+                                            <Navigation size={12} className="animate-pulse" />
+                                            Sorted by distance from your location
+                                        </div>
+                                    )}
+                                    {selectedService === 'Blood Bank' && selectedBloodGroup && (
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-2xl border border-red-100 text-[10px] font-black uppercase tracking-widest">
+                                                <Droplets size={12} />
+                                                Blood Group: {selectedBloodGroup}
+                                            </div>
+                                            <button
+                                                onClick={() => { setSelectedBloodGroup(null); setSelectedService(null); setShowBloodGroupModal(true); }}
+                                                className="p-2 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors"
+                                            >
+                                                <X size={14} className="text-slate-500" />
+                                            </button>
+                                        </div>
+                                    )}
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Available Institutions</p>
                                     <p className="text-sm font-black text-slate-800">{serviceHospitals.length} Nodes Found</p>
                                 </div>
@@ -456,12 +549,20 @@ const Booking = () => {
                                             className="glass-panel p-6 bg-white hover:border-emerald-400 transition-all cursor-pointer group"
                                         >
                                             <div className="flex items-center gap-4 mb-4">
-                                                <div className="w-16 h-16 bg-slate-100 rounded-2xl overflow-hidden border-2 border-white shadow-inner flex items-center justify-center">
-                                                    {h.logoUrl ? <img src={h.logoUrl} className="w-full h-full object-cover" /> : <Activity size={32} className="text-slate-300" />}
+                                                <div className="w-16 h-16 bg-slate-100 rounded-2xl overflow-hidden border-2 border-white shadow-inner flex items-center justify-center shrink-0">
+                                                    {h.logoUrl ? <img src={h.logoUrl} className="w-full h-full object-cover" alt="" /> : <Activity size={32} className="text-slate-300" />}
                                                 </div>
-                                                <div>
-                                                    <h4 className="text-lg font-black text-slate-900 group-hover:text-emerald-600 transition-colors">{h.name}</h4>
+                                                <div className="min-w-0">
+                                                    <h4 className="text-lg font-black text-slate-900 group-hover:text-emerald-600 transition-colors truncate">{h.name}</h4>
                                                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{h.hospitalType || 'Medical Facility'}</p>
+                                                    {h.distance !== null && h.distance !== undefined && (
+                                                        <div className="flex items-center gap-1 mt-1">
+                                                            <Navigation size={10} className="text-blue-500" />
+                                                            <span className="text-[10px] font-black text-blue-600">
+                                                                {h.distance < 1 ? `${(h.distance * 1000).toFixed(0)}m` : `${h.distance.toFixed(1)}km`} away
+                                                            </span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                             <div className="space-y-2 mb-6">
@@ -921,7 +1022,92 @@ const Booking = () => {
           </div>
         )}
       </AnimatePresence>
+
+      {/* ─── Ambulance GPS Locating Overlay ─── */}
+      <AnimatePresence>
+        {showAmbulanceOverlay && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[700] flex items-center justify-center bg-slate-900/80 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+              className="bg-white rounded-[3rem] p-12 max-w-sm w-full mx-4 text-center shadow-2xl"
+            >
+              <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-red-500/10">
+                <Navigation size={40} className="text-red-500 animate-bounce" />
+              </div>
+              <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-2">Locating You</h3>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6">
+                Requesting GPS coordinates to find the nearest ambulance services
+              </p>
+              <div className="flex justify-center gap-1.5 mb-6">
+                {[0,1,2].map(i => (
+                  <div key={i} className="w-2 h-2 bg-red-400 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
+                ))}
+              </div>
+              <p className="text-[10px] text-slate-400 font-bold">Please allow location access when prompted.</p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── Blood Group Picker Modal ─── */}
+      <AnimatePresence>
+        {showBloodGroupModal && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[700] flex items-center justify-center bg-slate-900/70 backdrop-blur-md p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-[3rem] p-10 max-w-md w-full shadow-2xl"
+            >
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center">
+                    <Droplets className="text-red-500" size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-slate-900 tracking-tight">Blood Group</h3>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Select required blood type</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowBloodGroupModal(false)} className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
+                  <X size={18} className="text-slate-400" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-4 gap-3 mb-8">
+                {BLOOD_GROUPS.map(bg => (
+                  <button
+                    key={bg}
+                    onClick={() => {
+                      setSelectedBloodGroup(bg);
+                      setShowBloodGroupModal(false);
+                      setSelectedService('Blood Bank');
+                    }}
+                    className={`py-4 rounded-2xl font-black text-sm border-2 transition-all active:scale-95 ${
+                      selectedBloodGroup === bg
+                        ? 'bg-red-500 text-white border-red-500 shadow-lg shadow-red-500/20'
+                        : 'bg-white text-slate-700 border-slate-100 hover:border-red-200 hover:text-red-600'
+                    }`}
+                  >
+                    {bg}
+                  </button>
+                ))}
+              </div>
+
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-center">
+                We'll show hospitals with your blood type available
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
+
   );
 };
 
