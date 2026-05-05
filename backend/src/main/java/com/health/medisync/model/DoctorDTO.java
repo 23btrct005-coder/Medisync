@@ -15,6 +15,8 @@ public class DoctorDTO {
     private String services;
     private String serviceFees;
     private String serviceDurations;
+    private Double latitude;
+    private Double longitude;
 
     // Institutional Sync Fields
     private String consultationFee;
@@ -150,6 +152,8 @@ public class DoctorDTO {
         this.canAccessReports = d.isCanAccessReports();
         this.canManageAppointments = d.isCanManageAppointments();
         this.preferredPaymentMode = d.getPreferredPaymentMode();
+        this.latitude = d.getLatitude();
+        this.longitude = d.getLongitude();
     }
 
     // Getters and Setters
@@ -329,4 +333,10 @@ public class DoctorDTO {
 
     public String getServiceDurations() { return serviceDurations; }
     public void setServiceDurations(String serviceDurations) { this.serviceDurations = serviceDurations; }
+
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
+
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
 }
