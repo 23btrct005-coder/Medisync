@@ -111,7 +111,7 @@ const RatingModal = ({ appt, onClose, onRatingSubmitted }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-300">
             <div className="bg-white rounded-[2.5rem] w-full max-w-md p-8 animate-in zoom-in-95 duration-300">
                 <div className="text-center mb-8">
                     <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-none mb-2">Physician Feedback</h3>
@@ -157,8 +157,8 @@ const RatingModal = ({ appt, onClose, onRatingSubmitted }) => {
 
 const SessionDetailModal = ({ appt, onClose, canEnter }) => {
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300 px-4 sm:px-0">
-            <div className="bg-white rounded-[2.5rem] w-full max-w-md shadow-2xl relative animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-500 px-4 sm:px-0">
+            <div className="bg-white/90 backdrop-blur-2xl rounded-[2.5rem] w-full max-w-md shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] border border-white relative animate-in zoom-in-95 duration-500">
                 <div className="p-6 sm:p-8">
                     <button onClick={onClose} className="absolute top-6 right-6 p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors">
                         <X size={20} />
@@ -168,17 +168,17 @@ const SessionDetailModal = ({ appt, onClose, canEnter }) => {
                         <Calendar size={28} />
                     </div>
 
-                    <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">Session Protocol</h3>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-8">Metadata & Authorization</p>
+                    <h3 className="text-3xl font-black text-slate-900 tracking-tight leading-none mb-1 text-gradient">Session Protocol</h3>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em] mb-8">Metadata & Clinical Authorization</p>
 
                     <div className="space-y-4">
-                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex items-center gap-4">
-                            <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden shrink-0">
+                        <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-4 border border-slate-100 flex items-center gap-4 hover:border-primary-200 transition-colors group/doc">
+                            <div className="w-14 h-14 bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden shrink-0 group-hover/doc:scale-105 transition-transform">
                                 <img src={appt.doctor?.profilePictureUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${appt.doctor?.name}`} alt="" className="w-full h-full object-cover" />
                             </div>
                             <div className="min-w-0">
-                                <p className="text-[10px] font-black uppercase text-primary-600 tracking-widest">Attending Physician</p>
-                                <p className="text-base font-extrabold text-slate-900 truncate">Dr. {appt.doctor?.name}</p>
+                                <p className="text-[10px] font-black uppercase text-primary-600 tracking-widest mb-0.5">Attending Physician</p>
+                                <p className="text-lg font-black text-slate-900 truncate">Dr. {appt.doctor?.name}</p>
                             </div>
                         </div>
 
@@ -272,7 +272,7 @@ const SessionDetailModal = ({ appt, onClose, canEnter }) => {
                                 </button>
                             );
                         })()}
-                        <button onClick={onClose} className="flex-1 btn-premium bg-slate-900 text-white shadow-xl hover:bg-slate-800 border-none text-sm py-3">
+                        <button onClick={onClose} className="flex-1 btn-premium bg-slate-900 text-white shadow-2xl hover:bg-slate-800 border-none text-sm py-4 animate-pulse-soft">
                             Acknowledge
                         </button>
                     </div>
@@ -365,7 +365,7 @@ const Sessions = () => {
     
     const safeAppointments = Array.isArray(appointments) ? appointments : [];
     
-    // Status Segregation Tier 1: Split into active vs pending
+    // Status Segregation: Split into active vs pending
     const activeAppts = safeAppointments.filter(a => a.status === 'BOOKED');
     const pendingAppointments = safeAppointments.filter(a => a.status === 'PENDING' || a.status === 'AWAITING_VERIFICATION');
     
