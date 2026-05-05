@@ -269,7 +269,7 @@ const Booking = () => {
 
       if (order.isDemo) {
         toast.info("Clinical Demo Mode active. Finalizing without payment...");
-        navigate('/dashboard/sessions', { state: { autoOpenApptId: order.appointmentId } });
+        navigate('/dashboard/sessions', { state: { autoOpenId: order.appointmentId } });
         return;
       }
 
@@ -296,7 +296,7 @@ const Booking = () => {
               razorpay_signature: response.razorpay_signature
             });
             toast.success("Transaction Authorized! Session Synchronized.");
-            navigate('/dashboard/sessions', { state: { autoOpenApptId: order.appointmentId } });
+            navigate('/dashboard/sessions', { state: { autoOpenId: order.appointmentId } });
           } catch (err) {
             console.error("VERIFICATION_FAILURE:", err);
             toast.error("Payment verification failed. Please contact clinical support.");

@@ -423,7 +423,12 @@ public class AppointmentService {
         appointment.setConsultationType(ConsultationType.OFFLINE);
         appointment.setAmount(fee);
         appointment.setRazorpayOrderId(orderId);
-        appointment.setStatus(AppointmentStatus.PENDING);
+        if (isDemoMode) {
+            appointment.setStatus(AppointmentStatus.BOOKED);
+            appointment.setRazorpayPaymentId("demo_service_" + System.currentTimeMillis());
+        } else {
+            appointment.setStatus(AppointmentStatus.PENDING);
+        }
         
         // Capture patient location for emergency/ambulance services
         if (patient.getLatitude() != null && patient.getLongitude() != null) {
