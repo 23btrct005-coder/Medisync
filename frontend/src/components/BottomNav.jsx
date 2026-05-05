@@ -63,7 +63,7 @@ const BottomNav = () => {
     return (
         <>
             {/* ── Bottom Dock Bar ── */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-2xl border-t border-white/5 px-4 pt-2 pb-safe z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.3)]">
+            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-2xl border-t border-white/5 px-4 pt-2 pb-safe z-[200] shadow-[0_-10px_40px_rgba(0,0,0,0.3)]">
                 <nav className="flex justify-around items-center h-14">
                     {primaryNav.map((item) => (
                         <NavLink

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import api from '../api/axiosConfig';
-import { Calendar, Clock, ChevronRight, Video, MapPin, X, Loader2, AlertCircle, History as HistoryIcon, ShieldCheck } from 'lucide-react';
+import { Calendar, Clock, ChevronRight, Video, MapPin, X, Loader2, AlertCircle, History as HistoryIcon, ShieldCheck, CreditCard, CheckCircle2, Copy, ExternalLink } from 'lucide-react';
 import ClinicMap from '../components/ClinicMap';
+import toast from 'react-hot-toast';
 
 /* --- SUBCOMPONENTS --- */
 
@@ -83,6 +84,139 @@ const SessionCard = ({ appt, onClick, active, historical, canEnter, onRate }) =>
                     <ChevronRight size={18} />
                 </div>
             )}
+        </div>
+    );
+};
+
+// ─── Payment Verification Floating Card ───────────────────────────────────────
+const PaymentFloatingCard = ({ appt, onVerified, onDismiss }) => {
+    const [verifying, setVerifying] = useState(false);
+    const [copied, setCopied] = useState(null);
+
+    const copyToClipboard = (text, field) => {
+        navigator.clipboard.writeText(text).then(() => {
+            setCopied(field);
+            setTimeout(() => setCopied(null), 2000);
+        });
+    };
+
+    const handleVerify = async () => {
+        setVerifying(true);
+        try {
+            await api.post(`/appointments/${appt.id}/verify-payment`);
+            toast.success('Payment verified. Appointment confirmed!');
+            onVerified();
+        } catch (e) {
+            toast.error('Verification failed. Please try again.');
+        } finally {
+            setVerifying(false);
+        }
+    };
+
+    const parsedFees = appt.doctor?.serviceFees
+        ? (typeof appt.doctor.serviceFees === 'string' ? JSON.parse(appt.doctor.serviceFees) : appt.doctor.serviceFees)
+        : null;
+    const fee = parsedFees?.[appt.consultationType === 'ONLINE' ? 'Telemedicine' : 'General Consultation'];
+
+    return (
+        <div className="fixed bottom-6 right-6 z-[600] w-[340px] animate-in slide-in-from-bottom-4 fade-in duration-500">
+            <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.25)] border border-amber-100 overflow-hidden">
+                {/* Header */}
+                <div className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-100">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-amber-100 rounded-xl flex items-center justify-center">
+                            <CreditCard className="text-amber-600" size={16} />
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-amber-600">Payment Pending</p>
+                            <p className="text-xs font-bold text-slate-700">Awaiting Verification</p>
+                        </div>
+                    </div>
+                    <button onClick={onDismiss} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+                        <X size={14} />
+                    </button>
+                </div>
+
+                {/* Content */}
+                <div className="p-5 space-y-3">
+                    {/* Slot Time */}
+                    <div className="flex items-center justify-between bg-slate-50 rounded-2xl px-4 py-3">
+                        <div className="flex items-center gap-2">
+                            <Clock size={14} className="text-primary-500" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Booked Slot</span>
+                        </div>
+                        <span className="text-xs font-black text-slate-800">
+                            {appt.appointmentDate} • {appt.timeSlot}
+                        </span>
+                    </div>
+
+                    {/* UPI ID */}
+                    {appt.patientUpiId && (
+                        <div className="flex items-center justify-between bg-slate-50 rounded-2xl px-4 py-3">
+                            <div className="flex items-center gap-2">
+                                <ExternalLink size={14} className="text-emerald-500" />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">UPI ID</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs font-bold text-slate-800 truncate max-w-[120px]">{appt.patientUpiId}</span>
+                                <button
+                                    onClick={() => copyToClipboard(appt.patientUpiId, 'upi')}
+                                    className="p-1 hover:bg-slate-200 rounded-lg transition-colors"
+                                >
+                                    <Copy size={12} className={copied === 'upi' ? 'text-emerald-500' : 'text-slate-400'} />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Transaction ID */}
+                    {appt.transactionId && (
+                        <div className="flex items-center justify-between bg-slate-50 rounded-2xl px-4 py-3">
+                            <div className="flex items-center gap-2">
+                                <ShieldCheck size={14} className="text-blue-500" />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Txn ID</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs font-bold text-slate-800 truncate max-w-[120px]">{appt.transactionId}</span>
+                                <button
+                                    onClick={() => copyToClipboard(appt.transactionId, 'txn')}
+                                    className="p-1 hover:bg-slate-200 rounded-lg transition-colors"
+                                >
+                                    <Copy size={12} className={copied === 'txn' ? 'text-emerald-500' : 'text-slate-400'} />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {fee && (
+                        <div className="flex items-center justify-between bg-emerald-50 rounded-2xl px-4 py-3 border border-emerald-100">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Amount</span>
+                            <span className="text-sm font-black text-emerald-700">₹{fee}</span>
+                        </div>
+                    )}
+
+                    {!appt.patientUpiId && !appt.transactionId && (
+                        <div className="bg-amber-50 rounded-2xl px-4 py-3 text-center border border-amber-100">
+                            <p className="text-[10px] font-bold text-amber-600">Payment details not submitted yet.</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Verify Button */}
+                <div className="px-5 pb-5">
+                    <button
+                        onClick={handleVerify}
+                        disabled={verifying}
+                        className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-emerald-500/20 hover:from-emerald-700 hover:to-teal-700 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                        {verifying ? (
+                            <><Loader2 size={14} className="animate-spin" /> Verifying...</>
+                        ) : (
+                            <><CheckCircle2 size={14} /> Confirm Payment</>  
+                        )}
+                    </button>
+                </div>
+            </div>
         </div>
     );
 };
@@ -289,6 +423,7 @@ const Sessions = () => {
     const [selectedAppt, setSelectedAppt] = useState(null);
     const [activeTab, setActiveTab] = useState('today');
     const [showRatingModal, setShowRatingModal] = useState(null);
+    const [showPaymentCard, setShowPaymentCard] = useState(null);
 
     useEffect(() => {
         fetchAppointments();
@@ -449,7 +584,17 @@ const Sessions = () => {
                             ) : (
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     {pendingAppointments.map(appt => (
-                                        <SessionCard key={appt.id} appt={appt} onClick={() => setSelectedAppt(appt)} />
+                                        <SessionCard
+                                            key={appt.id}
+                                            appt={appt}
+                                            onClick={() => {
+                                                if (appt.status === 'AWAITING_VERIFICATION') {
+                                                    setShowPaymentCard(appt);
+                                                } else {
+                                                    setSelectedAppt(appt);
+                                                }
+                                            }}
+                                        />
                                     ))}
                                 </div>
                              )}
@@ -496,6 +641,14 @@ const Sessions = () => {
             
             {showRatingModal && (
                 <RatingModal appt={showRatingModal} onClose={() => setShowRatingModal(null)} onRatingSubmitted={fetchAppointments} />
+            )}
+
+            {showPaymentCard && (
+                <PaymentFloatingCard
+                    appt={showPaymentCard}
+                    onVerified={() => { setShowPaymentCard(null); fetchAppointments(); }}
+                    onDismiss={() => setShowPaymentCard(null)}
+                />
             )}
         </div>
     );
