@@ -592,6 +592,7 @@ const Sessions = () => {
                         </span>
                     </button>
                 ))}
+                </div>
             </div>
 
             {loading ? (
