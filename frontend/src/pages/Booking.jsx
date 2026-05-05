@@ -313,7 +313,7 @@ const Booking = () => {
         modal: {
           ondismiss: () => {
             setIsBooking(false);
-            toast.warn("Clinical transaction cancelled.");
+            toast("Clinical transaction cancelled.", { icon: '⚠️' });
           }
         }
       };
