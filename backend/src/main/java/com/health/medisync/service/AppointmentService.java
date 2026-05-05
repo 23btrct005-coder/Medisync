@@ -424,6 +424,12 @@ public class AppointmentService {
         appointment.setAmount(fee);
         appointment.setRazorpayOrderId(orderId);
         appointment.setStatus(AppointmentStatus.PENDING);
+        
+        // Capture patient location for emergency/ambulance services
+        if (patient.getLatitude() != null && patient.getLongitude() != null) {
+            appointment.setLatitude(patient.getLatitude());
+            appointment.setLongitude(patient.getLongitude());
+        }
 
         Appointment saved = appointmentRepository.save(appointment);
 

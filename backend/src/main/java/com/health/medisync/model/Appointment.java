@@ -51,6 +51,9 @@ public class Appointment {
     @Column(columnDefinition = "TEXT")
     private String aiClinicalBrief; // Summary from AI Concierge
 
+    private Double latitude;
+    private Double longitude;
+
     @Transient
     private boolean rated;
 
@@ -116,4 +119,10 @@ public class Appointment {
 
     public String getTransactionId() { return transactionId; }
     public void setTransactionId(String transactionId) { this.transactionId = transactionId; }
+
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
+
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
 }

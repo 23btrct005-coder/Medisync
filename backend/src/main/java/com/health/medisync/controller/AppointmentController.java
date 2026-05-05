@@ -233,7 +233,7 @@ public class AppointmentController {
         }
     }
 
-    @GetMapping("/my-appointments")
+    @GetMapping({"/my-appointments", "/patient"})
     public ResponseEntity<List<Appointment>> myAppointments(Authentication authentication) {
         try {
             String email = authentication.getName();
