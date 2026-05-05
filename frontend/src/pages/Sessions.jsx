@@ -439,7 +439,7 @@ const Sessions = () => {
     const fetchAppointments = useCallback(async (isSilent = false) => {
         if (!isSilent) setLoading(true);
         try {
-            const res = await api.get('/appointments/patient');
+            const res = await api.get('/appointments/my-appointments');
             const data = res.data || [];
             setAppointments(data);
             
