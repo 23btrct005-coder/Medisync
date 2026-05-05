@@ -154,19 +154,18 @@ public class HospitalService {
     }
 
     public List<Appointment> getHospitalAppointments(Hospital hospital) {
-        // Fetch all appointments for all doctors in this hospital, excluding PENDING
-        return doctorRepository.findByHospitalEntity(hospital).stream()
-                .flatMap(d -> appointmentRepository.findByDoctorId(d.getId()).stream())
+        // Fetch all appointments linked to this hospital directly, plus those via affiliated doctors
+        return appointmentRepository.findByHospitalId(hospital.getId()).stream()
                 .filter(a -> a.getStatus() != Appointment.AppointmentStatus.PENDING)
                 .sorted((Appointment a, Appointment b) -> b.getId().compareTo(a.getId())) // Newest first
                 .toList();
     }
 
     public List<Patient> getHospitalPatients(Hospital hospital) {
-        // Fetch unique patients across all doctors in the hospital
-        return doctorRepository.findByHospitalEntity(hospital).stream()
-                .flatMap(d -> appointmentRepository.findByDoctorId(d.getId()).stream())
+        // Fetch unique patients associated with this hospital through any clinical session
+        return appointmentRepository.findByHospitalId(hospital.getId()).stream()
                 .map((Appointment a) -> a.getPatient())
+                .filter(java.util.Objects::nonNull)
                 .distinct()
                 .toList();
     }
