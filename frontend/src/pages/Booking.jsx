@@ -531,7 +531,6 @@ const Booking = () => {
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Available Institutions</p>
                                     <p className="text-sm font-black text-slate-800">{serviceHospitals.length} Nodes Found</p>
                                 </div>
-                            </div>
 
                             {loadingHospitals ? (
                                 <div className="p-20 text-center"><Loader2 className="animate-spin mx-auto text-emerald-500" /></div>
