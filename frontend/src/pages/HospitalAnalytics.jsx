@@ -98,8 +98,8 @@ const HospitalAnalytics = () => {
                                 <button className="px-4 py-2 bg-slate-900 text-[10px] font-black uppercase tracking-widest rounded-xl text-white shadow-lg">30 Days</button>
                             </div>
                         </div>
-                        <div className="h-[300px] w-full">
-                            <ResponsiveContainer width="100%" height="100%" debounce={100}>
+                        <div className="h-[300px] w-full min-h-[300px] relative">
+                            <ResponsiveContainer width="100%" height="100%" debounce={100} minWidth={0}>
                                 <AreaChart data={inflowData}>
                                     <defs>
                                         <linearGradient id="colorInflow" x1="0" y1="0" x2="0" y2="1">
@@ -150,8 +150,8 @@ const HospitalAnalytics = () => {
 
                         <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm">
                             <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic mb-8">Dept. <span className="not-italic text-rose-500">Pulse</span></h3>
-                            <div className="h-[180px] w-full">
-                                <ResponsiveContainer width="100%" height="100%" debounce={100}>
+                            <div className="h-[180px] w-full min-h-[180px]">
+                                <ResponsiveContainer width="100%" height="100%" debounce={100} minWidth={0}>
                                     <BarChart data={deptPerformance}>
                                         <Bar dataKey="count" radius={[8, 8, 8, 8]}>
                                             {deptPerformance.map((entry, index) => (

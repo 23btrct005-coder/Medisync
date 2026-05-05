@@ -159,14 +159,14 @@ const ClinicalFinancials = () => {
                         </div>
                       </div>
                   </div>
-                  <div className="h-[300px] w-full relative">
+                  <div className="h-[300px] w-full min-h-[300px] relative">
                       {chartData.length === 0 ? (
                           <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-100">
                               <TrendingUp size={48} className="text-slate-200 mb-4" />
                               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No historical revenue data detected</p>
                           </div>
                       ) : (
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                             <AreaChart data={chartData}>
                                 <defs>
                                     <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
