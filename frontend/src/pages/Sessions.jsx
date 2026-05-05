@@ -443,17 +443,22 @@ const Sessions = () => {
             const data = res.data || [];
             setAppointments(data);
             
-            if (location.state?.autoOpenId) {
-                const appt = data.find(a => a.id === location.state.autoOpenId);
-                if (appt) setSelectedAppt(appt);
-            }
+            const openId = location.state?.autoOpenId || location.state?.autoOpenApptId;
+            if (openId) {
+                const appt = data.find(a => a.id === openId);
+                if (appt) {
+                    setSelectedAppt(appt);
+                    // Intelligent UI routing: switch to service category if it's a medical service
+                    if (appt.serviceName) setActiveCategory('service');
+                    else setActiveCategory('physician');
 
-            // Auto-switch tab logic
-            const d = new Date();
-            const todayStr = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
-            const hasToday = data.some(a => a.appointmentDate === todayStr);
-            if (!hasToday && data.some(a => a.appointmentDate > todayStr)) {
-                setActiveTab('upcoming');
+                    // Intelligent Tab routing: switch to pending if confirmation is required
+                    if (appt.status === 'PENDING' || appt.status === 'AWAITING_VERIFICATION') {
+                        setActiveTab('pending');
+                    } else if (appt.appointmentDate === todayStr) {
+                        setActiveTab('today');
+                    }
+                }
             }
         } catch (e) {
             console.error("Failed to fetch clinical timeline", e);
