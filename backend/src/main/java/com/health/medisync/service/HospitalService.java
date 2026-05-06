@@ -12,6 +12,7 @@ import com.health.medisync.repository.AppointmentRepository;
 import com.health.medisync.repository.DepartmentRepository;
 import com.health.medisync.repository.UserRepository;
 import com.health.medisync.repository.PatientRepository;
+import com.health.medisync.repository.PasswordResetTokenRepository;
 import com.health.medisync.model.Appointment;
 import com.health.medisync.model.Patient;
 import org.springframework.stereotype.Service;
@@ -40,6 +41,7 @@ public class HospitalService {
     private final com.health.medisync.repository.AccessRequestRepository accessRequestRepository;
     private final com.health.medisync.repository.RatingRepository ratingRepository;
     private final com.health.medisync.repository.AuditLogRepository auditLogRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     public HospitalService(HospitalRepository hospitalRepository, 
                            HospitalAdminRepository hospitalAdminRepository, 
@@ -53,7 +55,8 @@ public class HospitalService {
                            com.health.medisync.repository.PrescriptionRepository prescriptionRepository,
                            com.health.medisync.repository.AccessRequestRepository accessRequestRepository,
                            com.health.medisync.repository.RatingRepository ratingRepository,
-                           com.health.medisync.repository.AuditLogRepository auditLogRepository) {
+                           com.health.medisync.repository.AuditLogRepository auditLogRepository,
+                           com.health.medisync.repository.PasswordResetTokenRepository passwordResetTokenRepository) {
         this.hospitalRepository = hospitalRepository;
         this.hospitalAdminRepository = hospitalAdminRepository;
         this.doctorRepository = doctorRepository;
@@ -67,6 +70,53 @@ public class HospitalService {
         this.accessRequestRepository = accessRequestRepository;
         this.ratingRepository = ratingRepository;
         this.auditLogRepository = auditLogRepository;
+        this.passwordResetTokenRepository = passwordResetTokenRepository;
+    }
+
+    @Transactional
+    public void deleteDoctor(Long doctorId) {
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new RuntimeException("Doctor record not found."));
+
+        System.out.println("CRITICAL: Initiating atomic institutional purge for physician: " + doctor.getName());
+
+        // 1. Clear Security & Authentication Dependencies (Before User Cascade)
+        passwordResetTokenRepository.deleteByUser(doctor.getUser());
+        System.out.println("CLEANUP: Security tokens purged.");
+
+        // 2. Clinical Continuity: Unlink from patient records
+        List<Patient> linkedPatients = patientRepository.findByDoctorId(doctorId);
+        for (Patient p : linkedPatients) {
+            p.getDoctors().remove(doctor);
+            patientRepository.save(p);
+        }
+        System.out.println("CLEANUP: Clinical registry links severed.");
+
+        // 3. Telemetry & History: Purge communication and logs
+        chatMessageRepository.deleteBySenderIdOrReceiverId(doctor.getUser().getId(), doctor.getUser().getId());
+        auditLogRepository.deleteByPerformerId(doctor.getUser().getId());
+        notificationRepository.deleteByUserId(doctor.getUser().getId());
+        System.out.println("CLEANUP: Communication and audit telemetry wiped.");
+
+        // 4. Clinical Operations: Clear active appointments and prescriptions
+        appointmentRepository.deleteByDoctorId(doctorId);
+        prescriptionRepository.deleteByDoctorId(doctorId);
+        ratingRepository.deleteByDoctorId(doctorId);
+        System.out.println("CLEANUP: Clinical operational data erased.");
+
+        // 5. Hierarchical Governance: Clear Department HOD links
+        List<Department> departments = departmentRepository.findAll();
+        for (Department dept : departments) {
+            if (doctor.equals(dept.getHeadOfDepartment())) {
+                dept.setHeadOfDepartment(null);
+                departmentRepository.save(dept);
+            }
+        }
+        System.out.println("CLEANUP: Institutional governance links cleared.");
+
+        // 6. Identity Erase: Delete doctor (Triggers Cascade to User)
+        doctorRepository.delete(doctor);
+        System.out.println("SUCCESS: Physician record and digital identity successfully purged.");
     }
 
     public void broadcastToStaff(Hospital hospital, String title, String message, Long senderUserId) {
