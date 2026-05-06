@@ -121,15 +121,7 @@ public class DoctorService {
     }
 
     private void verifyAccess(Doctor doctor, Long patientId) {
-        // Authoritative Check: Is this patient in the doctor's verified census?
-        List<Patient> linkedPatients = patientRepository.findByDoctorIdAndUserId(doctor.getId(), doctor.getUser().getId());
-        boolean hasAccess = linkedPatients.stream().anyMatch(p -> p.getId().equals(patientId));
-            
-        // Secondary Protocol: Check for confirmed clinical engagement (Appointment)
-        if (!hasAccess) {
-            hasAccess = appointmentRepository.existsByDoctorIdAndPatientIdAndStatus(
-                doctor.getId(), patientId, Appointment.AppointmentStatus.BOOKED);
-        }
+        boolean hasAccess = patientRepository.checkDoctorLink(doctor.getId(), patientId, doctor.getUser().getId());
 
         if (!hasAccess) {
             throw new RuntimeException("Unauthorized Access: This patient is not linked to your clinical practice. Please use the Patient Code to establish a secure link.");
