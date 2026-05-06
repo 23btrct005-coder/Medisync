@@ -439,8 +439,20 @@ const SessionDetailModal = ({ appt, onClose, onVerifyClick }) => {
 
                     <div className="space-y-6">
                         <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-4">
-                            <div className="w-16 h-16 bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden flex items-center justify-center text-slate-300">
-                                <User size={32} />
+                            <div className="w-16 h-16 bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden flex items-center justify-center">
+                                {appt.patient?.profilePictureUrl ? (
+                                    <img 
+                                        src={appt.patient.profilePictureUrl} 
+                                        alt={appt.patient.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <img 
+                                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${appt.patient?.email || appt.patient?.id}`} 
+                                        alt="Avatar"
+                                        className="w-full h-full object-cover opacity-80"
+                                    />
+                                )}
                             </div>
                             <div>
                                 <p className="text-[10px] font-black uppercase text-primary tracking-widest mb-0.5">Patient Identity</p>
