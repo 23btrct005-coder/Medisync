@@ -8,4 +8,7 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
     List<AuditLog> findByTargetPatientIdOrderByCreatedAtDesc(Long patientId);
     List<AuditLog> findByPerformerIdOrderByCreatedAtDesc(Long performerId);
     List<AuditLog> findByHospitalIdOrderByCreatedAtDesc(Long hospitalId);
+    void deleteByPerformerId(Long performerId);
+    void deleteByTargetPatientId(Long patientId);
+    void deleteByHospitalId(Long hospitalId);
 }

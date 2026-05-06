@@ -38,6 +38,7 @@ public class HospitalService {
     private final com.health.medisync.repository.PrescriptionRepository prescriptionRepository;
     private final com.health.medisync.repository.AccessRequestRepository accessRequestRepository;
     private final com.health.medisync.repository.RatingRepository ratingRepository;
+    private final com.health.medisync.repository.AuditLogRepository auditLogRepository;
 
     public HospitalService(HospitalRepository hospitalRepository, 
                            HospitalAdminRepository hospitalAdminRepository, 
@@ -50,7 +51,8 @@ public class HospitalService {
                            com.health.medisync.repository.ChatMessageRepository chatMessageRepository,
                            com.health.medisync.repository.PrescriptionRepository prescriptionRepository,
                            com.health.medisync.repository.AccessRequestRepository accessRequestRepository,
-                           com.health.medisync.repository.RatingRepository ratingRepository) {
+                           com.health.medisync.repository.RatingRepository ratingRepository,
+                           com.health.medisync.repository.AuditLogRepository auditLogRepository) {
         this.hospitalRepository = hospitalRepository;
         this.hospitalAdminRepository = hospitalAdminRepository;
         this.doctorRepository = doctorRepository;
@@ -63,6 +65,7 @@ public class HospitalService {
         this.prescriptionRepository = prescriptionRepository;
         this.accessRequestRepository = accessRequestRepository;
         this.ratingRepository = ratingRepository;
+        this.auditLogRepository = auditLogRepository;
     }
 
     public void broadcastToStaff(Hospital hospital, String title, String message, Long senderUserId) {
@@ -345,7 +348,9 @@ public class HospitalService {
             throw new RuntimeException("Unauthorized: Physician not affiliated with your institution");
         }
 
-        // ── Deep Purge Protocol: Sealing Clinical Dependencies ──
+        Long userId = (doctor.getUser() != null) ? doctor.getUser().getId() : null;
+
+        // ── Deep Purge Protocol: Sealing Clinical & Telemetry Dependencies ──
         
         // 1. Purge Ratings
         ratingRepository.deleteByDoctorId(doctorId);
@@ -359,7 +364,14 @@ public class HospitalService {
         // 4. Purge Access Requests
         accessRequestRepository.deleteByDoctorId(doctorId);
 
-        // 5. Sovereignty Release: Unlink Patients
+        // 5. Institutional Telemetry Wipe (User-Based Links)
+        if (userId != null) {
+            notificationRepository.deleteByUserId(userId);
+            chatMessageRepository.deleteBySenderIdOrReceiverId(userId, userId);
+            auditLogRepository.deleteByPerformerId(userId);
+        }
+
+        // 6. Sovereignty Release: Unlink Patients
         List<Patient> linkedPatients = patientRepository.findAll(); 
         for (Patient p : linkedPatients) {
             if (p.getDoctors().contains(doctor)) {
@@ -368,7 +380,7 @@ public class HospitalService {
             }
         }
 
-        // 6. User Account Erasure (Cascades to Doctor record)
+        // 7. User Account Erasure (Cascades to Doctor record)
         if (doctor.getUser() != null) {
             userRepository.delete(doctor.getUser());
         } else {
