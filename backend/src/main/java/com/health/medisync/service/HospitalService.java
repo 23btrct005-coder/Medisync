@@ -1,6 +1,7 @@
 package com.health.medisync.service;
 
 import com.health.medisync.model.Doctor;
+import com.health.medisync.model.Department;
 import com.health.medisync.model.Hospital;
 import com.health.medisync.model.HospitalAdmin;
 import com.health.medisync.model.User;
