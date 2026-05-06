@@ -371,7 +371,16 @@ public class HospitalService {
             auditLogRepository.deleteByPerformerId(userId);
         }
 
-        // 6. Sovereignty Release: Unlink Patients
+        // 6. Institutional Hierarchy: Unlink HOD roles
+        List<Department> depts = departmentRepository.findByHospital(hospital);
+        for (Department d : depts) {
+            if (d.getHeadOfDepartment() != null && d.getHeadOfDepartment().getId().equals(doctorId)) {
+                d.setHeadOfDepartment(null);
+                departmentRepository.save(d);
+            }
+        }
+
+        // 7. Sovereignty Release: Unlink Patients
         List<Patient> linkedPatients = patientRepository.findAll(); 
         for (Patient p : linkedPatients) {
             if (p.getDoctors().contains(doctor)) {
@@ -380,7 +389,7 @@ public class HospitalService {
             }
         }
 
-        // 7. User Account Erasure (Cascades to Doctor record)
+        // 8. User Account Erasure (Cascades to Doctor record)
         if (doctor.getUser() != null) {
             userRepository.delete(doctor.getUser());
         } else {
