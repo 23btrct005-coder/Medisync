@@ -1,12 +1,15 @@
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-export const rawBaseURL = (import.meta.env.VITE_API_URL || 'http://localhost:8080').replace(/\/+$/, '');
+export const rawBaseURL = 'https://medisync-wlfh.onrender.com';
 const apiBaseURL = `${rawBaseURL}/api`;
 
 const api = axios.create({
   baseURL: apiBaseURL,
 });
+
+// Set global axios default as well to catch direct axios calls
+axios.defaults.baseURL = apiBaseURL;
 
 // Loading state bus
 export const loadingState = {
