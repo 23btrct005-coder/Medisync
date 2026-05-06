@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import api from '../api/axiosConfig'; // Import our specialized API config
+import api from '../api/axiosConfig';
 import axios from 'axios';
 
 const AuthContext = createContext();
@@ -12,7 +12,8 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
     
-    if (token && savedUser) {
+    // Check for null, undefined, or the literal string "undefined"
+    if (token && savedUser && savedUser !== 'undefined' && savedUser !== 'null') {
       try {
         const userData = JSON.parse(savedUser);
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -28,10 +29,11 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     try {
-      // Use the 'api' instance which is pre-configured with the Render baseURL
       const response = await api.post('/auth/login', { username, password });
       const { token, user: userData } = response.data;
       
+      if (!userData) throw new Error("No user data received");
+
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(userData));
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
