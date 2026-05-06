@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.health.medisync.model.Appointment.AppointmentStatus;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping("/api/appointments")
