@@ -30,27 +30,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
-    
-    if (token && savedUser && savedUser !== 'undefined' && savedUser !== 'null') {
-      try {
-        const userData = JSON.parse(savedUser);
-        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        setUser(userData);
-        
-        // Background refresh profile data
-        fetchUserProfile(userData.role);
-      } catch (e) {
-        console.error("Error parsing saved user", e);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      }
-    }
-    setLoading(false);
-  }, []);
-
   const login = async (username, password) => {
     try {
       const response = await api.post('/auth/login', { username, password });
@@ -89,6 +68,36 @@ export const AuthProvider = ({ children }) => {
     delete api.defaults.headers.common['Authorization'];
     setUser(null);
   };
+
+  useEffect(() => {
+    const initializeAuth = async () => {
+      const token = localStorage.getItem('token');
+      const savedUser = localStorage.getItem('user');
+      
+      if (token) {
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        
+        if (savedUser && savedUser !== 'undefined' && savedUser !== 'null') {
+          try {
+            const userData = JSON.parse(savedUser);
+            setUser(userData);
+            // Background refresh
+            fetchUserProfile(userData.role);
+          } catch (e) {
+            console.error("Error parsing saved user", e);
+            localStorage.removeItem('user');
+          }
+        } else {
+          // Token exists but no user data - try to fetch from /auth/me or similar
+          console.warn("Token exists but user data missing. Attempting recovery...");
+          logout();
+        }
+      }
+      setLoading(false);
+    };
+
+    initializeAuth();
+  }, []);
 
   return (
     <AuthContext.Provider value={{ 
