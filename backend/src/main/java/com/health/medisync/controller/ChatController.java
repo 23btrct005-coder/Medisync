@@ -30,12 +30,20 @@ public class ChatController {
     }
 
     @GetMapping("/conversation/{receiverId}")
-    public ResponseEntity<List<ChatMessageDTO>> getConversation(
-            @PathVariable Long receiverId, 
+    public ResponseEntity<?> getConversation(
+            @PathVariable String receiverId, 
             @AuthenticationPrincipal UserDetails userDetails) {
-        User user = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        return ResponseEntity.ok(chatService.getConversation(user.getId(), receiverId));
+        try {
+            if (receiverId == null || receiverId.equalsIgnoreCase("undefined")) {
+                return ResponseEntity.badRequest().body(java.util.Map.of("message", "Invalid receiver identifier"));
+            }
+            Long rid = Long.valueOf(receiverId.split("\\.")[0]);
+            User user = userRepository.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            return ResponseEntity.ok(chatService.getConversation(user.getId(), rid));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
+        }
     }
 
     @PostMapping("/send")
@@ -50,12 +58,20 @@ public class ChatController {
 
     @PostMapping("/mark-read/{senderId}")
     public ResponseEntity<?> markAsRead(
-            @PathVariable Long senderId, 
+            @PathVariable String senderId, 
             @AuthenticationPrincipal UserDetails userDetails) {
-        User user = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        chatService.markAsRead(user.getId(), senderId);
-        return ResponseEntity.ok().build();
+        try {
+            if (senderId == null || senderId.equalsIgnoreCase("undefined")) {
+                return ResponseEntity.badRequest().body(java.util.Map.of("message", "Invalid sender identifier"));
+            }
+            Long sid = Long.valueOf(senderId.split("\\.")[0]);
+            User user = userRepository.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            chatService.markAsRead(user.getId(), sid);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
+        }
     }
 
     @GetMapping("/unread-counts")
@@ -66,8 +82,16 @@ public class ChatController {
     }
 
     @GetMapping("/status/{userId}")
-    public ResponseEntity<java.util.Map<String, Object>> getUserStatus(@PathVariable Long userId) {
-        boolean online = presenceService.isUserOnline(userId);
-        return ResponseEntity.ok(java.util.Map.of("online", online));
+    public ResponseEntity<?> getUserStatus(@PathVariable String userId) {
+        try {
+            if (userId == null || userId.equalsIgnoreCase("undefined")) {
+                return ResponseEntity.badRequest().body(java.util.Map.of("message", "Invalid user identifier"));
+            }
+            Long uid = Long.valueOf(userId.split("\\.")[0]);
+            boolean online = presenceService.isUserOnline(uid);
+            return ResponseEntity.ok(java.util.Map.of("online", online));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
+        }
     }
 }
