@@ -99,10 +99,11 @@ public class HospitalService {
         notificationRepository.deleteByUserId(doctor.getUser().getId());
         System.out.println("CLEANUP: Communication and audit telemetry wiped.");
 
-        // 4. Clinical Operations: Clear active appointments and prescriptions
+        // 4. Clinical Operations: Clear active appointments, prescriptions, and access requests
         appointmentRepository.deleteByDoctorId(doctorId);
         prescriptionRepository.deleteByDoctorId(doctorId);
         ratingRepository.deleteByDoctorId(doctorId);
+        accessRequestRepository.deleteByDoctorId(doctorId);
         System.out.println("CLEANUP: Clinical operational data erased.");
 
         // 5. Hierarchical Governance: Clear Department HOD links

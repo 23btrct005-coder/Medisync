@@ -989,6 +989,28 @@ public class AuthController {
                              .build();
     }
 
+    @GetMapping(value = "/hospital/photo/{id}")
+    public ResponseEntity<?> getHospitalPhoto(@PathVariable Long id) {
+        // Smart Resolver: Try to find by Hospital ID, fall back to Admin User ID
+        com.health.medisync.model.Hospital hospital = hospitalRepository.findById(id)
+            .orElseGet(() -> hospitalAdminRepository.findByUserId(id)
+                .map(com.health.medisync.model.HospitalAdmin::getHospital)
+                .orElse(null));
+
+        if (hospital != null && hospital.getLogoUrl() != null && !hospital.getLogoUrl().isEmpty()) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FOUND)
+                                 .location(java.net.URI.create(hospital.getLogoUrl()))
+                                 .build();
+        }
+
+        // Fallback to institutional placeholder
+        String diceBearUrl = "https://api.dicebear.com/7.x/identicon/svg?seed=" + 
+                           (hospital != null ? hospital.getName() : id.toString());
+        return ResponseEntity.status(org.springframework.http.HttpStatus.FOUND)
+                             .location(java.net.URI.create(diceBearUrl))
+                             .build();
+    }
+
     @PostMapping("/delete-account/request")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> requestDeletionOtp() {
