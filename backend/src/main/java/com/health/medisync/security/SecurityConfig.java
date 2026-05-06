@@ -42,7 +42,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/ws/**", "/api/hospital/**", "/api/appointments/**").permitAll()
+                .requestMatchers("/api/auth/**", "/ws/**", "/api/hospital/**", "/api/appointments/**", "/api/chat/**").permitAll()
                 .anyRequest().authenticated()
             );
         
@@ -60,7 +60,6 @@ public class SecurityConfig {
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         
-        // Explicitly whitelist all variations of headers used by the frontend
         configuration.setAllowedHeaders(Arrays.asList(
             "Authorization", 
             "Content-Type", 
