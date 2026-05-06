@@ -62,7 +62,7 @@ public class DoctorService {
     @Transactional(readOnly = true)
     public List<Patient> getLinkedPatients(String doctorUsername) {
         Doctor doctor = getDoctorProfile(doctorUsername);
-        return patientRepository.findByDoctorIdAndUserId(doctor.getId());
+        return patientRepository.findLinkedPatients(doctor.getId());
     }
 
     @Transactional
