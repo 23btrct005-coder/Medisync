@@ -204,6 +204,8 @@ const AiConcierge = () => {
                         width: 50px !important;
                         height: 50px !important;
                         font-size: 20px !important;
+                        bottom: 90px !important;
+                        right: 20px !important;
                     }
                 }
             `}</style>

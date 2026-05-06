@@ -97,8 +97,8 @@ const MobileLayout = () => {
             </main>
 
             {/* ── PREMIUM BOTTOM DOCK ── */}
-            <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-2xl border-t border-slate-100 px-6 pt-2 pb-safe z-[200] shadow-[0_-8px_30px_rgba(0,0,0,0.04)]">
-                <div className="flex justify-between items-center h-14 max-w-lg mx-auto">
+            <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-2xl border-t border-slate-100 px-4 pt-2 pb-safe z-[200] shadow-[0_-8px_30px_rgba(0,0,0,0.04)]">
+                <div className="flex justify-around items-center h-14 max-w-lg mx-auto">
                     {primaryNav.slice(0, 2).map((item) => (
                         <NavLink key={item.name} to={item.path} end className={({ isActive }) => `flex flex-col items-center gap-1 transition-all ${isActive ? 'text-primary-600' : 'text-slate-400'}`}>
                             {item.icon}
