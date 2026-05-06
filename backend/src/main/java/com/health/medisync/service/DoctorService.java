@@ -53,9 +53,6 @@ public class DoctorService {
     }
 
     public Doctor getDoctorProfile(String username) {
-        // Safety: Ensure schema is synchronized before fetching the complex Doctor entity
-        databaseSchemaService.selfHealSchema();
-        
         User user = userRepository.findByUsernameIgnoreCase(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
         return doctorRepository.findByUserId(user.getId())
