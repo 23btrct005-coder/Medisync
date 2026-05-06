@@ -9,7 +9,9 @@ import com.health.medisync.service.SupabaseStorageService;
 import com.health.medisync.repository.UserRepository;
 import com.health.medisync.repository.HospitalRepository;
 import com.health.medisync.repository.HospitalAdminRepository;
+import com.health.medisync.repository.DoctorRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,8 +19,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/hospital")
@@ -30,19 +31,35 @@ public class HospitalController {
     private final HospitalAdminRepository hospitalAdminRepository;
     private final SupabaseStorageService supabaseStorageService;
     private final com.health.medisync.service.AuditLogService auditLogService;
+    private final PasswordEncoder passwordEncoder;
+    private final DoctorRepository doctorRepository;
 
     public HospitalController(HospitalService hospitalService,
                               UserRepository userRepository,
                               HospitalRepository hospitalRepository,
                               HospitalAdminRepository hospitalAdminRepository,
                               SupabaseStorageService supabaseStorageService,
-                              com.health.medisync.service.AuditLogService auditLogService) {
+                              com.health.medisync.service.AuditLogService auditLogService,
+                              PasswordEncoder passwordEncoder,
+                              DoctorRepository doctorRepository) {
         this.hospitalService = hospitalService;
         this.userRepository = userRepository;
         this.hospitalRepository = hospitalRepository;
         this.hospitalAdminRepository = hospitalAdminRepository;
         this.supabaseStorageService = supabaseStorageService;
         this.auditLogService = auditLogService;
+        this.passwordEncoder = passwordEncoder;
+        this.doctorRepository = doctorRepository;
+    }
+
+    private Integer safeInt(Object val) {
+        if (val == null || val.toString().isEmpty()) return null;
+        try { return Double.valueOf(val.toString()).intValue(); } catch (Exception e) { return null; }
+    }
+
+    private Double safeDouble(Object val) {
+        if (val == null || val.toString().isEmpty()) return null;
+        try { return Double.valueOf(val.toString()); } catch (Exception e) { return null; }
     }
 
     @GetMapping("/audit-logs")
@@ -113,10 +130,9 @@ public class HospitalController {
         HospitalAdmin admin = hospitalService.getAdminByUser(user);
         List<Doctor> doctors = hospitalService.getHospitalDoctors(admin.getHospital());
         
-        // Transform doctors to a common contact format
         List<Map<String, Object>> contacts = doctors.stream()
                 .map(d -> {
-                    Map<String, Object> m = new java.util.HashMap<>();
+                    Map<String, Object> m = new HashMap<>();
                     m.put("id", d.getId());
                     m.put("userId", d.getUser().getId());
                     m.put("name", d.getName());
@@ -137,8 +153,7 @@ public class HospitalController {
         HospitalAdmin admin = hospitalService.getAdminByUser(user);
         Hospital hospital = admin.getHospital();
 
-        Map<String, Object> response = new java.util.HashMap<>();
-        // Admin Fields
+        Map<String, Object> response = new HashMap<>();
         response.put("id", admin.getId());
         response.put("name", admin.getName());
         response.put("position", admin.getPosition());
@@ -147,9 +162,8 @@ public class HospitalController {
         response.put("idProofUrl", admin.getIdProofUrl());
         response.put("approved", admin.isApproved());
         
-        // Hospital Fields (Flattened or nested)
         if (hospital != null) {
-            Map<String, Object> hMap = new java.util.HashMap<>();
+            Map<String, Object> hMap = new HashMap<>();
             hMap.put("id", hospital.getId());
             hMap.put("name", hospital.getName());
             hMap.put("licenseCode", hospital.getLicenseCode());
@@ -192,7 +206,6 @@ public class HospitalController {
             hMap.put("departments", hospital.getDepartments());
             hMap.put("bloodStock", hospital.getBloodStock());
             
-            // Financial Details
             hMap.put("razorpayAccountId", hospital.getRazorpayAccountId());
             hMap.put("razorpayKeyId", hospital.getRazorpayKeyId());
             hMap.put("razorpayKeySecret", hospital.getRazorpayKeySecret());
@@ -205,22 +218,19 @@ public class HospitalController {
             response.put("hospital", hMap);
         }
 
-        // Security & Status Fields (CRITICAL for AuthContext)
         response.put("email", user.getUsername());
         response.put("emailVerified", user.isEmailVerified());
         
-        Map<String, Object> userMap = new java.util.HashMap<>();
+        Map<String, Object> userMap = new HashMap<>();
         userMap.put("id", user.getId());
         userMap.put("username", user.getUsername());
         userMap.put("email", user.getUsername());
         userMap.put("emailVerified", user.isEmailVerified());
         response.put("user", userMap);
 
-        System.out.println("DEBUG: Returning explicit profile map for Admin: " + admin.getName());
         return ResponseEntity.ok(response);
     }
 
-    /** Update hospital profile & admin identity from the dashboard */
     @PostMapping(value = "/update-profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateProfile(
             @RequestPart("data") String dataJson,
@@ -249,24 +259,17 @@ public class HospitalController {
             if (data.get("alternatePhone") != null) hospital.setAlternatePhone(String.valueOf(data.get("alternatePhone")));
             if (data.get("emergencyPhone") != null) hospital.setOfficialEmergencyContact(String.valueOf(data.get("emergencyPhone")));
 
-            // New Legal & Infrastructure Fields
             if (data.get("gstNumber") != null) hospital.setGstNumber(String.valueOf(data.get("gstNumber")));
             if (data.get("panNumber") != null) hospital.setPanNumber(String.valueOf(data.get("panNumber")));
             if (data.get("nabhId")    != null) hospital.setNabhId(String.valueOf(data.get("nabhId")));
             if (data.get("isoId")     != null) hospital.setIsoId(String.valueOf(data.get("isoId")));
             
-            if (data.get("totalBeds") != null && !data.get("totalBeds").toString().isEmpty()) 
-                hospital.setTotalBeds(Integer.parseInt(data.get("totalBeds").toString()));
-            if (data.get("icuBeds") != null && !data.get("icuBeds").toString().isEmpty()) 
-                hospital.setIcuBeds(Integer.parseInt(data.get("icuBeds").toString()));
-            if (data.get("operationTheatersCount") != null && !data.get("operationTheatersCount").toString().isEmpty()) 
-                hospital.setOperationTheatersCount(Integer.parseInt(data.get("operationTheatersCount").toString()));
-            if (data.get("ambulanceCount") != null && !data.get("ambulanceCount").toString().isEmpty()) 
-                hospital.setAmbulanceCount(Integer.parseInt(data.get("ambulanceCount").toString()));
-            if (data.get("nurseCount") != null && !data.get("nurseCount").toString().isEmpty()) 
-                hospital.setNurseCount(Integer.parseInt(data.get("nurseCount").toString()));
-            if (data.get("generalStaffCount") != null && !data.get("generalStaffCount").toString().isEmpty()) 
-                hospital.setGeneralStaffCount(Integer.parseInt(data.get("generalStaffCount").toString()));
+            hospital.setTotalBeds(safeInt(data.get("totalBeds")));
+            hospital.setIcuBeds(safeInt(data.get("icuBeds")));
+            hospital.setOperationTheatersCount(safeInt(data.get("operationTheatersCount")));
+            hospital.setAmbulanceCount(safeInt(data.get("ambulanceCount")));
+            hospital.setNurseCount(safeInt(data.get("nurseCount")));
+            hospital.setGeneralStaffCount(safeInt(data.get("generalStaffCount")));
             if (data.get("emergencyServicesAvailable") != null) 
                 hospital.setEmergencyServicesAvailable(Boolean.parseBoolean(data.get("emergencyServicesAvailable").toString()));
 
@@ -275,28 +278,17 @@ public class HospitalController {
             if (data.get("departments") != null) hospital.setDepartments(String.valueOf(data.get("departments")));
             if (data.get("billingContactEmail") != null) hospital.setBillingContactEmail(String.valueOf(data.get("billingContactEmail")));
             if (data.get("billingContactPhone") != null) hospital.setBillingContactPhone(String.valueOf(data.get("billingContactPhone")));
-            if (data.get("serviceFees") != null) {
-                hospital.setServiceFees(mapper.writeValueAsString(data.get("serviceFees")));
-            }
-            if (data.get("serviceDurations") != null) {
-                hospital.setServiceDurations(mapper.writeValueAsString(data.get("serviceDurations")));
-            }
-            if (data.get("serviceCapacity") != null) {
-                hospital.setServiceCapacity(mapper.writeValueAsString(data.get("serviceCapacity")));
-            }
-            if (data.get("consultationTimings") != null) {
-                hospital.setConsultationTimings(String.valueOf(data.get("consultationTimings")));
-            }
-            if (data.get("bloodStock") != null) {
-                hospital.setBloodStock(mapper.writeValueAsString(data.get("bloodStock")));
-            }
+            if (data.get("serviceFees") != null) hospital.setServiceFees(mapper.writeValueAsString(data.get("serviceFees")));
+            if (data.get("serviceDurations") != null) hospital.setServiceDurations(mapper.writeValueAsString(data.get("serviceDurations")));
+            if (data.get("serviceCapacity") != null) hospital.setServiceCapacity(mapper.writeValueAsString(data.get("serviceCapacity")));
+            if (data.get("consultationTimings") != null) hospital.setConsultationTimings(String.valueOf(data.get("consultationTimings")));
+            if (data.get("bloodStock") != null) hospital.setBloodStock(mapper.writeValueAsString(data.get("bloodStock")));
 
             if (data.get("googleMapsUrl") != null) hospital.setGoogleMapsUrl(String.valueOf(data.get("googleMapsUrl")));
             if (data.get("facebookUrl")   != null) hospital.setFacebookUrl(String.valueOf(data.get("facebookUrl")));
             if (data.get("twitterUrl")    != null) hospital.setTwitterUrl(String.valueOf(data.get("twitterUrl")));
             if (data.get("instagramUrl")  != null) hospital.setInstagramUrl(String.valueOf(data.get("instagramUrl")));
 
-            // Financial Settlements
             if (data.get("razorpayAccountId") != null) hospital.setRazorpayAccountId(String.valueOf(data.get("razorpayAccountId")));
             if (data.get("razorpayKeyId") != null)     hospital.setRazorpayKeyId(String.valueOf(data.get("razorpayKeyId")));
             if (data.get("razorpayKeySecret") != null) hospital.setRazorpayKeySecret(String.valueOf(data.get("razorpayKeySecret")));
@@ -318,11 +310,8 @@ public class HospitalController {
 
             hospitalRepository.save(hospital);
             hospitalAdminRepository.save(admin);
-
-            // Trigger server-side geocoding to store lat/lng in backend
             hospitalService.syncHospitalCoordinates(hospital);
 
-            // Log administrative update
             auditLogService.log(user.getId(), admin.getName(), "INSTITUTIONAL_PROFILE_UPDATE", null, hospital.getId(), 
                                "Admin updated institutional profile for: " + hospital.getName());
 
@@ -389,6 +378,96 @@ public class HospitalController {
         HospitalAdmin admin = hospitalService.getAdminByUser(user);
         hospitalService.deleteDoctor(id, admin.getHospital());
         return ResponseEntity.ok(Map.of("message", "Physician record purged successfully"));
+    }
+
+    @PostMapping(value = "/onboard-doctor", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> onboardDoctor(
+            @RequestPart("doctor") String doctorJson,
+            @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture,
+            @RequestPart(value = "licenseFile", required = false) MultipartFile licenseFile,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            User user = userRepository.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            HospitalAdmin admin = hospitalService.getAdminByUser(user);
+            Hospital hospital = admin.getHospital();
+
+            ObjectMapper mapper = new ObjectMapper();
+            @SuppressWarnings("unchecked")
+            Map<String, Object> data = mapper.readValue(doctorJson, Map.class);
+
+            String email = String.valueOf(data.get("email")).toLowerCase();
+            if (userRepository.findByUsernameIgnoreCase(email).isPresent()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "A user account with this email already exists."));
+            }
+            if (doctorRepository.findByEmailIgnoreCase(email).isPresent()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "A physician profile with this email already exists."));
+            }
+
+            User newUser = new User();
+            newUser.setUsername(email);
+            newUser.setRole("ROLE_DOCTOR");
+            newUser.setEnabled(true);
+            newUser.setEmailVerified(true);
+            newUser.setPassword(passwordEncoder.encode("MediSync@2026"));
+            newUser = userRepository.save(newUser);
+
+            Doctor doctor = new Doctor();
+            doctor.setUser(newUser);
+            doctor.setHospitalEntity(hospital);
+            doctor.setHospital(hospital.getName());
+            doctor.setInstitutional(true);
+            doctor.setApproved(true);
+            doctor.setName(String.valueOf(data.get("name")));
+            doctor.setEmail(email);
+            doctor.setPhone(String.valueOf(data.get("phone")));
+            doctor.setGender(String.valueOf(data.get("gender")));
+            doctor.setDateOfBirth(String.valueOf(data.get("dateOfBirth")));
+            doctor.setAge(safeInt(data.get("age")));
+            doctor.setSpecialization(String.valueOf(data.get("specialization")));
+            doctor.setMedicalDegree(String.valueOf(data.get("medicalDegree")));
+            doctor.setMedicalLicenseNumber(String.valueOf(data.get("medicalLicenseNumber")));
+            doctor.setMedicalCouncil(String.valueOf(data.get("medicalCouncil")));
+            doctor.setLicenseExpiryDate(String.valueOf(data.get("licenseExpiryDate")));
+            doctor.setCollege(String.valueOf(data.get("college")));
+            doctor.setYearsOfExperience(safeInt(data.get("yearsOfExperience")));
+            doctor.setEmployeeId(String.valueOf(data.get("employeeId")));
+            doctor.setOpdRoomNumber(String.valueOf(data.get("opdRoomNumber")));
+            doctor.setContractType(String.valueOf(data.get("contractType")));
+            doctor.setWorkingDays(String.valueOf(data.get("workingDays")));
+            doctor.setConsultationTimings(String.valueOf(data.get("consultationTimings")));
+            doctor.setBreakTimings(String.valueOf(data.get("breakTimings")));
+            doctor.setSlotDuration(safeInt(data.get("slotDuration")));
+            doctor.setMaxPatientsPerDay(safeInt(data.get("maxPatientsPerDay")));
+            doctor.setOnlineConsultationFee(safeDouble(data.get("onlineConsultationFee")));
+            doctor.setOfflineConsultationFee(safeDouble(data.get("offlineConsultationFee")));
+            doctor.setSubSpecialties(String.valueOf(data.get("subSpecialties")));
+            doctor.setLanguagesSpoken(String.valueOf(data.get("languagesSpoken")));
+            doctor.setTreatmentFocus(String.valueOf(data.get("treatmentFocus")));
+            doctor.setProceduresHandled(String.valueOf(data.get("proceduresHandled")));
+            doctor.setPublications(String.valueOf(data.get("publications")));
+            doctor.setServices(String.valueOf(data.get("services")));
+
+            if (data.containsKey("canPrescribe")) doctor.setCanPrescribe(Boolean.parseBoolean(data.get("canPrescribe").toString()));
+            if (data.containsKey("canEditPatientData")) doctor.setCanEditPatientData(Boolean.parseBoolean(data.get("canEditPatientData").toString()));
+            if (data.containsKey("canAccessReports")) doctor.setCanAccessReports(Boolean.parseBoolean(data.get("canAccessReports").toString()));
+            if (data.containsKey("canManageAppointments")) doctor.setCanManageAppointments(Boolean.parseBoolean(data.get("canManageAppointments").toString()));
+
+            if (profilePicture != null && !profilePicture.isEmpty()) {
+                doctor.setProfilePictureUrl(supabaseStorageService.uploadFile(profilePicture));
+            }
+            if (licenseFile != null && !licenseFile.isEmpty()) {
+                doctor.setLicenseDocumentUrl(supabaseStorageService.uploadFile(licenseFile));
+            }
+
+            doctorRepository.save(doctor);
+            auditLogService.log(user.getId(), admin.getName(), "PERSONNEL_ONBOARDING", null, hospital.getId(), "Onboarded: " + doctor.getName());
+
+            return ResponseEntity.ok(Map.of("message", "Physician onboarded successfully."));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("message", "Institutional onboarding failed: " + e.getMessage()));
+        }
     }
 
     @PostMapping("/broadcast")

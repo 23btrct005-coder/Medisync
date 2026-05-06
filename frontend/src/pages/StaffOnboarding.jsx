@@ -67,6 +67,22 @@ const StaffOnboarding = () => {
         setOnboardData({ ...onboardData, workingDaysArray: next });
     };
 
+    // Automated Age Calculation Protocol
+    useEffect(() => {
+        if (onboardData.dateOfBirth) {
+            const birthDate = new Date(onboardData.dateOfBirth);
+            const today = new Date();
+            let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                calculatedAge--;
+            }
+            if (calculatedAge >= 0) {
+                setOnboardData(prev => ({ ...prev, age: calculatedAge.toString() }));
+            }
+        }
+    }, [onboardData.dateOfBirth]);
+
     const handleOnboardStaff = async (e) => {
         if (e) e.preventDefault();
         
@@ -139,7 +155,7 @@ const StaffOnboarding = () => {
                 </div>
             </div>
 
-            <form onSubmit={handleOnboardStaff} className="space-y-16">
+            <form onSubmit={handleOnboardStaff} className="space-y-16" autoComplete="off">
                 
                 {/* 1. Professional Identity */}
                 <div className={sectionClass}>

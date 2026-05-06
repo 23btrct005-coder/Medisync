@@ -203,10 +203,23 @@ const Booking = () => {
       setLoading(true);
       setAvailableSlots([]);
       const serviceParam = selectedService ? `&serviceName=${encodeURIComponent(selectedService)}` : '';
-      const res = await api.get(`appointments/slots?doctorId=${selectedDoctor.id}&date=${bookingDate}${serviceParam}`);
+      
+      // Safety Timeout: Don't block clinical flow for more than 5s
+      const slotPromise = api.get(`appointments/slots?doctorId=${selectedDoctor.id}&date=${bookingDate}${serviceParam}`);
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Sync Timeout')), 5000));
+      
+      const res = await Promise.race([slotPromise, timeoutPromise]);
       setAvailableSlots(res.data || []);
     } catch (e) {
-      toast.error("Failed to synchronize available clinical windows.");
+      console.warn("Clinical sync delayed:", e.message);
+      toast.error("Clinical window synchronization is slow. Retrying...");
+      // Try one more time silently
+      try {
+        const res = await api.get(`appointments/slots?doctorId=${selectedDoctor.id}&date=${bookingDate}${selectedService ? `&serviceName=${encodeURIComponent(selectedService)}` : ''}`);
+        setAvailableSlots(res.data || []);
+      } catch (inner) {
+        toast.error("Failed to synchronize clinical windows. Please hard refresh.");
+      }
     } finally {
       setLoading(false);
     }
@@ -298,6 +311,7 @@ const Booking = () => {
                 razorpay_signature: response.razorpay_signature
               });
               toast.success("Transaction Authorized! Session Synchronized.");
+              setIsBooking(false); // Reset before navigation
               navigate('/dashboard/sessions', { state: { autoOpenId: order.appointmentId } });
             } catch (err) {
               if (retries > 0) {

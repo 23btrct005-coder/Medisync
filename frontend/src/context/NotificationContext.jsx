@@ -53,7 +53,7 @@ export const NotificationProvider = ({ children }) => {
     if (stompClientRef.current && stompClientRef.current.connected) return;
 
     const token = localStorage.getItem('token');
-    const wsUrl = `${rawBaseURL}/ws`;
+    const wsUrl = window.location.origin + '/ws';
 
     const socket = new SockJS(wsUrl);
     const client = Stomp.over(socket);

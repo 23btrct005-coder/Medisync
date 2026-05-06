@@ -687,67 +687,62 @@ public class AppointmentService {
     }
 
     public List<String> getAvailableSlots(String facilityId, String serviceName, LocalDate date) {
-        String timings;
-        int duration = 15;
-        int buffer = 0;
-        Long entityId;
-        boolean isHospital = false;
+        try {
+            String timings = null;
+            int duration = 15;
+            int buffer = 0;
+            Long entityId = null;
+            boolean isHospital = false;
 
-        if (facilityId.startsWith("hosp_")) {
-            entityId = Long.valueOf(facilityId.substring(5).split("\\.")[0]);
-            Hospital hospital = hospitalRepository.findById(entityId)
-                .orElseThrow(() -> new RuntimeException("Hospital not found"));
-            timings = hospital.getConsultationTimings();
-            
-            if (serviceName != null && hospital.getServiceDurations() != null) {
-                try {
-                    JSONObject durations = new JSONObject(hospital.getServiceDurations());
-                    if (durations.has(serviceName)) {
-                        duration = durations.getInt(serviceName);
-                    }
-                } catch (Exception e) {}
-            }
-            isHospital = true;
-        } else {
-            String dIdStr = facilityId;
-            if (dIdStr.startsWith("doc_")) dIdStr = dIdStr.substring(4);
-            entityId = Long.valueOf(dIdStr.split("\\.")[0]);
-            Doctor doctor = doctorRepository.findById(entityId)
-                .orElseThrow(() -> new RuntimeException("Doctor not found"));
-            
-            // Clinical Absence Shield
-            if (doctor.getAbsenceDates() != null && doctor.getAbsenceDates().contains(date.toString())) {
-                System.out.println("INFO: Absence detected for Dr. " + doctor.getName() + " on " + date + ". Collapsing all clinical windows.");
+            if (facilityId == null || facilityId.trim().isEmpty() || facilityId.equalsIgnoreCase("undefined") || facilityId.equalsIgnoreCase("null")) {
                 return Collections.emptyList();
             }
 
-            timings = doctor.getConsultationTimings();
-            duration = (doctor.getSlotDuration() != null && doctor.getSlotDuration() > 0) ? doctor.getSlotDuration() : 15;
-            buffer = (doctor.getSlotBuffer() != null) ? doctor.getSlotBuffer() : 0;
-
-            if (serviceName != null && doctor.getServiceDurations() != null) {
-                try {
-                    JSONObject durations = new JSONObject(doctor.getServiceDurations());
-                    if (durations.has(serviceName)) {
-                        duration = durations.getInt(serviceName);
+            if (facilityId.startsWith("hosp_")) {
+                entityId = Long.valueOf(facilityId.substring(5).split("\\.")[0]);
+                Hospital hospital = hospitalRepository.findById(entityId).orElse(null);
+                if (hospital != null) {
+                    timings = hospital.getConsultationTimings();
+                    if (serviceName != null && hospital.getServiceDurations() != null) {
+                        try {
+                            JSONObject durations = new JSONObject(hospital.getServiceDurations());
+                            if (durations.has(serviceName)) duration = durations.getInt(serviceName);
+                        } catch (Exception e) {}
                     }
-                } catch (Exception e) {}
+                }
+                isHospital = true;
+            } else {
+                String dIdStr = facilityId;
+                if (dIdStr.startsWith("doc_")) dIdStr = dIdStr.substring(4);
+                entityId = Long.valueOf(dIdStr.split("\\.")[0]);
+                Doctor doctor = doctorRepository.findById(entityId).orElse(null);
+                if (doctor != null) {
+                    if (doctor.getAbsenceDates() != null && doctor.getAbsenceDates().contains(date.toString())) {
+                        return Collections.emptyList();
+                    }
+                    timings = doctor.getConsultationTimings();
+                    duration = (doctor.getSlotDuration() != null && doctor.getSlotDuration() > 0) ? doctor.getSlotDuration() : 15;
+                    buffer = (doctor.getSlotBuffer() != null) ? doctor.getSlotBuffer() : 0;
+                    if (serviceName != null && doctor.getServiceDurations() != null) {
+                        try {
+                            JSONObject durations = new JSONObject(doctor.getServiceDurations());
+                            if (durations.has(serviceName)) duration = durations.getInt(serviceName);
+                        } catch (Exception e) {}
+                    }
+                }
             }
-        }
 
-        boolean is247 = serviceName != null && SERVICES_24_7.contains(serviceName);
-        if (is247) {
-            System.out.println("DEBUG: 24/7 Service Detected: " + serviceName + ". Overriding clinical window to 24 hours.");
-            timings = "00:00 - 23:59";
-            if (duration < 15) duration = 15; // Minimum 15m slots for emergency to prevent bloat
-        }
+            boolean is247 = serviceName != null && SERVICES_24_7.contains(serviceName);
+            if (is247) {
+                timings = "00:00 - 23:59";
+                if (duration < 15) duration = 15;
+            }
 
-        if (timings == null || timings.trim().isEmpty() || !timings.contains("-")) {
-            return Collections.emptyList();
-        }
+            if (timings == null || timings.trim().isEmpty() || !timings.contains("-")) {
+                timings = "09:00 AM - 05:00 PM";
+            }
 
-        List<String> allSlots = new ArrayList<>();
-        try {
+            List<String> allSlots = new ArrayList<>();
             String[] parts = timings.split("-");
             java.time.LocalTime startTime = parseRobustTime(parts[0].trim());
             java.time.LocalTime endTime = parseRobustTime(parts[1].trim());
@@ -758,54 +753,52 @@ public class AppointmentService {
                 while (current.isBefore(endTime)) {
                     allSlots.add(current.format(displayFormatter));
                     current = current.plusMinutes(duration + buffer);
+                    if (allSlots.size() > 100) break;
                 }
             }
+
+            LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(10);
+            List<Appointment> existing = isHospital ? 
+                appointmentRepository.findByHospitalIdAndAppointmentDate(entityId, date) :
+                appointmentRepository.findByDoctorIdAndAppointmentDate(entityId, date);
+
+            int capacity = 1;
+            String capacityJson = null;
+            if (isHospital) {
+                Hospital h = hospitalRepository.findById(entityId).orElse(null);
+                if (h != null) capacityJson = h.getServiceCapacity();
+            } else {
+                Doctor d = doctorRepository.findById(entityId).orElse(null);
+                if (d != null) capacityJson = d.getServiceCapacity();
+            }
+
+            if (serviceName != null && capacityJson != null) {
+                try {
+                    JSONObject capacities = new JSONObject(capacityJson);
+                    if (capacities.has(serviceName)) capacity = capacities.getInt(serviceName);
+                } catch (Exception e) {}
+            }
+            if (capacity < 1) capacity = 1;
+
+            final int finalCapacity = capacity;
+            Map<String, Long> slotCounts = existing.stream()
+                .filter(a -> a.getStatus() == Appointment.AppointmentStatus.BOOKED || 
+                            a.getStatus() == Appointment.AppointmentStatus.AWAITING_VERIFICATION ||
+                            (a.getStatus() == Appointment.AppointmentStatus.PENDING && a.getCreatedAt() != null && a.getCreatedAt().isAfter(expiryTime)))
+                .map(a -> a.getTimeSlot())
+                .filter(Objects::nonNull)
+                .collect(Collectors.groupingBy(slot -> slot, Collectors.counting()));
+
+            return allSlots.stream()
+                .filter(slot -> slotCounts.getOrDefault(slot, 0L) < finalCapacity)
+                .collect(Collectors.toList());
+
         } catch (Exception e) {
+            System.err.println("CRITICAL: Slots Sync Error: " + e.getMessage());
             return Collections.emptyList();
         }
-
-        LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(10);
-        List<Appointment> existing;
-        if (isHospital) {
-            existing = appointmentRepository.findByHospitalIdAndAppointmentDate(entityId, date);
-        } else {
-            existing = appointmentRepository.findByDoctorIdAndAppointmentDate(entityId, date);
-        }
-
-        // Get Capacity for this service
-        int capacity = 1;
-        String capacityJson = null;
-        if (isHospital) {
-            Hospital hospital = hospitalRepository.findById(entityId).orElse(null);
-            if (hospital != null) capacityJson = hospital.getServiceCapacity();
-        } else {
-            Doctor doctor = doctorRepository.findById(entityId).orElse(null);
-            if (doctor != null) capacityJson = doctor.getServiceCapacity();
-        }
-
-        if (serviceName != null && capacityJson != null) {
-            try {
-                JSONObject capacities = new JSONObject(capacityJson);
-                if (capacities.has(serviceName)) {
-                    capacity = capacities.getInt(serviceName);
-                }
-            } catch (Exception e) {}
-        }
-        if (capacity < 1) capacity = 1;
-
-        Map<String, Long> slotCounts = existing.stream()
-            .filter(a -> a.getStatus() == Appointment.AppointmentStatus.BOOKED || 
-                        a.getStatus() == Appointment.AppointmentStatus.AWAITING_VERIFICATION ||
-                        (a.getStatus() == Appointment.AppointmentStatus.PENDING && a.getCreatedAt() != null && a.getCreatedAt().isAfter(expiryTime)))
-            .map(a -> a.getTimeSlot())
-            .filter(Objects::nonNull)
-            .collect(Collectors.groupingBy(slot -> slot, Collectors.counting()));
-
-        final int finalCapacity = capacity;
-        return allSlots.stream()
-            .filter(slot -> slotCounts.getOrDefault(slot, 0L) < finalCapacity)
-            .collect(Collectors.toList());
     }
+
 
     private java.time.LocalTime parseRobustTime(String timeStr) {
         String[] formats = {"hh:mm a", "h:mm a", "HH:mm", "H:mm", "hh:mma", "h:mma"};
