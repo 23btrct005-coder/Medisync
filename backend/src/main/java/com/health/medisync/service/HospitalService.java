@@ -390,12 +390,14 @@ public class HospitalService {
             }
         }
 
-        // 8. User Account Erasure (Cascades to Doctor record)
-        if (doctor.getUser() != null) {
-            userRepository.delete(doctor.getUser());
-        } else {
-            doctorRepository.delete(doctor);
-        }
+        // 8. Final Institutional Severance: Clear Department link
+        doctor.setDepartment(null);
+        doctorRepository.save(doctor);
+
+        // 9. Institutional Purge Execution
+        // Since Doctor has @OneToOne(cascade = CascadeType.REMOVE) on User,
+        // deleting the doctor will automatically delete the linked user account.
+        doctorRepository.delete(doctor);
     }
 
     public Doctor getDoctorById(Long doctorId, Hospital hospital) {
