@@ -145,7 +145,7 @@ public class DoctorService {
         );
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public Patient getPatientById(String doctorUsername, Long id) {
         Doctor doctor = getDoctorProfile(doctorUsername);
         verifyAccess(doctor, id);
@@ -159,12 +159,14 @@ public class DoctorService {
         return patient;
     }
 
+    @Transactional
     public List<MedicalRecord> getPatientRecords(String doctorUsername, Long patientId) {
         Doctor doctor = getDoctorProfile(doctorUsername);
         verifyAccess(doctor, patientId);
         return recordRepository.findByPatientId(patientId);
     }
 
+    @Transactional
     public List<Report> getPatientReports(String doctorUsername, Long patientId) {
         Doctor doctor = getDoctorProfile(doctorUsername);
         verifyAccess(doctor, patientId);
