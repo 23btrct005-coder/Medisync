@@ -17,6 +17,8 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
     const scrollRef = useRef(null);
 
     useEffect(() => {
+        if (!receiverId || String(receiverId) === 'undefined') return;
+
         fetchHistory();
         connectWebSocket();
         checkReceiverStatus();
@@ -38,6 +40,7 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
     }, [messages]);
 
     const fetchHistory = async () => {
+        if (!receiverId || String(receiverId) === 'undefined') return;
         try {
             const res = await api.get(`/chat/conversation/${receiverId}`);
             setMessages(res.data);
@@ -50,6 +53,7 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
     };
 
     const checkReceiverStatus = async () => {
+        if (!receiverId || String(receiverId) === 'undefined') return;
         try {
             const res = await api.get(`/chat/status/${receiverId}`);
             setIsReceiverOnline(res.data.online);
@@ -59,6 +63,7 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
     };
 
     const connectWebSocket = () => {
+        if (!receiverId || String(receiverId) === 'undefined') return;
         // Use rawBaseURL to avoid /api/api double prefixing and ensure /ws endpoint
         const socket = new SockJS(`${rawBaseURL}/ws`);
         stompClient.current = Stomp.over(socket);
