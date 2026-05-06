@@ -121,7 +121,7 @@ public class DoctorService {
     }
 
     private void verifyAccess(Doctor doctor, Long patientId) {
-        boolean hasAccess = patientRepository.checkDoctorLink(doctor.getId(), patientId, doctor.getUser().getId());
+        boolean hasAccess = patientRepository.checkDoctorLink(doctor.getId(), patientId);
 
         if (!hasAccess) {
             throw new RuntimeException("Unauthorized Access: This patient is not linked to your clinical practice. Please use the Patient Code to establish a secure link.");
