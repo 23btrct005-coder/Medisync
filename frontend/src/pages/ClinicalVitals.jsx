@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Activity, Heart, Thermometer, Droplets, Zap, Clock, Info, ShieldCheck, Plus, X, Loader2 } from 'lucide-react';
-import api from '../api/axiosConfig';
+import api, { rawBaseURL } from '../api/axiosConfig';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 
@@ -26,7 +26,8 @@ const ClinicalVitals = () => {
 
         // Establish Real-Time WebSocket Connection
         const token = localStorage.getItem('token');
-        const socket = new SockJS(`${api.defaults.baseURL.replace('/api', '')}/ws`);
+        const wsUrl = rawBaseURL + '/ws';
+        const socket = new SockJS(wsUrl);
         const client = Stomp.over(socket);
         client.debug = null; // Quiet mode
 

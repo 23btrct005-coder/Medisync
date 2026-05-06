@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import api from '../api/axiosConfig';
+import api, { rawBaseURL } from '../api/axiosConfig';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import { Calendar, Clock, ChevronRight, Video, MapPin, X, Loader2, AlertCircle, History as HistoryIcon, ShieldCheck, CreditCard, CheckCircle2, Copy, ExternalLink, Activity } from 'lucide-react';
@@ -469,7 +469,7 @@ const Sessions = () => {
         let stompClient = null;
         const connectWebSocket = () => {
             try {
-                const wsUrl = `${api.defaults.baseURL.replace('/api', '')}/ws`;
+                const wsUrl = rawBaseURL + '/ws';
                 const socket = new SockJS(wsUrl);
                 stompClient = Stomp.over(socket);
                 stompClient.debug = null; 

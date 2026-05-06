@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, Clock, User, ChevronRight, Activity, Search, Filter, Droplet, MapPin, ShieldCheck, X, ExternalLink, CreditCard } from 'lucide-react';
-import api from '../api/axiosConfig';
+import api, { rawBaseURL } from '../api/axiosConfig';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import toast from 'react-hot-toast';
@@ -35,7 +35,7 @@ const HospitalAppointments = () => {
         let stompClient = null;
         const connectWebSocket = () => {
             try {
-                const wsUrl = `${api.defaults.baseURL.replace('/api', '')}/ws`;
+                const wsUrl = rawBaseURL + '/ws';
                 const socket = new SockJS(wsUrl);
                 stompClient = Stomp.over(socket);
                 stompClient.debug = null; 
