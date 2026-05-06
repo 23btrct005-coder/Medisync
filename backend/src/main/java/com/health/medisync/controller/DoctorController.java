@@ -127,7 +127,11 @@ public class DoctorController {
     @Transactional(readOnly = true)
     public ResponseEntity<?> getPatientByCode(@PathVariable String code, Authentication authentication) {
         try {
-            Patient p = doctorService.getPatientByShortCode(code);
+            java.util.Optional<Patient> pOpt = doctorService.getPatientByShortCode(code);
+            if (pOpt.isEmpty()) {
+                return ResponseEntity.status(404).body(java.util.Map.of("message", "Patient with ID " + code + " not found."));
+            }
+            Patient p = pOpt.get();
             String username = authentication.getName();
             Doctor doctor = doctorService.getDoctorProfile(username);
             boolean isLinked = p.getDoctors().stream().anyMatch(d -> d.getId().equals(doctor.getId()));
@@ -147,7 +151,7 @@ public class DoctorController {
             response.put("isLinked", isLinked);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
+            return ResponseEntity.internalServerError().body(java.util.Map.of("message", "Clinical lookup exception: " + e.getMessage()));
         }
     }
 

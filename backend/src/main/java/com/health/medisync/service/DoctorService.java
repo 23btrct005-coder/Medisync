@@ -412,9 +412,8 @@ public class DoctorService {
     }
 
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    public Patient getPatientByShortCode(String shortCode) {
-        return patientRepository.findByPatientId(shortCode.toUpperCase().trim())
-            .orElseThrow(() -> new RuntimeException("Patient with ID " + shortCode + " not found."));
+    public java.util.Optional<Patient> getPatientByShortCode(String shortCode) {
+        return patientRepository.findByPatientId(shortCode.toUpperCase().trim());
     }
 
     public List<Doctor> searchDoctors(String query) {

@@ -82,9 +82,8 @@ public class PatientService {
         return code;
     }
 
-    public Patient getPatientByShortCode(String shortCode) {
-        return patientRepository.findByPatientId(shortCode.toUpperCase().trim())
-            .orElseThrow(() -> new RuntimeException("Patient with ID " + shortCode + " not found."));
+    public java.util.Optional<Patient> getPatientByShortCode(String shortCode) {
+        return patientRepository.findByPatientId(shortCode.toUpperCase().trim());
     }
 
     public Patient getPatientById(Long id) {
