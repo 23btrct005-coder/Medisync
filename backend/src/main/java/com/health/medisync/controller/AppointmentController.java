@@ -58,6 +58,7 @@ public class AppointmentController {
     }
 
     @PostMapping("/book")
+    @Transactional
     public ResponseEntity<?> initiateBooking(
             Authentication authentication,
             @RequestBody Map<String, Object> request) {
@@ -169,6 +170,7 @@ public class AppointmentController {
     }
 
     @PostMapping("/book-service")
+    @Transactional
     public ResponseEntity<?> initiateServiceBooking(
             Authentication authentication,
             @RequestBody Map<String, Object> request) {
@@ -189,6 +191,7 @@ public class AppointmentController {
     }
 
     @PostMapping("/verify")
+    @Transactional
     public ResponseEntity<?> verifyPayment(@RequestBody Map<String, String> request) {
         try {
             appointmentService.verifyPayment(
@@ -203,6 +206,7 @@ public class AppointmentController {
     }
 
     @PostMapping("/verify-upi")
+    @Transactional
     public ResponseEntity<?> verifyUpiPayment(@RequestBody Map<String, Object> request) {
         try {
             if (request.get("appointmentId") == null) {
@@ -220,6 +224,7 @@ public class AppointmentController {
     }
 
     @PostMapping("/confirm-upi")
+    @Transactional
     public ResponseEntity<?> confirmUpiPayment(Authentication authentication, @RequestBody Map<String, Object> request) {
         try {
             if (request.get("appointmentId") == null) {
@@ -234,6 +239,7 @@ public class AppointmentController {
     }
 
     @GetMapping({"/my-appointments", "/patient"})
+    @Transactional(readOnly = true)
     public ResponseEntity<List<Appointment>> myAppointments(Authentication authentication) {
         try {
             String email = authentication.getName();

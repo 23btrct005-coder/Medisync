@@ -124,6 +124,7 @@ public class DoctorController {
     }
 
     @GetMapping("/patient-by-code/{code}")
+    @Transactional(readOnly = true)
     public ResponseEntity<?> getPatientByCode(@PathVariable String code, Authentication authentication) {
         try {
             Patient p = doctorService.getPatientByShortCode(code);

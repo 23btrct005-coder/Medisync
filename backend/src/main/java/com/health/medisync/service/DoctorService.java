@@ -62,11 +62,13 @@ public class DoctorService {
             .orElseThrow(() -> new RuntimeException("Doctor profile not found. Please complete your registration."));
     }
 
+    @Transactional(readOnly = true)
     public List<Patient> getLinkedPatients(String doctorUsername) {
         Doctor doctor = getDoctorProfile(doctorUsername);
         return patientRepository.findByDoctorIdAndUserId(doctor.getId(), doctor.getUser().getId());
     }
 
+    @Transactional
     public void requestAccess(String doctorUsername, String patientEmail) {
         Doctor doctor = getDoctorProfile(doctorUsername);
         Patient patient = patientRepository.findByUserUsernameIgnoreCase(patientEmail)
@@ -74,6 +76,7 @@ public class DoctorService {
         createAccessRequest(doctor, patient);
     }
 
+    @Transactional
     public void requestAccess(String doctorUsername, Long patientId) {
         Doctor doctor = getDoctorProfile(doctorUsername);
         Patient patient = patientRepository.findById(patientId)
@@ -145,6 +148,7 @@ public class DoctorService {
         );
     }
 
+    @Transactional(readOnly = true)
     public Patient getPatientById(String doctorUsername, Long id) {
         Doctor doctor = getDoctorProfile(doctorUsername);
         verifyAccess(doctor, id);
@@ -175,6 +179,7 @@ public class DoctorService {
         return accessRequestRepository.findByDoctor(doctor);
     }
 
+    @Transactional
     public MedicalRecord addMedicalRecord(String doctorUsername, Long patientId, MedicalRecordRequest request) {
         Doctor doctor = getDoctorProfile(doctorUsername);
         Patient patient = getPatientById(doctorUsername, patientId);
