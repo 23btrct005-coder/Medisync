@@ -124,32 +124,16 @@ public class DoctorController {
     }
 
     @GetMapping("/patient-by-code/{code}")
-    @Transactional(readOnly = true)
     public ResponseEntity<?> getPatientByCode(@PathVariable String code, Authentication authentication) {
         try {
-            java.util.Optional<Patient> pOpt = doctorService.getPatientByShortCode(code);
-            if (pOpt.isEmpty()) {
+            java.util.Optional<java.util.Map<String, Object>> details = 
+                doctorService.getPatientDetailsForDoctor(authentication.getName(), code);
+            
+            if (details.isEmpty()) {
                 return ResponseEntity.status(404).body(java.util.Map.of("message", "Patient with ID " + code + " not found."));
             }
-            Patient p = pOpt.get();
-            String username = authentication.getName();
-            Doctor doctor = doctorService.getDoctorProfile(username);
-            boolean isLinked = p.getDoctors().stream().anyMatch(d -> d.getId().equals(doctor.getId()));
-            if (!isLinked) {
-                isLinked = appointmentService.hasBookedAppointment(doctor.getId(), p.getId());
-            }
             
-            java.util.Map<String, Object> response = new java.util.HashMap<>();
-            response.put("id", p.getId());
-            response.put("patientId", p.getPatientId());
-            response.put("name", p.getName());
-            response.put("email", p.getEmail());
-            response.put("phone", p.getPhone());
-            response.put("bloodGroup", p.getBloodGroup());
-            response.put("age", p.getAge());
-            response.put("gender", p.getGender());
-            response.put("isLinked", isLinked);
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(details.get());
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(java.util.Map.of("message", "Clinical lookup exception: " + e.getMessage()));
         }

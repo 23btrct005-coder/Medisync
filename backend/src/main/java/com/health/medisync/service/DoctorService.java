@@ -416,6 +416,42 @@ public class DoctorService {
         return patientRepository.findByPatientId(shortCode.toUpperCase().trim());
     }
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public java.util.Optional<java.util.Map<String, Object>> getPatientDetailsForDoctor(String doctorUsername, String patientShortCode) {
+        java.util.Optional<Patient> pOpt = getPatientByShortCode(patientShortCode);
+        if (pOpt.isEmpty()) {
+            return java.util.Optional.empty();
+        }
+        
+        Patient p = pOpt.get();
+        Doctor doctor = getDoctorProfile(doctorUsername);
+        
+        // Use a transaction scope only for the lazy loading part if needed
+        // but here we can just fetch the data
+        boolean isLinked = p.getDoctors().stream().anyMatch(d -> d.getId().equals(doctor.getId()));
+        if (!isLinked) {
+            // Need a way to check appointments without poisoning the transaction
+            try {
+                isLinked = appointmentRepository.existsByDoctorIdAndPatientIdAndStatus(
+                    doctor.getId(), p.getId(), com.health.medisync.model.Appointment.AppointmentStatus.BOOKED);
+            } catch (Exception e) {
+                // Ignore appointment check failure
+            }
+        }
+        
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        response.put("id", p.getId());
+        response.put("patientId", p.getPatientId());
+        response.put("name", p.getName());
+        response.put("email", p.getEmail());
+        response.put("phone", p.getPhone());
+        response.put("bloodGroup", p.getBloodGroup());
+        response.put("age", p.getAge());
+        response.put("gender", p.getGender());
+        response.put("isLinked", isLinked);
+        return java.util.Optional.of(response);
+    }
+
     public List<Doctor> searchDoctors(String query) {
         if (query == null || query.trim().isEmpty()) {
             return doctorRepository.findByApprovedTrue();
