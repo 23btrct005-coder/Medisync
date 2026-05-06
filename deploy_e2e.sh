@@ -66,8 +66,13 @@ npm run build
 
 # Deploy Frontend to Web Root
 echo "📂 DEPLOYING FRONTEND TO PRODUCTION ROOT..."
-sudo rm -rf /var/www/html/*
-sudo cp -r dist/* /var/www/html/
+WEB_ROOT=$(grep -r "root" /etc/nginx/sites-enabled | awk '{print $NF}' | sed 's/;//' | head -n 1 || echo "/var/www/html")
+if [ -z "$WEB_ROOT" ]; then WEB_ROOT="/var/www/html"; fi
+
+echo "📍 Target Web Root: $WEB_ROOT"
+sudo mkdir -p "$WEB_ROOT"
+sudo rm -rf "$WEB_ROOT"/*
+sudo cp -r dist/* "$WEB_ROOT/"
 
 # Restart Nginx (if applicable)
 sudo systemctl restart nginx || echo "⚠️ NGINX RESTART SKIPPED"
