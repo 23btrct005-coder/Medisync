@@ -133,11 +133,18 @@ const Login = () => {
           </div>
           
           <div className="mt-4 text-center border-t border-slate-200 pt-6">
-            <p className="text-sm text-slate-600 mb-4">Professional Access</p>
+            <p className="text-sm text-slate-600 mb-4">Don't have an account?</p>
+            <button
+              type="button"
+              onClick={() => navigate('/register?context=patient')}
+              className="w-full flex justify-center py-3 px-4 border shadow-sm text-sm font-medium rounded-xl text-primary-600 bg-white hover:bg-slate-50 border-primary-200 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+              Register here
+            </button>
             <button
               type="button"
               onClick={() => navigate('/doctor-login')}
-              className="w-full flex justify-center py-3 px-4 border shadow-sm text-sm font-medium rounded-xl text-primary-600 bg-white hover:bg-slate-50 border-primary-200 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              className="mt-3 w-full flex justify-center py-2 px-4 shadow-sm text-sm font-medium rounded-xl text-blue-600 bg-blue-50 hover:bg-blue-100 transition-all focus:outline-none"
             >
               Physician Portal
             </button>
