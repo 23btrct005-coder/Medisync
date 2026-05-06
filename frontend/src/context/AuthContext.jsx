@@ -8,6 +8,28 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchUserProfile = async (role) => {
+    try {
+      const endpoint = role === 'ROLE_DOCTOR' ? '/doctor/profile' : '/patient/profile';
+      const response = await api.get(endpoint);
+      
+      // Update user with full profile data
+      setUser(prev => ({
+        ...prev,
+        ...response.data
+      }));
+      
+      // Persist the full profile
+      localStorage.setItem('user', JSON.stringify({
+        ...user,
+        ...response.data,
+        role: role
+      }));
+    } catch (error) {
+      console.error("Error fetching full profile:", error);
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
@@ -17,6 +39,9 @@ export const AuthProvider = ({ children }) => {
         const userData = JSON.parse(savedUser);
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         setUser(userData);
+        
+        // Background refresh profile data
+        fetchUserProfile(userData.role);
       } catch (e) {
         console.error("Error parsing saved user", e);
         localStorage.removeItem('token');
@@ -29,24 +54,24 @@ export const AuthProvider = ({ children }) => {
   const login = async (username, password) => {
     try {
       const response = await api.post('/auth/login', { username, password });
-      
-      // Backend returns AuthResponse: { token, role, emailVerified }
       const { token, role, emailVerified } = response.data;
       
       if (!token) throw new Error("No security token received");
 
-      // Construct a minimal user object based on the AuthResponse
-      const userData = {
-        username: username, // Preserve the username used to log in
+      const baseUserData = {
+        username: username,
         role: role,
         emailVerified: emailVerified
       };
 
       localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('user', JSON.stringify(baseUserData));
       
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      setUser(userData);
+      setUser(baseUserData);
+      
+      // Immediately fetch full profile details
+      await fetchUserProfile(role);
       
       return { success: true, role: role };
     } catch (error) {
