@@ -54,35 +54,28 @@ SUPABASE_URL=https://bwjmzottkkxrdztqqeju.supabase.co
 EOF
 
 # 6. Build & Launch
-echo "🚀 EXECUTING FINAL INSTITUTIONAL LAUNCH..."
-# Build Backend
-cd backend
-mvn clean package -DskipTests
+echo "🚀 EXECUTING UNIFIED INSTITUTIONAL LAUNCH..."
 
-# Build Frontend
-cd ../frontend
+# Build Frontend First
+echo "🌐 BUILDING FRONTEND..."
+cd frontend
 npm install
 npm run build
 
-# Deploy Frontend to Web Root
-echo "📂 DEPLOYING FRONTEND TO PRODUCTION ROOT..."
-WEB_ROOT=$(grep -r "root" /etc/nginx/sites-enabled | awk '{print $NF}' | sed 's/;//' | head -n 1 || echo "/var/www/html")
-if [ -z "$WEB_ROOT" ]; then WEB_ROOT="/var/www/html"; fi
+# Bundle Frontend into Backend Resources
+echo "📦 BUNDLING FRONTEND INTO BACKEND..."
+mkdir -p ../backend/src/main/resources/static
+rm -rf ../backend/src/main/resources/static/*
+cp -r dist/* ../backend/src/main/resources/static/
 
-echo "📍 Target Web Root: $WEB_ROOT"
-sudo mkdir -p "$WEB_ROOT"
-sudo rm -rf "$WEB_ROOT"/*
-sudo cp -r dist/* "$WEB_ROOT/"
+# Build Unified Backend
+echo "🏛️ BUILDING UNIFIED BACKEND..."
+cd ../backend
+mvn clean package -DskipTests
 
-# Restart Nginx (if applicable)
-sudo systemctl restart nginx || echo "⚠️ NGINX RESTART SKIPPED"
-
-# Restart Backend Service
-echo "🏛️ RESTARTING MEDISYNC BACKEND SERVICE..."
-sudo systemctl restart medisync || {
-    echo "⚠️ SYSTEMD SERVICE NOT FOUND. LAUNCHING MANUALLY..."
-    fuser -k 8080/tcp || true
-    nohup java -jar ../backend/target/*.jar > ~/medisync.log 2>&1 &
-}
+# Final Launch
+echo "🚀 LAUNCHING MEDISYNC..."
+fuser -k 8080/tcp || true
+nohup java -jar target/*.jar > ~/medisync.log 2>&1 &
 
 echo "✅ INSTITUTIONAL REGISTRY IMPLEMENTED SUCCESSFULLY ON E2E!"
