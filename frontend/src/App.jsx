@@ -106,7 +106,12 @@ const SmartProfileRedirect = ({ type = 'view' }) => {
   return <Navigate to={type === 'edit' ? '/dashboard/profile/edit' : '/dashboard/profile'} replace />;
 };
 
+import { useIsMobile } from './hooks/useIsMobile';
+import MobileApp from './mobile/MobileApp';
+
 function App() {
+  const isMobile = useIsMobile();
+
   useEffect(() => {
     // Navigation Guard: Prevent accidental refresh/leave
     const handleBeforeUnload = (e) => {
@@ -135,114 +140,119 @@ function App() {
             <NotificationProvider>
               <AiConcierge />
               <Toaster position="top-right" toastOptions={{ duration: 4000, style: { background: '#1e293b', color: '#fff' } }} />
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/doctor-login" element={<ClinicalDoctorLogin />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/emergency/:patientId" element={<EmergencyInfo />} />
-                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                <Route path="/terms-of-service" element={<TermsOfService />} />
-                <Route path="/ai-disclaimer" element={<AIDisclaimer />} />
-                <Route path="/verify-email" element={<VerifyEmail />} />
-                <Route path="/pending-approval" element={<PendingApproval />} />
-                
-                {/* Legacy Redirects */}
-                <Route path="/profile" element={
-                  <ProtectedRoute>
-                    <SmartProfileRedirect type="view" />
-                  </ProtectedRoute>
-                } />
-                <Route path="/edit-profile" element={
-                  <ProtectedRoute>
-                    <SmartProfileRedirect type="edit" />
-                  </ProtectedRoute>
-                } />
-                <Route path="/profile/edit" element={
-                  <ProtectedRoute>
-                    <SmartProfileRedirect type="edit" />
-                  </ProtectedRoute>
-                } />
+              
+              {isMobile ? (
+                <MobileApp />
+              ) : (
+                <Routes>
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/doctor-login" element={<ClinicalDoctorLogin />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/emergency/:patientId" element={<EmergencyInfo />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                  <Route path="/terms-of-service" element={<TermsOfService />} />
+                  <Route path="/ai-disclaimer" element={<AIDisclaimer />} />
+                  <Route path="/verify-email" element={<VerifyEmail />} />
+                  <Route path="/pending-approval" element={<PendingApproval />} />
+                  
+                  {/* Legacy Redirects */}
+                  <Route path="/profile" element={
+                    <ProtectedRoute>
+                      <SmartProfileRedirect type="view" />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/edit-profile" element={
+                    <ProtectedRoute>
+                      <SmartProfileRedirect type="edit" />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/profile/edit" element={
+                    <ProtectedRoute>
+                      <SmartProfileRedirect type="edit" />
+                    </ProtectedRoute>
+                  } />
 
-                <Route path="/" element={<Landing />} />
-                
-                <Route path="/dashboard" element={
-                  <ProtectedRoute allowedRole="ROLE_PATIENT">
-                    <DashboardLayout />
-                  </ProtectedRoute>
-                }>
-                  <Route index element={<Dashboard />} />
-                  <Route path="wallet" element={<HealthWallet />} />
-                  <Route path="records" element={<MedicalHistory />} />
-                  <Route path="reports" element={<Reports />} />
-                  <Route path="messages" element={<PatientMessages />} />
-                  <Route path="medications" element={<MedicationAdherence />} />
-                  <Route path="security" element={<SecurityLogs />} />
-                  <Route path="sessions" element={<Sessions />} />
-                  <Route path="booking" element={<Booking />} />
-                  <Route path="doctors" element={<DoctorsList />} />
-                  <Route path="profile" element={<Profile />} />
-                  <Route path="profile/edit" element={<EditProfile />} />
-                  <Route path="settings" element={<Settings />} />
-                  <Route path="support" element={<Support />} />
-                </Route>
+                  <Route path="/" element={<Landing />} />
+                  
+                  <Route path="/dashboard" element={
+                    <ProtectedRoute allowedRole="ROLE_PATIENT">
+                      <DashboardLayout />
+                    </ProtectedRoute>
+                  }>
+                    <Route index element={<Dashboard />} />
+                    <Route path="wallet" element={<HealthWallet />} />
+                    <Route path="records" element={<MedicalHistory />} />
+                    <Route path="reports" element={<Reports />} />
+                    <Route path="messages" element={<PatientMessages />} />
+                    <Route path="medications" element={<MedicationAdherence />} />
+                    <Route path="security" element={<SecurityLogs />} />
+                    <Route path="sessions" element={<Sessions />} />
+                    <Route path="booking" element={<Booking />} />
+                    <Route path="doctors" element={<DoctorsList />} />
+                    <Route path="profile" element={<Profile />} />
+                    <Route path="profile/edit" element={<EditProfile />} />
+                    <Route path="settings" element={<Settings />} />
+                    <Route path="support" element={<Support />} />
+                  </Route>
 
-                {/* Doctor Routes */}
-                <Route path="/doctor-dashboard" element={
-                  <ProtectedRoute allowedRole="ROLE_DOCTOR">
-                    <ClinicalInfrastructureLayout />
-                  </ProtectedRoute>
-                }>
-                  <Route index element={<ClinicalExecutiveConsul />} />
-                  <Route path="appointments" element={<ClinicalScheduleManager />} />
-                  <Route path="financials" element={<ClinicalFinancials />} />
-                  <Route path="patients/:id" element={<ClinicalPatientDossier />} />
-                  <Route path="patients" element={<ClinicalCensusRegistry />} />
-                  <Route path="messages" element={<ClinicalMessages />} />
-                  <Route path="profile" element={<ClinicalDoctorProfile />} />
-                  <Route path="profile/edit" element={<ClinicalProfileEditor />} />
-                  <Route path="settings" element={<Settings />} />
-                  <Route path="support" element={<Support />} />
-                </Route>
+                  {/* Doctor Routes */}
+                  <Route path="/doctor-dashboard" element={
+                    <ProtectedRoute allowedRole="ROLE_DOCTOR">
+                      <ClinicalInfrastructureLayout />
+                    </ProtectedRoute>
+                  }>
+                    <Route index element={<ClinicalExecutiveConsul />} />
+                    <Route path="appointments" element={<ClinicalScheduleManager />} />
+                    <Route path="financials" element={<ClinicalFinancials />} />
+                    <Route path="patients/:id" element={<ClinicalPatientDossier />} />
+                    <Route path="patients" element={<ClinicalCensusRegistry />} />
+                    <Route path="messages" element={<ClinicalMessages />} />
+                    <Route path="profile" element={<ClinicalDoctorProfile />} />
+                    <Route path="profile/edit" element={<ClinicalProfileEditor />} />
+                    <Route path="settings" element={<Settings />} />
+                    <Route path="support" element={<Support />} />
+                  </Route>
 
-                {/* Admin Routes */}
-                <Route path="/admin-dashboard" element={
-                  <ProtectedRoute allowedRole="ROLE_ADMIN">
-                    <AdminLayout />
-                  </ProtectedRoute>
-                }>
-                  <Route index element={<AdminDashboard />} />
-                  <Route path="pending" element={<AdminDashboard />} />
-                  <Route path="registry" element={<AdminDashboard />} />
-                  <Route path="settings" element={<Settings />} />
-                </Route>
+                  {/* Admin Routes */}
+                  <Route path="/admin-dashboard" element={
+                    <ProtectedRoute allowedRole="ROLE_ADMIN">
+                      <AdminLayout />
+                    </ProtectedRoute>
+                  }>
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="pending" element={<AdminDashboard />} />
+                    <Route path="registry" element={<AdminDashboard />} />
+                    <Route path="settings" element={<Settings />} />
+                  </Route>
 
-                {/* Hospital Admin Routes */}
-                <Route path="/hospital-dashboard" element={
-                  <ProtectedRoute allowedRole="ROLE_HOSPITAL_ADMIN">
-                    <ClinicalInfrastructureLayout />
-                  </ProtectedRoute>
-                }>
-                  <Route index element={<HospitalDashboard />} />
-                  <Route path="appointments" element={<HospitalAppointments />} />
-                  <Route path="ledger" element={<HospitalLedger />} />
-                  <Route path="services" element={<HospitalServiceBookings />} />
-                  <Route path="patients" element={<HospitalPatients />} />
-                  <Route path="profile" element={<HospitalAdminProfile />} />
-                  <Route path="institutional-profile" element={<HospitalProfile />} />
-                  <Route path="analytics" element={<HospitalAnalytics />} />
-                  <Route path="staff" element={<HospitalDoctorRoster />} />
-                  <Route path="staff/onboard" element={<StaffOnboarding />} />
-                  <Route path="staff/edit/:id" element={<StaffProfileEditor />} />
-                  <Route path="messages" element={<ClinicalMessages />} />
-                  <Route path="settings" element={<Settings />} />
-                  <Route path="support" element={<Support />} />
-                </Route>
+                  {/* Hospital Admin Routes */}
+                  <Route path="/hospital-dashboard" element={
+                    <ProtectedRoute allowedRole="ROLE_HOSPITAL_ADMIN">
+                      <ClinicalInfrastructureLayout />
+                    </ProtectedRoute>
+                  }>
+                    <Route index element={<HospitalDashboard />} />
+                    <Route path="appointments" element={<HospitalAppointments />} />
+                    <Route path="ledger" element={<HospitalLedger />} />
+                    <Route path="services" element={<HospitalServiceBookings />} />
+                    <Route path="patients" element={<HospitalPatients />} />
+                    <Route path="profile" element={<HospitalAdminProfile />} />
+                    <Route path="institutional-profile" element={<HospitalProfile />} />
+                    <Route path="analytics" element={<HospitalAnalytics />} />
+                    <Route path="staff" element={<HospitalDoctorRoster />} />
+                    <Route path="staff/onboard" element={<StaffOnboarding />} />
+                    <Route path="staff/edit/:id" element={<StaffProfileEditor />} />
+                    <Route path="messages" element={<ClinicalMessages />} />
+                    <Route path="settings" element={<Settings />} />
+                    <Route path="support" element={<Support />} />
+                  </Route>
 
-                {/* Catch-all Not Found Route */}
-                <Route path="*" element={<ClinicalError404 />} />
-              </Routes>
+                  {/* Catch-all Not Found Route */}
+                  <Route path="*" element={<ClinicalError404 />} />
+                </Routes>
+              )}
             </NotificationProvider>
           </AuthProvider>
         </ThemeProvider>
