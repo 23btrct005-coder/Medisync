@@ -6,10 +6,11 @@ const ProfileCompletionBanner = () => {
   const { user, userRole, profileStatus } = useAuth();
   const navigate = useNavigate();
 
-  if (profileStatus.isComplete) return null;
+  // Safety Guard: If profileStatus is not provided by AuthContext, hide the banner
+  if (!profileStatus || profileStatus.isComplete) return null;
 
   const targetPath = userRole === 'ROLE_DOCTOR' ? '/doctor-dashboard/profile/edit' : '/dashboard/profile/edit';
-  const missingLabel = profileStatus.missingFields.join(', ');
+  const missingLabel = profileStatus.missingFields?.join(', ') || 'Required Information';
 
   return (
     <div className="mb-6 animate-in slide-in-from-top-4 duration-500">
@@ -47,7 +48,7 @@ const ProfileCompletionBanner = () => {
       </div>
       
       {/* Photo specific reminder if photo is missing */}
-      {profileStatus.missingFields.includes('Profile Photo') && (
+      {profileStatus.missingFields?.includes('Profile Photo') && (
         <div className="mt-2 bg-blue-50 border border-blue-100 rounded-2xl p-4 flex items-center gap-3">
             <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
                 <Camera size={18} />
