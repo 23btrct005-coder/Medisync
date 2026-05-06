@@ -9,10 +9,18 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      const savedUser = JSON.parse(localStorage.getItem('user'));
-      setUser(savedUser);
+    const savedUser = localStorage.getItem('user');
+    
+    if (token && savedUser) {
+      try {
+        const userData = JSON.parse(savedUser);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        setUser(userData);
+      } catch (e) {
+        console.error("Error parsing saved user", e);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
     }
     setLoading(false);
   }, []);
@@ -40,8 +48,16 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  // Critical: App.jsx expects userRole and authenticated
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading, authenticated: !!user }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      userRole: user?.role || user?.user?.role, 
+      login, 
+      logout, 
+      loading, 
+      authenticated: !!user 
+    }}>
       {children}
     </AuthContext.Provider>
   );
