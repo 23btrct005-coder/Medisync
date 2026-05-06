@@ -288,19 +288,29 @@ const Booking = () => {
         image: "/icon.svg",
         order_id: order.razorpayOrderId,
         handler: async (response) => {
-          try {
-            console.log("PAYMENT_SUCCESS: Verifying with backend...", response);
-            await api.post('appointments/verify', {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature
-            });
-            toast.success("Transaction Authorized! Session Synchronized.");
-            navigate('/dashboard/sessions', { state: { autoOpenId: order.appointmentId } });
-          } catch (err) {
-            console.error("VERIFICATION_FAILURE:", err);
-            toast.error("Payment verification failed. Please contact clinical support.");
-          }
+          setIsBooking(true);
+          const verifyPayment = async (retries = 3) => {
+            try {
+              console.log(`PAYMENT_SUCCESS: Verifying (Attempt ${4 - retries}/3)...`, response);
+              await api.post('appointments/verify', {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              });
+              toast.success("Transaction Authorized! Session Synchronized.");
+              navigate('/dashboard/sessions', { state: { autoOpenId: order.appointmentId } });
+            } catch (err) {
+              if (retries > 0) {
+                console.warn("Verification flicker detected. Retrying in 2s...");
+                setTimeout(() => verifyPayment(retries - 1), 2000);
+              } else {
+                console.error("VERIFICATION_FAILURE:", err);
+                toast.error("Payment confirmed but sync delayed. Please click 'Verify Manually' in your sessions tab.", { duration: 6000 });
+                setIsBooking(false);
+              }
+            }
+          };
+          verifyPayment();
         },
         prefill: {
           name: "",
