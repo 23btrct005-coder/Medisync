@@ -64,5 +64,20 @@ cd ../frontend
 npm install
 npm run build
 
+# Deploy Frontend to Web Root
+echo "📂 DEPLOYING FRONTEND TO PRODUCTION ROOT..."
+sudo rm -rf /var/www/html/*
+sudo cp -r dist/* /var/www/html/
+
+# Restart Nginx (if applicable)
+sudo systemctl restart nginx || echo "⚠️ NGINX RESTART SKIPPED"
+
+# Restart Backend Service
+echo "🏛️ RESTARTING MEDISYNC BACKEND SERVICE..."
+sudo systemctl restart medisync || {
+    echo "⚠️ SYSTEMD SERVICE NOT FOUND. LAUNCHING MANUALLY..."
+    fuser -k 8080/tcp || true
+    nohup java -jar ../backend/target/*.jar > ~/medisync.log 2>&1 &
+}
+
 echo "✅ INSTITUTIONAL REGISTRY IMPLEMENTED SUCCESSFULLY ON E2E!"
-echo "⚠️ IMPORTANT: Please update the .env file with your production credentials."
