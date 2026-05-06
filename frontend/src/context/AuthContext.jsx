@@ -1,164 +1,47 @@
-import { createContext, useState, useContext, useEffect } from 'react';
-import api from '../api/axiosConfig';
-import { supabase } from '../utils/supabaseClient';
-import bcrypt from 'bcryptjs';
+import { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
 
-const AuthContext = createContext(null);
+const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [userRole, setUserRole] = useState(null);
-
-  const [profileStatus, setProfileStatus] = useState({ isComplete: true, missingFields: [] });
-
-  const getProfileStatus = (profile, role) => {
-    const missing = [];
-    if (!profile) return { isComplete: true, missingFields: [] };
-
-    if (role === 'ROLE_PATIENT') {
-      if (!profile.bloodGroup || profile.bloodGroup === 'Unknown') missing.push('Blood Group');
-      if (!profile.phone) missing.push('Phone Number');
-      if (!profile.profilePictureUrl) missing.push('Profile Photo');
-    } else if (role === 'ROLE_DOCTOR') {
-      if (!profile.specialization) missing.push('Specialization');
-      if (!profile.medicalLicenseNumber) missing.push('Medical License');
-      if (!profile.yearsOfExperience) missing.push('Years of Experience');
-      if (!profile.profilePictureUrl) missing.push('Profile Photo');
-    }
-
-    return {
-      isComplete: missing.length === 0,
-      missingFields: missing
-    };
-  };
-
-  const refreshUser = async () => {
-    if (!userRole) return;
-    const email = localStorage.getItem('userEmail');
-    await fetchUserProfile(userRole, email);
-  };
-
-  useEffect(() => {
-    if (user && userRole) {
-      setProfileStatus(getProfileStatus(user, userRole));
-    }
-  }, [user, userRole]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    const role = localStorage.getItem('role');
-    
-    if (token && role) {
-      setUserRole(role);
-      const email = localStorage.getItem('userEmail');
-      if (email) fetchUserProfile(role, email);
-      else fallbackFetchUserProfile(role);
-    } else {
-      setLoading(false);
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      const savedUser = JSON.parse(localStorage.getItem('user'));
+      setUser(savedUser);
     }
+    setLoading(false);
   }, []);
 
-  const fetchUserProfile = async (role, email) => {
+  const login = async (username, password) => {
     try {
-      if (role === 'ROLE_ADMIN') {
-        setUser({ username: email, email, role, name: 'Administrator' });
-        setLoading(false);
-        return;
-      }
-      let endpoint;
-      if (role === 'ROLE_DOCTOR') endpoint = 'doctor/profile';
-      else if (role === 'ROLE_HOSPITAL_ADMIN') endpoint = 'hospital/profile';
-      else endpoint = 'patient/profile';
-
-      const response = await api.get(endpoint);
-      const profileData = { ...response.data, role };
-      console.log(`DEBUG: fetchUserProfile (${role})`, profileData);
-      
-      // Extract emailVerified from nested user object if it exists (Doctor/HospitalAdmin)
-      const verified = profileData.user ? profileData.user.emailVerified : profileData.emailVerified;
-      profileData.emailVerified = verified;
-      
-      setUser(profileData);
-    } catch (error) {
-      console.error("Error fetching profile from backend", error);
-      // Removed automatic logout to prevent redirect loops during diagnostic phase
-      // logout(); 
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const login = async (usernameInput, password) => {
-    localStorage.clear();
-    const username = usernameInput?.trim();
-    
-    try {
-      const response = await api.post('auth/login', { username, password });
-      console.log("DEBUG: login response", response.data);
-      const { token, role, emailVerified } = response.data;
+      const response = await axios.post('/api/auth/login', { username, password });
+      const { token, user: userData } = response.data;
       
       localStorage.setItem('token', token);
-      localStorage.setItem('role', role);
-      localStorage.setItem('userEmail', username);
-      localStorage.setItem('emailVerified', emailVerified);
+      localStorage.setItem('user', JSON.stringify(userData));
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      setUser(userData);
       
-      setUserRole(role);
-      await fetchUserProfile(role, username);
-      return { success: true, role };
-      
+      return { success: true, role: userData.role };
     } catch (error) {
-      console.error("Login Error Details:", {
-        status: error.response?.status,
-        data: error.response?.data,
-        message: error.message
-      });
-      
-      let message = error.response?.data?.message;
-      let pendingApproval = error.response?.status === 403;
-      
-      if (!message) {
-        if (error.response?.status === 401) {
-          message = 'Invalid credentials. Please check your password.';
-        } else if (pendingApproval) {
-          message = 'Your account is pending institutional or administrative approval.';
-        } else {
-          message = 'Login service unavailable. Please verify your internet connection.';
-        }
-      }
-      
-      return { success: false, message, pendingApproval };
-    }
-  };
-
-  const fallbackFetchUserProfile = async (role) => {
-    try {
-      let endpoint;
-      if (role === 'ROLE_DOCTOR') endpoint = 'doctor/profile';
-      else if (role === 'ROLE_HOSPITAL_ADMIN') endpoint = 'hospital/profile';
-      else endpoint = 'patient/profile';
-      
-      const response = await api.get(endpoint);
-      setUser({ ...response.data, role });
-    } catch (err) {
-      console.error("Error fetching fallback profile", err);
-      logout();
-    } finally {
-      setLoading(false);
+      return { success: false, message: error.response?.data?.message || 'Login failed' };
     }
   };
 
   const logout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('emailVerified');
-    setUserRole(null);
+    localStorage.removeItem('user');
+    delete axios.defaults.headers.common['Authorization'];
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, userRole, login, logout, loading, profileStatus, refreshUser }}>
+    <AuthContext.Provider value={{ user, login, logout, loading, authenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );
