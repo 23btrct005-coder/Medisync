@@ -12,4 +12,8 @@ public interface PasswordResetTokenRepository extends JpaRepository<PasswordRese
     @Modifying
     @Transactional
     void deleteByUserId(Long userId);
+
+    @Modifying
+    @Transactional
+    void deleteByUser(com.health.medisync.model.User user);
 }
