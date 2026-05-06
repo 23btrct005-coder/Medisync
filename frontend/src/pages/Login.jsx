@@ -26,10 +26,10 @@ const Login = () => {
 
     const result = await login(username, password);
     if (result.success) {
-      if (result.role === 'ROLE_ADMIN') {
+      if (result.role === 'ROLE_HOSPITAL_ADMIN' || result.role === 'ROLE_DOCTOR') {
+        navigate('/hospital-dashboard/staff');
+      } else if (result.role === 'ROLE_ADMIN') {
         navigate('/admin-dashboard');
-      } else if (result.role === 'ROLE_DOCTOR') {
-        navigate('/doctor-dashboard');
       } else {
         navigate('/dashboard');
       }
@@ -133,18 +133,11 @@ const Login = () => {
           </div>
           
           <div className="mt-4 text-center border-t border-slate-200 pt-6">
-            <p className="text-sm text-slate-600 mb-4">Don't have an account?</p>
-            <button
-              type="button"
-              onClick={() => navigate('/register?context=patient')}
-              className="w-full flex justify-center py-3 px-4 border shadow-sm text-sm font-medium rounded-xl text-primary-600 bg-white hover:bg-slate-50 border-primary-200 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-            >
-              Register here
-            </button>
+            <p className="text-sm text-slate-600 mb-4">Professional Access</p>
             <button
               type="button"
               onClick={() => navigate('/doctor-login')}
-              className="mt-3 w-full flex justify-center py-2 px-4 shadow-sm text-sm font-medium rounded-xl text-blue-600 bg-blue-50 hover:bg-blue-100 transition-all focus:outline-none"
+              className="w-full flex justify-center py-3 px-4 border shadow-sm text-sm font-medium rounded-xl text-primary-600 bg-white hover:bg-slate-50 border-primary-200 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
             >
               Physician Portal
             </button>
