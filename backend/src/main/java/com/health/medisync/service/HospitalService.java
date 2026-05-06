@@ -75,50 +75,51 @@ public class HospitalService {
     }
 
     @Transactional
-    public void deleteDoctor(Long doctorId) {
+    // ── Personnel Decommissioning: Institutional Roster Cleanup ──
+    @org.springframework.transaction.annotation.Transactional
+    public void deleteDoctor(Long doctorId, Hospital hospital) {
         Doctor doctor = doctorRepository.findById(doctorId)
-                .orElseThrow(() -> new RuntimeException("Doctor record not found."));
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+        
+        if (doctor.getHospitalEntity() == null || !doctor.getHospitalEntity().getId().equals(hospital.getId())) {
+            throw new RuntimeException("Unauthorized: Physician not affiliated with your institution");
+        }
 
-        System.out.println("CRITICAL: Initiating atomic institutional purge for physician: " + doctor.getName());
+        System.out.println("CRITICAL: Initiating institutional decommissioning for physician: " + doctor.getName());
 
-        // 1. Clear Security & Authentication Dependencies (Before User Cascade)
-        passwordResetTokenRepository.deleteByUser(doctor.getUser());
-        System.out.println("CLEANUP: Security tokens purged.");
+        // 1. Clinical Operational Purge (Required for 409 Conflict Resolution)
+        appointmentRepository.deleteByDoctorId(doctorId);
+        prescriptionRepository.deleteByDoctorId(doctorId);
+        ratingRepository.deleteByDoctorId(doctorId);
+        accessRequestRepository.deleteByDoctorId(doctorId);
+        passwordResetTokenRepository.deleteByUserId(doctor.getUser().getId());
+        System.out.println("CLEANUP: Clinical anchors and security tokens severed.");
 
-        // 2. Clinical Continuity: Unlink from patient records
+        // 2. Sovereign Unlinking: Sever many-to-many patient relationships
         List<Patient> linkedPatients = patientRepository.findByDoctorId(doctorId);
         for (Patient p : linkedPatients) {
             p.getDoctors().remove(doctor);
             patientRepository.save(p);
         }
-        System.out.println("CLEANUP: Clinical registry links severed.");
+        System.out.println("CLEANUP: Patient registry links severed.");
 
-        // 3. Telemetry & History: Purge communication and logs
-        chatMessageRepository.deleteBySenderIdOrReceiverId(doctor.getUser().getId(), doctor.getUser().getId());
-        auditLogRepository.deleteByPerformerId(doctor.getUser().getId());
-        notificationRepository.deleteByUserId(doctor.getUser().getId());
-        System.out.println("CLEANUP: Communication and audit telemetry wiped.");
-
-        // 4. Clinical Operations: Clear active appointments, prescriptions, and access requests
-        appointmentRepository.deleteByDoctorId(doctorId);
-        prescriptionRepository.deleteByDoctorId(doctorId);
-        ratingRepository.deleteByDoctorId(doctorId);
-        accessRequestRepository.deleteByDoctorId(doctorId);
-        System.out.println("CLEANUP: Clinical operational data erased.");
-
-        // 5. Hierarchical Governance: Clear Department HOD links
-        List<Department> departments = departmentRepository.findAll();
-        for (Department dept : departments) {
-            if (doctor.equals(dept.getHeadOfDepartment())) {
-                dept.setHeadOfDepartment(null);
-                departmentRepository.save(dept);
+        // 3. Institutional Hierarchy: Unlink Department HOD roles
+        List<Department> depts = departmentRepository.findByHospital(hospital);
+        for (Department d : depts) {
+            if (d.getHeadOfDepartment() != null && d.getHeadOfDepartment().getId().equals(doctorId)) {
+                d.setHeadOfDepartment(null);
+                departmentRepository.save(d);
             }
         }
         System.out.println("CLEANUP: Institutional governance links cleared.");
 
-        // 6. Identity Erase: Delete doctor (Triggers Cascade to User)
+        // 4. Final Institutional Severance
+        doctor.setDepartment(null);
+        doctorRepository.save(doctor);
+
+        // 5. Identity Erase: Cascade removal to User account
         doctorRepository.delete(doctor);
-        System.out.println("SUCCESS: Physician record and digital identity successfully purged.");
+        System.out.println("SUCCESS: Staff record decommissioned from institutional roster.");
     }
 
     public void broadcastToStaff(Hospital hospital, String title, String message, Long senderUserId) {
@@ -390,64 +391,6 @@ public class HospitalService {
         doctor.setInstitutional(true);
         
         doctorRepository.save(doctor);
-    }
-
-    @org.springframework.transaction.annotation.Transactional
-    public void deleteDoctor(Long doctorId, Hospital hospital) {
-        Doctor doctor = doctorRepository.findById(doctorId)
-                .orElseThrow(() -> new RuntimeException("Doctor not found"));
-        
-        if (doctor.getHospitalEntity() == null || !doctor.getHospitalEntity().getId().equals(hospital.getId())) {
-            throw new RuntimeException("Unauthorized: Physician not affiliated with your institution");
-        }
-
-        Long userId = (doctor.getUser() != null) ? doctor.getUser().getId() : null;
-
-        // ── Deep Purge Protocol: Sealing Clinical & Telemetry Dependencies ──
-        
-        // 1. Purge Ratings
-        ratingRepository.deleteByDoctorId(doctorId);
-
-        // 2. Purge Appointments (Direct Links)
-        appointmentRepository.deleteByDoctorId(doctorId);
-
-        // 3. Purge Prescriptions (Hard Object Links)
-        prescriptionRepository.deleteByDoctorId(doctorId);
-
-        // 4. Purge Access Requests
-        accessRequestRepository.deleteByDoctorId(doctorId);
-
-        // 5. Institutional Telemetry Wipe (User-Based Links)
-        if (userId != null) {
-            notificationRepository.deleteByUserId(userId);
-            chatMessageRepository.deleteBySenderIdOrReceiverId(userId, userId);
-            auditLogRepository.deleteByPerformerId(userId);
-        }
-
-        // 6. Institutional Hierarchy: Unlink HOD roles
-        List<Department> depts = departmentRepository.findByHospital(hospital);
-        for (Department d : depts) {
-            if (d.getHeadOfDepartment() != null && d.getHeadOfDepartment().getId().equals(doctorId)) {
-                d.setHeadOfDepartment(null);
-                departmentRepository.save(d);
-            }
-        }
-
-        // 7. Sovereignty Release: Unlink Patients (Optimized)
-        List<Patient> linkedPatients = patientRepository.findByDoctorId(doctorId);
-        for (Patient p : linkedPatients) {
-            p.getDoctors().remove(doctor);
-            patientRepository.save(p);
-        }
-
-        // 8. Final Institutional Severance: Clear Department link
-        doctor.setDepartment(null);
-        doctorRepository.save(doctor);
-
-        // 9. Institutional Purge Execution
-        // Since Doctor has @OneToOne(cascade = CascadeType.REMOVE) on User,
-        // deleting the doctor will automatically delete the linked user account.
-        doctorRepository.delete(doctor);
     }
 
     public Doctor getDoctorById(Long doctorId, Hospital hospital) {
