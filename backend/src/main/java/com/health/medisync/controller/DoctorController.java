@@ -40,8 +40,12 @@ public class DoctorController {
     }
 
     @GetMapping("/patients")
-    public ResponseEntity<List<Patient>> getAllPatients(Authentication authentication) {
-        return ResponseEntity.ok(doctorService.getLinkedPatients(authentication.getName()));
+    public ResponseEntity<List<com.health.medisync.model.PatientDTO>> getAllPatients(Authentication authentication) {
+        List<Patient> patients = doctorService.getLinkedPatients(authentication.getName());
+        List<com.health.medisync.model.PatientDTO> dtos = patients.stream()
+            .map(com.health.medisync.model.PatientDTO::new)
+            .toList();
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/patients/{id}")

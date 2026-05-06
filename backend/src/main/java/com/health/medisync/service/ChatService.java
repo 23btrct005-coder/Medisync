@@ -1,16 +1,18 @@
 package com.health.medisync.service;
 
-import com.health.medisync.model.ChatMessage;
-import com.health.medisync.model.User;
-import com.health.medisync.repository.ChatMessageRepository;
-import com.health.medisync.repository.UserRepository;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
+
+import com.health.medisync.model.ChatMessage;
+import com.health.medisync.model.ChatMessageDTO;
+import com.health.medisync.model.User;
+import com.health.medisync.repository.ChatMessageRepository;
+import com.health.medisync.repository.UserRepository;
 
 @Service
 public class ChatService {
@@ -18,18 +20,26 @@ public class ChatService {
     private final SimpMessagingTemplate messagingTemplate;
     private final NotificationService notificationService;
     private final UserRepository userRepository;
+    private final IdentityService identityService;
 
-    public ChatService(ChatMessageRepository chatMessageRepository, SimpMessagingTemplate messagingTemplate, NotificationService notificationService, UserRepository userRepository) {
+    public ChatService(ChatMessageRepository chatMessageRepository, SimpMessagingTemplate messagingTemplate, 
+                       NotificationService notificationService, UserRepository userRepository,
+                       IdentityService identityService) {
         this.chatMessageRepository = chatMessageRepository;
         this.messagingTemplate = messagingTemplate;
         this.notificationService = notificationService;
         this.userRepository = userRepository;
+        this.identityService = identityService;
     }
 
     @Transactional
-    public ChatMessage sendMessage(ChatMessage message) {
+    public ChatMessageDTO sendMessage(ChatMessage message) {
         ChatMessage saved = chatMessageRepository.save(message);
         
+        // Resolve Identity for the sender
+        Map<String, String> senderIdentity = identityService.resolveIdentity(message.getSenderId());
+        ChatMessageDTO dto = new ChatMessageDTO(saved, senderIdentity.get("name"), senderIdentity.get("image"));
+
         // Fetch Receiver Username for WebSocket routing
         User receiver = userRepository.findById(message.getReceiverId())
             .orElseThrow(() -> new RuntimeException("Receiver not found"));
@@ -39,7 +49,7 @@ public class ChatService {
             message.getReceiverId(),
             "CHAT",
             "New Clinical Message",
-            "You have a new secure message: " + (message.getContent().length() > 50 ? message.getContent().substring(0, 47) + "..." : message.getContent()),
+            senderIdentity.get("name") + ": " + (message.getContent().length() > 50 ? message.getContent().substring(0, 47) + "..." : message.getContent()),
             "/dashboard/messages",
             "Open Chat"
         );
@@ -48,13 +58,21 @@ public class ChatService {
         messagingTemplate.convertAndSendToUser(
             receiver.getUsername(), 
             "/queue/messages", 
-            saved
+            dto
         );
-        return saved;
+        return dto;
     }
 
-    public List<ChatMessage> getConversation(Long u1, Long u2) {
-        return chatMessageRepository.findConversation(u1, u2);
+    public List<ChatMessageDTO> getConversation(Long u1, Long u2) {
+        List<ChatMessage> messages = chatMessageRepository.findConversation(u1, u2);
+        
+        // Cache identities for this conversation to avoid redundant lookups
+        Map<Long, Map<String, String>> identityCache = new HashMap<>();
+        
+        return messages.stream().map(m -> {
+            Map<String, String> identity = identityCache.computeIfAbsent(m.getSenderId(), identityService::resolveIdentity);
+            return new ChatMessageDTO(m, identity.get("name"), identity.get("image"));
+        }).toList();
     }
 
     @Transactional

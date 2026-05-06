@@ -1,6 +1,7 @@
 package com.health.medisync.controller;
 
 import com.health.medisync.model.ChatMessage;
+import com.health.medisync.model.ChatMessageDTO;
 import com.health.medisync.model.User;
 import com.health.medisync.service.ChatService;
 import com.health.medisync.repository.UserRepository;
@@ -29,7 +30,7 @@ public class ChatController {
     }
 
     @GetMapping("/conversation/{receiverId}")
-    public ResponseEntity<List<ChatMessage>> getConversation(
+    public ResponseEntity<List<ChatMessageDTO>> getConversation(
             @PathVariable Long receiverId, 
             @AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByUsername(userDetails.getUsername())
@@ -38,7 +39,7 @@ public class ChatController {
     }
 
     @PostMapping("/send")
-    public ResponseEntity<ChatMessage> sendMessage(
+    public ResponseEntity<ChatMessageDTO> sendMessage(
             @RequestBody ChatMessage message, 
             @AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByUsername(userDetails.getUsername())

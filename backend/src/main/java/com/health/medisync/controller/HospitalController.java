@@ -116,11 +116,15 @@ public class HospitalController {
     }
 
     @GetMapping("/patients")
-    public ResponseEntity<?> getPatients(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<List<com.health.medisync.model.PatientDTO>> getPatients(@AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         HospitalAdmin admin = hospitalService.getAdminByUser(user);
-        return ResponseEntity.ok(hospitalService.getHospitalPatients(admin.getHospital()));
+        List<com.health.medisync.model.Patient> patients = hospitalService.getHospitalPatients(admin.getHospital());
+        List<com.health.medisync.model.PatientDTO> dtos = patients.stream()
+                .map(com.health.medisync.model.PatientDTO::new)
+                .toList();
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/staff-contacts")
