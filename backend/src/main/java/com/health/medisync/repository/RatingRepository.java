@@ -21,4 +21,5 @@ public interface RatingRepository extends JpaRepository<Rating, Long> {
     Double getAverageRatingByDoctorId(@Param("doctorId") Long doctorId);
     
     long countByDoctorId(Long doctorId);
+    void deleteByDoctorId(Long doctorId);
 }

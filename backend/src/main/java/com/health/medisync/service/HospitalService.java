@@ -35,6 +35,9 @@ public class HospitalService {
     private final PatientRepository patientRepository;
     private final com.health.medisync.repository.NotificationRepository notificationRepository;
     private final com.health.medisync.repository.ChatMessageRepository chatMessageRepository;
+    private final com.health.medisync.repository.PrescriptionRepository prescriptionRepository;
+    private final com.health.medisync.repository.AccessRequestRepository accessRequestRepository;
+    private final com.health.medisync.repository.RatingRepository ratingRepository;
 
     public HospitalService(HospitalRepository hospitalRepository, 
                            HospitalAdminRepository hospitalAdminRepository, 
@@ -44,7 +47,10 @@ public class HospitalService {
                            UserRepository userRepository,
                            PatientRepository patientRepository,
                            com.health.medisync.repository.NotificationRepository notificationRepository,
-                           com.health.medisync.repository.ChatMessageRepository chatMessageRepository) {
+                           com.health.medisync.repository.ChatMessageRepository chatMessageRepository,
+                           com.health.medisync.repository.PrescriptionRepository prescriptionRepository,
+                           com.health.medisync.repository.AccessRequestRepository accessRequestRepository,
+                           com.health.medisync.repository.RatingRepository ratingRepository) {
         this.hospitalRepository = hospitalRepository;
         this.hospitalAdminRepository = hospitalAdminRepository;
         this.doctorRepository = doctorRepository;
@@ -54,6 +60,9 @@ public class HospitalService {
         this.patientRepository = patientRepository;
         this.notificationRepository = notificationRepository;
         this.chatMessageRepository = chatMessageRepository;
+        this.prescriptionRepository = prescriptionRepository;
+        this.accessRequestRepository = accessRequestRepository;
+        this.ratingRepository = ratingRepository;
     }
 
     public void broadcastToStaff(Hospital hospital, String title, String message, Long senderUserId) {
@@ -327,6 +336,7 @@ public class HospitalService {
         doctorRepository.save(doctor);
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public void deleteDoctor(Long doctorId, Hospital hospital) {
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new RuntimeException("Doctor not found"));
@@ -334,8 +344,31 @@ public class HospitalService {
         if (doctor.getHospitalEntity() == null || !doctor.getHospitalEntity().getId().equals(hospital.getId())) {
             throw new RuntimeException("Unauthorized: Physician not affiliated with your institution");
         }
+
+        // ── Deep Purge Protocol: Sealing Clinical Dependencies ──
         
-        // Remove associated user if it exists
+        // 1. Purge Ratings
+        ratingRepository.deleteByDoctorId(doctorId);
+
+        // 2. Purge Appointments (Direct Links)
+        appointmentRepository.deleteByDoctorId(doctorId);
+
+        // 3. Purge Prescriptions (Hard Object Links)
+        prescriptionRepository.deleteByDoctorId(doctorId);
+
+        // 4. Purge Access Requests
+        accessRequestRepository.deleteByDoctorId(doctorId);
+
+        // 5. Sovereignty Release: Unlink Patients
+        List<Patient> linkedPatients = patientRepository.findAll(); 
+        for (Patient p : linkedPatients) {
+            if (p.getDoctors().contains(doctor)) {
+                p.getDoctors().remove(doctor);
+                patientRepository.save(p);
+            }
+        }
+
+        // 6. User Account Erasure (Cascades to Doctor record)
         if (doctor.getUser() != null) {
             userRepository.delete(doctor.getUser());
         } else {

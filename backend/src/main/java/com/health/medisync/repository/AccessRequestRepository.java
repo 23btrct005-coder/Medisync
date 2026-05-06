@@ -11,4 +11,5 @@ public interface AccessRequestRepository extends JpaRepository<AccessRequest, Lo
     List<AccessRequest> findByPatientAndStatus(Patient patient, String status);
     List<AccessRequest> findByDoctor(Doctor doctor);
     Optional<AccessRequest> findByDoctorAndPatient(Doctor doctor, Patient patient);
+    void deleteByDoctorId(Long doctorId);
 }
