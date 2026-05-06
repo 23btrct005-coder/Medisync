@@ -59,6 +59,8 @@ public class SecurityConfig {
             "http://localhost:3000"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        
+        // Explicitly whitelist all variations of headers used by the frontend
         configuration.setAllowedHeaders(Arrays.asList(
             "Authorization", 
             "Content-Type", 
@@ -67,8 +69,10 @@ public class SecurityConfig {
             "Origin", 
             "Access-Control-Request-Method", 
             "Access-Control-Request-Headers",
-            "X-Supabase-User" // Whitelisted critical clinical header
+            "X-Supabase-User",
+            "x-supabase-user" 
         ));
+        
         configuration.setExposedHeaders(Arrays.asList("Authorization"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
