@@ -255,17 +255,29 @@ public class PatientService {
         Doctor doctor = doctorRepository.findById(doctorId)
             .orElseThrow(() -> new RuntimeException("Doctor not found"));
 
-        if (patient.getDoctors().contains(doctor)) {
-            patient.getDoctors().remove(doctor);
-            patientRepository.save(patient);
+        // 1. Remove from direct doctors list
+        patient.getDoctors().remove(doctor);
+        patientRepository.save(patient);
 
-            // Also update any existing access requests to REVOKED
-            List<AccessRequest> requests = accessRequestRepository.findByPatientAndStatus(patient, "ACCEPTED");
-            for (AccessRequest request : requests) {
-                if (request.getDoctor().getId().equals(doctorId)) {
-                    request.setStatus("REVOKED");
-                    accessRequestRepository.save(request);
-                }
+        // 2. Revoke ALL active access requests (ACCEPTED, PENDING, etc.)
+        List<AccessRequest> requests = accessRequestRepository.findByDoctor(doctor);
+        for (AccessRequest request : requests) {
+            if (request.getPatient().getId().equals(patient.getId())) {
+                request.setStatus("REVOKED");
+                accessRequestRepository.save(request);
+            }
+        }
+
+        // 3. Cancel any future or pending appointments
+        List<com.health.medisync.model.Appointment> appointments = appointmentRepository.findByPatientIdAndStatusIn(
+            patient.getId(), 
+            List.of(com.health.medisync.model.Appointment.AppointmentStatus.BOOKED, 
+                    com.health.medisync.model.Appointment.AppointmentStatus.AWAITING_VERIFICATION)
+        );
+        for (com.health.medisync.model.Appointment appt : appointments) {
+            if (appt.getDoctor().getId().equals(doctorId)) {
+                appt.setStatus(com.health.medisync.model.Appointment.AppointmentStatus.CANCELLED);
+                appointmentRepository.save(appt);
             }
         }
 
