@@ -48,11 +48,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // Universal WebSocket Handshake Hub (Standard Compatibility Mode)
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*") 
+                .setAllowedOrigins("https://medisync-vert-five.vercel.app", "http://localhost:5173", "http://localhost:3000") 
                 .withSockJS();
                 
         registry.addEndpoint("/api/ws")
-                .setAllowedOriginPatterns("*")
+                .setAllowedOrigins("https://medisync-vert-five.vercel.app", "http://localhost:5173", "http://localhost:3000")
                 .withSockJS();
     }
 
