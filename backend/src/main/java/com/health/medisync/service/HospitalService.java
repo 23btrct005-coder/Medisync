@@ -381,13 +381,11 @@ public class HospitalService {
             }
         }
 
-        // 7. Sovereignty Release: Unlink Patients
-        List<Patient> linkedPatients = patientRepository.findAll(); 
+        // 7. Sovereignty Release: Unlink Patients (Optimized)
+        List<Patient> linkedPatients = patientRepository.findByDoctorId(doctorId);
         for (Patient p : linkedPatients) {
-            if (p.getDoctors().contains(doctor)) {
-                p.getDoctors().remove(doctor);
-                patientRepository.save(p);
-            }
+            p.getDoctors().remove(doctor);
+            patientRepository.save(p);
         }
 
         // 8. Final Institutional Severance: Clear Department link

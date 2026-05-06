@@ -23,7 +23,10 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
             "WHERE d.id = :doctorId " +
             "OR p.id IN (SELECT ar.patient.id FROM AccessRequest ar WHERE ar.doctor.id = :doctorId AND ar.status IN ('ACCEPTED', 'APPROVED')) " +
             "OR p.id IN (SELECT a.patient.id FROM Appointment a WHERE a.doctor.id = :doctorId AND a.status IN ('BOOKED', 'AWAITING_VERIFICATION'))")
-    java.util.List<Patient> findByDoctorIdAndUserId(@org.springframework.data.repository.query.Param("doctorId") Long doctorId);
+    java.util.List<Patient> findLinkedPatients(@org.springframework.data.repository.query.Param("doctorId") Long doctorId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT p FROM Patient p JOIN p.doctors d WHERE d.id = :doctorId")
+    java.util.List<Patient> findByDoctorId(@org.springframework.data.repository.query.Param("doctorId") Long doctorId);
 
     default Optional<Patient> findByEmail(String email) {
         java.util.List<Patient> list = findAllByEmail(email);
