@@ -17,6 +17,7 @@ public class DoctorDTO {
     private String serviceDurations;
     private Double latitude;
     private Double longitude;
+    private Long userId;
 
     // Institutional Sync Fields
     private String consultationFee;
@@ -154,6 +155,7 @@ public class DoctorDTO {
         this.preferredPaymentMode = d.getPreferredPaymentMode();
         this.latitude = d.getLatitude();
         this.longitude = d.getLongitude();
+        this.userId = d.getUser() != null ? d.getUser().getId() : null;
     }
 
     // Getters and Setters
@@ -339,4 +341,7 @@ public class DoctorDTO {
 
     public Double getLongitude() { return longitude; }
     public void setLongitude(Double longitude) { this.longitude = longitude; }
+
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
 }
