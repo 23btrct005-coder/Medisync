@@ -98,8 +98,8 @@ const PatientMessages = () => {
                         <div 
                             key={doctor.id}
                             onClick={() => {
-                                setActiveChat({ id: doctor.id, name: doctor.name, userId: doctor.user?.id });
-                                setUnreadCounts(prev => ({ ...prev, [doctor.user?.id]: 0 }));
+                                setActiveChat({ id: doctor.id, name: doctor.name, userId: doctor.userId });
+                                setUnreadCounts(prev => ({ ...prev, [doctor.userId]: 0 }));
                             }}
                             className="bg-white p-4 rounded-[2rem] border border-slate-100 hover:border-primary/30 transition-all cursor-pointer group shadow-sm flex items-center justify-between"
                         >
@@ -111,9 +111,9 @@ const PatientMessages = () => {
                                         ) : doctor.name.charAt(0)}
                                     </div>
 
-                                    {unreadCounts[doctor.user?.id] > 0 && (
+                                    {unreadCounts[doctor.userId] > 0 && (
                                         <div className="absolute -top-2 -right-2 w-7 h-7 bg-[#25D366] text-white text-[11px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-md animate-bounce z-10">
-                                            {unreadCounts[doctor.user?.id]}
+                                            {unreadCounts[doctor.userId]}
                                         </div>
                                     )}
                                 </div>
