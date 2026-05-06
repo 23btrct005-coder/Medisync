@@ -76,7 +76,6 @@ public class HospitalService {
 
     @Transactional
     // ── Personnel Decommissioning: Institutional Roster Cleanup ──
-    @org.springframework.transaction.annotation.Transactional
     public void deleteDoctor(Long doctorId, Hospital hospital) {
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new RuntimeException("Doctor not found"));
