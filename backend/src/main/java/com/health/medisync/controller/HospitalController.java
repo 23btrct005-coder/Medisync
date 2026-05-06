@@ -367,21 +367,37 @@ public class HospitalController {
     }
 
     @GetMapping("/doctor/{id}")
-    public ResponseEntity<?> getDoctor(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
-        User user = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        HospitalAdmin admin = hospitalService.getAdminByUser(user);
-        Doctor doctor = hospitalService.getDoctorById(id, admin.getHospital());
-        return ResponseEntity.ok(new com.health.medisync.model.DoctorDTO(doctor));
+    public ResponseEntity<?> getDoctor(@PathVariable String id, @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            if (id == null || id.equalsIgnoreCase("undefined")) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Invalid personnel identifier"));
+            }
+            Long doctorId = Long.valueOf(id.split("\\.")[0]);
+            User user = userRepository.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            HospitalAdmin admin = hospitalService.getAdminByUser(user);
+            Doctor doctor = hospitalService.getDoctorById(doctorId, admin.getHospital());
+            return ResponseEntity.ok(new com.health.medisync.model.DoctorDTO(doctor));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 
     @DeleteMapping("/delete-doctor/{id}")
-    public ResponseEntity<?> deleteDoctor(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
-        User user = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        HospitalAdmin admin = hospitalService.getAdminByUser(user);
-        hospitalService.deleteDoctor(id, admin.getHospital());
-        return ResponseEntity.ok(Map.of("message", "Physician record purged successfully"));
+    public ResponseEntity<?> deleteDoctor(@PathVariable String id, @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            if (id == null || id.equalsIgnoreCase("undefined")) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Invalid personnel identifier"));
+            }
+            Long doctorId = Long.valueOf(id.split("\\.")[0]);
+            User user = userRepository.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            HospitalAdmin admin = hospitalService.getAdminByUser(user);
+            hospitalService.deleteDoctor(doctorId, admin.getHospital());
+            return ResponseEntity.ok(Map.of("message", "Physician record purged successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 
     @PostMapping(value = "/onboard-doctor", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
