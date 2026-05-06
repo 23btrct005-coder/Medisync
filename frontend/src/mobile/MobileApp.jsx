@@ -1,10 +1,10 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import MobileLayout from './layouts/MobileLayout';
-import MobileDashboard from './pages/MobileDashboard';
-import MobileDoctorDashboard from './pages/MobileDoctorDashboard';
-import MobileHospitalDashboard from './pages/MobileHospitalDashboard';
-import MobileAdminDashboard from './pages/MobileAdminDashboard';
+import Dashboard from '../pages/Dashboard';
+import ClinicalExecutiveConsul from '../pages/ClinicalExecutiveConsul';
+import HospitalDashboard from '../pages/HospitalDashboard';
+import AdminDashboard from '../pages/AdminDashboard';
 import { useAuth } from '../context/AuthContext';
 
 // Auth & Public Pages
@@ -91,7 +91,7 @@ const MobileApp = () => {
                     <MobileLayout />
                 </ProtectedRoute>
             }>
-                <Route index element={<MobileDashboard />} />
+                <Route index element={<Dashboard />} />
                 <Route path="wallet" element={<HealthWallet />} />
                 <Route path="records" element={<MedicalHistory />} />
                 <Route path="reports" element={<Reports />} />
@@ -113,7 +113,7 @@ const MobileApp = () => {
                     <MobileLayout />
                 </ProtectedRoute>
             }>
-                <Route index element={<MobileDoctorDashboard />} />
+                <Route index element={<ClinicalExecutiveConsul />} />
                 <Route path="appointments" element={<ClinicalScheduleManager />} />
                 <Route path="financials" element={<ClinicalFinancials />} />
                 <Route path="patients" element={<ClinicalCensusRegistry />} />
@@ -131,7 +131,7 @@ const MobileApp = () => {
                     <MobileLayout />
                 </ProtectedRoute>
             }>
-                <Route index element={<MobileHospitalDashboard />} />
+                <Route index element={<HospitalDashboard />} />
                 <Route path="appointments" element={<HospitalAppointments />} />
                 <Route path="ledger" element={<HospitalLedger />} />
                 <Route path="services" element={<HospitalServiceBookings />} />
@@ -153,9 +153,9 @@ const MobileApp = () => {
                     <MobileLayout />
                 </ProtectedRoute>
             }>
-                <Route index element={<MobileAdminDashboard />} />
-                <Route path="pending" element={<MobileAdminDashboard />} />
-                <Route path="registry" element={<MobileAdminDashboard />} />
+                <Route index element={<AdminDashboard />} />
+                <Route path="pending" element={<AdminDashboard />} />
+                <Route path="registry" element={<AdminDashboard />} />
                 <Route path="settings" element={<Settings />} />
             </Route>
 
