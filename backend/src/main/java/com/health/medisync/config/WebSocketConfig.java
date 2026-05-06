@@ -46,16 +46,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        // Universal WebSocket Handshake Hub
+        // Universal WebSocket Handshake Hub (Standard Compatibility Mode)
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*") // Broaden patterns for production resilience
-                .withSockJS()
-                .setSuppressCorsChecks(true); // Bypass strict SockJS checks for Vercel->Render bridge
+                .setAllowedOriginPatterns("*") 
+                .withSockJS();
                 
         registry.addEndpoint("/api/ws")
                 .setAllowedOriginPatterns("*")
-                .withSockJS()
-                .setSuppressCorsChecks(true);
+                .withSockJS();
     }
 
     @Override
