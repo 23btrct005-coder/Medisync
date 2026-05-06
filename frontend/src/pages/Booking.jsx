@@ -395,7 +395,7 @@ const Booking = () => {
             </button>
             <button 
                 onClick={() => { setBookingMode('service'); setBookingStep('list'); setSelectedService(null); }}
-                className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${bookingMode === 'service' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400'}`}
+                className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${bookingMode === 'service' ? 'bg-white text-primary-600 shadow-sm' : 'text-slate-400'}`}
             >
                 Diagnostic Services
             </button>
@@ -512,13 +512,13 @@ const Booking = () => {
                                 key={service}
                                 onClick={() => handleServiceSelect(service)}
                                 className={`p-4 rounded-3xl border-2 text-center transition-all relative ${selectedService === service 
-                                    ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-lg shadow-emerald-500/10' 
-                                    : 'bg-white border-slate-100 text-slate-500 hover:border-emerald-200'}`}
+                                    ? 'bg-primary-50 border-primary-500 text-primary-700 shadow-lg shadow-primary-500/10' 
+                                    : 'bg-white border-slate-100 text-slate-500 hover:border-primary-200'}`}
                             >
                                 {SERVICES_24_7.includes(service) && (
-                                    <div className="absolute -top-2 -right-2 px-2 py-1 bg-emerald-500 text-white text-[7px] font-black rounded-full uppercase tracking-widest shadow-sm z-10">24/7</div>
+                                    <div className="absolute -top-2 -right-2 px-2 py-1 bg-primary-600 text-white text-[7px] font-black rounded-full uppercase tracking-widest shadow-sm z-10">24/7</div>
                                 )}
-                                <Activity size={24} className={`mx-auto mb-3 ${selectedService === service ? 'text-emerald-600' : 'text-slate-300'}`} />
+                                <Activity size={24} className={`mx-auto mb-3 ${selectedService === service ? 'text-primary-600' : 'text-slate-300'}`} />
                                 <span className="text-[10px] font-black uppercase tracking-widest">{service}</span>
                             </button>
                         ))}
@@ -537,7 +537,7 @@ const Booking = () => {
                                     </button>
                                     <div>
                                         <h3 className="text-2xl font-black text-slate-900 tracking-tight">{selectedService}</h3>
-                                        <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mt-0.5">Clinical Protocol Active</p>
+                                        <p className="text-[10px] font-black text-primary-600 uppercase tracking-widest mt-0.5">Clinical Protocol Active</p>
                                     </div>
                                 </div>
                                 {selectedService === 'Ambulance Services' && userLocation && (
@@ -565,7 +565,7 @@ const Booking = () => {
                                 </div>
 
                             {loadingHospitals ? (
-                                <div className="p-20 text-center"><Loader2 className="animate-spin mx-auto text-emerald-500" /></div>
+                                <div className="p-20 text-center"><Loader2 className="animate-spin mx-auto text-primary-500" /></div>
                             ) : serviceHospitals.length === 0 ? (
                                 <div className="p-20 text-center bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
                                     <MapPin size={48} className="mx-auto text-slate-200 mb-4" />
@@ -584,7 +584,7 @@ const Booking = () => {
                                                     {h.logoUrl ? <img src={h.logoUrl} className="w-full h-full object-cover" alt="" /> : <Activity size={32} className="text-slate-300" />}
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <h4 className="text-lg font-black text-slate-900 group-hover:text-emerald-600 transition-colors truncate">{h.name}</h4>
+                                                    <h4 className="text-lg font-black text-slate-900 group-hover:text-primary-600 transition-colors truncate">{h.name}</h4>
                                                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{h.hospitalType || 'Medical Facility'}</p>
                                                     {h.distance !== null && h.distance !== undefined && (
                                                         <div className="flex items-center gap-1 mt-1">
@@ -601,7 +601,7 @@ const Booking = () => {
                                                     <MapPin size={12} className="text-slate-400" />
                                                     <span>{h.city}, {h.state}</span>
                                                 </div>
-                                                <div className="flex items-center gap-2 text-emerald-600 text-[10px] font-black uppercase tracking-widest">
+                                                <div className="flex items-center gap-2 text-primary-600 text-[10px] font-black uppercase tracking-widest">
                                                     <CheckCircle2 size={12} />
                                                     Instant Booking Active
                                                 </div>
@@ -617,7 +617,7 @@ const Booking = () => {
                                                         }
                                                     })()}*
                                                 </span>
-                                                <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                                                <div className="p-2 bg-primary-50 text-primary-600 rounded-xl group-hover:bg-primary-600 group-hover:text-white transition-all">
                                                     <ChevronRight size={18} />
                                                 </div>
                                             </div>
@@ -759,7 +759,7 @@ const Booking = () => {
                 {/* Modality Selection */}
                 <section className="space-y-4">
                   <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                    <Video size={18} className="text-indigo-500" /> Health Sync Modality
+                    <Video size={18} className="text-primary-500" /> Health Sync Modality
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
                     {[
@@ -772,17 +772,17 @@ const Booking = () => {
                         onClick={() => setConsultationType(type.id)}
                         className={`p-5 rounded-[1.5rem] border-2 text-left transition-all relative overflow-hidden ${type.disabled ? 'opacity-40 grayscale cursor-not-allowed' :
                             consultationType === type.id
-                              ? 'bg-indigo-50 border-indigo-500 shadow-xl shadow-indigo-500/10'
+                              ? 'bg-primary-50 border-primary-500 shadow-xl shadow-primary-500/10'
                               : 'bg-white border-slate-100 hover:bg-slate-50'
                           }`}
                       >
-                        <type.icon size={24} className={consultationType === type.id ? 'text-indigo-600' : 'text-slate-400'} />
+                        <type.icon size={24} className={consultationType === type.id ? 'text-primary-600' : 'text-slate-400'} />
                         <p className={`font-black text-sm mt-3 ${consultationType === type.id ? 'text-slate-900' : 'text-slate-500'}`}>
                           {type.name}
                           {type.disabled && <span className="ml-2 text-[8px] bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded-md">OFFLINE ONLY</span>}
                         </p>
                         <p className="text-[10px] text-slate-400 mt-1 font-medium">{type.disabled ? 'Consultation mode disabled by physician.' : type.desc}</p>
-                        {consultationType === type.id && <div className="absolute top-3 right-3"><CheckCircle2 size={16} className="text-indigo-600" /></div>}
+                        {consultationType === type.id && <div className="absolute top-3 right-3"><CheckCircle2 size={16} className="text-primary-600" /></div>}
                       </button>
                     ))}
                   </div>

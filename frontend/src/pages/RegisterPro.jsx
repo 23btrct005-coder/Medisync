@@ -15,12 +15,12 @@ const StepIndicator = ({ currentStep, totalSteps }) => (
   <div className="flex items-center justify-between mb-8 max-w-sm mx-auto">
     {[...Array(totalSteps)].map((_, i) => (
       <React.Fragment key={i}>
-        <div className={`relative flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-500 ${i + 1 <= currentStep ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-200 text-slate-300'}`}>
+        <div className={`relative flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-500 ${i + 1 <= currentStep ? 'bg-primary-600 border-primary-600 text-white' : 'bg-white border-slate-200 text-slate-300'}`}>
           {i + 1 < currentStep ? <CheckCircle size={20} /> : <span className="font-black text-sm">{i + 1}</span>}
-          {i + 1 === currentStep && <motion.div layoutId="step-glow" className="absolute inset-0 bg-emerald-500/30 blur-lg rounded-full" />}
+          {i + 1 === currentStep && <motion.div layoutId="step-glow" className="absolute inset-0 bg-primary-600/30 blur-lg rounded-full" />}
         </div>
         {i < totalSteps - 1 && (
-          <div className={`flex-1 h-0.5 mx-2 transition-all duration-500 ${i + 1 < currentStep ? 'bg-emerald-500' : 'bg-slate-100'}`} />
+          <div className={`flex-1 h-0.5 mx-2 transition-all duration-500 ${i + 1 < currentStep ? 'bg-primary-600' : 'bg-slate-100'}`} />
         )}
       </React.Fragment>
     ))}
@@ -175,21 +175,21 @@ const RegisterPro = () => {
     <div className="space-y-1.5">
       <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{label}</label>
       {options ? (
-        <select name={name} value={formData[name]} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none appearance-none cursor-pointer">
+        <select name={name} value={formData[name]} onChange={handleChange} className="w-full bg-blue-50/50 border border-blue-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all outline-none appearance-none cursor-pointer">
           <option value="">Select {label}</option>
           {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
         </select>
       ) : (
-        <input type={type} name={name} value={formData[name]} onChange={handleChange} placeholder={placeholder} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none" />
+        <input type={type} name={name} value={formData[name]} onChange={handleChange} placeholder={placeholder} className="w-full bg-blue-50/50 border border-blue-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all outline-none" />
       )}
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] py-12 px-4 selection:bg-emerald-100">
+    <div className="min-h-screen bg-[#F8FAFC] py-12 px-4 selection:bg-primary-100">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-3 mb-8 justify-center">
-          <div className="p-2 bg-emerald-500 text-white rounded-lg shadow-lg shadow-emerald-500/20"><Activity size={20} /></div>
+          <div className="p-2 bg-primary-600 text-white rounded-lg shadow-lg shadow-primary-600/20"><Activity size={20} /></div>
           <h1 className="text-xl font-black tracking-tighter uppercase text-slate-800">Unified Onboarding</h1>
         </div>
 
@@ -197,7 +197,7 @@ const RegisterPro = () => {
 
         <div className="bg-white border border-slate-100 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 p-8 md:p-12 relative overflow-hidden">
           {/* Glass Decor */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-full blur-3xl -z-10" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary-50 rounded-full blur-3xl -z-10" />
           
           <AnimatePresence mode="wait">
             {currentStep === 1 && (
@@ -216,7 +216,7 @@ const RegisterPro = () => {
                 ) : (
                   <div className="space-y-4 pt-2">
                     <InputField label="6-Digit Node Key" name="otpCode" placeholder="000000" />
-                    <button onClick={handleVerifyOtp} disabled={verifying} className="w-full py-4 bg-emerald-500 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-emerald-600 transition-all active:scale-95 shadow-lg shadow-emerald-500/20">
+                    <button onClick={handleVerifyOtp} disabled={verifying} className="w-full py-4 bg-primary-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-primary-700 transition-all active:scale-95 shadow-lg shadow-primary-600/20">
                       {verifying ? 'Authenticating...' : 'Validate & Next'}
                     </button>
                   </div>
@@ -284,7 +284,7 @@ const RegisterPro = () => {
                   <div className="md:col-span-2"><InputField label="Street / Residential Area" name="street" /></div>
                   <InputField label="PIN Code" name="pinCode" placeholder="6 Digits" />
                   <div className="md:col-span-2 pt-4 border-t border-slate-100 mt-2">
-                    <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] mb-4">Emergency Contact (Required)</p>
+                    <p className="text-[10px] font-black text-primary-600 uppercase tracking-[0.2em] mb-4">Emergency Contact (Required)</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <InputField label="Full Name *" name="emergencyContactName" />
                       <InputField label="Relationship *" name="emergencyContactRelationship" options={['Spouse', 'Parent', 'Sibling', 'Guardian', 'Friend', 'Other']} />
@@ -344,8 +344,8 @@ const RegisterPro = () => {
                   <InputField label="Organ Donor Status" name="organDonorStatus" options={['Yes', 'No', 'Undecided']} />
                 </div>
                 
-                <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-xl mt-4">
-                  <p className="text-[10px] text-emerald-700 leading-relaxed font-medium">
+                <div className="bg-primary-50 border border-primary-100 p-4 rounded-xl mt-4">
+                  <p className="text-[10px] text-primary-700 leading-relaxed font-medium">
                      <Bot size={14} className="inline mr-1 mb-1" />
                      The "Unified Healthcare OS" will use this clinical baseline to synchronize with your AI Diagnostic Engine and emergency medical responders.
                   </p>
@@ -353,7 +353,7 @@ const RegisterPro = () => {
 
                 <div className="flex gap-4 pt-4">
                   <button onClick={prevStep} className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-200 transition-all">Back</button>
-                  <button onClick={handleFinalSubmit} disabled={loading} className="flex-1 py-4 bg-emerald-500 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20 active:scale-95">
+                  <button onClick={handleFinalSubmit} disabled={loading} className="flex-1 py-4 bg-primary-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-primary-700 transition-all shadow-xl shadow-primary-600/20 active:scale-95">
                     {loading ? 'Finalizing...' : 'Complete Onboarding'}
                   </button>
                 </div>

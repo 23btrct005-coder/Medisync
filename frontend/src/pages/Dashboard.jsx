@@ -97,48 +97,48 @@ const Dashboard = () => {
         <ProfileCompletionBanner />
 
         {/* Hero Section: Unified OS Control Center */}
-        <section className="relative overflow-hidden group">
-          <div className="relative bg-[#0A1A1A] rounded-[3rem] p-10 md:p-14 text-white shadow-2xl overflow-hidden border border-white/5">
-            <div className="absolute top-0 right-0 w-2/3 h-full bg-gradient-to-l from-emerald-500/10 to-transparent pointer-events-none" />
+        <section className="relative overflow-hidden group animate-in fade-in zoom-in-95 duration-1000">
+          <div className="relative bg-white rounded-[3rem] p-10 md:p-14 text-slate-900 shadow-2xl overflow-hidden border border-slate-100">
+            <div className="absolute top-0 right-0 w-2/3 h-full bg-gradient-to-l from-primary-500/5 to-transparent pointer-events-none" />
             
             <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-10">
               <div className="space-y-6 max-w-2xl">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary-50 rounded-full border border-primary-100 text-[10px] font-black uppercase tracking-[0.3em] text-primary-600">
                   <ShieldCheck size={14} className="animate-pulse" />
                   Clinical Node Active
                 </div>
                 
                 <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-none flex flex-wrap items-center gap-4">
-                  Welcome, <span className="text-emerald-400">{(user?.name || 'User').split(' ')[0]}</span>
+                  Welcome, <span className="text-primary-600">{(user?.name || 'User').split(' ')[0]}</span>
                   <button 
                     onClick={() => navigate('/dashboard/messages')}
-                    className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 transition-all relative group/msg"
+                    className="p-3 bg-slate-50 hover:bg-slate-100 rounded-2xl border border-slate-200 transition-all relative group/msg"
                   >
-                    <MessageSquare size={24} className="group-hover:scale-110 transition-transform" />
+                    <MessageSquare size={24} className="group-hover:scale-110 transition-transform text-primary-600" />
                     {useNotifications().unreadChatCount > 0 && (
-                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] font-black border-2 border-[#0A1A1A]">
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] font-black border-2 border-white">
                         {useNotifications().unreadChatCount}
                       </span>
                     )}
                   </button>
                 </h1>
                 
-                <p className="text-slate-400 font-medium text-lg leading-relaxed">
+                <p className="text-slate-500 font-medium text-lg leading-relaxed">
                   Your "Unified Healthcare OS" is currently synchronizing 
-                  <span className="text-white mx-1 font-bold">{stats.recordsCount} clinical archives</span> 
+                  <span className="text-primary-600 mx-1 font-bold">{stats.recordsCount} clinical archives</span> 
                   across your secure medical network.
                 </p>
 
                 <div className="flex flex-wrap gap-4 pt-4">
                   <button 
                     onClick={() => setShowQRModal(true)}
-                    className="flex items-center gap-2 px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-[#0A1A1A] rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-xl shadow-emerald-500/20 active:scale-95"
+                    className="flex items-center gap-2 px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-xl shadow-primary-600/20 active:scale-95"
                   >
                     <QrCode size={18} /> Emergency Key
                   </button>
                   <button 
                     onClick={() => navigate('/dashboard/reports')}
-                    className="flex items-center gap-2 px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-95"
+                    className="flex items-center gap-2 px-8 py-4 bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-95 text-slate-600"
                   >
                     <Plus size={18} /> New Report
                   </button>
@@ -151,7 +151,7 @@ const Dashboard = () => {
             </div>
             
             {/* Background Graphic */}
-            <Activity size={400} className="absolute -right-20 -bottom-20 text-emerald-500/5 rotate-12" />
+            <Activity size={400} className="absolute -right-20 -bottom-20 text-primary-500/5 rotate-12" />
           </div>
         </section>
 

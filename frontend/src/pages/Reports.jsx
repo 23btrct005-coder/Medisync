@@ -242,9 +242,9 @@ const Reports = () => {
         <div>
           <div className="flex items-center gap-3 mb-2">
              <h1 className="text-4xl font-black text-slate-900 tracking-tight">Clinical Reports</h1>
-             <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100 shadow-sm">
-                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
-                <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none">{syncLabel === 'Just Now' ? 'Secure Sync Active' : `Synced ${syncLabel}`}</span>
+             <div className="flex items-center gap-2 px-3 py-1 bg-primary-50 rounded-full border border-primary-100 shadow-sm">
+                <div className="w-1.5 h-1.5 bg-primary-500 rounded-full animate-ping" />
+                <span className="text-[9px] font-black text-primary-600 uppercase tracking-widest leading-none">{syncLabel === 'Just Now' ? 'Secure Sync Active' : `Synced ${syncLabel}`}</span>
              </div>
           </div>
           <p className="text-slate-500 font-medium">Synchronized repository of your diagnostic history</p>
@@ -320,7 +320,7 @@ const Reports = () => {
                     {report.fileType?.includes('pdf') ? 'Clinical Document' : 'Diagnostic Image'}
                   </div>
                   {(new Date() - new Date(report.uploadDate || report.date)) < 86400000 && (
-                     <div className="px-3 py-1.5 bg-emerald-500 rounded-xl text-[9px] font-black text-white shadow-xl border border-emerald-400 flex items-center gap-2 uppercase tracking-widest animate-pulse">
+                     <div className="px-3 py-1.5 bg-primary-500 rounded-xl text-[9px] font-black text-white shadow-xl border border-primary-400 flex items-center gap-2 uppercase tracking-widest animate-pulse">
                         <Sparkles size={10} />
                         New Report
                      </div>
@@ -394,7 +394,7 @@ const Reports = () => {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                          <span className="badge-clinical bg-primary text-white border-none py-0.5 px-3">Structured Clinical Briefing</span>
-                         {report.monaiDiagnosis && <span className="badge-clinical bg-emerald-100 text-emerald-700 border-emerald-200 py-0.5">Vision Verified</span>}
+                         {report.monaiDiagnosis && <span className="badge-clinical bg-primary-100 text-primary-700 border-primary-200 py-0.5">Vision Verified</span>}
                       </div>
                       <button 
                         onClick={() => toggleAiReveal(report.id)}
@@ -410,7 +410,7 @@ const Reports = () => {
                 {/* Footer */}
                 <div className="flex items-center pt-4 border-t border-slate-100">
                   <div className="flex items-center gap-1">
-                    <CheckCircle2 size={14} className="text-emerald-500" />
+                    <CheckCircle2 size={14} className="text-primary-500" />
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Securely Verified</span>
                   </div>
                 </div>
@@ -434,7 +434,7 @@ const Reports = () => {
               <canvas ref={canvasRef} className="hidden"></canvas>
               <button 
                 onClick={capturePhoto} 
-                className="mt-8 px-10 py-4 bg-emerald-600 rounded-full text-white font-bold text-lg hover:bg-emerald-500 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all"
+                className="mt-8 px-10 py-4 bg-primary-600 rounded-full text-white font-bold text-lg hover:bg-primary-500 shadow-lg shadow-primary-500/20 active:scale-95 transition-all"
               >
                 Capture & Analyze
               </button>

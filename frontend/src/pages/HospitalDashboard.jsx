@@ -4,7 +4,8 @@ import {
   Building2, Users, ClipboardCheck, TrendingUp, ShieldAlert, Shield, 
   ChevronRight, Activity, Calendar, MapPin, Clock, DollarSign, 
   CreditCard, Lock, X, Check, Settings, ArrowUpRight, HeartPulse,
-  LayoutDashboard, Bell, Megaphone, Send, BrainCircuit, Search, BarChart3
+  LayoutDashboard, Bell, Megaphone, Send, BrainCircuit, Search, BarChart3,
+  Zap
 } from 'lucide-react';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
@@ -114,6 +115,22 @@ const HospitalDashboard = () => {
                 </div>
             </div>
 
+            {/* Top AI Priority Banner */}
+            <div className="bg-primary-50 p-6 rounded-3xl border border-primary-100 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-white rounded-2xl shadow-sm text-primary-600">
+                  <Zap size={24} />
+                </div>
+                <div>
+                  <h4 className="font-black text-sm uppercase tracking-widest text-slate-400">Clinical AI Focus</h4>
+                  <p className="text-2xl font-black text-primary-700">Trauma Response</p>
+                </div>
+              </div>
+              <div className="px-4 py-2 bg-white rounded-xl text-primary-600 font-black text-xs border border-primary-100 uppercase tracking-widest">
+                Live Priority
+              </div>
+            </div>
+
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {sortedTrends.slice(0, 3).map(([name, count], i) => (
@@ -173,15 +190,15 @@ const HospitalDashboard = () => {
                     <div className="bg-white border border-slate-100 rounded-[3.5rem] p-10 shadow-sm h-full flex flex-col">
                         <div className="flex items-center justify-between mb-8">
                             <div className="flex items-center gap-4">
-                                <div className="p-4 bg-indigo-50 text-indigo-600 rounded-2xl">
+                                <div className="p-4 bg-primary-50 text-primary-600 rounded-2xl">
                                     <BarChart3 size={24} />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">AI Clinical <span className="text-indigo-600 italic">Insights</span></h3>
+                                    <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">AI Clinical <span className="text-primary-600 italic">Insights</span></h3>
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Patient Query Dynamics</p>
                                 </div>
                             </div>
-                            <div className="px-3 py-1 bg-emerald-100 text-emerald-600 rounded-full text-[10px] font-black uppercase">Live Telemetry</div>
+                            <div className="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-[10px] font-black uppercase">Live Telemetry</div>
                         </div>
 
                         <div className="flex-1 space-y-6">
@@ -189,11 +206,11 @@ const HospitalDashboard = () => {
                                 <div key={i} className="relative">
                                     <div className="flex justify-between items-center mb-2">
                                         <span className="text-xs font-black text-slate-700 uppercase tracking-widest">{spec}</span>
-                                        <span className="text-xs font-black text-indigo-600 italic">{count} Searches</span>
+                                        <span className="text-xs font-black text-primary-600 italic">{count} Searches</span>
                                     </div>
                                     <div className="h-3 w-full bg-slate-50 rounded-full overflow-hidden">
                                         <div 
-                                            className="h-full bg-gradient-to-r from-indigo-500 to-indigo-400 rounded-full transition-all duration-1000 ease-out" 
+                                            className="h-full bg-gradient-to-r from-primary-500 to-primary-400 rounded-full transition-all duration-1000 ease-out" 
                                             style={{ width: `${(count / (aiInsights.length || 1)) * 100}%` }}
                                         />
                                     </div>
