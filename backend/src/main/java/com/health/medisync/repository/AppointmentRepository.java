@@ -25,6 +25,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<Appointment> findByHospitalId(Long hospitalId);
     List<Appointment> findByHospitalIdAndStatusIn(Long hospitalId, List<AppointmentStatus> statuses);
 
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
     void deleteByDoctorId(Long doctorId);
     List<Appointment> findByAppointmentDate(LocalDate date);
 

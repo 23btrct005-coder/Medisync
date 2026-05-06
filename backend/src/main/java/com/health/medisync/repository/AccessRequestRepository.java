@@ -11,5 +11,7 @@ public interface AccessRequestRepository extends JpaRepository<AccessRequest, Lo
     List<AccessRequest> findByPatientAndStatus(Patient patient, String status);
     List<AccessRequest> findByDoctor(Doctor doctor);
     Optional<AccessRequest> findByDoctorAndPatient(Doctor doctor, Patient patient);
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
     void deleteByDoctorId(Long doctorId);
 }

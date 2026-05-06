@@ -21,5 +21,7 @@ public interface RatingRepository extends JpaRepository<Rating, Long> {
     Double getAverageRatingByDoctorId(@Param("doctorId") Long doctorId);
     
     long countByDoctorId(Long doctorId);
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
     void deleteByDoctorId(Long doctorId);
 }

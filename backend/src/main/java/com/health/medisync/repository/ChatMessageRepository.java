@@ -11,5 +11,7 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     List<ChatMessage> findConversation(@Param("u1") Long u1, @Param("u2") Long u2);
     
     List<ChatMessage> findByReceiverIdAndIsReadFalse(Long receiverId);
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
     void deleteBySenderIdOrReceiverId(Long senderId, Long receiverId);
 }
