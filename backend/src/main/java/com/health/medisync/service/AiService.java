@@ -22,6 +22,7 @@ public class AiService {
     private final UserRepository userRepository;
     private final PatientRepository patientRepository;
     private final ReportRepository reportRepository;
+    private final GeminiAiService geminiAiService;
     
     private static final Map<String, String> sessionSummaries = new HashMap<>();
 
@@ -34,7 +35,8 @@ public class AiService {
                      GroqAiService groqAiService,
                      UserRepository userRepository,
                      PatientRepository patientRepository,
-                     ReportRepository reportRepository) {
+                     ReportRepository reportRepository,
+                     GeminiAiService geminiAiService) {
         this.doctorRepository = doctorRepository;
         this.hospitalRepository = hospitalRepository;
         this.aiQueryLogRepository = aiQueryLogRepository;
@@ -45,6 +47,7 @@ public class AiService {
         this.userRepository = userRepository;
         this.patientRepository = patientRepository;
         this.reportRepository = reportRepository;
+        this.geminiAiService = geminiAiService;
     }
 
     public String generateResponse(String query, List<Map<String, String>> history, String userEmail, List<String> roles, String location) {
@@ -198,25 +201,33 @@ public class AiService {
                 })
                 .collect(Collectors.joining("\n"));
 
-            String prompt = "You are the MediSync EXPERT CLINICAL PHYSICIAN. " +
-                "System Time: " + currentTime + " (" + currentDate + "). " +
-                "Patient Clinical Profile: " + clinicalHistory.toString() + ". " +
-                "Current Location: " + (location != null ? location : "Unknown") + ". " +
-                "Language: " + language + ". " +
-                (historyContext.length() > 0 ? historyContext.toString() : "") + "\n" +
-                "STRICT PROTOCOLS:\n" +
-                "1. NO PARAGRAPHS. NO GREETINGS. NO DISCLAIMERS. NO INTRODUCTIONS.\n" +
-                "2. PRIORITIZE HISTORY: If the patient has a history of ENT issues or symptoms like ear pain, recommend ENT specialists first. DO NOT show Cardiology unless it's relevant to the query.\n" +
-                "3. BE EXTREMELY CONCISE. USE MAX 2-3 BULLET POINTS. USE VERY SIMPLE WORDS.\n" +
-                "4. Use Markdown headers (###) and Bullet Points (-) for EVERYTHING.\n" +
-                "5. NAVIGATION: Provide only the Facility Name and its raw coordinates on a NEW LINE. ONLY provide the location of the PARTICULAR doctor/hospital mentioned. If the query asks about 'Dr. X', ONLY show Dr. X's location. DO NOT list everyone.\n" +
-                "6. BOOKING ACTION: If the user asks to book an appointment or visit a doctor, provide a line exactly like this: [BOOK NOW]((/dashboard/booking?doctor=DOCTOR_NAME)). Replace DOCTOR_NAME with the exact name provided in the list below.\n" +
-                "7. GROUNDING: Match user symptoms/history to the specialization of doctors provided below.\n\n" +
-                "   HOSPITALS:\n" + hospitalList + "\n" +
-                "   DOCTORS:\n" + doctorList + "\n\n" +
-                "Query: " + query;
+            String prompt = "### SYSTEM INSTRUCTION: INSTITUTIONAL CLINICAL INTELLIGENCE ENGINE (ICIE)\n" +
+                "You are the MediSync EXPERT CLINICAL PHYSICIAN, a high-fidelity reasoning engine trained on vast medical data.\n" +
+                "Current Temporal Context: " + currentTime + " (" + currentDate + ").\n" +
+                "Patient Profile Tracking: " + clinicalHistory.toString() + ".\n" +
+                "Spatial Awareness: " + (location != null ? location : "Unknown") + ".\n" +
+                "Multilingual Synthesis: " + language + ".\n\n" +
+                "### CORE PROTOCOLS (STRICT ADHERENCE):\n" +
+                "1. **ZERO-PARAGRAPH POLICY**: Use only headers and bullet points. Never use block text.\n" +
+                "2. **CLINICAL GROUNDING**: Map every symptom to the specialized institutional resources provided below. Prioritize the patient's existing clinical history (e.g., if history shows Cardiac issues, always cross-reference).\n" +
+                "3. **PROFESSIONAL PERSONA**: Maintain a direct, clinical, and authoritative tone. Use medical terminology but keep it accessible.\n" +
+                "4. **SPATIAL TRIAGE**: If coordinates are available, only recommend facilities within the synchronized clinical node.\n" +
+                "5. **ACTION ORIENTATION**: Provide direct booking links [BOOK NOW]((/dashboard/booking?doctor=NAME)) when a specific provider is relevant.\n" +
+                "6. **NO GREETINGS**: Start directly with the clinical analysis.\n\n" +
+                "### INSTITUTIONAL RESOURCE REGISTRY:\n" +
+                "HOSPITALS:\n" + hospitalList + "\n" +
+                "DOCTORS:\n" + doctorList + "\n\n" +
+                "### CONVERSATION LOGS:\n" + (historyContext.length() > 0 ? historyContext.toString() : "No previous interaction history.") + "\n\n" +
+                "### PATIENT QUERY:\n" + query;
             
-            String neuralResponse = groqAiService.getCompletion(prompt);
+            String neuralResponse = geminiAiService.getCompletion(prompt);
+            
+            // Fallback to Groq if Gemini fails or is rate-limited
+            if (neuralResponse == null || neuralResponse.contains("error")) {
+                System.err.println("Gemini failed, falling back to Groq...");
+                neuralResponse = groqAiService.getCompletion(prompt);
+            }
+
             if (neuralResponse != null && !neuralResponse.contains("error")) {
                 return neuralResponse;
             }
