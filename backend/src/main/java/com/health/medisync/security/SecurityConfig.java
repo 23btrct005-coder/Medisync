@@ -21,9 +21,11 @@ import java.util.Arrays;
 public class SecurityConfig {
     
     private final JwtAuthFilter jwtAuthFilter;
+    private final CacheBustingFilter cacheBustingFilter;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter, CacheBustingFilter cacheBustingFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.cacheBustingFilter = cacheBustingFilter;
     }
 
     @Bean
@@ -54,6 +56,7 @@ public class SecurityConfig {
             );
         
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(cacheBustingFilter, JwtAuthFilter.class);
         return http.build();
     }
 

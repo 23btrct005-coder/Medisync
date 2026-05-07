@@ -1,0 +1,32 @@
+#!/usr/bin/expect -f
+set timeout -1
+set password "PVYZKN@etxcm588"
+set ip "164.52.213.234"
+
+spawn ssh -o StrictHostKeyChecking=no root@$ip
+expect {
+    "*password:*" {
+        send "$password\r"
+    }
+}
+expect "# "
+send "cd Medisync\r"
+expect "# "
+send "git pull origin main\r"
+expect "# "
+send "cd frontend && npm install && npm run build\r"
+expect "# "
+send "mkdir -p ../backend/src/main/resources/static\r"
+expect "# "
+send "rm -rf ../backend/src/main/resources/static/*\r"
+expect "# "
+send "cp -r dist/* ../backend/src/main/resources/static/\r"
+expect "# "
+send "cd ../backend && mvn clean package -DskipTests\r"
+expect "# "
+send "fuser -k 8080/tcp || true\r"
+expect "# "
+send "export \$(grep -v '^#' ../.env | xargs) && nohup java -jar target/*.jar > ~/medisync_prod.log 2>&1 &\r"
+expect "# "
+send "exit\r"
+expect eof
