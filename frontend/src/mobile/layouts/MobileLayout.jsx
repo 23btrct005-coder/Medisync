@@ -37,9 +37,9 @@ const MobileLayout = () => {
             { name: 'Registry', path: '/hospital-dashboard/patients', icon: <Users size={22} /> },
         ];
         return [
-            { name: 'Home', path: '/dashboard', icon: <LayoutDashboard size={22} /> },
-            { name: 'Medics', path: '/dashboard/booking', icon: <Stethoscope size={22} /> },
-            { name: 'Briefs', path: '/dashboard/reports', icon: <FileText size={22} /> },
+            { name: 'Hub', path: '/dashboard', icon: <LayoutDashboard size={22} /> },
+            { name: 'Sessions', path: '/dashboard/sessions', icon: <Calendar size={22} /> },
+            { name: 'Wallet', path: '/dashboard/wallet', icon: <Wallet size={22} /> },
             { name: 'Records', path: '/dashboard/records', icon: <ClipboardList size={22} /> },
         ];
     };
@@ -59,12 +59,12 @@ const MobileLayout = () => {
             { name: 'Settings', path: '/hospital-dashboard/settings', icon: <Settings size={20} /> },
         ];
         return [
-            { name: 'Health Wallet', path: '/dashboard/wallet', icon: <Wallet size={20} /> },
+            { name: 'Physicians', path: '/dashboard/booking', icon: <Stethoscope size={20} /> },
+            { name: 'Clinical Briefs', path: '/dashboard/reports', icon: <FileText size={20} /> },
             { name: 'Medications', path: '/dashboard/medications', icon: <Pill size={20} /> },
             { name: 'Security Logs', path: '/dashboard/security', icon: <ShieldCheck size={20} /> },
             { name: 'Profile', path: '/dashboard/profile', icon: <User size={20} /> },
             { name: 'Settings', path: '/dashboard/settings', icon: <Settings size={20} /> },
-            { name: 'Support', path: '/dashboard/support', icon: <HelpCircle size={20} /> },
         ];
     };
 

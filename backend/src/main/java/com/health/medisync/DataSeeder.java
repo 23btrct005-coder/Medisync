@@ -41,29 +41,29 @@ public class DataSeeder implements CommandLineRunner {
 
             Patient patient = new Patient();
             patient.setUser(user);
-            patient.setName("Jane Doe");
-            patient.setEmail("jane.doe@example.com");
-            patient.setAge(34);
+            patient.setName("Arjun Kumar");
+            patient.setEmail("arjun.kumar@medisync.io");
+            patient.setAge(28);
             patient.setBloodGroup("O+");
-            patient.setMedicalInfo("Allergic to Penicillin");
+            patient.setMedicalInfo("None reported");
             patientRepository.save(patient);
 
             MedicalRecord record1 = new MedicalRecord();
             record1.setPatient(patient);
-            record1.setDiagnosis("Viral Fever");
-            record1.setPrescription("Paracetamol 500mg, Rest for 3 days");
+            record1.setDiagnosis("Hypertension Management");
+            record1.setPrescription("Amlodipine 5mg OD, Low sodium diet");
             record1.setDate(LocalDate.now().minusDays(10));
-            record1.setDoctorName("Dr. Smith");
+            record1.setDoctorName("Dr. Sarah Jenkins");
             recordRepository.save(record1);
 
             MedicalRecord record2 = new MedicalRecord();
             record2.setPatient(patient);
-            record2.setDiagnosis("Routine Checkup");
-            record2.setPrescription("Vitamin D supplements");
+            record2.setDiagnosis("Routine Clinical Assessment");
+            record2.setPrescription("Multivitamin supplements, Regular exercise");
             record2.setDate(LocalDate.now());
-            record2.setDoctorName("Dr. Alice");
+            record2.setDoctorName("Dr. Sarah Jenkins");
             recordRepository.save(record2);
-            System.out.println("Patient data seeded successfully.");
+            System.out.println("High-fidelity patient data seeded successfully.");
         }
 
         if (userRepository.findByUsername("doctor1").isEmpty()) {
@@ -76,9 +76,9 @@ public class DataSeeder implements CommandLineRunner {
 
             Doctor doctor = new Doctor();
             doctor.setUser(docUser);
-            doctor.setName("Dr. Smith");
-            doctor.setEmail("dr.smith@medisync.com");
-            doctor.setSpecialization("General Physician");
+            doctor.setName("Dr. Sarah Jenkins");
+            doctor.setEmail("s.jenkins@medisync.com");
+            doctor.setSpecialization("Cardiology");
             doctorRepository.save(doctor);
             
             System.out.println("Dummy data seeded successfully.");

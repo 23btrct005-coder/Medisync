@@ -126,10 +126,10 @@ const Landing = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   {[
-                    { label: "Blood Glucose", val: "92 mg/dL", color: "text-primary-600" },
-                    { label: "Heart Rate", val: "72 BPM", color: "text-blue-600" },
-                    { label: "Clinical AI Score", val: "9.8/10", color: "text-indigo-600" },
-                    { label: "Sync Latency", val: "14ms", color: "text-orange-600" }
+                    { label: "Blood Glucose", val: "REAL-TIME", color: "text-primary-600" },
+                    { label: "Heart Rate", val: "ACTIVE", color: "text-blue-600" },
+                    { label: "Clinical AI Score", val: "SECURED", color: "text-indigo-600" },
+                    { label: "Sync Latency", val: "<10ms", color: "text-orange-600" }
                   ].map((stat, i) => (
                     <div key={i} className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
                       <p className="text-[10px] font-bold text-slate-500 uppercase mb-1">{stat.label}</p>

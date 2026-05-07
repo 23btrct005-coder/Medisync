@@ -956,61 +956,59 @@ const Booking = () => {
                   <X size={20} className="text-slate-400" />
                 </button>
               </div>              <div className="p-8 pt-4 space-y-6">
-                <div className="bg-slate-50 rounded-3xl p-6 border border-slate-100 text-center">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Consultation Fee</p>
-                  <p className="text-4xl font-black text-slate-900">₹{upiOrderData.amount}</p>
-                </div>
-                
-                <div className="space-y-4">
-                    <div className="flex flex-col items-center gap-4">
-                        <div className="w-48 h-48 bg-white p-4 rounded-3xl border-2 border-slate-100 shadow-inner flex items-center justify-center">
-                            <img 
-                                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiOrderData.upiId}%26pn=MEDISYNC%26am=${upiOrderData.amount}%26cu=INR`} 
-                                alt="UPI QR Code" 
-                                className="w-full h-full object-contain"
-                            />
-                        </div>
-                        <div className="text-center">
-                            <p className="text-xs font-black text-slate-900">{upiOrderData.upiId}</p>
-                            <p className="text-[10px] font-medium text-slate-400 mt-1 uppercase tracking-widest italic">Verified Clinical VPA</p>
-                        </div>
-                    </div>
+                <div className="bg-slate-50/50 rounded-3xl p-6 border border-slate-100 flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Fee Payable</p>
+                    <p className="text-3xl font-black text-slate-900">₹{upiOrderData.amount}</p>
+                  </div>
+                  <div className="w-24 h-24 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
+                    <img 
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=upi://pay?pa=${upiOrderData.upiId}%26pn=MEDISYNC%26am=${upiOrderData.amount}%26cu=INR`} 
+                      alt="UPI QR" 
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-4">
-                    <div className="grid grid-cols-1 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Your UPI ID (VPA)</label>
-                            <input 
-                                type="text"
-                                placeholder="e.g. name@upi"
-                                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:ring-2 ring-primary/20 outline-none"
-                                value={upiOrderData.patientUpiId || ''}
-                                onChange={(e) => setUpiOrderData({...upiOrderData, patientUpiId: e.target.value})}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Transaction ID / Ref Number</label>
-                            <input 
-                                type="text"
-                                placeholder="12-digit UPI reference"
-                                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:ring-2 ring-primary/20 outline-none"
-                                value={upiOrderData.transactionId || ''}
-                                onChange={(e) => setUpiOrderData({...upiOrderData, transactionId: e.target.value})}
-                            />
-                        </div>
+                  <div className="text-center p-3 bg-white border border-slate-100 rounded-2xl shadow-sm">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Institutional VPA</p>
+                    <p className="text-sm font-black text-slate-800 tracking-tight">{upiOrderData.upiId}</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.1em] ml-2">Your UPI ID</label>
+                      <input 
+                        type="text"
+                        placeholder="e.g. name@upi"
+                        className="w-full px-6 py-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold focus:border-primary-400 outline-none transition-all"
+                        value={upiOrderData.patientUpiId || ''}
+                        onChange={(e) => setUpiOrderData({...upiOrderData, patientUpiId: e.target.value})}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.1em] ml-2">Transaction ID / Ref Number</label>
+                      <input 
+                        type="text"
+                        placeholder="12-digit UPI reference"
+                        className="w-full px-6 py-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold focus:border-primary-400 outline-none transition-all"
+                        value={upiOrderData.transactionId || ''}
+                        onChange={(e) => setUpiOrderData({...upiOrderData, transactionId: e.target.value})}
+                      />
+                    </div>
                     </div>
 
-                    <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div className="flex items-start gap-4 p-5 bg-primary-50/50 rounded-2xl border border-primary-100/50">
                         <input 
                             type="checkbox" 
                             id="upiConfirm"
-                            className="mt-1 w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary"
+                            className="mt-1 w-5 h-5 rounded-lg border-slate-300 text-primary-600 focus:ring-primary-500 transition-all cursor-pointer"
                             checked={upiConfirmed}
                             onChange={(e) => setUpiConfirmed(e.target.checked)}
                         />
-                        <label htmlFor="upiConfirm" className="text-[10px] font-black text-slate-500 uppercase tracking-tight leading-relaxed">
-                            I confirm that I have transferred ₹{upiOrderData.amount} and the Transaction ID provided above is correct.
+                        <label htmlFor="upiConfirm" className="text-[11px] font-bold text-slate-600 leading-relaxed cursor-pointer select-none">
+                            I confirm that I have transferred <span className="text-primary-700 font-black">₹{upiOrderData.amount}</span> and the Transaction ID provided above is correct.
                         </label>
                     </div>
 
@@ -1032,12 +1030,15 @@ const Booking = () => {
                                     transactionId: upiOrderData.transactionId
                                 });
                                 toast.success("Transaction Registered! Awaiting Administrative Verification.");
-                                navigate('/dashboard/sessions', { state: { autoOpenApptId: upiOrderData.appointmentId } });
+                                navigate('/dashboard/sessions', { state: { autoOpenId: upiOrderData.appointmentId } });
                             } catch (err) {
-                                toast.error("Failed to sync UPI transaction.");
+                                console.error("UPI Sync Error:", err);
+                                toast.error(err.response?.data?.message || "Failed to sync UPI transaction.");
                             } finally {
-                                setIsBooking(false);
-                                setShowUpiModal(false);
+                                if (showUpiModal) {
+                                    setIsBooking(false);
+                                    setShowUpiModal(false);
+                                }
                             }
                         }}
                         disabled={isBooking || !upiConfirmed || !upiOrderData?.patientUpiId?.trim() || !upiOrderData?.transactionId?.trim()}

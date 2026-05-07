@@ -1,14 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../api/axiosConfig';
 import { motion, AnimatePresence } from 'framer-motion';
+import { 
+    SendHorizontal, X, Mic, StopCircle, Maximize2, Minimize2, 
+    MessageCircle, Sparkles, Activity, ShieldCheck, HeartPulse, BrainCircuit
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-
-const AiConcierge = () => {
+import toast from 'react-hot-toast';
     const { user } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [messages, setMessages] = useState([
-        { role: 'ai', text: 'Hello! I am your MediSync Clinical Concierge. I can help with Symptom Analysis, Hospital Comparisons, and Emergency Triage. How are you feeling today?' }
+        { role: 'ai', text: 'Hi! How can I help you today?' }
     ]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -230,13 +233,12 @@ const AiConcierge = () => {
                             right: '30px', 
                             width: '65px', 
                             height: '65px', 
-                            borderRadius: '50%', 
-                            backgroundColor: '#0066FF', 
+                            borderRadius: '24px', 
+                            backgroundColor: '#A78BFA', 
                             border: 'none', 
                             color: 'white', 
-                            fontSize: '28px', 
                             cursor: 'pointer', 
-                            boxShadow: '0 12px 40px rgba(0,102,255,0.4)', 
+                            boxShadow: '0 12px 40px rgba(167, 139, 250, 0.4)', 
                             zIndex: 1001,
                             pointerEvents: 'auto',
                             display: 'flex',
@@ -244,7 +246,7 @@ const AiConcierge = () => {
                             justifyContent: 'center'
                         }}
                     >
-                        <span style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}>🤖</span>
+                        <MessageCircle size={28} fill="currentColor" fillOpacity={0.2} />
                     </motion.button>
                 )}
 
@@ -277,61 +279,39 @@ const AiConcierge = () => {
                         }}
                     >
                         {/* Header */}
-                        <div style={{ padding: '20px 24px', backgroundColor: '#0066FF', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ padding: '20px 24px', backgroundColor: 'white', borderBottom: '1px solid #f1f5f9', color: '#1e293b', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <div style={{ width: '10px', height: '10px', backgroundColor: '#4ade80', borderRadius: '50%', boxShadow: '0 0 10px #4ade80', animation: 'pulse 2s infinite' }}></div>
-                                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                        <span style={{ fontWeight: '900', fontSize: '13px', letterSpacing: '1px' }}>CLINICAL AI 2.0</span>
-                                        <span style={{ fontSize: '8px', padding: '2px 6px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '6px', fontWeight: '800' }}>BETA</span>
-                                    </div>
-                                    <span style={{ fontSize: '9px', opacity: 0.7, fontWeight: '800', letterSpacing: '0.5px' }}>CONTEXT: {window.location.pathname.toUpperCase() || 'HOME'}</span>
-                                </div>
+                                <div style={{ width: '8px', height: '8px', backgroundColor: '#A78BFA', borderRadius: '50%', boxShadow: '0 0 10px #A78BFA', animation: 'pulse 2s infinite' }}></div>
+                                <h2 style={{ fontWeight: '800', fontSize: '18px', tracking: '-0.025em' }}>Smart Assistant</h2>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <button 
-                                    onClick={() => setIsVoiceEnabled(!isVoiceEnabled)} 
-                                    title={isVoiceEnabled ? 'Disable Voice' : 'Enable Voice'}
-                                    style={{ width: '28px', height: '28px', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s', opacity: isVoiceEnabled ? 1 : 0.4 }}
-                                >
-                                    {isVoiceEnabled ? '🔊' : '🔈'}
-                                </button>
-                                <div style={{ width: '1px', height: '16px', backgroundColor: 'rgba(255,255,255,0.1)', margin: '0 4px' }}></div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                 <button 
                                     onClick={() => setIsFullscreen(!isFullscreen)} 
-                                    title={isFullscreen ? 'Minimize View' : 'Maximize View'}
-                                    style={{ width: '28px', height: '28px', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}
+                                    style={{ width: '36px', height: '36px', borderRadius: '12px', backgroundColor: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}
                                 >
-                                    {isFullscreen ? (
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14h6m0 0v6m0-6-6 6M20 10h-6m0 0V4m0 6 6-6"/></svg>
-                                    ) : (
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6m0 0v6m0-6L14 10M9 21H3m0 0v-6m0 6 7-7"/></svg>
-                                    )}
+                                    {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
                                 </button>
                                 <button 
                                     onClick={() => setIsOpen(false)} 
-                                    title="Minimize to Tray"
-                                    style={{ width: '28px', height: '28px', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}
+                                    style={{ width: '36px', height: '36px', borderRadius: '12px', backgroundColor: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}
                                 >
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                </button>
-                                <button 
-                                    onClick={() => { setIsOpen(false); setMessages([{ role: 'ai', text: 'Hello! Clinical Concierge reset. How can I assist you now?' }]); }} 
-                                    title="Close & Clear Session"
-                                    style={{ width: '28px', height: '28px', borderRadius: '8px', backgroundColor: 'rgba(225,29,72,0.5)', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}
-                                >
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                    <X size={20} />
                                 </button>
                             </div>
                         </div>
 
-                        {/* Lang Toggle */}
-                        <div className="custom-scrollbar" style={{ padding: '12px 20px', backgroundColor: '#f8fafc', display: 'flex', gap: '8px', overflowX: 'auto', borderBottom: '1px solid #f1f5f9' }}>
-                            {languages.map(l => (
-                                <button key={l.code} onClick={() => setSelectedLang(l.code)} style={{ padding: '8px 14px', borderRadius: '12px', border: selectedLang === l.code ? '1.5px solid #0066FF' : '1.5px solid transparent', fontSize: '11px', fontWeight: '700', backgroundColor: 'white', cursor: 'pointer', whiteSpace: 'nowrap', transition: '0.2s', color: selectedLang === l.code ? '#0066FF' : '#64748b' }}>
-                                    {l.flag} {l.name}
-                                </button>
-                            ))}
+                        {/* Voice & Lang - Simplified */}
+                        <div style={{ padding: '8px 24px', backgroundColor: '#fcfdfe', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9' }}>
+                            <div className="custom-scrollbar" style={{ display: 'flex', gap: '6px', overflowX: 'auto', padding: '4px 0' }}>
+                                {languages.map(l => (
+                                    <button key={l.code} onClick={() => setSelectedLang(l.code)} style={{ padding: '4px 10px', borderRadius: '8px', border: selectedLang === l.code ? '1px solid #A78BFA' : '1px solid transparent', fontSize: '10px', fontWeight: '700', backgroundColor: selectedLang === l.code ? '#F5F3FF' : 'white', cursor: 'pointer', whiteSpace: 'nowrap', transition: '0.2s', color: selectedLang === l.code ? '#7C3AED' : '#94a3b8' }}>
+                                        {l.name}
+                                    </button>
+                                ))}
+                            </div>
+                            <button onClick={() => setIsVoiceEnabled(!isVoiceEnabled)} style={{ padding: '6px', borderRadius: '8px', backgroundColor: isVoiceEnabled ? '#F5F3FF' : 'transparent', border: 'none', color: isVoiceEnabled ? '#7C3AED' : '#cbd5e1', cursor: 'pointer' }}>
+                                {isVoiceEnabled ? <HeartPulse size={16} className="animate-pulse" /> : <Mic size={16} />}
+                            </button>
                         </div>
 
                         {/* Messages */}
@@ -429,26 +409,99 @@ const AiConcierge = () => {
                                 </div>
                             )}
                             
-                            {!isLoading && (
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
+                             {!isLoading && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
                                     {[
-                                        { label: '💊 Active Meds', query: 'What are my active prescriptions?', color: '#0066FF' },
-                                        { label: '🚑 Live ER', query: 'Find the nearest emergency room', color: '#ef4444' }
+                                        { label: "Explain today's forecast", query: "Can you explain my health forecast for today?" },
+                                        { label: "Why did my integrity score drop?", query: "Why did my clinical integrity score drop?" },
+                                        { label: "Medication status summary", query: "Give me a summary of my active medications" },
+                                        { label: "Clinical trend analysis", query: "Analyze my clinical health trends" }
                                     ].map((chip, ci) => (
-                                        <button key={ci} onClick={() => handleSend(chip.query)} style={{ padding: '8px 14px', borderRadius: '12px', backgroundColor: 'white', border: `1.5px solid ${chip.color}15`, fontSize: '11px', fontWeight: '800', color: chip.color, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>{chip.label}</button>
+                                        <button 
+                                            key={ci} 
+                                            onClick={() => handleSend(chip.query)} 
+                                            style={{ 
+                                                width: 'fit-content',
+                                                padding: '10px 20px', 
+                                                borderRadius: '20px', 
+                                                backgroundColor: 'white', 
+                                                border: '1px solid #A78BFA40', 
+                                                fontSize: '13px', 
+                                                fontWeight: '500', 
+                                                color: '#7C3AED', 
+                                                cursor: 'pointer', 
+                                                boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
+                                                transition: 'all 0.2s'
+                                            }}
+                                            onMouseOver={(e) => { e.target.style.backgroundColor = '#F5F3FF'; e.target.style.borderColor = '#A78BFA'; }}
+                                            onMouseOut={(e) => { e.target.style.backgroundColor = 'white'; e.target.style.borderColor = '#A78BFA40'; }}
+                                        >
+                                            {chip.label}
+                                        </button>
                                     ))}
                                 </div>
                             )}
                         </div>
 
-                        {/* Input */}
-                        <div style={{ padding: '20px', borderTop: '1px solid #f1f5f9', display: 'flex', gap: '10px', backgroundColor: 'white', alignItems: 'center' }}>
-                            <button onClick={isListening ? () => {} : startListening} style={{ width: '44px', height: '44px', borderRadius: '14px', border: 'none', backgroundColor: isListening ? '#fee2e2' : '#f8fafc', color: isListening ? '#ef4444' : '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                {isListening ? '🛑' : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>}
-                            </button>
-                            <input value={input} onChange={(e) => setInput(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleSend()} placeholder="Ask AI..." style={{ flex: 1, padding: '12px 16px', borderRadius: '14px', border: '1px solid #e2e8f0', outline: 'none', fontSize: '13px', fontWeight: '500', backgroundColor: '#f8fafc' }} />
-                            <button onClick={() => handleSend()} style={{ width: '44px', height: '44px', backgroundColor: '#0066FF', color: 'white', border: 'none', borderRadius: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 14 0"/><path d="m12 5 7 7-7 7"/></svg>
+                        {/* Input Area */}
+                        <div style={{ padding: '16px 24px', borderTop: '1px solid #f1f5f9', display: 'flex', gap: '12px', backgroundColor: 'white', alignItems: 'center' }}>
+                            <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
+                                <input 
+                                    value={input} 
+                                    onChange={(e) => setInput(e.target.value)} 
+                                    onKeyPress={(e) => e.key === 'Enter' && handleSend()} 
+                                    placeholder="Ask me anything..." 
+                                    style={{ 
+                                        width: '100%', 
+                                        padding: '14px 20px', 
+                                        borderRadius: '24px', 
+                                        border: '1px solid #e2e8f0', 
+                                        outline: 'none', 
+                                        fontSize: '14px', 
+                                        fontWeight: '500', 
+                                        backgroundColor: '#fcfdfe',
+                                        transition: 'all 0.2s'
+                                    }} 
+                                    onFocus={(e) => e.target.style.borderColor = '#A78BFA'}
+                                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                                />
+                                <button 
+                                    onClick={isListening ? () => {} : startListening} 
+                                    style={{ 
+                                        position: 'absolute', 
+                                        right: '12px', 
+                                        backgroundColor: 'transparent', 
+                                        border: 'none', 
+                                        color: isListening ? '#ef4444' : '#94a3b8', 
+                                        cursor: 'pointer', 
+                                        display: 'flex', 
+                                        alignItems: 'center' 
+                                    }}
+                                >
+                                    {isListening ? <StopCircle size={20} /> : <Mic size={20} />}
+                                </button>
+                            </div>
+                            <button 
+                                id="ai-send-btn"
+                                onClick={() => handleSend()} 
+                                style={{ 
+                                    width: '52px', 
+                                    height: '52px', 
+                                    backgroundColor: '#A78BFA', 
+                                    color: 'white', 
+                                    border: 'none', 
+                                    borderRadius: '18px', 
+                                    cursor: 'pointer', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center',
+                                    boxShadow: '0 8px 25px rgba(167, 139, 250, 0.3)',
+                                    transition: 'all 0.2s'
+                                }}
+                                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#7C3AED'}
+                                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#A78BFA'}
+                            >
+                                <SendHorizontal size={24} />
                             </button>
                         </div>
                     </motion.div>

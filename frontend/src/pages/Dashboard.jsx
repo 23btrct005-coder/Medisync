@@ -25,6 +25,8 @@ const Dashboard = () => {
   const [doctors, setDoctors] = useState([]);
   const [patient, setPatient] = useState(null);
   const [showQRModal, setShowQRModal] = useState(false);
+  const [appointments, setAppointments] = useState([]);
+  const [vitals, setVitals] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,7 +36,9 @@ const Dashboard = () => {
         fetchDashboardInfo(),
         fetchRequests(),
         fetchLinkedDoctors(),
-        fetchPatientData()
+        fetchPatientData(),
+        fetchAppointments(),
+        fetchLatestVitals()
       ]);
       setLoading(false);
     };
@@ -74,6 +78,22 @@ const Dashboard = () => {
     try {
       const res = await api.get('patient/doctors');
       setDoctors(res.data || []);
+    } catch (e) { console.error(e); }
+  };
+
+  const fetchAppointments = async () => {
+    try {
+      const res = await api.get('/appointments/my-appointments');
+      setAppointments(res.data || []);
+    } catch (e) { console.error(e); }
+  };
+
+  const fetchLatestVitals = async () => {
+    try {
+      const res = await api.get('/patient/vitals');
+      if (res.data && res.data.length > 0) {
+        setVitals(res.data[res.data.length - 1]);
+      }
     } catch (e) { console.error(e); }
   };
 
@@ -145,7 +165,7 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              <div className="hidden lg:block">
+              <div className="w-full lg:w-auto">
                  <HealthSyncScore user={user} />
               </div>
             </div>
@@ -163,40 +183,84 @@ const Dashboard = () => {
         )}
 
         {/* Stats Grid: Operating Metrics */}
+        {/* Clinical Vitals Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCardPro 
-            title="Archives" 
-            value={stats.recordsCount} 
-            icon={Database} 
+            title="Pulse Rate" 
+            value={vitals?.hr || "—"} 
+            icon={Heart} 
             color="emerald" 
-            trend="+SYNC" 
-            subtitle="Secure Documents"
+            trend={vitals?.hr ? "STABLE" : "SYNCING"} 
+            subtitle="BPM"
           />
           <StatCardPro 
-            title="Integrity" 
-            value="ACTIVE" 
-            icon={Lock} 
+            title="Blood Pressure" 
+            value={vitals?.bloodPressure || "—"} 
+            icon={Activity} 
             color="blue" 
-            trend="E2EE" 
-            subtitle="Privacy Hardened"
+            trend="NORMAL" 
+            subtitle="mmHg"
           />
           <StatCardPro 
-            title="Network" 
-            value={doctors.length} 
-            icon={Globe} 
+            title="SpO2 Level" 
+            value={vitals?.spo2 ? `${vitals.spo2}%` : "—"} 
+            icon={Zap} 
             color="purple" 
-            trend="VERIFIED" 
-            subtitle="Clinical Links"
+            trend="OPTIMAL" 
+            subtitle="Saturation"
           />
           <StatCardPro 
-            title="Diagnosis" 
-            value={stats.latestDiagnosis} 
+            title="Body Temp" 
+            value={vitals?.temp ? `${vitals.temp}°C` : "—"} 
             icon={TrendingUp} 
-            color="emerald" 
-            trend="AI-V" 
-            subtitle="Latest Status"
+            color="orange" 
+            trend="NORMAL" 
+            subtitle="Celsius"
           />
         </div>
+
+        {/* Dynamic Next Appointment Section */}
+        {(() => {
+          const upcoming = appointments
+            .filter(a => a.status === 'BOOKED' && new Date(a.appointmentDate) >= new Date().setHours(0,0,0,0))
+            .sort((a,b) => new Date(a.appointmentDate) - new Date(b.appointmentDate))[0];
+            
+          if (!upcoming) return null;
+
+          return (
+            <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-xl relative overflow-hidden group animate-in slide-in-from-bottom-4 duration-700">
+               <div className="absolute top-0 right-0 w-32 h-32 bg-primary-50 rounded-full blur-3xl -z-10" />
+               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                  <div className="flex items-center gap-6">
+                    <div className="w-20 h-20 bg-primary-50 text-primary-600 rounded-[2rem] flex items-center justify-center shrink-0 border border-primary-100">
+                      <Calendar size={32} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black text-primary-600 uppercase tracking-[0.2em] mb-1">Upcoming Consultation</p>
+                      <h3 className="text-2xl font-black text-slate-900 tracking-tighter">
+                        {upcoming.serviceName || `Dr. ${upcoming.doctor?.name}`}
+                      </h3>
+                      <div className="flex items-center gap-4 mt-2">
+                        <span className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
+                          <Clock size={14} className="text-slate-400" /> {upcoming.appointmentDate} • {upcoming.timeSlot}
+                        </span>
+                        <div className="w-1 h-1 bg-slate-300 rounded-full" />
+                        <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-500 uppercase tracking-widest">
+                          {upcoming.consultationType}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => navigate('/dashboard/sessions')}
+                    className="w-full md:w-auto px-10 py-4 bg-[#0A1A1A] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-primary-600 transition-all shadow-xl active:scale-95"
+                  >
+                    View Protocol
+                  </button>
+               </div>
+            </div>
+          );
+        })()}
 
         {/* Data Architecture Hub */}
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">

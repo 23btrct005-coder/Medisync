@@ -164,10 +164,10 @@ const ClinicalVitals = () => {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                <VitalCard title="Heart Rate" value={currentData[currentData.length-1].hr || 72} unit="bpm" icon={Heart} color="bg-rose-500" trend="Stable" />
-                <VitalCard title="Body Temp" value={currentData[currentData.length-1].temp || 36.6} unit="°C" icon={Thermometer} color="bg-orange-500" trend="Normal" />
-                <VitalCard title="Blood Oxygen" value={currentData[currentData.length-1].spo2 || 98} unit="%" icon={Droplets} color="bg-blue-500" trend="Optimal" />
-                <VitalCard title="Respiratory" value={16} unit="br/m" icon={Activity} color="bg-indigo-500" trend="Ideal" />
+                <VitalCard title="Heart Rate" value={currentData[currentData.length-1].hr || "—"} unit="bpm" icon={Heart} color="bg-rose-500" trend={currentData[currentData.length-1].hr ? "Stable" : "Syncing"} />
+                <VitalCard title="Body Temp" value={currentData[currentData.length-1].temp || "—"} unit="°C" icon={Thermometer} color="bg-orange-500" trend={currentData[currentData.length-1].temp ? "Normal" : "Syncing"} />
+                <VitalCard title="Blood Oxygen" value={currentData[currentData.length-1].spo2 || "—"} unit="%" icon={Droplets} color="bg-blue-500" trend={currentData[currentData.length-1].spo2 ? "Optimal" : "Syncing"} />
+                <VitalCard title="Respiratory" value={currentData[currentData.length-1].respiratoryRate || "—"} unit="br/m" icon={Activity} color="bg-indigo-500" trend={currentData[currentData.length-1].respiratoryRate ? "Ideal" : "Syncing"} />
             </div>
 
             <div className="bg-white/70 backdrop-blur-xl border border-slate-200 rounded-[3rem] p-10 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] relative overflow-hidden">
