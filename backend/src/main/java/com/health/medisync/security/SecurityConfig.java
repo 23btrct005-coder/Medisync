@@ -42,6 +42,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/", "/index.html", "/static/**", "/assets/**", "/favicon.ico", "/manifest.json").permitAll()
                 .requestMatchers("/api/auth/**", "/ws/**", "/api/hospital/**", "/api/appointments/**", "/api/chat/**").permitAll()
                 .anyRequest().authenticated()
             );
@@ -56,7 +57,9 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(Arrays.asList(
             "https://medisync-vert-five.vercel.app",
             "http://localhost:5173",
-            "http://localhost:3000"
+            "http://localhost:3000",
+            "http://164.52.213.234:8080",
+            "http://164.52.213.234"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         
