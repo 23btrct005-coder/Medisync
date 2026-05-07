@@ -2,6 +2,9 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import MobileLayout from './layouts/MobileLayout';
 import Dashboard from '../pages/Dashboard';
+import MobileDashboard from './pages/MobileDashboard';
+import MobileDoctorDashboard from './pages/MobileDoctorDashboard';
+import MobileHospitalDashboard from './pages/MobileHospitalDashboard';
 import ClinicalExecutiveConsul from '../pages/ClinicalExecutiveConsul';
 import HospitalDashboard from '../pages/HospitalDashboard';
 import AdminDashboard from '../pages/AdminDashboard';
@@ -90,7 +93,7 @@ const MobileApp = () => {
                     <MobileLayout />
                 </ProtectedRoute>
             }>
-                <Route index element={<Dashboard />} />
+                <Route index element={<MobileDashboard />} />
                 <Route path="wallet" element={<HealthWallet />} />
                 <Route path="records" element={<MedicalHistory />} />
                 <Route path="reports" element={<Reports />} />
@@ -112,7 +115,7 @@ const MobileApp = () => {
                     <MobileLayout />
                 </ProtectedRoute>
             }>
-                <Route index element={<ClinicalExecutiveConsul />} />
+                <Route index element={<MobileDoctorDashboard />} />
                 <Route path="appointments" element={<ClinicalScheduleManager />} />
                 <Route path="financials" element={<ClinicalFinancials />} />
                 <Route path="patients" element={<ClinicalCensusRegistry />} />
@@ -130,7 +133,7 @@ const MobileApp = () => {
                     <MobileLayout />
                 </ProtectedRoute>
             }>
-                <Route index element={<HospitalDashboard />} />
+                <Route index element={<MobileHospitalDashboard />} />
                 <Route path="appointments" element={<HospitalAppointments />} />
                 <Route path="ledger" element={<HospitalLedger />} />
                 <Route path="services" element={<HospitalServiceBookings />} />
