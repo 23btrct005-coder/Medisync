@@ -71,6 +71,12 @@ const MobileLayout = () => {
     const primaryNav = getPrimaryNav();
     const secondaryNav = getSecondaryNav();
 
+    const triggerHaptic = () => {
+        if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
+            window.navigator.vibrate(10);
+        }
+    };
+
     return (
         <div className="flex flex-col h-[100dvh] bg-[#F8FAFC] overflow-hidden">
             {/* ── MOBILE HEADER ── */}
@@ -79,7 +85,13 @@ const MobileLayout = () => {
                     <div className="h-8 w-8 bg-gradient-to-br from-primary-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-primary/20">
                         <Activity size={18} className="text-white" />
                     </div>
-                    <span className="text-sm font-black tracking-tighter text-slate-800 uppercase">MediSync <span className="text-primary-600">Pro</span></span>
+                    <div className="flex flex-col">
+                        <span className="text-[10px] font-black tracking-tighter text-slate-800 uppercase leading-none">MediSync <span className="text-primary-600">Pro</span></span>
+                        <div className="flex items-center gap-1 mt-0.5">
+                            <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="text-[7px] font-black text-emerald-600 uppercase tracking-widest">Secure Node Active</span>
+                        </div>
+                    </div>
                 </div>
                 <div className="flex items-center gap-3">
                     <button className="h-9 w-9 flex items-center justify-center text-slate-500 hover:text-primary transition-colors">
@@ -100,7 +112,13 @@ const MobileLayout = () => {
             <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-2xl border-t border-slate-100 px-4 pt-2 pb-safe z-[200] shadow-[0_-8px_30px_rgba(0,0,0,0.04)]">
                 <div className="flex justify-around items-center h-14 max-w-lg mx-auto">
                     {primaryNav.slice(0, 2).map((item) => (
-                        <NavLink key={item.name} to={item.path} end className={({ isActive }) => `flex flex-col items-center gap-1 transition-all ${isActive ? 'text-primary-600' : 'text-slate-400'}`}>
+                        <NavLink 
+                            key={item.name} 
+                            to={item.path} 
+                            onClick={triggerHaptic}
+                            end 
+                            className={({ isActive }) => `flex flex-col items-center gap-1 transition-all ${isActive ? 'text-primary-600' : 'text-slate-400'}`}
+                        >
                             {item.icon}
                             <span className="text-[9px] font-bold uppercase tracking-tight">{item.name}</span>
                         </NavLink>
@@ -108,14 +126,19 @@ const MobileLayout = () => {
 
                     {/* Center FAB style Menu */}
                     <button 
-                        onClick={() => setIsMenuOpen(true)}
+                        onClick={() => { triggerHaptic(); setIsMenuOpen(true); }}
                         className="relative -top-4 h-14 w-14 bg-primary-600 rounded-full flex items-center justify-center shadow-xl shadow-primary/40 text-white active:scale-90 transition-transform"
                     >
                         <Menu size={24} />
                     </button>
 
                     {primaryNav.slice(2, 4).map((item) => (
-                        <NavLink key={item.name} to={item.path} className={({ isActive }) => `flex flex-col items-center gap-1 transition-all ${isActive ? 'text-primary-600' : 'text-slate-400'}`}>
+                        <NavLink 
+                            key={item.name} 
+                            to={item.path} 
+                            onClick={triggerHaptic}
+                            className={({ isActive }) => `flex flex-col items-center gap-1 transition-all ${isActive ? 'text-primary-600' : 'text-slate-400'}`}
+                        >
                             <div className="relative">
                                 {item.icon}
                                 {item.badge > 0 && <div className="absolute -top-1 -right-1 bg-rose-500 text-white text-[8px] px-1 rounded-full">{item.badge}</div>}
@@ -143,7 +166,7 @@ const MobileLayout = () => {
                         {secondaryNav.map((item) => (
                             <button 
                                 key={item.name} 
-                                onClick={() => { navigate(item.path); setIsMenuOpen(false); }}
+                                onClick={() => { triggerHaptic(); navigate(item.path); setIsMenuOpen(false); }}
                                 className="flex flex-col items-center gap-3 p-4 bg-slate-50 rounded-3xl active:bg-slate-100 transition-colors group"
                             >
                                 <div className="h-12 w-12 bg-white rounded-2xl flex items-center justify-center text-slate-600 shadow-sm group-active:scale-90 transition-transform">
@@ -155,7 +178,7 @@ const MobileLayout = () => {
                     </div>
 
                     <button 
-                        onClick={() => { logout(); navigate('/login'); }}
+                        onClick={() => { triggerHaptic(); logout(); navigate('/login'); }}
                         className="w-full py-4 bg-rose-50 text-rose-600 rounded-3xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2"
                     >
                         <LogOut size={16} />
