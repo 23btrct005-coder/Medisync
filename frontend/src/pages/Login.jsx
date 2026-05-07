@@ -44,7 +44,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8 relative">
-      <div className="max-w-md w-full space-y-8 p-10 bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-slate-100">
+      <div className="max-w-md w-full space-y-8 p-6 md:p-10 bg-white rounded-3xl md:rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-slate-100">
         <div className="text-center">
           <div className="mx-auto h-16 w-16 bg-blue-50 text-primary-600 rounded-full flex items-center justify-center mb-6">
             <Activity size={32} className="text-blue-500" />

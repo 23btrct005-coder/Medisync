@@ -10,6 +10,7 @@ import api from '../api/axiosConfig';
 import ProfilePhotoUpload from '../components/ProfilePhotoUpload';
 import DocumentUpload from '../components/DocumentUpload';
 import LegalFooter from '../components/LegalFooter';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 const HospitalDepartments = [
   "Cardiology", "Neurology", "Pediatrics", "Orthopedics", "Oncology", 
@@ -38,26 +39,48 @@ const PREDEFINED_DOCTOR_SERVICES = [
     "Health Screening"
 ];
 
-const StepIndicator = ({ currentStep, totalSteps }) => (
-  <div className="flex items-center justify-between mb-8 max-w-sm mx-auto">
-    {[...Array(totalSteps)].map((_, i) => (
-      <React.Fragment key={i}>
-        <div className={`relative flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-500 ${i + 1 <= currentStep ? 'bg-primary-600 border-primary-600 text-white' : 'bg-white border-slate-200 text-slate-300'}`}>
-          {i + 1 < currentStep ? <CheckCircle size={20} /> : <span className="font-black text-sm">{i + 1}</span>}
-          {i + 1 === currentStep && <div className="absolute inset-0 bg-primary-600/30 blur-lg rounded-full animate-pulse" />}
+const StepIndicator = ({ currentStep, totalSteps, isMobile }) => {
+  const progress = (currentStep / totalSteps) * 100;
+  
+  if (isMobile) {
+    return (
+      <div className="mb-8 space-y-2">
+        <div className="flex justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
+          <span>Progress</span>
+          <span className="text-primary-600">Step {currentStep} of {totalSteps}</span>
         </div>
-        {i < totalSteps - 1 && (
-          <div className={`flex-1 h-0.5 mx-2 transition-all duration-500 ${i + 1 < currentStep ? 'bg-primary-600' : 'bg-slate-100'}`} />
-        )}
-      </React.Fragment>
-    ))}
-  </div>
-);
+        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-primary-600 transition-all duration-500 ease-out shadow-[0_0_10px_rgba(37,99,235,0.4)]"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-between mb-8 max-w-sm mx-auto">
+      {[...Array(totalSteps)].map((_, i) => (
+        <React.Fragment key={i}>
+          <div className={`relative flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-500 ${i + 1 <= currentStep ? 'bg-primary-600 border-primary-600 text-white' : 'bg-white border-slate-200 text-slate-300'}`}>
+            {i + 1 < currentStep ? <CheckCircle size={20} /> : <span className="font-black text-sm">{i + 1}</span>}
+            {i + 1 === currentStep && <div className="absolute inset-0 bg-primary-600/30 blur-lg rounded-full animate-pulse" />}
+          </div>
+          {i < totalSteps - 1 && (
+            <div className={`flex-1 h-0.5 mx-2 transition-all duration-500 ${i + 1 < currentStep ? 'bg-primary-600' : 'bg-slate-100'}`} />
+          )}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+};
 
 const Register = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const context = searchParams.get('context') || 'patient'; // patient or professional
+  const isMobile = useIsMobile();
   
   const [role, setRole] = useState(context === 'professional' ? 'ROLE_HOSPITAL_ADMIN' : 'ROLE_PATIENT');
   const [currentStep, setCurrentStep] = useState(1);
@@ -488,7 +511,7 @@ const Register = () => {
             <form className="space-y-10" onSubmit={handleRegister}>
               {role === 'ROLE_PATIENT' ? (
                 <div className="space-y-10">
-                  <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
+                  <StepIndicator currentStep={currentStep} totalSteps={totalSteps} isMobile={isMobile} />
                   
                   {currentStep === 1 && (
                     <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-6">
@@ -643,8 +666,16 @@ const Register = () => {
                     </div>
                   )}
 
-                  <div className="flex justify-between items-center pt-6">
-                    {currentStep > 1 && <button type="button" onClick={prevStep} className="flex items-center gap-2 text-sm font-black text-slate-400 uppercase tracking-widest hover:text-slate-600"><ArrowLeft size={18} /> Previous</button>}
+                  <div className={`flex justify-between items-center pt-6 ${isMobile ? 'fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl p-4 border-t border-slate-100 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]' : ''}`}>
+                    {currentStep > 1 && (
+                      <button 
+                        type="button" 
+                        onClick={prevStep} 
+                        className={`flex items-center gap-2 text-sm font-black uppercase tracking-widest transition-all ${isMobile ? 'text-slate-500 bg-slate-50 px-5 py-4 rounded-2xl border border-slate-100' : 'text-slate-400 hover:text-slate-600'}`}
+                      >
+                        <ArrowLeft size={isMobile ? 16 : 18} /> {isMobile ? '' : 'Previous'}
+                      </button>
+                    )}
                     <div className="flex-1" />
                     {currentStep < totalSteps ? (
                       <button 
@@ -668,15 +699,23 @@ const Register = () => {
                             }
                             setError('');
                             nextStep();
+                            if (isMobile) window.scrollTo({ top: 0, behavior: 'smooth' });
                         }} 
-                        className="flex items-center gap-2 bg-primary-600 text-white px-10 py-4 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-primary-700 transition-all shadow-xl shadow-primary-100 active:scale-95"
+                        className={`flex items-center gap-2 bg-primary-600 text-white rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-primary-700 transition-all shadow-xl shadow-primary-100 active:scale-95 ${isMobile ? 'px-8 py-4 flex-1 ml-4 justify-center' : 'px-10 py-4'}`}
                       >
                         Continue <ChevronRight size={18} />
                       </button>
                     ) : (
-                      <button type="submit" disabled={loading} className="flex items-center gap-2 bg-green-600 text-white px-12 py-4 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-green-700 transition-all shadow-xl shadow-green-100 active:scale-95 disabled:opacity-50">{loading ? 'Processing...' : 'Complete Registration'} <CheckCircle size={18} /></button>
+                      <button 
+                        type="submit" 
+                        disabled={loading} 
+                        className={`flex items-center gap-2 bg-green-600 text-white rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-green-700 transition-all shadow-xl shadow-green-100 active:scale-95 disabled:opacity-50 ${isMobile ? 'px-8 py-4 flex-1 ml-4 justify-center' : 'px-12 py-4'}`}
+                      >
+                        {loading ? 'Processing...' : (isMobile ? 'Complete' : 'Complete Registration')} <CheckCircle size={18} />
+                      </button>
                     )}
                   </div>
+                  {isMobile && <div className="h-24" /> /* Spacer for sticky footer */}
                 </div>
               ) : (
                 <div className="space-y-10">

@@ -28,7 +28,7 @@ const Landing = () => {
       </div>
 
       {/* Navigation */}
-      <nav className="relative z-50 flex items-center justify-between px-6 py-6 max-w-7xl mx-auto">
+      <nav className="relative z-50 flex items-center justify-between px-4 md:px-6 py-6 max-w-7xl mx-auto">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary-600 rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.2)]">
             <Activity size={24} className="text-white" />
@@ -42,24 +42,24 @@ const Landing = () => {
           <a href="#ai" className="hover:text-primary-600 transition-colors">AI Engine</a>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
           <button 
             onClick={() => navigate('/login')}
-            className="px-6 py-2 text-sm font-bold text-slate-600 hover:text-primary-600 transition-colors"
+            className="px-3 md:px-6 py-2 text-xs md:sm font-bold text-slate-600 hover:text-primary-600 transition-colors"
           >
             Log In
           </button>
           <button 
             onClick={() => navigate('/register')}
-            className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-primary-600/20 active:scale-95"
+            className="px-4 md:px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs md:sm font-bold transition-all shadow-lg shadow-primary-600/20 active:scale-95"
           >
-            Join Now
+            Join
           </button>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <main className="relative z-10 pt-20 pb-32 px-6">
+      <main className="relative z-10 pt-10 md:pt-20 pb-32 px-6">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           
           <motion.div 
@@ -72,7 +72,7 @@ const Landing = () => {
               <Zap size={12} /> Unified Healthcare OS
             </div>
 
-            <h1 className="text-6xl md:text-8xl font-black leading-[0.9] tracking-tighter text-slate-900">
+            <h1 className="text-5xl md:text-8xl font-black leading-[1] md:leading-[0.9] tracking-tighter text-slate-900">
               Secure Healthcare, <br />
               <span className="text-primary-600 italic">Synced</span> Effortlessly.
             </h1>
