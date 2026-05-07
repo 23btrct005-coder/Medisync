@@ -142,7 +142,7 @@ const BookingModal = ({ doctor, onClose, onBookingSuccess }) => {
             </div>
 
             {/* Type Selection */}
-            <div className={`grid gap-3 mb-6 ${doctor.onlineConsultation ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            <div className={`grid gap-3 mb-6 ${doctor.onlineConsultation ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
                 {doctor.onlineConsultation && (
                     <button 
                       onClick={() => setType('ONLINE')}
@@ -189,7 +189,7 @@ const BookingModal = ({ doctor, onClose, onBookingSuccess }) => {
                      ) : slots.length === 0 ? (
                          <p className="text-sm text-slate-500 text-center py-4 bg-slate-50 rounded-xl italic">No slots available for this day.</p>
                      ) : (
-                         <div className="grid grid-cols-3 gap-2">
+                         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                              {slots.map(slot => (
                                  <button 
                                    key={slot}

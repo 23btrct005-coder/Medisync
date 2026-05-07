@@ -1,0 +1,12 @@
+#!/usr/bin/expect -f
+set timeout -1
+set password "PVYZKN@etxcm588"
+set ip "164.52.213.234"
+
+spawn ssh -o StrictHostKeyChecking=no root@$ip "find / -name certbot -type f 2>/dev/null"
+expect {
+    "*password:*" {
+        send "$password\r"
+    }
+}
+interact

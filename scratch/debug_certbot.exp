@@ -1,0 +1,12 @@
+#!/usr/bin/expect -f
+set timeout 300
+set password "PVYZKN@etxcm588"
+set ip "164.52.213.234"
+
+spawn ssh -o StrictHostKeyChecking=no root@$ip "apt-get update && apt-get install -y certbot python3-certbot-nginx && certbot certonly --nginx -d medisync-hospital.duckdns.org --non-interactive --agree-tos --register-unsafely-without-email"
+expect {
+    "*password:*" {
+        send "$password\r"
+    }
+}
+expect eof

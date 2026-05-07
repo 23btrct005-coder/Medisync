@@ -41,9 +41,15 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .headers(headers -> headers
+                .frameOptions(frame -> frame.deny())
+                .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com https://cdn.razorpay.com https://maps.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: https://maps.gstatic.com https://maps.googleapis.com; frame-src 'self' https://api.razorpay.com https://*.google.com; connect-src 'self' https://bwjmzottkkxrdztqqeju.supabase.co https://nominatim.openstreetmap.org ws: wss: https://lumberjack.razorpay.com https://api.razorpay.com https://maps.googleapis.com;"))
+                .permissionsPolicy(permissions -> permissions.policy("geolocation=(self), camera=(self), microphone=(self)"))
+            )
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/index.html", "/*.js", "/*.css", "/*.svg", "/*.png", "/*.ico", "/*.webmanifest", "/static/**", "/assets/**").permitAll()
                 .requestMatchers("/api/auth/**", "/ws/**", "/api/hospital/**", "/api/appointments/**", "/api/chat/**").permitAll()
+                // Broadly permit all non-API routes so the frontend can handle routing
+                .requestMatchers(request -> !request.getServletPath().startsWith("/api")).permitAll()
                 .anyRequest().authenticated()
             );
         
@@ -55,11 +61,10 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
+            "https://medisync-hos.ddns.net",
             "https://medisync-vert-five.vercel.app",
             "http://localhost:5173",
-            "http://localhost:3000",
-            "http://164.52.213.234:8080",
-            "http://164.52.213.234"
+            "http://localhost:3000"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         

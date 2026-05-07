@@ -4,7 +4,7 @@ import {
   Search, Filter, Calendar, Clock, ChevronRight,
   User, Star, MapPin, Video, CheckCircle2, AlertCircle,
   ArrowLeft, CreditCard, Loader2, Sparkles, RefreshCw, QrCode, X, Activity,
-  Navigation, Droplets, Ambulance, Siren
+  Navigation, Droplets, Ambulance, Siren, ShieldCheck
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api/axiosConfig';
@@ -147,12 +147,17 @@ const Booking = () => {
     if (service === 'Ambulance Services') {
         setShowAmbulanceOverlay(true);
         setLocating(true);
+        if (!navigator.geolocation) {
+            toast.error('Clinical GPS not available in this browser context. Showing all hospitals.');
+            setSelectedService(service);
+            return;
+        }
+
         navigator.geolocation.getCurrentPosition(
             async (pos) => {
                 const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                 setUserLocation(loc);
                 
-                // Sync with backend (Store don't just keep in frontend)
                 try {
                     await api.post('/patient/location', { latitude: loc.lat, longitude: loc.lng });
                 } catch (e) {
@@ -162,15 +167,16 @@ const Booking = () => {
                 setLocating(false);
                 setShowAmbulanceOverlay(false);
                 setSelectedService(service);
-                // Will trigger fetchHospitalsByService via useEffect
+                toast.success('Clinical GPS synchronized. Showing nearest institutions.', { icon: '📍' });
             },
             (err) => {
                 setLocating(false);
                 setShowAmbulanceOverlay(false);
-                toast.error('Location access denied. Showing all hospitals.');
+                // Silent fallback: just show all institutions instead of a red error toast
                 setSelectedService(service);
+                console.warn("Location access restricted by browser security model. Falling back to global nodes.");
             },
-            { timeout: 10000, enableHighAccuracy: true }
+            { timeout: 5000, enableHighAccuracy: true }
         );
         return;
     }
@@ -260,6 +266,7 @@ const Booking = () => {
             toast.error("Please select a time slot.");
             return;
         }
+        if (isBooking) return; // Click Shield
         setIsBooking(true);
         try {
             const { data: order } = await api.post('appointments/book-service', {
@@ -268,21 +275,26 @@ const Booking = () => {
                 date: bookingDate,
                 slot: selectedSlot
             });
+            // Finalize state before processing to prevent race conditions
+            setIsBooking(false); 
             processOrder(order);
         } catch (err) {
-            toast.error(err.response?.data?.message || "Service booking failed.");
-        } finally {
             setIsBooking(false);
+            console.error("SERVICE_BOOKING_FAILURE:", err);
+            toast.error(err.response?.data?.message || "Service booking failed.");
         }
     }
   };
 
   const processOrder = (order) => {
+      if (!order) return;
       console.log("SECURE_ORDER_SYNC: Order created", order);
 
       if (order.isDemo) {
-        toast.info("Clinical Demo Mode active. Finalizing without payment...");
-        navigate('/dashboard/sessions', { state: { autoOpenId: order.appointmentId } });
+        toast.success("Clinical Protocol Authorized. Synchronizing session...");
+        setTimeout(() => {
+          navigate('/dashboard/sessions', { state: { autoOpenId: order.appointmentId } });
+        }, 800);
         return;
       }
 
@@ -290,6 +302,13 @@ const Booking = () => {
         setUpiOrderData(order);
         setShowUpiModal(true);
         return;
+      }
+
+      // ── RAZORPAY SECURITY SHIELD ──
+      if (typeof window.Razorpay === 'undefined') {
+          console.error("GATEWAY_UNAVAILABLE: Razorpay SDK not found in clinical context.");
+          toast.error("Clinical payment gateway is temporarily unreachable. Please ensure you are on a stable network or use the Secure Tunnel.");
+          return;
       }
 
       const options = {
@@ -311,7 +330,7 @@ const Booking = () => {
                 razorpay_signature: response.razorpay_signature
               });
               toast.success("Transaction Authorized! Session Synchronized.");
-              setIsBooking(false); // Reset before navigation
+              setIsBooking(false); 
               navigate('/dashboard/sessions', { state: { autoOpenId: order.appointmentId } });
             } catch (err) {
               if (retries > 0) {
@@ -342,8 +361,13 @@ const Booking = () => {
         }
       };
 
-      const rzp = new window.Razorpay(options);
-      rzp.open();
+      try {
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+      } catch (e) {
+        console.error("RAZORPAY_INITIALIZATION_ERROR:", e);
+        toast.error("Failed to initialize payment gateway. Please refresh.");
+      }
   };
 
   const handleSync = async () => {
@@ -374,6 +398,31 @@ const Booking = () => {
 
   return (
     <div className="space-y-10 pb-20 animate-in fade-in duration-700">
+      {/* Secure Tunnel Guidance Banner */}
+      {window.location.protocol === 'http:' && (
+        <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-4 bg-amber-50 border-2 border-amber-100 rounded-[2rem] flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm"
+        >
+            <div className="flex items-center gap-4">
+                <div className="p-3 bg-amber-500 text-white rounded-2xl shadow-lg shadow-amber-500/20">
+                    <ShieldCheck size={24} />
+                </div>
+                <div>
+                    <h4 className="text-xs font-black text-amber-700 uppercase tracking-widest">Secure Tunnel Required for GPS</h4>
+                    <p className="text-[10px] text-amber-600/70 font-bold uppercase mt-1">Modern browsers block clinical location access on non-secure links.</p>
+                </div>
+            </div>
+            <button 
+                onClick={() => window.location.href = `https://${window.location.hostname}`}
+                className="px-6 py-3 bg-amber-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-700 transition-all shadow-md active:scale-95 whitespace-nowrap"
+            >
+                Switch to Secure Tunnel
+            </button>
+        </motion.div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
@@ -761,7 +810,7 @@ const Booking = () => {
                   <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
                     <Video size={18} className="text-primary-500" /> Health Sync Modality
                   </h3>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {[
                       { id: 'ONLINE', name: 'Virtual Sync', icon: Video, desc: 'High-def clinical video session', disabled: !selectedDoctor.onlineConsultation },
                       { id: 'OFFLINE', name: 'Clinic Visit', icon: MapPin, desc: 'In-person physical assessment', disabled: false }

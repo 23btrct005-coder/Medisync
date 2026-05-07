@@ -240,9 +240,9 @@ const RegisterPro = () => {
                   <InputField label="National ID Number" name="nationalId" placeholder="UIDAI/Voter/Passport" />
                   <InputField label="Marital Status" name="maritalStatus" options={['Single', 'Married', 'Divorced', 'Widowed']} />
                 </div>
-                <div className="flex gap-4 pt-4">
-                  <button onClick={prevStep} className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-200 transition-all">Back</button>
-                  <button onClick={nextStep} className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10">Proceed</button>
+                <div className="flex flex-col md:flex-row gap-4 pt-4">
+                  <button onClick={prevStep} className="w-full md:flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-200 transition-all order-2 md:order-1">Back</button>
+                  <button onClick={nextStep} className="w-full md:flex-1 py-4 bg-slate-900 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10 order-1 md:order-2">Proceed</button>
                 </div>
               </motion.div>
             )}
@@ -292,8 +292,8 @@ const RegisterPro = () => {
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-4 pt-4">
-                  <button onClick={prevStep} className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-200 transition-all">Back</button>
+                <div className="flex flex-col md:flex-row gap-4 pt-4">
+                  <button onClick={prevStep} className="w-full md:flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-200 transition-all order-2 md:order-1">Back</button>
                   <button 
                     onClick={() => {
                         if (!formData.emergencyContactName || !formData.emergencyContactRelationship || !formData.emergencyContactPhone) {
@@ -304,7 +304,7 @@ const RegisterPro = () => {
                         setError('');
                         nextStep();
                     }} 
-                    className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10"
+                    className="w-full md:flex-1 py-4 bg-slate-900 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10 order-1 md:order-2"
                   >
                     Proceed
                   </button>
@@ -351,9 +351,9 @@ const RegisterPro = () => {
                   </p>
                 </div>
 
-                <div className="flex gap-4 pt-4">
-                  <button onClick={prevStep} className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-200 transition-all">Back</button>
-                  <button onClick={handleFinalSubmit} disabled={loading} className="flex-1 py-4 bg-primary-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-primary-700 transition-all shadow-xl shadow-primary-600/20 active:scale-95">
+                <div className="flex flex-col md:flex-row gap-4 pt-4">
+                  <button onClick={prevStep} className="w-full md:flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-200 transition-all order-2 md:order-1">Back</button>
+                  <button onClick={handleFinalSubmit} disabled={loading} className="w-full md:flex-1 py-4 bg-primary-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-primary-700 transition-all shadow-xl shadow-primary-600/20 active:scale-95 order-1 md:order-2">
                     {loading ? 'Finalizing...' : 'Complete Onboarding'}
                   </button>
                 </div>

@@ -115,7 +115,7 @@ const AiConcierge = () => {
 
     const requestLocation = () => {
         if (!navigator.geolocation) {
-            toast.error("Geolocation not supported by clinical node");
+            setMessages(prev => [...prev, { role: 'ai', text: '📡 Geolocation logic is restricted by your browser in this non-secure context. To unlock high-precision clinical mapping and nearby hospital detection, please switch to the **Secure Tunnel (HTTPS)**.' }]);
             return;
         }
         
@@ -125,12 +125,14 @@ const AiConcierge = () => {
             (pos) => {
                 const locData = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                 setLocation(locData);
-                setMessages(prev => [...prev, { role: 'ai', text: `📍 Location Synchronized: [${locData.lat.toFixed(4)}, ${locData.lng.toFixed(4)}]. I can now provide hyper-localized hospital triage.` }]);
+                setMessages(prev => [...prev, { role: 'ai', text: `📍 Location Synchronized: [${locData.lat.toFixed(4)}, ${locData.lng.toFixed(4)}]. I can now provide hyper-localized clinical insights.` }]);
                 speak("Location synchronized. I am now providing localized triage.");
             },
             (err) => {
-                setMessages(prev => [...prev, { role: 'ai', text: '⚠️ Geolocation Refused. I will continue using global clinical logic.' }]);
-            }
+                console.warn("GEOLOCATION_RESTRICTED:", err);
+                setMessages(prev => [...prev, { role: 'ai', text: '⚠️ Geolocation Restricted. This usually occurs on insecure links (HTTP). I will continue using your profile\'s medical node for clinical context, or you can switch to the **Secure Tunnel** for full precision.' }]);
+            },
+            { timeout: 8000, enableHighAccuracy: true }
         );
     };
 

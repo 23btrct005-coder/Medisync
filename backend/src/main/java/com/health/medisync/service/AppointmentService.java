@@ -330,12 +330,12 @@ public class AppointmentService {
                 conflicts = appointmentRepository.findConflictingServiceAppointments(hId, serviceName, date, slot, expiryTime);
             }
             
-            // Safety Fallback: Assign the first available doctor from the hospital to satisfy NOT NULL constraints
-            if (!hospital.getDoctors().isEmpty()) {
+            // Safety Fallback: Assign the first available doctor from the hospital if exists
+            if (hospital.getDoctors() != null && !hospital.getDoctors().isEmpty()) {
                 doctor = hospital.getDoctors().get(0);
             }
         } else if (facilityId.startsWith("doc_")) {
-            Long dId = Long.valueOf(facilityId.substring(4));
+            Long dId = Long.valueOf(facilityId.substring(4).split("\\.")[0]);
             doctor = doctorRepository.findById(dId)
                 .orElseThrow(() -> new RuntimeException("Clinic not found"));
             conflicts = appointmentRepository.findConflictingClinicServiceAppointments(dId, serviceName, date, slot, expiryTime);
@@ -348,14 +348,14 @@ public class AppointmentService {
                 conflicts = new ArrayList<>(); // Emergency bypass
             }
         } else {
-            Long hId = Long.valueOf(facilityId);
+            Long hId = Long.valueOf(facilityId.split("\\.")[0]);
             hospital = hospitalRepository.findById(hId)
                 .orElseThrow(() -> new RuntimeException("Facility ID resolution failure"));
             conflicts = appointmentRepository.findConflictingServiceAppointments(hId, serviceName, date, slot, expiryTime);
             upiId = hospital.getUpiId();
             preferredPaymentMode = hospital.getPreferredPaymentMode() != null ? hospital.getPreferredPaymentMode() : "UPI";
             
-            if (!hospital.getDoctors().isEmpty()) {
+            if (hospital.getDoctors() != null && !hospital.getDoctors().isEmpty()) {
                 doctor = hospital.getDoctors().get(0);
             }
         }
@@ -649,7 +649,8 @@ public class AppointmentService {
         return doctors.stream()
                 .map(d -> {
                     DoctorDTO dto = new DoctorDTO(d);
-                    Double avg = avgRatings.getOrDefault(d.getId(), 0.0);
+                    Object avgObj = avgRatings.get(d.getId());
+                    double avg = (avgObj != null) ? (Double)avgObj : 0.0;
                     dto.setAverageRating(Math.round(avg * 10.0) / 10.0);
                     dto.setRatingCount(counts.getOrDefault(d.getId(), 0L));
                     return dto;

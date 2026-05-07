@@ -116,9 +116,9 @@ const HospitalDashboard = () => {
             </div>
 
             {/* Top AI Priority Banner */}
-            <div className="bg-primary-50 p-6 rounded-3xl border border-primary-100 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-white rounded-2xl shadow-sm text-primary-600">
+            <div className="bg-primary-50 p-6 rounded-3xl border border-primary-100 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
+              <div className="flex flex-col sm:flex-row items-center gap-4">
+                <div className="p-3 bg-white rounded-2xl shadow-sm text-primary-600 shrink-0">
                   <Zap size={24} />
                 </div>
                 <div>
@@ -126,7 +126,7 @@ const HospitalDashboard = () => {
                   <p className="text-2xl font-black text-primary-700">Trauma Response</p>
                 </div>
               </div>
-              <div className="px-4 py-2 bg-white rounded-xl text-primary-600 font-black text-xs border border-primary-100 uppercase tracking-widest">
+              <div className="px-4 py-2 bg-white rounded-xl text-primary-600 font-black text-xs border border-primary-100 uppercase tracking-widest shrink-0">
                 Live Priority
               </div>
             </div>
@@ -155,8 +155,8 @@ const HospitalDashboard = () => {
                     <div className="bg-slate-900 rounded-[3.5rem] p-12 text-white shadow-2xl shadow-slate-900/40 relative overflow-hidden group h-full flex flex-col justify-between">
                         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 -mr-48 -mt-48 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700" />
                         <div className="relative z-10 space-y-10">
-                            <div className="flex items-center gap-6">
-                                <div className="p-5 bg-white/10 rounded-[2rem] backdrop-blur-md">
+                            <div className="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
+                                <div className="p-5 bg-white/10 rounded-[2rem] backdrop-blur-md shrink-0">
                                     <Megaphone size={32} className="text-primary" />
                                 </div>
                                 <div>
@@ -188,9 +188,9 @@ const HospitalDashboard = () => {
                 {/* AI SEARCH TRENDS SECTION */}
                 <div className="lg:col-span-5">
                     <div className="bg-white border border-slate-100 rounded-[3.5rem] p-10 shadow-sm h-full flex flex-col">
-                        <div className="flex items-center justify-between mb-8">
-                            <div className="flex items-center gap-4">
-                                <div className="p-4 bg-primary-50 text-primary-600 rounded-2xl">
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8 text-center sm:text-left">
+                            <div className="flex flex-col sm:flex-row items-center gap-4">
+                                <div className="p-4 bg-primary-50 text-primary-600 rounded-2xl shrink-0">
                                     <BarChart3 size={24} />
                                 </div>
                                 <div>
@@ -198,7 +198,7 @@ const HospitalDashboard = () => {
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Patient Query Dynamics</p>
                                 </div>
                             </div>
-                            <div className="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-[10px] font-black uppercase">Live Telemetry</div>
+                            <div className="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-[10px] font-black uppercase shrink-0">Live Telemetry</div>
                         </div>
 
                         <div className="flex-1 space-y-6">

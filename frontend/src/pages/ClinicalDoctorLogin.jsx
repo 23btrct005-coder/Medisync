@@ -207,11 +207,12 @@ const DoctorRegisterForm = ({ onBack }) => {
 
   const handleGetCurrentLocation = () => {
     if (!navigator.geolocation) {
-      setError('Geolocation is not supported by your browser.');
+      setError('Clinical GPS is restricted in this non-secure context. Please enter your clinic details manually.');
       return;
     }
 
     setLocating(true);
+    setError('');
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
@@ -237,17 +238,18 @@ const DoctorRegisterForm = ({ onBack }) => {
             setAvailableCities(geographyData[state]);
           }
 
-          setSuccess('Location detected successfully!');
+          setSuccess('Clinical location detected successfully!');
         } catch (err) {
-          setError('Failed to fetch address details. Please enter manually.');
+          setError('Failed to fetch clinical address details. Please proceed manually.');
         } finally {
           setLocating(false);
         }
       },
       (err) => {
-        setError('Location access denied. Please enter address manually.');
+        setError('Clinical GPS access denied by browser. Please enter your clinic address manually.');
         setLocating(false);
-      }
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
     );
   };
 

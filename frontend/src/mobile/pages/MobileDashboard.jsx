@@ -6,7 +6,7 @@ import {
     Heart, Activity, Zap, TrendingUp, Calendar, 
     MessageSquare, AlertCircle, Plus, ChevronRight, 
     Stethoscope, FileText, Pill, ShieldCheck, Wallet,
-    Clock, MapPin, Zap as Flash, Bell
+    Clock, MapPin, Zap as Flash, Bell, ClipboardList
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -103,29 +103,6 @@ const MobileDashboard = () => {
                 </button>
             </motion.div>
 
-            {/* ── LIVE VITALS REEL ── */}
-            <motion.div variants={item} className="space-y-3">
-                <div className="flex items-center justify-between px-1">
-                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Real-time Telemetry</h3>
-                    <div className="flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                        <span className="text-[8px] font-bold text-emerald-600 uppercase">Live Sync</span>
-                    </div>
-                </div>
-                <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 snap-x">
-                    {[
-                        { label: 'Pulse', value: vitals?.hr || '—', unit: 'BPM', icon: <Heart size={16} />, color: 'text-rose-600 bg-rose-50' },
-                        { label: 'SpO2', value: vitals?.spo2 ? `${vitals.spo2}%` : '—', unit: 'O2', icon: <Zap size={16} />, color: 'text-blue-600 bg-blue-50' },
-                        { label: 'Temp', value: vitals?.temp ? `${vitals.temp}°C` : '—', unit: 'C', icon: <TrendingUp size={16} />, color: 'text-orange-600 bg-orange-50' },
-                    ].map((v, i) => (
-                        <div key={i} className="min-w-[120px] bg-white p-4 rounded-3xl border border-slate-100 flex flex-col items-center gap-2 snap-center">
-                            <div className={`p-2 rounded-xl ${v.color}`}>{v.icon}</div>
-                            <span className="text-lg font-black text-slate-800">{v.value}</span>
-                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{v.label}</span>
-                        </div>
-                    ))}
-                </div>
-            </motion.div>
 
             {/* ── UPCOMING PROTOCOL ── */}
             {upcoming && (

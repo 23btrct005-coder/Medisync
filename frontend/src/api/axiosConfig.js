@@ -1,7 +1,7 @@
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-export const rawBaseURL = 'http://164.52.213.234:8080';
+export const rawBaseURL = 'https://medisync-hos.ddns.net';
 const apiBaseURL = `${rawBaseURL}/api`;
 
 const api = axios.create({

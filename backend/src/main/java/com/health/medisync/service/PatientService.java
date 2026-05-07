@@ -231,9 +231,17 @@ public class PatientService {
         );
     }
 
+    @Transactional(readOnly = true)
     public List<Doctor> getLinkedDoctors(String username) {
         Patient patient = getPatientProfile(username);
-        java.util.Set<Doctor> allDoctors = new java.util.HashSet<>(patient.getDoctors());
+        java.util.Set<Doctor> allDoctors = new java.util.HashSet<>();
+        
+        // Safely add directly linked doctors
+        if (patient.getDoctors() != null) {
+            patient.getDoctors().stream()
+                .filter(java.util.Objects::nonNull)
+                .forEach(allDoctors::add);
+        }
         
         // Also add doctors with confirmed (BOOKED) appointments
         List<com.health.medisync.model.Appointment> appointments = appointmentRepository.findByPatientIdAndStatusIn(
@@ -243,7 +251,10 @@ public class PatientService {
         );
         
         for (com.health.medisync.model.Appointment appt : appointments) {
-            allDoctors.add(appt.getDoctor());
+            // Institutional services might not have an assigned doctor - filter nulls to avoid NPE in List.copyOf
+            if (appt.getDoctor() != null) {
+                allDoctors.add(appt.getDoctor());
+            }
         }
         
         return List.copyOf(allDoctors);
@@ -275,7 +286,7 @@ public class PatientService {
                     com.health.medisync.model.Appointment.AppointmentStatus.AWAITING_VERIFICATION)
         );
         for (com.health.medisync.model.Appointment appt : appointments) {
-            if (appt.getDoctor().getId().equals(doctorId)) {
+            if (appt.getDoctor() != null && appt.getDoctor().getId().equals(doctorId)) {
                 appt.setStatus(com.health.medisync.model.Appointment.AppointmentStatus.CANCELLED);
                 appointmentRepository.save(appt);
             }

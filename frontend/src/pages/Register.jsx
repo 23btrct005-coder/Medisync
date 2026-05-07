@@ -323,7 +323,7 @@ const Register = () => {
 
   const handleGetCurrentLocation = () => {
     if (!navigator.geolocation) {
-      setError("Geolocation is not supported by your browser");
+      setError("Clinical GPS is restricted in this non-secure context. Please enter your address manually.");
       return;
     }
     setLocating(true);
@@ -357,7 +357,6 @@ const Register = () => {
 
           updated.googleMapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
 
-          // Case-insensitive state matching for cascading dropdowns
           const matchingStateKey = Object.keys(geographyData).find(
             s => s.toLowerCase() === detectedState.toLowerCase()
           );
@@ -373,16 +372,16 @@ const Register = () => {
           setSuccess("Location detected successfully!");
           setTimeout(() => setSuccess(""), 3000);
         } catch (err) {
-          setError("Failed to fetch address details");
+          setError("Failed to fetch address details. Please proceed manually.");
         } finally {
           setLocating(false);
         }
       },
       (err) => {
-        setError("Location access denied. Please enable location services.");
+        setError("Clinical GPS access denied by browser. Please enter your residency details manually.");
         setLocating(false);
       },
-      { enableHighAccuracy: true, timeout: 5000 }
+      { enableHighAccuracy: true, timeout: 8000 }
     );
   };
 
@@ -516,16 +515,16 @@ const Register = () => {
                   {currentStep === 1 && (
                     <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-6">
                       <h3 className={sectionHeadClass}><Mail size={16} /> 1. Identity Verification</h3>
-                      <div className="flex gap-3">
+                      <div className="flex flex-col md:flex-row gap-3">
                         <input type="email" name="email" required disabled={emailVerified} value={formData.email} onChange={handleChange} className={`${inputClass} ${emailVerified ? 'bg-green-50 border-green-300' : ''} flex-1`} placeholder="yourname@email.com" />
-                        {!emailVerified && <button type="button" onClick={handleSendOtp} disabled={verifying} className="whitespace-nowrap bg-blue-600 text-white px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 disabled:opacity-50 transition-all shadow-lg shadow-blue-100">{verifying ? '...' : 'Verify'}</button>}
+                        {!emailVerified && <button type="button" onClick={handleSendOtp} disabled={verifying} className="w-full md:w-auto whitespace-nowrap bg-blue-600 text-white px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 disabled:opacity-50 transition-all shadow-lg shadow-blue-100">{verifying ? '...' : 'Verify'}</button>}
                       </div>
                       {otpSent && !emailVerified && (
                         <div className="p-6 bg-slate-50 rounded-2xl border border-blue-100 space-y-4 animate-in zoom-in-95">
                           <label className={labelClass}>Verification Code</label>
-                          <div className="flex gap-3">
+                          <div className="flex flex-col md:flex-row gap-3">
                             <input type="text" maxLength="6" value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))} className="block w-full text-center text-xl font-bold tracking-[0.3em] rounded-xl border-slate-200 px-3 py-3 border focus:ring-primary-500" placeholder="000000" />
-                            <button type="button" onClick={handleVerifyOtp} disabled={verifying} className="bg-blue-600 text-white px-8 py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700">Confirm</button>
+                            <button type="button" onClick={handleVerifyOtp} disabled={verifying} className="w-full md:w-auto bg-blue-600 text-white px-8 py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700">Confirm</button>
                           </div>
                         </div>
                       )}
@@ -666,17 +665,17 @@ const Register = () => {
                     </div>
                   )}
 
-                  <div className={`flex justify-between items-center pt-6 ${isMobile ? 'fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl p-4 border-t border-slate-100 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]' : ''}`}>
+                  <div className={`flex ${isMobile ? 'flex-col-reverse p-4 gap-3 fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]' : 'justify-between items-center pt-6'}`}>
                     {currentStep > 1 && (
                       <button 
                         type="button" 
                         onClick={prevStep} 
-                        className={`flex items-center gap-2 text-sm font-black uppercase tracking-widest transition-all ${isMobile ? 'text-slate-500 bg-slate-50 px-5 py-4 rounded-2xl border border-slate-100' : 'text-slate-400 hover:text-slate-600'}`}
+                        className={`flex items-center gap-2 text-sm font-black uppercase tracking-widest transition-all ${isMobile ? 'w-full justify-center text-slate-500 bg-slate-50 px-5 py-4 rounded-2xl border border-slate-100' : 'text-slate-400 hover:text-slate-600'}`}
                       >
-                        <ArrowLeft size={isMobile ? 16 : 18} /> {isMobile ? '' : 'Previous'}
+                        <ArrowLeft size={isMobile ? 16 : 18} /> {isMobile ? 'Back' : 'Previous'}
                       </button>
                     )}
-                    <div className="flex-1" />
+                    <div className="hidden md:block flex-1" />
                     {currentStep < totalSteps ? (
                       <button 
                         type="button" 
@@ -701,7 +700,7 @@ const Register = () => {
                             nextStep();
                             if (isMobile) window.scrollTo({ top: 0, behavior: 'smooth' });
                         }} 
-                        className={`flex items-center gap-2 bg-primary-600 text-white rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-primary-700 transition-all shadow-xl shadow-primary-100 active:scale-95 ${isMobile ? 'px-8 py-4 flex-1 ml-4 justify-center' : 'px-10 py-4'}`}
+                        className={`flex items-center gap-2 bg-primary-600 text-white rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-primary-700 transition-all shadow-xl shadow-primary-100 active:scale-95 ${isMobile ? 'w-full justify-center px-8 py-4' : 'px-10 py-4'}`}
                       >
                         Continue <ChevronRight size={18} />
                       </button>
@@ -709,7 +708,7 @@ const Register = () => {
                       <button 
                         type="submit" 
                         disabled={loading} 
-                        className={`flex items-center gap-2 bg-green-600 text-white rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-green-700 transition-all shadow-xl shadow-green-100 active:scale-95 disabled:opacity-50 ${isMobile ? 'px-8 py-4 flex-1 ml-4 justify-center' : 'px-12 py-4'}`}
+                        className={`flex items-center gap-2 bg-green-600 text-white rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-green-700 transition-all shadow-xl shadow-green-100 active:scale-95 disabled:opacity-50 ${isMobile ? 'w-full justify-center px-8 py-4' : 'px-12 py-4'}`}
                       >
                         {loading ? 'Processing...' : (isMobile ? 'Complete' : 'Complete Registration')} <CheckCircle size={18} />
                       </button>
@@ -722,16 +721,16 @@ const Register = () => {
                   {/* Physician / Hospital Scrolling Flow */}
                   <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-6">
                       <h3 className={sectionHeadClass}><Mail size={16} /> 1. Identity Verification</h3>
-                      <div className="flex gap-3">
+                      <div className="flex flex-col md:flex-row gap-3">
                         <input type="email" name="email" required disabled={emailVerified} value={formData.email} onChange={handleChange} className={`${inputClass} ${emailVerified ? 'bg-green-50 border-green-300' : ''} flex-1`} placeholder="doctor@hospital.com" />
-                        {!emailVerified && <button type="button" onClick={handleSendOtp} disabled={verifying} className="whitespace-nowrap bg-blue-600 text-white px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 disabled:opacity-50 shadow-lg">{verifying ? '...' : 'Send OTP'}</button>}
+                        {!emailVerified && <button type="button" onClick={handleSendOtp} disabled={verifying} className="w-full md:w-auto whitespace-nowrap bg-blue-600 text-white px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 disabled:opacity-50 shadow-lg">{verifying ? '...' : 'Send OTP'}</button>}
                       </div>
                       {otpSent && !emailVerified && (
                         <div className="p-6 bg-slate-50 rounded-2xl border border-blue-100 space-y-4">
                           <label className={labelClass}>Verification Code</label>
-                          <div className="flex gap-3">
+                          <div className="flex flex-col md:flex-row gap-3">
                             <input type="text" maxLength="6" value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))} className="block w-full text-center text-xl font-bold tracking-[0.3em] rounded-xl border-slate-200 px-3 py-3 border" placeholder="000000" />
-                            <button type="button" onClick={handleVerifyOtp} disabled={verifying} className="bg-blue-600 text-white px-8 py-2 rounded-xl text-xs font-black uppercase tracking-widest">Confirm</button>
+                            <button type="button" onClick={handleVerifyOtp} disabled={verifying} className="w-full md:w-auto bg-blue-600 text-white px-8 py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700">Confirm</button>
                           </div>
                         </div>
                       )}

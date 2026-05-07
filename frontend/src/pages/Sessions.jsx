@@ -345,16 +345,18 @@ const SessionDetailModal = ({ appt, onClose, canEnter }) => {
                             </div>
                         </div>
 
-                        {appt.status === 'BOOKED' && appt.consultationType === 'OFFLINE' && appt.doctor?.clinicAddress && (
+                        {appt.status === 'BOOKED' && appt.consultationType === 'OFFLINE' && (appt.doctor?.clinicAddress || appt.hospital?.address) && (
                             <div className="space-y-4">
                                 <div className="bg-emerald-50/50 rounded-2xl p-4 border border-emerald-100/50">
-                                    <p className="text-[10px] font-black uppercase text-emerald-600 tracking-widest mb-1 flex items-center gap-1"><MapPin size={10} /> Clinic Address</p>
-                                    <p className="text-xs font-bold text-slate-700 leading-relaxed">{appt.doctor.clinicAddress}</p>
+                                    <p className="text-[10px] font-black uppercase text-emerald-600 tracking-widest mb-1 flex items-center gap-1"><MapPin size={10} /> {appt.hospital ? 'Facility Location' : 'Clinic Address'}</p>
+                                    <p className="text-xs font-bold text-slate-700 leading-relaxed">
+                                        {appt.doctor?.clinicAddress || appt.hospital?.address}
+                                    </p>
                                 </div>
                                 <div className="rounded-2xl overflow-hidden border border-slate-100 shadow-sm">
                                     <ClinicMap 
-                                        address={appt.doctor.clinicAddress} 
-                                        hospitalName={`Dr. ${appt.doctor.name} - ${appt.doctor.specialization || 'Clinical Clinic'}`}
+                                        address={appt.doctor?.clinicAddress || appt.hospital?.address} 
+                                        hospitalName={appt.hospital ? appt.hospital.name : `Dr. ${appt.doctor?.name}`}
                                         height="200px" 
                                     />
                                 </div>

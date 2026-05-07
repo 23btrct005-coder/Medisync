@@ -6,7 +6,7 @@ import {
   Activity, ClipboardList, UserCheck, Calendar, QrCode, X, 
   Download, Loader2, MessageSquare, ShieldCheck, Sparkles, 
   ChevronRight, Plus, Zap, Heart, Bell, Database, Globe,
-  TrendingUp, ArrowUpRight, Lock, LayoutGrid, FileText, Pill, Wallet
+  TrendingUp, ArrowUpRight, Lock, LayoutGrid, FileText, Pill, Wallet, Clock
 } from 'lucide-react';
 import ProfileCompletionBanner from '../components/ProfileCompletionBanner';
 import ActivityHub from '../components/ActivityHub';
@@ -113,6 +113,31 @@ const Dashboard = () => {
     <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-8 selection:bg-emerald-100">
       <div className="max-w-7xl mx-auto space-y-8">
         
+        {/* Secure Tunnel Guidance Banner */}
+        {window.location.protocol === 'http:' && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-5 bg-gradient-to-r from-primary-600 to-indigo-600 rounded-[2rem] text-white shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 border-b-4 border-primary-800/20"
+          >
+            <div className="flex items-center gap-5">
+              <div className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center shrink-0 border border-white/20">
+                <Globe size={28} className="animate-pulse" />
+              </div>
+              <div className="text-center md:text-left">
+                <h4 className="text-sm font-black uppercase tracking-widest leading-none mb-1">Secure Tunnel Required</h4>
+                <p className="text-[10px] font-bold text-white/80 uppercase tracking-tight">High-Precision GPS & Clinical Mapping restricted on insecure links.</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => window.location.href = `https://${window.location.hostname}${window.location.pathname}`}
+              className="px-8 py-3 bg-white text-primary-600 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-slate-50 transition-all active:scale-95"
+            >
+              Enter Secure Node
+            </button>
+          </motion.div>
+        )}
+        
         {/* Pro Banner */}
         <ProfileCompletionBanner />
 
@@ -149,16 +174,16 @@ const Dashboard = () => {
                   across your secure medical network.
                 </p>
 
-                <div className="flex flex-wrap gap-4 pt-4">
+                <div className="flex flex-col sm:flex-row gap-4 pt-4">
                   <button 
                     onClick={() => setShowQRModal(true)}
-                    className="flex items-center gap-2 px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-xl shadow-primary-600/20 active:scale-95"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-xl shadow-primary-600/20 active:scale-95"
                   >
                     <QrCode size={18} /> Emergency Key
                   </button>
                   <button 
                     onClick={() => navigate('/dashboard/reports')}
-                    className="flex items-center gap-2 px-8 py-4 bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-95 text-slate-600"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-95 text-slate-600"
                   >
                     <Plus size={18} /> New Report
                   </button>
@@ -313,9 +338,9 @@ const Dashboard = () => {
                   <h3 className="text-xl font-black text-slate-800 uppercase tracking-tighter leading-none">Record Action</h3>
                 </div>
                 <p className="text-sm text-slate-500 font-medium mb-8 leading-relaxed">Expand your clinical node by adding a new imaging report or health log.</p>
-                <div className="flex gap-3">
-                  <button onClick={() => navigate('/dashboard/reports')} className="flex-1 py-3 bg-[#0A1A1A] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all">Add Report</button>
-                  <button onClick={() => navigate('/dashboard/booking')} className="flex-1 py-3 bg-emerald-50 text-emerald-700 rounded-xl text-[10px] font-black uppercase tracking-widest border border-emerald-100 hover:bg-emerald-100 transition-all">Book Node</button>
+                <div className="flex flex-col md:flex-row gap-3">
+                  <button onClick={() => navigate('/dashboard/reports')} className="w-full py-3 bg-[#0A1A1A] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all">Add Report</button>
+                  <button onClick={() => navigate('/dashboard/booking')} className="w-full py-3 bg-emerald-50 text-emerald-700 rounded-xl text-[10px] font-black uppercase tracking-widest border border-emerald-100 hover:bg-emerald-100 transition-all">Book Node</button>
                 </div>
               </div>
 
