@@ -58,7 +58,6 @@ import StaffOnboarding from '../pages/StaffOnboarding';
 import StaffProfileEditor from '../pages/StaffProfileEditor';
 
 // Admin Pages
-import AdminDashboard from '../pages/AdminDashboard';
 
 const ProtectedRoute = ({ children, allowedRole }) => {
   const { user, userRole, loading } = useAuth();
