@@ -21,6 +21,16 @@ public class GeminiAiService implements AiProvider {
         return "Google Gemini (Advanced Reasoning)";
     }
 
+    @Override
+    public String analyzeReport(byte[] fileData, String mimeType, String patientName, int patientAge) {
+        // Fallback to text completion for now, or implement multimodal Gemini logic
+        String prompt = "You are an elite clinical AI. Analyze the following medical document metadata and provide a structured briefing.\n" +
+                        "Patient: " + patientName + " (Age: " + patientAge + ")\n" +
+                        "File Type: " + mimeType + "\n\n" +
+                        "Please provide a diagnostic summary based on the available clinical context.";
+        return getCompletion(prompt);
+    }
+
     public String getCompletion(String prompt) {
         if (apiKey == null || apiKey.trim().isEmpty()) {
             return "{\"error\": \"Gemini API key not configured.\"}";
