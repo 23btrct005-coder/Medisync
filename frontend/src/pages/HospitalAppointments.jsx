@@ -76,7 +76,9 @@ const HospitalAppointments = () => {
 
         return () => {
             clearInterval(pulseInterval);
-            if (stompClient) stompClient.disconnect();
+            if (stompClient && stompClient.connected) {
+                try { stompClient.disconnect(); } catch (e) {}
+            }
         };
     }, [fetchData]);
 

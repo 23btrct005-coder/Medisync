@@ -27,8 +27,8 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
 
         return () => {
             clearInterval(statusInterval);
-            if (stompClient.current) {
-                stompClient.current.disconnect();
+            if (stompClient.current && stompClient.current.connected) {
+                try { stompClient.current.disconnect(); } catch (e) {}
             }
         };
     }, [receiverId]);

@@ -44,8 +44,8 @@ const ClinicalVitals = () => {
         stompClientRef.current = client;
 
         return () => {
-            if (stompClientRef.current) {
-                stompClientRef.current.disconnect();
+            if (stompClientRef.current && stompClientRef.current.connected) {
+                try { stompClientRef.current.disconnect(); } catch (e) {}
             }
         };
     }, []);

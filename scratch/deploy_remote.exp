@@ -1,0 +1,20 @@
+#!/usr/bin/expect -f
+set timeout 600
+spawn ssh -o StrictHostKeyChecking=no root@164.52.213.234
+expect "password:"
+send "PVYZKN@etxcm588\r"
+expect "root@*"
+send "cd ~/Medisync\r"
+expect "root@*"
+send "git fetch origin main\r"
+expect "root@*"
+send "git reset --hard origin/main\r"
+expect "HEAD is now at"
+expect "root@*"
+send "chmod +x deploy_e2e.sh\r"
+expect "root@*"
+send "./deploy_e2e.sh\r"
+expect "✅ INSTITUTIONAL REGISTRY IMPLEMENTED SUCCESSFULLY ON E2E!"
+expect "root@*"
+send "exit\r"
+expect eof
