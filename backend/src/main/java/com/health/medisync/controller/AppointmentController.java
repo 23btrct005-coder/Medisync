@@ -127,14 +127,24 @@ public class AppointmentController {
         hospitalRepository.findAll().stream()
             .filter(h -> h.getServices() != null && h.getServices().toLowerCase().contains(service.toLowerCase()))
             .filter(h -> {
-                if (bloodGroup == null || bloodGroup.isEmpty() || !service.equalsIgnoreCase("Blood Bank")) return true;
-                if (h.getBloodStock() == null) return false;
-                try {
-                    Map<String, Integer> stock = mapper.readValue(h.getBloodStock(), Map.class);
-                    return stock.getOrDefault(bloodGroup, 0) > 0;
-                } catch (Exception e) {
-                    return false;
+                // Blood Bank logic
+                if (service.equalsIgnoreCase("Blood Bank")) {
+                    if (bloodGroup == null || bloodGroup.isEmpty()) return true;
+                    if (h.getBloodStock() == null) return false;
+                    try {
+                        Map<String, Integer> stock = mapper.readValue(h.getBloodStock(), Map.class);
+                        return stock.getOrDefault(bloodGroup, 0) > 0;
+                    } catch (Exception e) { return false; }
                 }
+                // Price enforcement: must have a non-zero price for the service
+                if (h.getServiceFees() == null || h.getServiceFees().isEmpty()) return false;
+                try {
+                    Map<String, Object> fees = mapper.readValue(h.getServiceFees(), Map.class);
+                    Object price = fees.get(service);
+                    if (price == null) return false;
+                    double fee = Double.parseDouble(price.toString());
+                    return fee > 0;
+                } catch (Exception e) { return false; }
             })
             .forEach(h -> {
                 Map<String, Object> map = new java.util.HashMap<>();
@@ -150,9 +160,20 @@ public class AppointmentController {
                 facilities.add(map);
             });
 
-        // Doctors/Clinics (e.g. Amarthya's Clinic)
+        // Doctors/Clinics
         appointmentService.getAllApprovedDoctors().stream()
             .filter(d -> d.getServices() != null && d.getServices().toLowerCase().contains(service.toLowerCase()))
+            .filter(d -> {
+                // Price enforcement for clinics
+                if (d.getServiceFees() == null || d.getServiceFees().isEmpty()) return false;
+                try {
+                    Map<String, Object> fees = mapper.readValue(d.getServiceFees(), Map.class);
+                    Object price = fees.get(service);
+                    if (price == null) return false;
+                    double fee = Double.parseDouble(price.toString());
+                    return fee > 0;
+                } catch (Exception e) { return false; }
+            })
             .forEach(d -> {
                 Map<String, Object> map = new java.util.HashMap<>();
                 map.put("id", "doc_" + d.getId());

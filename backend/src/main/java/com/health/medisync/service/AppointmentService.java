@@ -189,10 +189,8 @@ public class AppointmentService {
             }
         }
 
-        // Final Stabilization Fallback: Ensure fee is NEVER null to prevent NPE
-        if (fee == null) {
-            System.out.println("WARNING: No fees configured for doctor " + doctorId + ". Using Clinical Default: ₹1.0");
-            fee = 1.0; 
+        if (fee == null || fee <= 0) {
+            throw new RuntimeException("This physician consultation type (" + type + ") has not been priced and is currently unavailable for booking.");
         }
         
         // Payment Configuration Check with Robust Demo Mode Fallback
@@ -384,25 +382,26 @@ public class AppointmentService {
             throw new RuntimeException("All " + capacity + " systems for " + serviceName + " are currently occupied at this time. Please select a different window.");
         }
 
-        // Diagnostic Service Fee Calculation
-        Double fee = 500.0;
+        // Diagnostic Service Fee Calculation (NO DEFAULT PRICES)
+        Double fee = 0.0;
         try {
             if (hospital != null && hospital.getServiceFees() != null && !hospital.getServiceFees().isEmpty()) {
                 org.json.JSONObject feesJson = new org.json.JSONObject(hospital.getServiceFees());
                 if (feesJson.has(serviceName)) {
                     fee = feesJson.getDouble(serviceName);
-                } else if (serviceName.toUpperCase().contains("AMBULANCE")) {
-                    fee = 1000.0; // Default high priority fee for ambulance
-                } else if (serviceName.toUpperCase().contains("MRI") || serviceName.toUpperCase().contains("CT")) {
-                    fee = 2500.0;
                 }
-            } else {
-                if (serviceName.toUpperCase().contains("AMBULANCE")) fee = 1000.0;
-                else if (serviceName.toUpperCase().contains("MRI") || serviceName.toUpperCase().contains("CT")) fee = 2500.0;
-                else if (serviceName.toUpperCase().contains("BLOOD") || serviceName.toUpperCase().contains("LAB")) fee = 300.0;
+            } else if (doctor != null && doctor.getServiceFees() != null && !doctor.getServiceFees().isEmpty()) {
+                org.json.JSONObject feesJson = new org.json.JSONObject(doctor.getServiceFees());
+                if (feesJson.has(serviceName)) {
+                    fee = feesJson.getDouble(serviceName);
+                }
             }
         } catch (Exception e) {
             System.err.println("FEE_CALCULATION_ERROR: " + e.getMessage());
+        }
+
+        if (fee == null || fee <= 0) {
+            throw new RuntimeException("This service (" + serviceName + ") has not been priced by the institution and is currently unavailable for booking.");
         }
 
         boolean isDemoMode = (razorpayKeyId == null || razorpayKeyId.isEmpty());
@@ -710,11 +709,20 @@ public class AppointmentService {
                 return Collections.emptyList();
             }
 
+            Double fee = 0.0;
             if (facilityId.startsWith("hosp_")) {
                 entityId = Long.valueOf(facilityId.substring(5).split("\\.")[0]);
                 Hospital hospital = hospitalRepository.findById(entityId).orElse(null);
                 if (hospital != null) {
                     timings = hospital.getConsultationTimings();
+                    if (serviceName != null) {
+                        if (hospital.getServiceFees() != null) {
+                            try {
+                                JSONObject fees = new JSONObject(hospital.getServiceFees());
+                                if (fees.has(serviceName)) fee = fees.getDouble(serviceName);
+                            } catch (Exception e) {}
+                        }
+                    }
                     if (serviceName != null && hospital.getServiceDurations() != null) {
                         try {
                             JSONObject durations = new JSONObject(hospital.getServiceDurations());
@@ -735,13 +743,32 @@ public class AppointmentService {
                     timings = doctor.getConsultationTimings();
                     duration = (doctor.getSlotDuration() != null && doctor.getSlotDuration() > 0) ? doctor.getSlotDuration() : 15;
                     buffer = (doctor.getSlotBuffer() != null) ? doctor.getSlotBuffer() : 0;
-                    if (serviceName != null && doctor.getServiceDurations() != null) {
-                        try {
-                            JSONObject durations = new JSONObject(doctor.getServiceDurations());
-                            if (durations.has(serviceName)) duration = durations.getInt(serviceName);
-                        } catch (Exception e) {}
+                    
+                    if (serviceName != null) {
+                        if (doctor.getServiceFees() != null) {
+                            try {
+                                JSONObject fees = new JSONObject(doctor.getServiceFees());
+                                if (fees.has(serviceName)) fee = fees.getDouble(serviceName);
+                            } catch (Exception e) {}
+                        }
+                        if (doctor.getServiceDurations() != null) {
+                            try {
+                                JSONObject durations = new JSONObject(doctor.getServiceDurations());
+                                if (durations.has(serviceName)) duration = durations.getInt(serviceName);
+                            } catch (Exception e) {}
+                        }
+                    } else {
+                        // Regular consultation
+                        double online = doctor.getOnlineConsultationFee() != null ? doctor.getOnlineConsultationFee() : 0.0;
+                        double offline = doctor.getOfflineConsultationFee() != null ? doctor.getOfflineConsultationFee() : 0.0;
+                        fee = online + offline;
                     }
                 }
+            }
+
+            if (fee == null || fee <= 0) {
+                System.out.println("DEBUG: Slots hidden for " + facilityId + " - No non-zero price found for service: " + serviceName);
+                return Collections.emptyList();
             }
 
             boolean is247 = serviceName != null && SERVICES_24_7.contains(serviceName);

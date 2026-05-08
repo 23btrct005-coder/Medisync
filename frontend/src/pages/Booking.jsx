@@ -393,7 +393,12 @@ const Booking = () => {
       d.hospital?.toLowerCase().includes(searchLow) ||
       d.medicalDegree?.toLowerCase().includes(searchLow);
     const matchesFilter = filterSpecialty === 'All' || d.specialization === filterSpecialty;
-    return matchesSearch && matchesFilter;
+    
+    // Price enforcement: must have at least one fee configured
+    const hasPrice = (d.onlineConsultationFee && d.onlineConsultationFee > 0) || 
+                    (d.offlineConsultationFee && d.offlineConsultationFee > 0);
+                    
+    return matchesSearch && matchesFilter && hasPrice;
   });
 
   return (
