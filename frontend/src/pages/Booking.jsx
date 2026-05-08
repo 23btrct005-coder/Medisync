@@ -290,17 +290,17 @@ const Booking = () => {
       if (!order) return;
       console.log("SECURE_ORDER_SYNC: Order created", order);
 
+      if (order.preferredPaymentMode === 'UPI' && order.upiId) {
+        setUpiOrderData(order);
+        setShowUpiModal(true);
+        return;
+      }
+
       if (order.isDemo) {
         toast.success("Clinical Protocol Authorized. Synchronizing session...");
         setTimeout(() => {
           navigate('/dashboard/sessions', { state: { autoOpenId: order.appointmentId } });
         }, 800);
-        return;
-      }
-
-      if (order.preferredPaymentMode === 'UPI' && order.upiId) {
-        setUpiOrderData(order);
-        setShowUpiModal(true);
         return;
       }
 

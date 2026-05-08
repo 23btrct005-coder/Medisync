@@ -275,7 +275,15 @@ public class AppointmentService {
         appointment.setConsultationType(type);
         appointment.setAmount(fee);
         appointment.setRazorpayOrderId(orderId);
-        appointment.setStatus(AppointmentStatus.PENDING);
+        // PAYMENT SECURITY SHIELD: Don't auto-confirm if UPI is preferred
+        boolean forcePayment = "UPI".equals(doctor.getPreferredPaymentMode());
+
+        if (isDemoMode && !forcePayment) {
+            appointment.setStatus(AppointmentStatus.BOOKED);
+            appointment.setRazorpayPaymentId("demo_payment_" + System.currentTimeMillis());
+        } else {
+            appointment.setStatus(AppointmentStatus.PENDING);
+        }
 
         // Auto-generate secure meeting link for Virtual consultations
         if (type == ConsultationType.ONLINE) {
@@ -284,10 +292,6 @@ public class AppointmentService {
         }
 
         Appointment saved = appointmentRepository.save(appointment);
-        
-        if (isDemoMode) {
-            appointment.setRazorpayPaymentId("demo_payment_" + System.currentTimeMillis());
-        }
 
         Map<String, Object> response = new HashMap<>();
         response.put("appointmentId", saved.getId());
@@ -387,12 +391,15 @@ public class AppointmentService {
                 org.json.JSONObject feesJson = new org.json.JSONObject(hospital.getServiceFees());
                 if (feesJson.has(serviceName)) {
                     fee = feesJson.getDouble(serviceName);
+                } else if (serviceName.toUpperCase().contains("AMBULANCE")) {
+                    fee = 1000.0; // Default high priority fee for ambulance
                 } else if (serviceName.toUpperCase().contains("MRI") || serviceName.toUpperCase().contains("CT")) {
                     fee = 2500.0;
                 }
             } else {
-                if (serviceName.toUpperCase().contains("MRI") || serviceName.toUpperCase().contains("CT")) fee = 2500.0;
-                if (serviceName.toUpperCase().contains("BLOOD") || serviceName.toUpperCase().contains("LAB")) fee = 300.0;
+                if (serviceName.toUpperCase().contains("AMBULANCE")) fee = 1000.0;
+                else if (serviceName.toUpperCase().contains("MRI") || serviceName.toUpperCase().contains("CT")) fee = 2500.0;
+                else if (serviceName.toUpperCase().contains("BLOOD") || serviceName.toUpperCase().contains("LAB")) fee = 300.0;
             }
         } catch (Exception e) {
             System.err.println("FEE_CALCULATION_ERROR: " + e.getMessage());
@@ -445,7 +452,11 @@ public class AppointmentService {
         appointment.setConsultationType(ConsultationType.OFFLINE);
         appointment.setAmount(fee);
         appointment.setRazorpayOrderId(orderId);
-        if (isDemoMode) {
+        
+        // PAYMENT SECURITY SHIELD: Don't auto-book if UPI is preferred or if it's an Ambulance
+        boolean forcePayment = "UPI".equals(preferredPaymentMode) || (serviceName != null && serviceName.contains("Ambulance"));
+        
+        if (isDemoMode && !forcePayment) {
             appointment.setStatus(AppointmentStatus.BOOKED);
             appointment.setRazorpayPaymentId("demo_service_" + System.currentTimeMillis());
         } else {
