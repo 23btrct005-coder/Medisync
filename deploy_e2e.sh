@@ -45,7 +45,7 @@ GROQ_API_KEY=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
 JWT_SECRET=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
 OPENAI_API_KEY=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
 RAZORPAY_KEY_ID=rzp_live_SdOTsSUMHGBg00
-RAZORPAY_KEY_SECRET=TZoRKOfeeAOJCBw4l23OBpDZ
+RAZORPAY_KEY_SECRET=TZoRKOfeeAOJCBw4I23OBpDZ
 SPRING_DATASOURCE_PASSWORD=Medisync2024
 SPRING_DATASOURCE_URL="jdbc:postgresql://aws-1-ap-south-1.pooler.supabase.com:5432/postgres?user=postgres.bwjmzottkkxrdztqqeju&password=Medisync2024&ssl=true&sslmode=require&sslfactory=org.postgresql.ssl.NonValidatingFactory"
 SPRING_DATASOURCE_USERNAME=postgres.bwjmzottkkxrdztqqeju
@@ -76,6 +76,7 @@ mvn clean package -DskipTests
 # Final Launch
 echo "🚀 LAUNCHING MEDISYNC..."
 fuser -k 8080/tcp || true
-nohup java -jar target/*.jar > ~/medisync.log 2>&1 &
+# Source environment variables before launching the JAR
+set -a && source .env && set +a && nohup java -jar target/*.jar > ~/medisync.log 2>&1 &
 
 echo "✅ INSTITUTIONAL REGISTRY IMPLEMENTED SUCCESSFULLY ON E2E!"
