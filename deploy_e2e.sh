@@ -77,6 +77,6 @@ mvn clean package -DskipTests
 echo "🚀 LAUNCHING MEDISYNC..."
 fuser -k 8080/tcp || true
 # Source environment variables before launching the JAR
-set -a && source .env && set +a && nohup java -jar target/*.jar > ~/medisync.log 2>&1 &
+set -a && source ../.env && set +a && nohup java -jar target/*.jar > ~/medisync.log 2>&1 &
 
 echo "✅ INSTITUTIONAL REGISTRY IMPLEMENTED SUCCESSFULLY ON E2E!"
