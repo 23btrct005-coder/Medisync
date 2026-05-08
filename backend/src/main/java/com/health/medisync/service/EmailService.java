@@ -41,8 +41,18 @@ public class EmailService {
 
     @Async
     public void sendOtpEmail(String to, String otp) {
+        System.out.println("========================================");
+        System.out.println("DEVELOPMENT OTP FALLBACK: [" + otp + "] for " + to);
+        System.out.println("========================================");
+        
         String body = "Your MediSync Verification Code is: " + otp + "\n\nThis code will expire in 5 minutes.";
-        sendEmailInternal(to, "MediSync - Email Verification", body);
+        String result = sendEmailInternal(to, "MediSync - Email Verification", body);
+        
+        if (result.startsWith("ERROR") || result.startsWith("FAIL")) {
+            System.err.println("CRITICAL: Failed to send OTP email to " + to + ". Check credentials and quota.");
+        } else {
+            System.out.println("SUCCESS: OTP email queued for " + to);
+        }
     }
 
     @Async
@@ -64,7 +74,7 @@ public class EmailService {
         String tokenTail = (cleanToken.length() >= 4) ? cleanToken.substring(cleanToken.length() - 4) : "";
         
         System.out.println("DIAGNOSTIC: Attempting Brevo send to " + to);
-        System.out.println("DIAGNOSTIC: Token length: " + cleanToken.length() + " | Start: " + tokenHead + " | End: " + tokenTail);
+        System.out.println("DIAGNOSTIC: Using API Key: " + tokenHead + "..." + tokenTail);
         System.out.println("DIAGNOSTIC: Sender Email: " + senderEmail);
 
         HttpHeaders headers = new HttpHeaders();

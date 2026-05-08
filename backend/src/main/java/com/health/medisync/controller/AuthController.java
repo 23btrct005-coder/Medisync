@@ -808,8 +808,14 @@ public class AuthController {
                 }
             }
 
+        try {
+            System.out.println("[AUTH] Generating OTP for: " + email);
             authService.generateAndSendOtp(email);
-            return ResponseEntity.ok(Map.of("message", "Verification code sent to " + email));
+            return ResponseEntity.ok(Map.of("message", "Verification code sent to " + email + ". Check your email (or console logs if in dev)."));
+        } catch (Exception e) {
+            System.err.println("[AUTH] Failed to generate/send OTP: " + e.getMessage());
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to send verification code. Please try again."));
+        }
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
