@@ -5,6 +5,7 @@ import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import { Calendar, Clock, ChevronRight, Video, MapPin, X, Loader2, AlertCircle, History as HistoryIcon, ShieldCheck, CreditCard, CheckCircle2, Copy, ExternalLink, Activity } from 'lucide-react';
 import ClinicMap from '../components/ClinicMap';
+import FilterBar from '../components/FilterBar';
 import toast from 'react-hot-toast';
 
 /* --- SUBCOMPONENTS --- */
@@ -437,6 +438,8 @@ const Sessions = () => {
     const [activeCategory, setActiveCategory] = useState('physician');
     const [showRatingModal, setShowRatingModal] = useState(null);
     const [showPaymentCard, setShowPaymentCard] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sortBy, setSortBy] = useState('date-desc');
 
     const fetchAppointments = useCallback(async (isSilent = false) => {
         if (!isSilent) setLoading(true);
@@ -545,7 +548,24 @@ const Sessions = () => {
     const d = new Date();
     const todayString = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
     
-    const safeAppointments = Array.isArray(appointments) ? appointments : [];
+    const safeAppointments = (Array.isArray(appointments) ? appointments : [])
+        .filter(a => {
+            const searchLower = searchTerm.toLowerCase();
+            return (
+                a.doctor?.name?.toLowerCase().includes(searchLower) ||
+                a.serviceName?.toLowerCase().includes(searchLower) ||
+                a.appointmentDate?.toLowerCase().includes(searchLower) ||
+                a.timeSlot?.toLowerCase().includes(searchLower) ||
+                a.status?.toLowerCase().includes(searchLower)
+            );
+        })
+        .sort((a, b) => {
+            if (sortBy === 'date-desc') return new Date(b.appointmentDate) - new Date(a.appointmentDate);
+            if (sortBy === 'date-asc') return new Date(a.appointmentDate) - new Date(b.appointmentDate);
+            if (sortBy === 'doctor-asc') return (a.doctor?.name || a.serviceName || '').localeCompare(b.doctor?.name || b.serviceName || '');
+            return 0;
+        });
+
     const categoryAppointments = safeAppointments.filter(a => 
         activeCategory === 'service' ? !!a.serviceName : !a.serviceName
     );
@@ -580,6 +600,19 @@ const Sessions = () => {
                     </p>
                 </div>
             </div>
+
+            <FilterBar 
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                placeholder="Search appointments by physician, service, or date..."
+                sortValue={sortBy}
+                onSortChange={setSortBy}
+                sortOptions={[
+                    { label: 'Date (Newest)', value: 'date-desc' },
+                    { label: 'Date (Oldest)', value: 'date-asc' },
+                    { label: 'Provider (A-Z)', value: 'doctor-asc' }
+                ]}
+            />
 
             {/* Category and Tab Navigation */}
             <div className="flex flex-col gap-6">

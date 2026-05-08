@@ -5,6 +5,7 @@ import {
   ChevronRight, Activity, X, Check, Save, Clock, 
   MapPin, Settings, AlertCircle
 } from 'lucide-react';
+import FilterBar from '../components/FilterBar';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
 import PremiumDropdown from '../components/PremiumDropdown';
@@ -27,6 +28,8 @@ const HospitalDoctorRoster = () => {
     const [doctors, setDoctors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [sortBy, setSortBy] = useState('name-asc');
+    const [specialtyFilter, setSpecialtyFilter] = useState('');
     const [editingDoctor, setEditingDoctor] = useState(null);
     const [editData, setEditData] = useState({});
     const [submitting, setSubmitting] = useState(false);
@@ -103,10 +106,19 @@ const HospitalDoctorRoster = () => {
         setEditData({ ...editData, workingDaysArray: next });
     };
 
-    const filteredDoctors = doctors.filter(d => 
-        d.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        d.specialization?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredDoctors = doctors
+        .filter(d => {
+            const matchesSearch = d.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                d.specialization?.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesSpecialty = specialtyFilter ? d.specialization === specialtyFilter : true;
+            return matchesSearch && matchesSpecialty;
+        })
+        .sort((a, b) => {
+            if (sortBy === 'name-asc') return a.name.localeCompare(b.name);
+            if (sortBy === 'name-desc') return b.name.localeCompare(a.name);
+            if (sortBy === 'specialty-asc') return (a.specialization || '').localeCompare(b.specialization || '');
+            return 0;
+        });
 
     const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const labelClass = "block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1";
@@ -126,25 +138,36 @@ const HospitalDoctorRoster = () => {
                     <h1 className="text-4xl font-black text-slate-900 tracking-tighter italic uppercase">Staff<span className="not-italic text-primary">Roster</span></h1>
                     <p className="text-slate-400 text-xs font-black uppercase tracking-[0.3em] mt-2">Managing {doctors.length} Clinical Professionals</p>
                 </div>
-                <div className="flex items-center gap-4">
-                    <div className="relative group">
-                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary transition-colors" size={18} />
-                        <input 
-                            type="text" 
-                            placeholder="Filter by name or specialty..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-14 pr-8 py-5 bg-white border border-slate-100 rounded-[2rem] text-sm font-bold focus:ring-4 ring-primary/5 w-80 shadow-sm transition-all outline-none"
-                        />
-                    </div>
-                    <button 
-                        onClick={() => navigate('/hospital-dashboard/staff/onboard')}
-                        className="px-8 py-5 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-[2rem] shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
-                    >
-                        <UserPlus size={18} />
-                        Onboard New Staff
-                    </button>
+                <div className="flex-1">
+                    <FilterBar 
+                        searchTerm={searchTerm}
+                        onSearchChange={setSearchTerm}
+                        placeholder="Filter clinical professionals by name, specialty, or license..."
+                        sortValue={sortBy}
+                        onSortChange={setSortBy}
+                        sortOptions={[
+                            { label: 'Name (A-Z)', value: 'name-asc' },
+                            { label: 'Name (Z-A)', value: 'name-desc' },
+                            { label: 'Specialty (A-Z)', value: 'specialty-asc' }
+                        ]}
+                        filters={[
+                            {
+                                key: 'specialization',
+                                label: 'All Specialties',
+                                value: specialtyFilter,
+                                options: Array.from(new Set(doctors.map(d => d.specialization).filter(Boolean))).map(s => ({ label: s, value: s }))
+                            }
+                        ]}
+                        onFilterChange={(key, val) => setSpecialtyFilter(val)}
+                    />
                 </div>
+                <button 
+                    onClick={() => navigate('/hospital-dashboard/staff/onboard')}
+                    className="px-8 py-5 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-[2rem] shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-3 mb-8"
+                >
+                    <UserPlus size={18} />
+                    Onboard New Staff
+                </button>
             </div>
 
             {/* Roster Table */}

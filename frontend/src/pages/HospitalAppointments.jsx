@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Calendar, Clock, User, ChevronRight, Activity, Search, Filter, Droplet, MapPin, ShieldCheck, X, ExternalLink, CreditCard } from 'lucide-react';
+import { Calendar, Clock, User, ChevronRight, Activity, Droplet, MapPin, ShieldCheck, X, ExternalLink, CreditCard } from 'lucide-react';
+import FilterBar from '../components/FilterBar';
 import api, { rawBaseURL } from '../api/axiosConfig';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
@@ -10,6 +11,8 @@ const HospitalAppointments = () => {
     const [hospitalInfo, setHospitalInfo] = useState(null);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [sortBy, setSortBy] = useState('date-desc');
+    const [statusFilter, setStatusFilter] = useState('');
     const [showVerifyModal, setShowVerifyModal] = useState(null);
 
     const fetchData = useCallback(async (isSilent = false) => {
@@ -88,11 +91,21 @@ const HospitalAppointments = () => {
         }
     };
 
-    const filteredAppointments = (Array.isArray(appointments) ? appointments : []).filter(app => 
-        app.patient?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        app.doctor?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        app.serviceName?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredAppointments = (Array.isArray(appointments) ? appointments : [])
+        .filter(app => {
+            const searchLower = searchTerm.toLowerCase();
+            const matchesSearch = app.patient?.name?.toLowerCase().includes(searchLower) ||
+                                app.doctor?.name?.toLowerCase().includes(searchLower) ||
+                                app.serviceName?.toLowerCase().includes(searchLower);
+            const matchesStatus = statusFilter ? app.status === statusFilter : true;
+            return matchesSearch && matchesStatus;
+        })
+        .sort((a, b) => {
+            if (sortBy === 'date-desc') return new Date(b.appointmentDate) - new Date(a.appointmentDate);
+            if (sortBy === 'date-asc') return new Date(a.appointmentDate) - new Date(b.appointmentDate);
+            if (sortBy === 'patient-asc') return (a.patient?.name || '').localeCompare(b.patient?.name || '');
+            return 0;
+        });
 
     const bloodStock = hospitalInfo?.bloodStock ? JSON.parse(hospitalInfo.bloodStock) : {};
 
@@ -116,16 +129,33 @@ const HospitalAppointments = () => {
                     </div>
                 </div>
                 
-                <div className="relative group w-full md:w-96">
-                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-primary transition-colors" size={18} />
-                    <input 
-                        type="text" 
-                        placeholder="Filter by patient, doctor or service..." 
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="input-premium pl-14 py-4"
-                    />
-                </div>
+            <FilterBar 
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                placeholder="Filter ledger by patient, doctor, service, or date..."
+                sortValue={sortBy}
+                onSortChange={setSortBy}
+                sortOptions={[
+                    { label: 'Date (Newest)', value: 'date-desc' },
+                    { label: 'Date (Oldest)', value: 'date-asc' },
+                    { label: 'Patient (A-Z)', value: 'patient-asc' }
+                ]}
+                filters={[
+                    {
+                        key: 'status',
+                        label: 'All Statuses',
+                        value: statusFilter,
+                        options: [
+                            { label: 'Confirmed', value: 'BOOKED' },
+                            { label: 'Awaiting Verification', value: 'AWAITING_VERIFICATION' },
+                            { label: 'Pending', value: 'PENDING' },
+                            { label: 'Completed', value: 'COMPLETED' },
+                            { label: 'Cancelled', value: 'CANCELLED' }
+                        ]
+                    }
+                ]}
+                onFilterChange={(key, val) => setStatusFilter(val)}
+            />
             </div>
 
             {/* Blood Bank Triage Summary */}

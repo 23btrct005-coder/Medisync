@@ -10,6 +10,7 @@ import AiChatSidebar from '../components/AiChatSidebar';
 import SkeletonCard from '../components/SkeletonCard';
 import ReportPreviewModal from '../components/ReportPreviewModal';
 import StructuredAiReport from '../components/StructuredAiReport';
+import FilterBar from '../components/FilterBar';
 
 const Reports = () => {
   const [reports, setReports] = useState([]);
@@ -46,6 +47,7 @@ const Reports = () => {
   const [selectedReport, setSelectedReport] = useState(null);
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('date-desc');
 
   const [previewData, setPreviewData] = useState({
     isOpen: false,
@@ -219,9 +221,15 @@ const Reports = () => {
     ), { duration: Infinity });
   };
 
-  const filteredReports = reports.filter(r => 
-    r.fileName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredReports = reports
+    .filter(r => r.fileName.toLowerCase().includes(searchTerm.toLowerCase()))
+    .sort((a, b) => {
+        if (sortBy === 'date-desc') return new Date(b.documentDate || b.uploadDate) - new Date(a.documentDate || a.uploadDate);
+        if (sortBy === 'date-asc') return new Date(a.documentDate || a.uploadDate) - new Date(b.documentDate || b.uploadDate);
+        if (sortBy === 'name-asc') return a.fileName.localeCompare(b.fileName);
+        if (sortBy === 'name-desc') return b.fileName.localeCompare(a.fileName);
+        return 0;
+    });
 
   const toggleAiReveal = (reportId) => {
     setRevealedAiReports(prev => ({
@@ -285,19 +293,19 @@ const Reports = () => {
         </div>
       </div>
 
-      {/* Filter Hub */}
-      <div className="glass-panel p-4 flex flex-col md:flex-row gap-4 items-center">
-        <div className="relative flex-1 group w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={18} />
-          <input 
-            type="text" 
-            placeholder="Search report findings..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="input-premium pl-12"
-          />
-        </div>
-      </div>
+      <FilterBar 
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        placeholder="Search clinical findings, diagnoses, or filenames..."
+        sortValue={sortBy}
+        onSortChange={setSortBy}
+        sortOptions={[
+            { label: 'Newest First', value: 'date-desc' },
+            { label: 'Oldest First', value: 'date-asc' },
+            { label: 'Name (A-Z)', value: 'name-asc' },
+            { label: 'Name (Z-A)', value: 'name-desc' }
+        ]}
+      />
 
       {/* Content Layout */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">

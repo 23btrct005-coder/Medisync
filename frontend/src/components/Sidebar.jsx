@@ -40,8 +40,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
   // ── MAIN NAV: Most-used features ──
   const mainItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
     { name: 'Messages', path: '/dashboard/messages', icon: <MessageSquare size={20} />, badge: unreadChatCount },
+    { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
     { name: 'Book Appointment', path: '/dashboard/booking', icon: <CalendarPlus size={20} /> },
     { name: 'My Appointments', path: '/dashboard/sessions', icon: <Calendar size={20} /> },
     { name: 'Health Wallet', path: '/dashboard/wallet', icon: <Wallet size={20} /> },

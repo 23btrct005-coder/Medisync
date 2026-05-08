@@ -25,9 +25,9 @@ const BottomNav = () => {
 
     // ── PRIMARY BAR: Most-used features (max 5 tabs) ──
     const primaryNav = isDoctor ? [
+        { name: 'Messages', path: '/doctor-dashboard/messages', icon: <MessageSquare size={20} />, badge: unreadChatCount },
         { name: 'Hub', path: '/doctor-dashboard', icon: <LayoutDashboard size={20} /> },
         { name: 'Patients', path: '/doctor-dashboard/patients', icon: <Users size={20} /> },
-        { name: 'Messages', path: '/doctor-dashboard/messages', icon: <MessageSquare size={20} />, badge: unreadChatCount },
         { name: 'Schedule', path: '/doctor-dashboard/appointments', icon: <Calendar size={20} /> },
     ] : isHospital ? [
         { name: 'Hub', path: '/hospital-dashboard', icon: <LayoutDashboard size={20} /> },
@@ -35,10 +35,9 @@ const BottomNav = () => {
         { name: 'Patients', path: '/hospital-dashboard/patients', icon: <Users size={20} /> },
         { name: 'Analytics', path: '/hospital-dashboard/analytics', icon: <Activity size={20} /> },
     ] : [
-        { name: 'Home', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
         { name: 'Messages', path: '/dashboard/messages', icon: <MessageSquare size={20} />, badge: unreadChatCount },
+        { name: 'Home', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
         { name: 'Book', path: '/dashboard/booking', icon: <CalendarPlus size={20} /> },
-        { name: 'Records', path: '/dashboard/records', icon: <ClipboardList size={20} /> },
         { name: 'Profile', path: '/dashboard/profile', icon: <User size={20} /> },
     ];
 

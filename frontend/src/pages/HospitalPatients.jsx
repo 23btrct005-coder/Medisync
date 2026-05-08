@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { User, Search, Activity, ChevronRight, Mail, Phone, Calendar } from 'lucide-react';
+import { User, Activity, ChevronRight, Mail, Phone, Calendar } from 'lucide-react';
+import FilterBar from '../components/FilterBar';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
 
@@ -7,6 +8,8 @@ const HospitalPatients = () => {
     const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [sortBy, setSortBy] = useState('name-asc');
+    const [bloodFilter, setBloodFilter] = useState('');
 
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [showBookingModal, setShowBookingModal] = useState(false);
@@ -89,10 +92,20 @@ const HospitalPatients = () => {
         }
     };
 
-    const filteredPatients = (Array.isArray(patients) ? patients : []).filter(p => 
-        p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.patientId?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredPatients = (Array.isArray(patients) ? patients : [])
+        .filter(p => {
+            const matchesSearch = p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                p.patientId?.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesBlood = bloodFilter ? p.bloodGroup === bloodFilter : true;
+            return matchesSearch && matchesBlood;
+        })
+        .sort((a, b) => {
+            if (sortBy === 'name-asc') return a.name.localeCompare(b.name);
+            if (sortBy === 'name-desc') return b.name.localeCompare(a.name);
+            if (sortBy === 'id-asc') return a.patientId.localeCompare(b.patientId);
+            if (sortBy === 'id-desc') return b.patientId.localeCompare(a.patientId);
+            return 0;
+        });
 
     if (loading) {
         return (
@@ -110,16 +123,37 @@ const HospitalPatients = () => {
                     <p className="text-slate-400 text-xs font-black uppercase tracking-widest mt-2 ml-1">Unified patient record management</p>
                 </div>
                 
-                <div className="relative group">
-                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-primary transition-colors" size={18} />
-                    <input 
-                        type="text" 
-                        placeholder="Search by ID or name..."
-                        className="pl-14 pr-8 py-4 bg-white border border-slate-100 rounded-3xl text-sm font-bold shadow-sm focus:ring-4 ring-primary/5 outline-none w-full md:w-[350px] transition-all"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
+            <FilterBar 
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                placeholder="Search patient registry by name, ID, or bio..."
+                sortValue={sortBy}
+                onSortChange={setSortBy}
+                sortOptions={[
+                    { label: 'Name (A-Z)', value: 'name-asc' },
+                    { label: 'Name (Z-A)', value: 'name-desc' },
+                    { label: 'ID (Low-High)', value: 'id-asc' },
+                    { label: 'ID (High-Low)', value: 'id-desc' }
+                ]}
+                filters={[
+                    {
+                        key: 'bloodGroup',
+                        label: 'All Blood Groups',
+                        value: bloodFilter,
+                        options: [
+                            { label: 'A+', value: 'A+' },
+                            { label: 'A-', value: 'A-' },
+                            { label: 'B+', value: 'B+' },
+                            { label: 'B-', value: 'B-' },
+                            { label: 'O+', value: 'O+' },
+                            { label: 'O-', value: 'O-' },
+                            { label: 'AB+', value: 'AB+' },
+                            { label: 'AB-', value: 'AB-' }
+                        ]
+                    }
+                ]}
+                onFilterChange={(key, val) => setBloodFilter(val)}
+            />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

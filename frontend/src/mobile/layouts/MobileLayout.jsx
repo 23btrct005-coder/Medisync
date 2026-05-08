@@ -31,9 +31,9 @@ const MobileLayout = () => {
     // ── NAVIGATION CONFIG (PRIORITY ORDER) ──
     const getPrimaryNav = () => {
         if (isDoctor) return [
+            { name: 'Chats', path: '/doctor-dashboard/messages', icon: <MessageSquare size={20} />, badge: unreadChatCount },
             { name: 'Console', path: '/doctor-dashboard', icon: <LayoutDashboard size={20} /> },
             { name: 'Calendar', path: '/doctor-dashboard/appointments', icon: <Calendar size={20} /> },
-            { name: 'Chats', path: '/doctor-dashboard/messages', icon: <MessageSquare size={20} />, badge: unreadChatCount },
             { name: 'Registry', path: '/doctor-dashboard/patients', icon: <Users size={20} /> },
         ];
         if (isHospital) return [
@@ -43,10 +43,10 @@ const MobileLayout = () => {
             { name: 'Patients', path: '/hospital-dashboard/patients', icon: <Users size={20} /> },
         ];
         return [
+            { name: 'Messages', path: '/dashboard/messages', icon: <MessageSquare size={20} />, badge: unreadChatCount },
             { name: 'Home', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
             { name: 'Book', path: '/dashboard/booking', icon: <CalendarPlus size={20} /> },
             { name: 'Wallet', path: '/dashboard/wallet', icon: <Wallet size={20} /> },
-            { name: 'Clinical', path: '/dashboard/records', icon: <ClipboardList size={20} /> },
         ];
     };
 
@@ -65,9 +65,10 @@ const MobileLayout = () => {
             { name: 'Config', path: '/hospital-dashboard/settings', icon: <Settings size={22} />, color: 'bg-slate-50 text-slate-600' },
         ];
         return [
+            { name: 'Records', path: '/dashboard/records', icon: <ClipboardList size={22} />, color: 'bg-cyan-50 text-cyan-600' },
             { name: 'AI Reports', path: '/dashboard/reports', icon: <FileText size={22} />, color: 'bg-violet-50 text-violet-600' },
             { name: 'Rx Vault', path: '/dashboard/medications', icon: <Pill size={22} />, color: 'bg-rose-50 text-rose-600' },
-            { name: 'Security', path: '/dashboard/security', icon: <ShieldCheck size={22} />, color: 'bg-cyan-50 text-cyan-600' },
+            { name: 'Security', path: '/dashboard/security', icon: <ShieldCheck size={22} />, color: 'bg-emerald-50 text-emerald-600' },
             { name: 'Sessions', path: '/dashboard/sessions', icon: <Calendar size={22} />, color: 'bg-indigo-50 text-indigo-600' },
             { name: 'Identity', path: '/dashboard/profile', icon: <User size={22} />, color: 'bg-blue-50 text-blue-600' },
             { name: 'Settings', path: '/dashboard/settings', icon: <Settings size={22} />, color: 'bg-slate-50 text-slate-600' },
