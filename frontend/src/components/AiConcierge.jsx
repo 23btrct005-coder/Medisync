@@ -224,18 +224,22 @@ const AiConcierge = () => {
                     border-radius: 20px 20px 4px 20px;
                     box-shadow: 0 4px 15px rgba(0, 102, 255, 0.2);
                 }
-                .ai-card {
-                    background: white;
-                    border-radius: 20px;
-                    padding: 16px;
-                    border: 1px solid #f1f5f9;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-                    transition: all 0.3s ease;
+                .ai-card { 
+                    background: white; 
+                    border: 1px solid #f1f5f9; 
+                    border-radius: 20px; 
+                    padding: 1rem; 
+                    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
                 }
-                .ai-card:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-                    border-color: var(--primary-theme-border);
+                @media (max-width: 640px) {
+                    .ai-card { padding: 0.75rem; border-radius: 16px; }
+                    .text-sm { font-size: 0.8125rem; }
+                    .p-6 { padding: 1rem; }
+                    .gap-8 { gap: 1rem; }
+                    .w-\[440px\] { width: 100vw; }
+                    .h-\[700px\] { height: 100vh; max-height: 100vh; }
+                    .bottom-8 { bottom: 0; right: 0; }
+                    .rounded-\[32px\] { border-radius: 0; }
                 }
                 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
                 .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
@@ -263,8 +267,9 @@ const AiConcierge = () => {
                 )}
 
                 {isOpen && (
-                    <motion.div
-                        className="fixed bottom-8 right-8 bg-[#F8FAFC] rounded-[32px] shadow-[0_30px_100px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden pointer-events-auto border border-white/50"
+                    <motion.div 
+                        layoutId="ai-concierge"
+                        className={`fixed bottom-0 right-0 sm:bottom-8 sm:right-8 w-full sm:w-[440px] h-full sm:h-[700px] bg-white sm:rounded-[32px] shadow-2xl flex flex-col overflow-hidden z-[2500] ${isFullscreen ? '!w-screen !h-screen !bottom-0 !right-0 !rounded-0' : ''}`}
                         initial={{ opacity: 0, y: 50, scale: 0.95 }}
                         animate={{ 
                             opacity: 1, y: 0, scale: 1,
@@ -528,7 +533,7 @@ const AiConcierge = () => {
                                                 animate={{ opacity: 1, y: 0 }}
                                                 exit={{ opacity: 0, y: 10 }}
                                                 onClick={scrollToBottom}
-                                                className="sticky bottom-4 left-1/2 -translate-x-1/2 w-10 h-10 bg-white shadow-xl rounded-full border border-slate-100 flex items-center justify-center text-[#0066FF] hover:bg-slate-50 transition-all z-50"
+                                                className="absolute bottom-24 left-1/2 -translate-x-1/2 w-10 h-10 bg-white shadow-xl rounded-full border border-slate-100 flex items-center justify-center text-[#0066FF] hover:bg-slate-50 transition-all z-50"
                                             >
                                                 <ChevronRight size={18} className="rotate-90" />
                                             </motion.button>
