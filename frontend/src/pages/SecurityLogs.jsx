@@ -22,72 +22,116 @@ const SecurityLogs = () => {
 
   const getActionInfo = (action) => {
     switch (action) {
-      case 'ACCESS_VIEW': return { label: 'Record View', color: 'bg-indigo-50 text-indigo-600', icon: <Lock size={14} /> };
-      case 'RECORD_CREATE': return { label: 'Data Ingestion', color: 'bg-emerald-50 text-emerald-600', icon: <Activity size={14} /> };
-      default: return { label: 'Security Event', color: 'bg-slate-50 text-slate-600', icon: <Shield size={14} /> };
+      case 'ACCESS_VIEW': return { 
+        label: 'Record Accessed', 
+        color: 'text-blue-600', 
+        bg: 'bg-blue-50',
+        icon: <Lock className="w-4 h-4" />,
+        desc: 'Security node authorized a data view request.'
+      };
+      case 'RECORD_CREATE': return { 
+        label: 'Record Created', 
+        color: 'text-emerald-600', 
+        bg: 'bg-emerald-50',
+        icon: <Activity className="w-4 h-4" />,
+        desc: 'New clinical data successfully ingested and signed.'
+      };
+      default: return { 
+        label: 'Security Event', 
+        color: 'text-slate-600', 
+        bg: 'bg-slate-50',
+        icon: <Shield className="w-4 h-4" />,
+        desc: 'A clinical protocol event was logged.'
+      };
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
-        <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-            <ShieldCheck className="text-primary" size={32} /> Security Ledger
+    <div className="min-h-screen bg-[#F8FAFC] pb-24">
+      <div className="max-w-xl mx-auto pt-12 px-6">
+        <div className="mb-10 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-white shadow-xl shadow-blue-500/10 mb-6">
+            <ShieldCheck className="text-blue-500 w-8 h-8" strokeWidth={1.5} />
+          </div>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight font-outfit mb-2">
+            Security Ledger
           </h1>
-          <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">Immutable Interaction Logs</p>
+          <p className="text-slate-500 text-sm font-medium">
+            Immutable tracking of your clinical data interactions
+          </p>
         </div>
-      </div>
 
-      <div className="bg-white/70 backdrop-blur-xl border border-slate-200 rounded-[2.5rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] overflow-hidden">
-        <div className="p-8 border-b border-slate-100 bg-slate-50/50">
-          <div className="flex items-center gap-3 text-slate-500">
-            <Fingerprint size={20} />
-            <h2 className="text-sm font-black uppercase tracking-widest text-slate-900">Clinical Data Access History</h2>
+        <div className="bg-white rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden">
+          <div className="px-8 py-6 border-b border-slate-50 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Fingerprint className="text-slate-400 w-5 h-5" />
+              <h2 className="text-sm font-semibold text-slate-700">Access History</h2>
+            </div>
+            {!loading && (
+              <span className="px-3 py-1 rounded-full bg-slate-50 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                {logs.length} EVENTS
+              </span>
+            )}
+          </div>
+
+          <div className="p-2">
+            {loading ? (
+              <div className="py-24 flex flex-col items-center justify-center space-y-4">
+                <div className="w-12 h-12 border-4 border-blue-50 border-t-blue-500 rounded-full animate-spin" />
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Verifying Node...</p>
+              </div>
+            ) : logs.length === 0 ? (
+              <div className="py-24 text-center px-10">
+                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <ShieldCheck className="text-slate-200 w-10 h-10" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-800 mb-2">Registry Empty</h3>
+                <p className="text-slate-400 text-sm leading-relaxed">
+                  No data interactions have been logged in this clinical node yet.
+                </p>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-50">
+                {logs.map((log) => {
+                  const info = getActionInfo(log.action);
+                  return (
+                    <div key={log.id} className="p-6 transition-colors hover:bg-slate-50/50 group">
+                      <div className="flex items-start gap-5">
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105 ${info.bg} ${info.color}`}>
+                          {info.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className={`text-[10px] font-bold uppercase tracking-wider ${info.color}`}>
+                              {info.label}
+                            </span>
+                            <span className="text-[10px] font-medium text-slate-400 flex items-center gap-1.5">
+                              <Clock className="w-3 h-3" /> 
+                              {new Date(log.createdAt).toLocaleDateString('en-IN', {
+                                day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                              })}
+                            </span>
+                          </div>
+                          <h3 className="text-[15px] font-bold text-slate-800 leading-tight mb-1">
+                            {log.performerName}
+                          </h3>
+                          <p className="text-[12px] text-slate-500 font-medium leading-relaxed">
+                            {log.details || info.desc}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="p-4">
-          {loading ? (
-             <div className="py-20 text-center text-slate-400">
-               <Shield className="animate-pulse mx-auto mb-4" size={48} />
-               <p className="text-[10px] font-black uppercase tracking-widest">Synchronizing Ledger...</p>
-             </div>
-          ) : logs.length === 0 ? (
-            <div className="py-20 text-center text-slate-300">
-               <ShieldCheck className="mx-auto mb-4 opacity-20" size={64} />
-               <p className="text-sm font-bold">No security events indexed</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {logs.map((log) => {
-                const info = getActionInfo(log.action);
-                return (
-                  <div key={log.id} className="p-6 hover:bg-slate-50 rounded-3xl transition-all group border border-transparent hover:border-slate-100">
-                    <div className="flex items-start gap-4">
-                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${info.color}`}>
-                        {info.icon}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full ${info.color}`}>
-                            {info.label}
-                          </span>
-                          <span className="text-[9px] font-bold text-slate-400 flex items-center gap-1.5 uppercase tracking-widest">
-                            <Clock size={10} /> {new Date(log.createdAt).toLocaleString()}
-                          </span>
-                        </div>
-                        <p className="text-sm font-black text-slate-800 mb-1 leading-tight tracking-tight uppercase">
-                          {log.performerName}
-                        </p>
-                        <p className="text-[11px] text-slate-400 font-bold uppercase tracking-tight">{log.details}</p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+        <div className="mt-8 text-center">
+          <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em] flex items-center justify-center gap-2">
+            <ShieldCheck className="w-3 h-3" /> End-to-End Encrypted Ledger
+          </p>
         </div>
       </div>
     </div>

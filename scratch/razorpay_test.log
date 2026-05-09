@@ -1,0 +1,38 @@
+spawn ssh -o StrictHostKeyChecking=no root@164.52.213.234
+root@164.52.213.234's password: 
+Welcome to Ubuntu 22.04.5 LTS (GNU/Linux 6.0.0-060000-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+ System information as of Sat May  9 01:24:37 IST 2026
+
+  System load:  0.0               Processes:             143
+  Usage of /:   6.4% of 90.08GB   Users logged in:       0
+  Memory usage: 19%               IPv4 address for eth0: 164.52.213.234
+  Swap usage:   0%
+
+ * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s
+   just raised the bar for easy, resilient and secure K8s cluster deployment.
+
+   https://ubuntu.com/engage/secure-kubernetes-at-the-edge
+
+Expanded Security Maintenance for Applications is not enabled.
+
+6 updates can be applied immediately.
+To see these additional updates run: apt list --upgradable
+
+5 additional security updates can be applied with ESM Apps.
+Learn more about enabling ESM Apps service at https://ubuntu.com/esm
+
+New release '24.04.4 LTS' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+
+*** System restart required ***
+Last login: Sat May  9 01:24:19 2026 from 157.50.163.236
+root@e2e-82-234:~# <eAOJCBw4l23OBpDZ https://api.razorpay.com/v1/orders
+{"entity":"collection","count":10,"items":[{"amount":100,"amount_due":100,"amount_paid":null,"attempts":0,"created_at":1778269415,"currency":"INR","entity":"order","id":"order_SmzPUs3JAoigYN","notes":[],"offer_id":null,"receipt":"appt_1778269415099","status":"created"},{"amount":100,"amount_due":100,"amount_paid":null,"attempts":0,"created_at":1778269313,"currency":"INR","entity":"order","id":"order_SmzNhOKNYT4OWb","notes":[],"offer_id":null,"receipt":"appt_1778269312788","status":"created"},{"amount":100,"amount_due":100,"amount_paid":null,"attempts":0,"created_at":1778149233,"currency":"INR","entity":"order","id":"order_SmRHd7WbPkkwqF","notes":[],"offer_id":null,"receipt":"appt_1778149233312","status":"created"},{"amount":100,"amount_due":100,"amount_paid":null,"attempts":0,"created_at":1778149216,"currency":"INR","entity":"order","id":"order_SmRHK9rMKy3krY","notes":[],"offer_id":null,"receipt":"appt_1778149215727","status":"created"},{"amount":100,"amount_due":100,"amount_paid":null,"attempts":0,"created_at":1778148619,"currency":"INR","entity":"order","id":"order_SmR6oiXzUyAAf8","notes":[],"offer_id":null,"receipt":"service_1778148619120","status":"created"},{"amount":100,"amount_due":100,"amount_paid":null,"attempts":0,"created_at":1778148618,"currency":"INR","entity":"order","id":"order_SmR6naAns6ZKov","notes":[],"offer_id":null,"receipt":"service_1778148618096","status":"created"},{"amount":100,"amount_due":100,"amount_paid":null,"attempts":0,"created_at":1778148617,"currency":"INR","entity":"order","id":"order_SmR6mLXqTWQrPF","notes":[],"offer_id":null,"receipt":"service_1778148616977","status":"created"},{"amount":100,"amount_due":100,"amount_paid":null,"attempts":0,"created_at":1778148615,"currency":"INR","entity":"order","id":"order_SmR6kOutRovdYm","notes":[],"offer_id":null,"receipt":"service_1778148615183","status":"created"},{"amount":100,"amount_due":100,"amount_paid":null,"attempts":0,"created_at":1778148610,"currency":"INR","entity":"order","id":"order_SmR6fOGKq2Nja4","notes":[],"offer_id":null,"receipt":"service_1778148609741","status":"created"},{"amount":100,"amount_due":100,"amount_paid":null,"attempts":0,"created_at":1778146846,"currency":"INR","entity":"order","id":"order_SmQbc7TCImDBph","notes":[],"offer_id":null,"receipt":"service_1778146846791","status":"created"}]}root@e2e-82-234:~# exit
+logout
+Connection to 164.52.213.234 closed.
