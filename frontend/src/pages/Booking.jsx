@@ -896,20 +896,42 @@ const Booking = () => {
                   </h3>
                   
                   {SERVICES_24_7.includes(selectedService) ? (
-                    <div className="p-8 bg-red-50 rounded-[2.5rem] border-2 border-red-100 text-center space-y-4 shadow-sm">
-                        <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-red-500/20 animate-pulse">
-                            <Activity className="text-white" size={32} />
+                    <div className="relative group overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-rose-600/10 opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
+                        <div className="relative p-10 bg-white/40 backdrop-blur-xl rounded-[3rem] border-2 border-rose-100/50 text-center space-y-6 shadow-xl shadow-rose-500/5">
+                            <div className="relative w-20 h-20 mx-auto">
+                                <div className="absolute inset-0 bg-rose-500 rounded-full animate-ping opacity-20" />
+                                <div className="relative w-20 h-20 bg-rose-500 rounded-full flex items-center justify-center shadow-2xl shadow-rose-500/40">
+                                    <Activity className="text-white" size={36} />
+                                </div>
+                            </div>
+                            
+                            <div className="space-y-2">
+                                <h4 className="text-xl font-black text-slate-900 tracking-tight">Immediate Clinical Protocol</h4>
+                                <p className="text-[10px] font-black text-rose-500 uppercase tracking-[0.2em]">24/7 Priority Emergency Lane</p>
+                                <p className="text-xs text-slate-500 font-medium max-w-xs mx-auto leading-relaxed">
+                                    This institution provides on-demand emergency care. No pre-scheduled slots required for this service.
+                                </p>
+                            </div>
+
+                            <button 
+                                onClick={() => setSelectedSlot('IMMEDIATE')}
+                                className={`w-full py-5 rounded-[2rem] font-black text-xs uppercase tracking-widest transition-all duration-500 relative overflow-hidden ${
+                                    selectedSlot === 'IMMEDIATE' 
+                                        ? 'bg-rose-600 text-white shadow-2xl shadow-rose-600/40' 
+                                        : 'bg-white text-rose-600 border-2 border-rose-100 hover:border-rose-300 hover:bg-rose-50/50'
+                                }`}
+                            >
+                                <span className="relative z-10 flex items-center justify-center gap-2">
+                                    {selectedSlot === 'IMMEDIATE' ? (
+                                        <>
+                                            <CheckCircle2 size={18} />
+                                            Protocol Authorized
+                                        </>
+                                    ) : 'Activate Immediate Access'}
+                                </span>
+                            </button>
                         </div>
-                        <div>
-                            <h4 className="text-sm font-black text-red-700 uppercase tracking-widest">Immediate / On-Demand Access</h4>
-                            <p className="text-[10px] text-red-600/70 font-bold uppercase mt-1">24/7 Emergency Service: No Slot Booking Required</p>
-                        </div>
-                        <button 
-                            onClick={() => setSelectedSlot('IMMEDIATE')}
-                            className={`w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${selectedSlot === 'IMMEDIATE' ? 'bg-red-500 text-white shadow-xl shadow-red-500/30' : 'bg-white text-red-500 border-2 border-red-200 hover:bg-red-50'}`}
-                        >
-                            {selectedSlot === 'IMMEDIATE' ? '✓ Immediate Access Requested' : 'Confirm Immediate Access'}
-                        </button>
                     </div>
                   ) : (
                     <>
@@ -960,24 +982,29 @@ const Booking = () => {
                 </section>
 
                 <div className="pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-6">
-                  <div>
-                    <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Total Clinical Fee</p>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-black text-slate-900">
-                        ₹{(() => {
-                          try {
-                            const fees = typeof selectedDoctor.serviceFees === 'string' ? JSON.parse(selectedDoctor.serviceFees) : selectedDoctor.serviceFees;
-                            if (bookingMode === 'service') {
-                                return fees?.[selectedService] || (selectedService.includes('MRI') ? '2500' : '500');
-                            }
-                            const coreService = consultationType === 'ONLINE' ? 'Telemedicine' : 'General Consultation';
-                            return fees?.[coreService] || (consultationType === 'ONLINE' ? (selectedDoctor.onlineConsultationFee || 500) : (selectedDoctor.offlineConsultationFee || 800));
-                          } catch(e) {
-                            return consultationType === 'ONLINE' ? (selectedDoctor.onlineConsultationFee || 500) : (selectedDoctor.offlineConsultationFee || 800);
-                          }
-                        })()}
-                      </span>
-                      <span className="text-xs font-bold text-slate-400">Total</span>
+                  <div className="flex items-center gap-6 p-6 bg-slate-50/50 rounded-[2rem] border border-slate-100 flex-1">
+                    <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-slate-100">
+                        <CreditCard size={24} className="text-primary-500" />
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-1">Total Institutional Fee</p>
+                        <div className="flex items-baseline gap-1">
+                            <span className="text-3xl font-black text-slate-900">
+                                ₹{(() => {
+                                try {
+                                    const fees = typeof selectedDoctor.serviceFees === 'string' ? JSON.parse(selectedDoctor.serviceFees) : selectedDoctor.serviceFees;
+                                    if (bookingMode === 'service') {
+                                        return fees?.[selectedService] || (selectedService.includes('MRI') ? '2500' : '500');
+                                    }
+                                    const coreService = consultationType === 'ONLINE' ? 'Telemedicine' : 'General Consultation';
+                                    return fees?.[coreService] || (consultationType === 'ONLINE' ? (selectedDoctor.onlineConsultationFee || 500) : (selectedDoctor.offlineConsultationFee || 800));
+                                } catch(e) {
+                                    return consultationType === 'ONLINE' ? (selectedDoctor.onlineConsultationFee || 500) : (selectedDoctor.offlineConsultationFee || 800);
+                                }
+                                })()}
+                            </span>
+                            <span className="text-[10px] font-black text-slate-400 uppercase">INR</span>
+                        </div>
                     </div>
                   </div>
                   <button

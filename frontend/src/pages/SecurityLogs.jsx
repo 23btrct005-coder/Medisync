@@ -6,6 +6,9 @@ const SecurityLogs = () => {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState('ALL');
+
   useEffect(() => {
     const fetchLogs = async () => {
       try {
@@ -46,53 +49,81 @@ const SecurityLogs = () => {
     }
   };
 
+  const filteredLogs = logs.filter(log => {
+    const matchesSearch = log.performerName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         log.details?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filterType === 'ALL' || 
+                         (filterType === 'ACCESS' && log.action === 'ACCESS_VIEW') ||
+                         (filterType === 'CREATE' && log.action === 'RECORD_CREATE');
+    return matchesSearch && matchesFilter;
+  });
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-24">
       <div className="max-w-xl mx-auto pt-12 px-6">
-        <div className="mb-10 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-white shadow-xl shadow-blue-500/10 mb-6">
-            <ShieldCheck className="text-blue-500 w-8 h-8" strokeWidth={1.5} />
+        <div className="mb-10">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white shadow-xl shadow-blue-500/10">
+                <ShieldCheck className="text-blue-500 w-7 h-7" strokeWidth={1.5} />
+            </div>
+            <div>
+                <h1 className="text-2xl font-black text-slate-900 tracking-tight">Security Ledger</h1>
+                <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Immutable Clinical Node</p>
+            </div>
           </div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight font-outfit mb-2">
-            Security Ledger
-          </h1>
-          <p className="text-slate-500 text-sm font-medium">
-            Immutable tracking of your clinical data interactions
-          </p>
+
+          <div className="space-y-4">
+            <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Fingerprint className="h-4 w-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                </div>
+                <input 
+                    type="text" 
+                    placeholder="Search ledger by actor or event..."
+                    className="w-full pl-11 pr-4 py-4 bg-white border border-slate-100 rounded-2xl text-sm font-bold focus:border-blue-400 focus:ring-4 focus:ring-blue-500/5 outline-none transition-all shadow-sm"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+
+            <div className="flex p-1 bg-slate-100 rounded-xl w-fit">
+                {[
+                    { id: 'ALL', label: 'All Events' },
+                    { id: 'ACCESS', label: 'Access' },
+                    { id: 'CREATE', label: 'Creation' }
+                ].map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setFilterType(tab.id)}
+                        className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${filterType === tab.id ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}
+                    >
+                        {tab.label}
+                    </button>
+                ))}
+            </div>
+          </div>
         </div>
 
         <div className="bg-white rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden">
-          <div className="px-8 py-6 border-b border-slate-50 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Fingerprint className="text-slate-400 w-5 h-5" />
-              <h2 className="text-sm font-semibold text-slate-700">Access History</h2>
-            </div>
-            {!loading && (
-              <span className="px-3 py-1 rounded-full bg-slate-50 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                {logs.length} EVENTS
-              </span>
-            )}
-          </div>
-
           <div className="p-2">
             {loading ? (
               <div className="py-24 flex flex-col items-center justify-center space-y-4">
                 <div className="w-12 h-12 border-4 border-blue-50 border-t-blue-500 rounded-full animate-spin" />
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Verifying Node...</p>
               </div>
-            ) : logs.length === 0 ? (
+            ) : filteredLogs.length === 0 ? (
               <div className="py-24 text-center px-10">
                 <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
                   <ShieldCheck className="text-slate-200 w-10 h-10" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-800 mb-2">Registry Empty</h3>
+                <h3 className="text-lg font-bold text-slate-800 mb-2">No Matches Found</h3>
                 <p className="text-slate-400 text-sm leading-relaxed">
-                  No data interactions have been logged in this clinical node yet.
+                  Adjust your filters or search terms to find specific security events.
                 </p>
               </div>
             ) : (
               <div className="divide-y divide-slate-50">
-                {logs.map((log) => {
+                {filteredLogs.map((log) => {
                   const info = getActionInfo(log.action);
                   return (
                     <div key={log.id} className="p-6 transition-colors hover:bg-slate-50/50 group">
