@@ -129,8 +129,9 @@ const AiConcierge = () => {
         const sections = {
             assessment: '',
             possibleConditions: '',
+            riskIndicators: '',
             severity: 'LOW',
-            department: '',
+            specialist: '',
             action: '',
             questions: [],
             warning: '',
@@ -151,13 +152,16 @@ const AiConcierge = () => {
             } else if (lowerL.includes('possible conditions')) {
                 currentSection = 'possibleConditions';
                 sections.possibleConditions += l.replace(/possible conditions:?/i, '').trim() + ' ';
-            } else if (lowerL.includes('risk level')) {
+            } else if (lowerL.includes('risk indicators')) {
+                currentSection = 'riskIndicators';
+                sections.riskIndicators += l.replace(/risk indicators:?/i, '').trim() + ' ';
+            } else if (lowerL.includes('triage level')) {
                 currentSection = 'severity';
-                const content = l.replace(/risk level:?/i, '').replace(/[\[\]:]/g, '').trim();
+                const content = l.replace(/triage level:?/i, '').replace(/[\[\]:]/g, '').trim();
                 if (content) sections.severity = content;
-            } else if (lowerL.includes('recommended department')) {
-                currentSection = 'department';
-                sections.department += l.replace(/recommended department:?/i, '').trim() + ' ';
+            } else if (lowerL.includes('recommended specialist')) {
+                currentSection = 'specialist';
+                sections.specialist += l.replace(/recommended specialist:?/i, '').trim() + ' ';
             } else if (lowerL.includes('suggested next steps')) {
                 currentSection = 'action';
                 sections.action += l.replace(/suggested next steps:?/i, '').trim() + ' ';
@@ -173,6 +177,10 @@ const AiConcierge = () => {
                     sections.assessment += l + ' ';
                 } else if (currentSection === 'possibleConditions') {
                     sections.possibleConditions += l + ' ';
+                } else if (currentSection === 'riskIndicators') {
+                    sections.riskIndicators += l + ' ';
+                } else if (currentSection === 'specialist') {
+                    sections.specialist += l + ' ';
                 } else if (currentSection === 'action') {
                     sections.action += l + ' ';
                 } else if (currentSection === 'warning') {
@@ -375,10 +383,22 @@ const AiConcierge = () => {
                                                                                     <div className="flex flex-col gap-2 p-4 bg-blue-50/30 rounded-2xl border border-blue-100/50">
                                                                                         <div className="flex items-center gap-2 mb-1">
                                                                                             <Search size={14} className="text-blue-500" />
-                                                                                            <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">Possible Conditions</span>
+                                                                                            <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">Possible Causes</span>
                                                                                         </div>
-                                                                                        <p className="text-xs font-bold text-slate-600 leading-relaxed">
+                                                                                        <p className="text-xs font-bold text-slate-600 leading-relaxed italic">
                                                                                             {s.possibleConditions}
+                                                                                        </p>
+                                                                                    </div>
+                                                                                )}
+
+                                                                                {s.riskIndicators && (
+                                                                                    <div className="flex flex-col gap-2 p-3 bg-slate-50/50 rounded-xl border border-slate-100/50">
+                                                                                        <div className="flex items-center gap-2 mb-1">
+                                                                                            <AlertCircle size={12} className="text-amber-500" />
+                                                                                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Clinical Observations</span>
+                                                                                        </div>
+                                                                                        <p className="text-[11px] font-bold text-slate-500 leading-relaxed">
+                                                                                            {s.riskIndicators}
                                                                                         </p>
                                                                                     </div>
                                                                                 )}
@@ -387,13 +407,13 @@ const AiConcierge = () => {
                                                                             {/* Clinical Grid */}
                                                                             <div className="grid grid-cols-2 gap-3">
                                                                                 <div className={`p-4 rounded-2xl border ${ui.bg} ${ui.border} flex flex-col gap-1`}>
-                                                                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">RISK LEVEL</span>
+                                                                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">TRIAGE LEVEL</span>
                                                                                     <span className={`text-xs font-black ${ui.color}`}>{ui.label}</span>
                                                                                 </div>
-                                                                                {s.department && (
+                                                                                {s.specialist && (
                                                                                     <div className="p-4 rounded-2xl border border-slate-50 bg-slate-50/50 flex flex-col gap-1">
-                                                                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">RECOMMENDED DEPT</span>
-                                                                                        <span className="text-xs font-black text-slate-700 truncate">{s.department}</span>
+                                                                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">RECOMMENDED SPECIALIST</span>
+                                                                                        <span className="text-xs font-black text-slate-700 truncate">{s.specialist}</span>
                                                                                     </div>
                                                                                 )}
                                                                             </div>
