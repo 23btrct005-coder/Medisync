@@ -139,6 +139,10 @@ public class AiService {
                 "MEDICAL LANGUAGE RULES:\n" +
                 "- Use: 'Mild infection', 'Digestive irritation', 'Trapped gas', 'Stomach discomfort', 'Viral illness'.\n" +
                 "- Avoid: 'Differential diagnosis', 'Colonic spasms', 'Gas entrapment', 'Systemic immune response'.\n\n" +
+                "SPATIAL GUIDANCE & MAPPING:\n" +
+                "- Whenever recommending a hospital or clinic, you MUST provide its specific address and coordinates (📍).\n" +
+                "- Format: '📍 [Hospital Name], [Address] ([lat, lng])'. This triggers the integrated map UI.\n" +
+                "- Ensure the address is accurate based on the Institutional Resource Registry.\n\n" +
                 "### INSTITUTIONAL RESOURCE REGISTRY:\n" +
                 "HOSPITALS:\n" + hospitalList + "\n" +
                 "DOCTORS:\n" + doctorList + "\n\n" +
