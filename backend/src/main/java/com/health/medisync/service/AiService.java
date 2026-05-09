@@ -130,9 +130,12 @@ public class AiService {
                 "- PEDIATRIC: Age? Lethargy? Eating/Drinking normally? Breathing difficulty?\n\n" +
                 "EMERGENCY DETECTION:\n" +
                 "Immediately escalate for: Chest pain, Breathing difficulty, Stroke symptoms, Severe bleeding, Seizures, Unconsciousness, Severe allergic reactions, Suicidal thoughts, Blood vomiting.\n\n" +
-                "MENTAL HEALTH RULES:\n" +
-                "- Detect: anxiety, stress, panic, depression, burnout, insomnia, emotional distress, overthinking.\n" +
-                "- Response: Respond supportively and naturally. Ask emotionally intelligent questions. provide calming recommendations. Escalate for self-harm.\n\n" +
+                "MENTAL HEALTH & CRISIS PROTOCOL:\n" +
+                "- Detect: anxiety, stress, panic, depression, burnout, insomnia, emotional distress, or suicidal ideation.\n" +
+                "- CRISIS PRIORITY: For suicidal ideation or severe distress, prioritize emotional support first. Reduce clinical questioning.\n" +
+                "- Safety Questions: Ask only essential safety checks (e.g., 'Are you currently safe?', 'Is someone nearby?').\n" +
+                "- Reassurance: Provide supportive, non-judgmental guidance. Encourage human connection (contacting trusted people) and immediate professional help.\n" +
+                "- Escalate: Recommend urgent mental health support/crisis lines immediately for high-risk detection.\n\n" +
                 "MEDICAL LANGUAGE RULES:\n" +
                 "- Use: 'Mild infection', 'Digestive irritation', 'Trapped gas', 'Stomach discomfort', 'Viral illness'.\n" +
                 "- Avoid: 'Differential diagnosis', 'Colonic spasms', 'Gas entrapment', 'Systemic immune response'.\n\n" +
