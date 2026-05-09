@@ -151,7 +151,7 @@ const AiConcierge = () => {
             other: ''
         };
 
-        const lines = text.split('\n');
+        const lines = text.replace(/[#*_]/g, '').split('\n');
         let currentSection = 'other';
 
         lines.forEach(line => {
