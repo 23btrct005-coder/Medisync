@@ -72,6 +72,8 @@ const Booking = () => {
 
   const [searchParams] = useSearchParams();
   const doctorNameParam = searchParams.get('doctor');
+  const modeParam = searchParams.get('mode');
+  const serviceParam = searchParams.get('service');
 
   useEffect(() => {
     fetchDoctors();
@@ -86,6 +88,14 @@ const Booking = () => {
         }
     }
   }, [doctors, doctorNameParam]);
+
+  useEffect(() => {
+    if (modeParam === 'service' && serviceParam) {
+        setBookingMode('service');
+        setSelectedService(serviceParam);
+        setBookingStep('details');
+    }
+  }, [modeParam, serviceParam]);
 
   useEffect(() => {
     if (selectedDoctor && bookingDate) {
