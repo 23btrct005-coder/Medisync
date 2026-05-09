@@ -41,9 +41,11 @@ const MobileDashboard = () => {
         fetchMobileData();
     }, []);
 
-    const upcoming = appointments
-        .filter(a => a.status === 'BOOKED' && new Date(a.appointmentDate) >= new Date().setHours(0,0,0,0))
-        .sort((a,b) => new Date(a.appointmentDate) - new Date(b.appointmentDate))[0];
+    const upcoming = appointments && Array.isArray(appointments)
+        ? appointments
+            .filter(a => a && a.status === 'BOOKED' && a.appointmentDate && new Date(a.appointmentDate) >= new Date().setHours(0,0,0,0))
+            .sort((a,b) => new Date(a.appointmentDate) - new Date(b.appointmentDate))[0]
+        : null;
 
     const container = {
         hidden: { opacity: 0 },
@@ -82,7 +84,7 @@ const MobileDashboard = () => {
             <motion.div variants={item} className="flex items-center justify-between pb-2">
                 <div>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Clinical Terminal</p>
-                    <h2 className="text-3xl font-black text-slate-900 tracking-tight">Hello, {user?.name?.split(' ')[0]}</h2>
+                    <h2 className="text-3xl font-black text-slate-900 tracking-tight">Hello, {(user?.name || 'User').split(' ')[0]}</h2>
                 </div>
             </motion.div>
 
@@ -144,7 +146,7 @@ const MobileDashboard = () => {
                         <div>
                             <p className="text-[9px] font-black text-primary-600 uppercase tracking-[0.2em] mb-1">Next Protocol</p>
                             <h4 className="text-lg font-black text-slate-900 leading-none">
-                                {upcoming.serviceName || `Dr. ${upcoming.doctor?.name?.split(' ')[0]}`}
+                                {upcoming.serviceName || `Dr. ${(upcoming.doctor?.name || 'Staff').split(' ')[0]}`}
                             </h4>
                             <div className="flex items-center gap-2 mt-2">
                                 <div className="flex items-center gap-1 text-[9px] font-bold text-slate-500 bg-slate-50 px-2 py-0.5 rounded-full">

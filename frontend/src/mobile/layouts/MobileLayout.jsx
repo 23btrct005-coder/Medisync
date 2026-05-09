@@ -135,7 +135,7 @@ const MobileLayout = () => {
 
             {/* ── THUMB-CENTRIC BOTTOM DOCK ── */}
             <nav className="fixed bottom-4 left-4 right-4 h-20 bg-white/90 backdrop-blur-2xl border border-white/40 rounded-[2.5rem] px-2 shadow-[0_20px_50px_rgba(0,0,0,0.12)] z-[200] flex items-center justify-around">
-                {primaryNav.slice(0, 2).map((item) => (
+                {(primaryNav || []).slice(0, 2).map((item) => item && (
                     <NavLink 
                         key={item.name} 
                         to={item.path} 
@@ -157,7 +157,7 @@ const MobileLayout = () => {
                     <Grid size={24} />
                 </motion.button>
 
-                {primaryNav.slice(2, 4).map((item) => (
+                {(primaryNav || []).slice(2, 4).map((item) => item && (
                     <NavLink 
                         key={item.name} 
                         to={item.path} 
@@ -208,7 +208,7 @@ const MobileLayout = () => {
                             </div>
 
                             <div className="grid grid-cols-3 gap-3 mb-10">
-                                {secondaryNav.map((item) => (
+                                {(secondaryNav || []).map((item) => item && (
                                     <motion.button 
                                         key={item.name} 
                                         whileTap={{ scale: 0.95 }}
@@ -269,8 +269,8 @@ const MobileLayout = () => {
                         <div className="flex-1 overflow-y-auto no-scrollbar">
                             <div className="space-y-2">
                                 {[...primaryNav, ...secondaryNav]
-                                    .filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()))
-                                    .map((result) => (
+                                    .filter(item => item && item.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                                    .map((result) => result && (
                                         <motion.button 
                                             key={result.name}
                                             initial={{ opacity: 0, x: -10 }}
