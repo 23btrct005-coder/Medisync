@@ -44,9 +44,12 @@ public class AiController {
             }
 
             String imageData = (String) request.get("imageData");
+            System.out.println("DEBUG: AiController -> Request received from: " + patientEmail);
             String response = aiService.generateResponse(userMessage, history, patientEmail, roles, location, imageData);
+            System.out.println("DEBUG: AiController -> Response generated successfully.");
             return ResponseEntity.ok(Map.of("response", response));
         } catch (Exception e) {
+            System.err.println("DEBUG: AiController -> ERROR in chat: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of("error", "Clinical Engine Error: " + e.getMessage()));
         }

@@ -155,17 +155,24 @@ public class AiService {
                 parts.add(imagePart);
             }
 
+            System.out.println("DEBUG: AiService -> Calling Gemini...");
             neuralResponse = geminiAiService.getCompletion(parts);
+            System.out.println("DEBUG: AiService -> Gemini response: " + (neuralResponse != null ? (neuralResponse.length() > 50 ? neuralResponse.substring(0, 50) + "..." : neuralResponse) : "NULL"));
             
             // AUTOMATIC FAILOVER: If Gemini fails, use Groq Llama-3.3-70b
             if (neuralResponse == null || neuralResponse.contains("error") || neuralResponse.contains("403") || neuralResponse.contains("404")) {
+                System.out.println("DEBUG: AiService -> Gemini failed or error. Failing over to Groq...");
                 neuralResponse = groqAiService.getCompletion(prompt);
+                System.out.println("DEBUG: AiService -> Groq response: " + (neuralResponse != null ? (neuralResponse.length() > 50 ? neuralResponse.substring(0, 50) + "..." : neuralResponse) : "NULL"));
             }
 
             if (neuralResponse != null && !neuralResponse.contains("error")) {
+                System.out.println("DEBUG: AiService -> Valid response obtained.");
                 if (userEmail != null) sessionSummaries.put(userEmail, neuralResponse.length() > 200 ? neuralResponse.substring(0, 200) + "..." : neuralResponse);
                 return neuralResponse;
             }
+            
+            System.out.println("DEBUG: AiService -> All providers failed or returned error.");
             
             return "I apologize, but I encountered a clinical reasoning interruption while analyzing the image. Please try providing more details in text or re-uploading a clearer image.";
         } catch (Exception e) { 
