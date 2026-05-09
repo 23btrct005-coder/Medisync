@@ -190,6 +190,8 @@ const AiConcierge = () => {
                     sections.action += l + ' ';
                 } else if (currentSection === 'warning') {
                     sections.warning += l + ' ';
+                } else if (currentSection === 'severity') {
+                    sections.severity = l.toUpperCase().trim();
                 } else {
                     sections.other += l + ' ';
                 }
@@ -356,10 +358,12 @@ const AiConcierge = () => {
                                                             const s = parseAiResponse(m.text);
                                                             const ui = getSeverityUI(s.severity);
                                                             const isCritical = ui.label === 'CRITICAL';
+                                                            const hasSubstantiveWarning = s.warning && !s.warning.toLowerCase().includes('none') && !s.warning.toLowerCase().includes('n/a');
+                                                            const showEmergency = isCritical || hasSubstantiveWarning;
 
                                                             return (
                                                                 <>
-                                                                    {(isCritical || s.warning) && (
+                                                                    {showEmergency && (
                                                                         <div className={`p-5 rounded-2xl ${ui.glow || 'bg-red-50 border border-red-200'} flex flex-col gap-4`}>
                                                                             <div className="flex items-center justify-between">
                                                                                 <div className="flex items-center gap-2 text-red-600 font-black text-xs">
