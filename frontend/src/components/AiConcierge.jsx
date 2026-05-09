@@ -285,7 +285,12 @@ const AiConcierge = () => {
             });
         })();
 
-        return { ...sections, suggestedDoctor, matchedService };
+        const mapMatch = text.match(/https:\/\/www\.google\.com\/maps\/search\/\?api=1&query=([^)\n\s]+)/);
+        const mapUrl = mapMatch ? mapMatch[0] : null;
+        const hospitalMatch = text.match(/([A-Z][A-Za-z\s]+(Hospital|Clinic|Medical Center))/i);
+        const suggestedHospital = hospitalMatch ? hospitalMatch[0].trim() : null;
+
+        return { ...sections, suggestedDoctor, matchedService, mapUrl, suggestedHospital };
     };
 
     const getSeverityStyles = (severity) => {
@@ -528,6 +533,32 @@ const AiConcierge = () => {
                                                                     </li>
                                                                 ))}
                                                             </ul>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Map Card */}
+                                                    {segments.mapUrl && (
+                                                        <div className="mt-2 rounded-2xl overflow-hidden border border-slate-100 shadow-sm group/map relative">
+                                                            <div className="h-28 bg-slate-100 flex items-center justify-center relative overflow-hidden">
+                                                                <div className="absolute inset-0 bg-[url('https://www.google.com/maps/vt/pb=!1m4!1m3!1i12!2i2361!3i1589!2m3!1e0!2sm!3i420120488!3m8!2sen!3sus!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0!5m1!1e0!23i4111425')] bg-cover opacity-60"></div>
+                                                                <div className="relative z-10 w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white animate-bounce shadow-xl">
+                                                                    <MapPin size={20} />
+                                                                </div>
+                                                            </div>
+                                                            <div className="p-4 bg-white flex items-center justify-between">
+                                                                <div className="flex-1">
+                                                                    <h4 className="text-xs font-black text-slate-800 uppercase tracking-tight truncate">{segments.suggestedHospital || "Recommended Facility"}</h4>
+                                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Clinical Navigation Ready</p>
+                                                                </div>
+                                                                <a 
+                                                                    href={segments.mapUrl} 
+                                                                    target="_blank" 
+                                                                    rel="noopener noreferrer"
+                                                                    className="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                                                                >
+                                                                    Navigate
+                                                                </a>
+                                                            </div>
                                                         </div>
                                                     )}
 

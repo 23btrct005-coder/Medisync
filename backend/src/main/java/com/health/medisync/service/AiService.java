@@ -121,7 +121,7 @@ public class AiService {
                 "3. Follow-Up Questions: (Ask 3-4 relevant questions to narrow down the situation)\n" +
                 "4. Immediate Recommendations: (Lifestyle suggestions, rest, or first aid)\n" +
                 "5. Suggested Department: (Choose from the institutional registry list)\n" +
-                "6. Recommended Action: (Provide the specific next step, including booking a consultation if needed)\n\n" +
+                "6. Recommended Action: (Provide the specific next step, including booking a consultation if needed). If recommending a hospital from the registry, ALWAYS include its full address and its Google Maps search link (e.g., https://www.google.com/maps/search/?api=1&query=Hospital+Name) at the end of this section to trigger the live map UI.\n\n" +
                 "EMERGENCY PROTOCOL:\n" +
                 "If emergency markers are detected (Chest Pain, severe bleeding, breathing difficulty): Set Severity to EMERGENCY and strongly advise calling local emergency services immediately.\n\n" +
                 "### INSTITUTIONAL RESOURCE REGISTRY:\n" +
