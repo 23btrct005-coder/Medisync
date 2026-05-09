@@ -84,9 +84,6 @@ const MobileDashboard = () => {
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Clinical Terminal</p>
                     <h2 className="text-3xl font-black text-slate-900 tracking-tight">Hello, {user?.name?.split(' ')[0]}</h2>
                 </div>
-                <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center border border-slate-200">
-                    <Bell size={20} className="text-slate-400" />
-                </div>
             </motion.div>
 
             {/* ── PRIORITY 1: EMERGENCY & URGENT ── */}

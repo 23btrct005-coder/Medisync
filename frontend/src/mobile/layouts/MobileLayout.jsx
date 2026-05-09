@@ -15,6 +15,8 @@ const MobileLayout = () => {
     const { user, userRole, logout } = useAuth();
     const { unreadChatCount } = useNotifications();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -106,6 +108,7 @@ const MobileLayout = () => {
                 <div className="flex items-center gap-2">
                     <motion.button 
                         whileTap={{ scale: 0.9 }}
+                        onClick={() => setIsSearchOpen(true)}
                         className="h-10 w-10 flex items-center justify-center text-slate-400 bg-slate-50 rounded-full border border-slate-100"
                     >
                         <Search size={18} />
@@ -230,6 +233,73 @@ const MobileLayout = () => {
                             </motion.button>
                         </motion.div>
                     </>
+                )}
+            </AnimatePresence>
+
+            {/* ── INTELLIGENT SEARCH OVERLAY ── */}
+            <AnimatePresence>
+                {isSearchOpen && (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-white z-[1000] flex flex-col p-6"
+                    >
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="flex-1 relative">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                                <input 
+                                    autoFocus
+                                    type="text"
+                                    placeholder="Search clinical modules..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full h-14 pl-12 pr-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-primary-500 outline-none font-black uppercase tracking-tight text-sm text-slate-800 transition-all"
+                                />
+                            </div>
+                            <motion.button 
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }}
+                                className="h-14 w-14 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-500"
+                            >
+                                <X size={24} />
+                            </motion.button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto no-scrollbar">
+                            <div className="space-y-2">
+                                {[...primaryNav, ...secondaryNav]
+                                    .filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                                    .map((result) => (
+                                        <motion.button 
+                                            key={result.name}
+                                            initial={{ opacity: 0, x: -10 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            onClick={() => { navigate(result.path); setIsSearchOpen(false); setSearchQuery(''); }}
+                                            className="w-full p-5 bg-white border border-slate-100 rounded-3xl flex items-center gap-4 active:bg-slate-50 transition-all"
+                                        >
+                                            <div className={`h-12 w-12 ${result.color || 'bg-slate-100 text-slate-600'} rounded-2xl flex items-center justify-center`}>
+                                                {result.icon}
+                                            </div>
+                                            <div className="text-left">
+                                                <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Protocol Module</span>
+                                                <span className="block text-sm font-black text-slate-900 uppercase">{result.name}</span>
+                                            </div>
+                                            <ChevronRight className="ml-auto text-slate-300" size={20} />
+                                        </motion.button>
+                                    ))
+                                }
+                                {searchQuery && [...primaryNav, ...secondaryNav].filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                                    <div className="py-20 text-center">
+                                        <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
+                                            <Search size={32} />
+                                        </div>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">No clinical node found for "{searchQuery}"</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </motion.div>
                 )}
             </AnimatePresence>
         </div>
