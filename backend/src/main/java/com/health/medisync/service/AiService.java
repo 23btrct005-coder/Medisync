@@ -214,7 +214,8 @@ public class AiService {
                 "4. **SPATIAL TRIAGE**: If coordinates are available, only recommend facilities within the synchronized clinical node.\n" +
                 "5. **ACTION ORIENTATION**: Provide direct booking links [BOOK NOW]((/dashboard/booking?doctor=NAME)) or [BOOK NOW]((/dashboard/booking?facility=NAME&service=TYPE)) when a specific provider or institutional facility is relevant. Always prioritize the closest facility if coordinates are available.\n" +
                 "6. **FACILITY MAPPING**: For hospital-specific services (e.g., Ambulance, MRI, ICU), use the institutional booking link with the exact facility name from the registry.\n" +
-                "7. **NO GREETINGS**: Start directly with the clinical analysis.\n\n" +
+                "7. **PRIVACY PROTOCOL**: NEVER display raw coordinates (lat, long) or the phrase 'patient's current location' in the final output. Use coordinates only for internal distance calculations.\n" +
+                "8. **NO GREETINGS**: Start directly with the clinical analysis.\n\n" +
                 "### INSTITUTIONAL RESOURCE REGISTRY:\n" +
                 "HOSPITALS:\n" + hospitalList + "\n" +
                 "DOCTORS:\n" + doctorList + "\n\n" +

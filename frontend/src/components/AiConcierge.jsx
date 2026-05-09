@@ -392,10 +392,14 @@ const AiConcierge = () => {
 
                                                 const coordMatch = line.match(/-?\d+\.\d+,\s*-?\d+\.\d+/);
                                                 const hasCoords = !!coordMatch;
-                                                const isLocation = line.toLowerCase().includes('location') || line.toLowerCase().includes('address') || line.toLowerCase().includes('hospital');
+                                                const isFacility = line.toLowerCase().includes('hospital') || line.toLowerCase().includes('clinic') || line.toLowerCase().includes('facility') || line.toLowerCase().includes('center');
+                                                const isLocation = line.toLowerCase().includes('location') || line.toLowerCase().includes('address');
                                                 const isPureCoordLine = hasCoords && line.trim().length < 40;
 
-                                                if (line.startsWith('-') || line.startsWith('•') || line.startsWith('*') || line.length > 60 || hasCoords || isLocation) {
+                                                // Privacy: Don't show the line if it's just raw coordinates or patient location
+                                                if (hasCoords && !isFacility && !line.includes('(/dashboard')) return null;
+
+                                                if (line.startsWith('-') || line.startsWith('•') || line.startsWith('*') || line.length > 60 || hasCoords || isFacility || isLocation) {
                                                     const query = line.replace(/#|-|•|\*/g, '').trim();
                                                     const encodedQuery = encodeURIComponent(hasCoords ? coordMatch[0] : query);
                                                     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -411,7 +415,7 @@ const AiConcierge = () => {
                                                                     <span style={{ fontWeight: '500' }}>{ (line.startsWith('-') || line.startsWith('•') || line.startsWith('*')) ? line.substring(1).trim() : line}</span>
                                                                 </div>
                                                             )}
-                                                            {(isLocation || hasCoords) && (
+                                                            {(isFacility || (hasCoords && isFacility)) && (
                                                                 <div style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0', marginTop: '4px' }}>
                                                                     <iframe width="100%" height="150" style={{ border: 0 }} loading="lazy" src={mapUrl}></iframe>
                                                                 </div>
