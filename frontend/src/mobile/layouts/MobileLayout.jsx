@@ -5,7 +5,7 @@ import {
     LayoutDashboard, MessageSquare, CalendarPlus, ClipboardList, 
     User, Menu, Bell, Search, X, Activity, Wallet, ShieldCheck, 
     Stethoscope, Users, UserCheck, Settings, HelpCircle, LogOut,
-    PlusCircle, FileText, Pill, Grid, Calendar, Zap, AlertCircle
+    PlusCircle, FileText, Pill, Grid, Calendar, Zap, AlertCircle, ChevronRight
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
