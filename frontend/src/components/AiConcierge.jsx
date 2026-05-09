@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     SendHorizontal, X, Mic, StopCircle, Maximize2, Minimize2, 
     MessageCircle, Sparkles, Activity, ShieldCheck, HeartPulse, BrainCircuit, Calendar, Paperclip,
-    ChevronRight, AlertCircle, Clock, Stethoscope, MapPin, CheckCircle2
+    ChevronRight, AlertCircle, Clock, Stethoscope, MapPin, CheckCircle2, RotateCcw
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -146,6 +146,13 @@ const AiConcierge = () => {
         const reader = new FileReader();
         reader.onloadend = () => setImagePreview(reader.result);
         reader.readAsDataURL(file);
+    };
+
+    const resetChat = () => {
+        const resetMsg = [{ role: 'ai', text: "Welcome to MediSync ACIE. I am your advanced clinical assistant. Please describe your symptoms or clinical concerns for an immediate professional triage and spatial guidance." }];
+        setMessages(resetMsg);
+        localStorage.setItem('ai_chat_history', JSON.stringify(resetMsg));
+        toast.success("Clinical context reset successfully.");
     };
 
     const stopListening = () => recognitionRef.current?.stop();
@@ -426,13 +433,24 @@ const AiConcierge = () => {
                                             >
                                                 <div className="bg-slate-50 px-4 py-2 border-b border-slate-100 flex items-center justify-between">
                                                     <div className="flex items-center gap-2">
+                                                        <button 
+                                                            onClick={resetChat}
+                                                            className="p-2 text-slate-400 hover:text-[#0066FF] transition-colors"
+                                                            title="Reset Clinical Context"
+                                                        >
+                                                            <RotateCcw size={18} />
+                                                        </button>
+                                                        <button onClick={() => setIsFullscreen(!isFullscreen)} className="p-2 text-slate-400 hover:text-[#0066FF] transition-colors">
+                                                            {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+                                                        </button>
+                                                        <button onClick={() => setIsOpen(false)} className="p-2 text-slate-400 hover:text-[#0066FF] transition-colors">
+                                                            <X size={20} />
+                                                        </button>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
                                                         <MapPin size={14} className="text-[#0066FF]" />
                                                         <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Live Hospital Location</span>
                                                     </div>
-                                                    <div className="flex gap-1">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-red-400"></div>
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
                                                     </div>
                                                 </div>
                                                 <iframe
