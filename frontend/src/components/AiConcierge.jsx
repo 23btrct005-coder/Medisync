@@ -449,24 +449,40 @@ const AiConcierge = () => {
                                                 initial={{ opacity: 0, scale: 0.95 }}
                                                 animate={{ opacity: 1, scale: 1 }}
                                                 transition={{ delay: 0.4 }}
-                                                className="p-5 rounded-[24px] bg-gradient-to-br from-[#0066FF] to-[#0052CC] text-white shadow-xl shadow-blue-200"
+                                                className="rounded-[24px] bg-gradient-to-br from-[#0066FF] to-[#0052CC] text-white shadow-xl shadow-blue-200 overflow-hidden"
                                             >
-                                                <div className="flex items-center gap-3 mb-4">
-                                                    <Calendar size={20} className="opacity-80" />
-                                                    <span className="text-[11px] font-black uppercase tracking-[2px]">Recommended Action</span>
+                                                {/* Integrated Map */}
+                                                {(m.text.includes('google.com/maps') || segments.action.includes('google.com/maps')) && (
+                                                    <div className="w-full h-[180px] bg-slate-100">
+                                                        <iframe
+                                                            width="100%"
+                                                            height="100%"
+                                                            style={{ border: 0 }}
+                                                            loading="lazy"
+                                                            allowFullScreen
+                                                            src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                                                                (m.text.match(/query=([^&]+)/) || segments.action.match(/query=([^&]+)/) || [null, 'Hospital'])[1]?.replace(/\+/g, ' ') || 'Hospital'
+                                                            )}&output=embed`}
+                                                        ></iframe>
+                                                    </div>
+                                                )}
+                                                
+                                                <div className="p-5">
+                                                    <div className="flex items-center gap-3 mb-4">
+                                                        <Calendar size={20} className="opacity-80" />
+                                                        <span className="text-[11px] font-black uppercase tracking-[2px]">Clinical Action</span>
+                                                    </div>
+                                                    
+                                                    <button 
+                                                        onClick={() => {
+                                                            setIsOpen(false);
+                                                            navigate('/dashboard/booking');
+                                                        }}
+                                                        className="w-full bg-white text-[#0066FF] py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors shadow-lg mt-2"
+                                                    >
+                                                        Book Consultation <ChevronRight size={18} />
+                                                    </button>
                                                 </div>
-                                                <p className="text-sm font-semibold mb-5 leading-relaxed">
-                                                    {segments.action.replace(/\[.*?\]\(.*?\)/g, '').split('http')[0].trim()}
-                                                </p>
-                                                <button 
-                                                    onClick={() => {
-                                                        setIsOpen(false);
-                                                        navigate('/dashboard/booking');
-                                                    }}
-                                                    className="w-full bg-white text-[#0066FF] py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors shadow-lg"
-                                                >
-                                                    Book Consultation <ChevronRight size={18} />
-                                                </button>
                                             </motion.div>
                                         )}
 
