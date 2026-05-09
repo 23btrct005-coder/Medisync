@@ -410,13 +410,19 @@ const AiConcierge = () => {
                                                                         )}
                                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                                                             <button 
-                                                                                onClick={() => navigate('/dashboard/booking?service=Ambulance')} 
+                                                                                onClick={() => {
+                                                                                    toast.success('Deploying Ambulance Dispatch Node');
+                                                                                    navigate('/dashboard/booking?service=Ambulance');
+                                                                                }} 
                                                                                 className={`py-2.5 ${isCritical ? 'bg-red-600 hover:bg-red-700' : 'bg-slate-800 hover:bg-slate-900'} text-white rounded-xl text-[10px] font-black uppercase transition-all flex items-center justify-center gap-2 shadow-lg shadow-red-200`}
                                                                             >
                                                                                 <HeartPulse size={14} /> Dispatch Ambulance
                                                                             </button>
                                                                             <button 
-                                                                                onClick={() => window.open(s.mapUrl || 'https://www.google.com/maps/search/hospital+near+me', '_blank')}
+                                                                                onClick={() => {
+                                                                                    toast.success('Launching Institutional Navigation');
+                                                                                    window.open(s.mapUrl || 'https://www.google.com/maps/search/hospital+near+me', '_blank');
+                                                                                }}
                                                                                 className={`py-2.5 bg-white border ${ui.border} ${ui.color} rounded-xl text-[10px] font-black uppercase hover:bg-slate-50 transition-all flex items-center justify-center gap-2`}
                                                                             >
                                                                                 <MapPin size={14} /> Nearest Hospital
@@ -475,9 +481,12 @@ const AiConcierge = () => {
                                                                         </div>
                                                                     )}
 
-                                                                    {s.action && (
+                                                                    {(s.action && !s.action.toLowerCase().includes('none') && !s.action.toLowerCase().includes('n/a')) && (
                                                                         <button 
-                                                                            onClick={() => navigate('/dashboard/booking')}
+                                                                            onClick={() => {
+                                                                                toast.success('Navigating to Clinical Booking Node');
+                                                                                navigate('/dashboard/booking');
+                                                                            }}
                                                                             className="w-full py-4 bg-primary text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-3 shadow-xl shadow-primary/20 group hover:bg-blue-600 transition-all"
                                                                         >
                                                                             Secure Clinical Booking <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
