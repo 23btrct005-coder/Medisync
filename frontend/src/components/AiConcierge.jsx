@@ -456,10 +456,13 @@ const AiConcierge = () => {
                                                     <span className="text-[11px] font-black uppercase tracking-[2px]">Recommended Action</span>
                                                 </div>
                                                 <p className="text-sm font-semibold mb-5 leading-relaxed">
-                                                    {segments.action.split('http')[0].trim()}
+                                                    {segments.action.replace(/\[.*?\]\(.*?\)/g, '').split('http')[0].trim()}
                                                 </p>
                                                 <button 
-                                                    onClick={() => navigate('/dashboard/booking')}
+                                                    onClick={() => {
+                                                        setIsOpen(false);
+                                                        navigate('/dashboard/booking');
+                                                    }}
                                                     className="w-full bg-white text-[#0066FF] py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors shadow-lg"
                                                 >
                                                     Book Consultation <ChevronRight size={18} />
