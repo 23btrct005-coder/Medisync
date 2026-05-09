@@ -114,7 +114,7 @@ public class AiService {
                 "- Severity Estimate (Mild, Moderate, High, Emergency)\n" +
                 "- Follow-Up Questions (Ask 3–5 clinically relevant questions)\n" +
                 "- Immediate Recommendations\n" +
-                "- Suggested Department\n" +
+                "- Suggested Department: Choose ONLY from [Emergency & Trauma Care, Ambulance Services, ICU, NICU, Blood Bank, 24/7 Pharmacy, OPD, X-Ray, MRI Scan, Ultrasound, Physiotherapy, Dental, Orthopedic, Pediatric, Gynecology, ENT, Ophthalmology, Dermatology].\n" +
                 "- Recommended Action\n\n" +
                 "SYMPTOM-COMBINATION RISK ESCALATION:\n" +
                 "- Analyze symptom combinations: Pain + Fever/Vomiting, Chest Pain + Sweating/SOB, Pregnancy + Bleeding, High Fever + Neck Stiffness.\n" +

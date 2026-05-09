@@ -218,11 +218,20 @@ const AiConcierge = () => {
             "Advanced Laboratory Tests", "Health Checkup Packages"
         ];
 
-        const matchedService = SERVICES_LIST.find(s => 
-            sections.department?.toLowerCase().includes(s.toLowerCase().split(' ')[0]) ||
-            sections.action?.toLowerCase().includes(s.toLowerCase()) ||
-            sections.recommendations.some(r => r.toLowerCase().includes(s.toLowerCase()))
-        );
+        const matchedService = SERVICES_LIST.find(s => {
+            const lowerS = s.toLowerCase();
+            const lowerDept = sections.department?.toLowerCase() || '';
+            const lowerAction = sections.action?.toLowerCase() || '';
+            
+            // Check for direct matches or common synonyms
+            if (lowerDept.includes(lowerS.split(' ')[0]) && lowerS.length > 3) return true;
+            if (lowerS.includes('ambulance') && (lowerDept.includes('ambulance') || lowerAction.includes('ambulance'))) return true;
+            if (lowerS.includes('emergency') && (lowerDept.includes('emergency') || lowerDept.includes('trauma'))) return true;
+            if (lowerS.includes('mri') && lowerDept.includes('mri')) return true;
+            if (lowerS.includes('x-ray') && lowerDept.includes('x-ray')) return true;
+            
+            return lowerDept.includes(lowerS) || lowerAction.includes(lowerS);
+        });
 
         return { ...sections, mapLink: uniqueMapLink, suggestedDoctor, matchedService };
     };
@@ -417,8 +426,7 @@ const AiConcierge = () => {
                                                 {sevStyles.icon}
                                             </motion.div>
                                             
-                                            {segments.department && (
-                                                <motion.div 
+                                            <motion.div 
                                                     initial={{ opacity: 0, x: 10 }}
                                                     animate={{ opacity: 1, x: 0 }}
                                                     transition={{ delay: 0.2 }}
