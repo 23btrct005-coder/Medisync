@@ -347,7 +347,10 @@ const AiConcierge = () => {
                         <div style={{ padding: '20px 24px', backgroundColor: 'white', borderBottom: '1px solid #f1f5f9', color: '#1e293b', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                 <div style={{ width: '8px', height: '8px', backgroundColor: '#A78BFA', borderRadius: '50%', boxShadow: '0 0 10px #A78BFA', animation: 'pulse 2s infinite' }}></div>
-                                <h2 style={{ fontWeight: '800', fontSize: '18px', tracking: '-0.025em' }}>Smart Assistant</h2>
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <h2 style={{ fontWeight: '900', fontSize: '16px', tracking: '-0.025em', margin: 0, color: '#0f172a' }}>Clinical Intelligence Engine</h2>
+                                    <span style={{ fontSize: '10px', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>MediSync Autonomous Node</span>
+                                </div>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                 <button 
