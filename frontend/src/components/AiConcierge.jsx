@@ -176,22 +176,42 @@ const AiConcierge = () => {
             const l = line.trim();
             if (!l) return;
 
-            if (l.toLowerCase().includes('clinical assessment')) currentSection = 'assessment';
-            else if (l.toLowerCase().includes('severity estimate')) currentSection = 'severity';
-            else if (l.toLowerCase().includes('follow-up questions')) currentSection = 'questions';
-            else if (l.toLowerCase().includes('immediate recommendations')) currentSection = 'recommendations';
-            else if (l.toLowerCase().includes('suggested department')) currentSection = 'department';
-            else if (l.toLowerCase().includes('recommended action')) currentSection = 'action';
-            else {
+            const lowerL = l.toLowerCase();
+            
+            // Header detection with inline content capture
+            if (lowerL.includes('clinical assessment')) {
+                currentSection = 'assessment';
+                const content = l.replace(/clinical assessment:?/i, '').trim();
+                if (content) sections.assessment += content + ' ';
+            } else if (lowerL.includes('severity estimate')) {
+                currentSection = 'severity';
+                const content = l.replace(/severity estimate:?/i, '').replace(/[:]/, '').trim();
+                if (content) sections.severity = content;
+            } else if (lowerL.includes('follow-up questions')) {
+                currentSection = 'questions';
+                const content = l.replace(/follow-up questions:?/i, '').trim();
+                if (content && (content.startsWith('-') || content.startsWith('*'))) sections.questions.push(content.replace(/^[-*]\s*/, ''));
+            } else if (lowerL.includes('immediate recommendations')) {
+                currentSection = 'recommendations';
+            } else if (lowerL.includes('suggested department')) {
+                currentSection = 'department';
+                const content = l.replace(/suggested department:?/i, '').replace(/[:]/, '').trim();
+                if (content) sections.department = content;
+            } else if (lowerL.includes('recommended action')) {
+                currentSection = 'action';
+                const content = l.replace(/recommended action:?/i, '').trim();
+                if (content) sections.action += content + ' ';
+            } else {
+                // Content lines
                 if (currentSection === 'questions' && (l.startsWith('-') || l.startsWith('*'))) {
                     sections.questions.push(l.replace(/^[-*]\s*/, ''));
                 } else if (currentSection === 'recommendations' && (l.startsWith('-') || l.startsWith('*'))) {
                     sections.recommendations.push(l.replace(/^[-*]\s*/, ''));
-                } else if (currentSection === 'severity') {
+                } else if (currentSection === 'severity' && !sections.severity) {
                     sections.severity = l.replace(/^[-*]\s*/, '').replace(/[:]/, '').trim();
                 } else if (currentSection === 'assessment') {
                     sections.assessment += (l.replace(/^[-*]\s*/, '') + ' ');
-                } else if (currentSection === 'department') {
+                } else if (currentSection === 'department' && !sections.department) {
                     sections.department = l.replace(/^[-*]\s*/, '').replace(/[:]/, '').trim();
                 } else if (currentSection === 'action') {
                     sections.action += (l.replace(/^[-*]\s*/, '') + ' ');
@@ -200,6 +220,16 @@ const AiConcierge = () => {
                 }
             }
         });
+
+        // Fallback for Assessment
+        if (!sections.assessment.trim() && sections.other.trim()) {
+            sections.assessment = sections.other;
+        }
+
+        // Force Action if Department exists but Action is empty
+        if (sections.department && !sections.action.trim()) {
+            sections.action = `Please proceed to book your session for ${sections.department}.`;
+        }
 
         // Detect Doctor Recommendation
         const doctorMatch = sections.action.match(/Dr\.\s+([A-Za-z\s.]+)/i) || text.match(/Dr\.\s+([A-Za-z\s.]+)/i);
