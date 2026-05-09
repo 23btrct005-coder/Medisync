@@ -421,9 +421,9 @@ const AiConcierge = () => {
                                                     style={{ border: 0 }}
                                                     loading="lazy"
                                                     allowFullScreen
-                                                    src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyDKFDakzgMgcHol8PQijByDzFuyRty91VA&q=${encodeURIComponent(
+                                                    src={`https://maps.google.com/maps?q=${encodeURIComponent(
                                                         (m.text.match(/query=([^&]+)/) || segments.action.match(/query=([^&]+)/) || [null, 'Hospital'])[1]?.replace(/\+/g, ' ') || 'Hospital'
-                                                    )}`}
+                                                    )}&output=embed`}
                                                 ></iframe>
                                             </motion.div>
                                         )}
