@@ -129,6 +129,14 @@ const AiConcierge = () => {
         recognition.start();
     };
 
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onloadend = () => setImagePreview(reader.result);
+        reader.readAsDataURL(file);
+    };
+
     const stopListening = () => recognitionRef.current?.stop();
 
     // AI Response Parser for Segmented Card UI
