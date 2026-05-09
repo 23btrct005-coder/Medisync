@@ -223,13 +223,13 @@ const AiConcierge = () => {
                         initial={{ opacity: 0, y: 40, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 40, scale: 0.95 }}
-                        className={`fixed z-[9999] bg-white shadow-[0_32px_80px_-16px_rgba(0,0,0,0.15)] overflow-hidden transition-all duration-500 pointer-events-auto portal-window
+                        className={`fixed z-[9999] bg-white shadow-[0_32px_80px_-16px_rgba(0,0,0,0.15)] overflow-hidden transition-all duration-500 pointer-events-auto portal-window flex flex-col
                             ${isMobile ? 'inset-0 w-full h-[100dvh] rounded-none' : 
                               isFullscreen ? 'inset-4 w-[calc(100%-2rem)] h-[calc(100%-2rem)] rounded-3xl' : 
                               'bottom-8 right-8 w-[950px] max-w-[90vw] h-[800px] max-h-[85vh] rounded-[32px] border border-slate-100'}
                         `}
                     >
-                        <div className="flex h-full w-full relative">
+                        <div className="flex h-full w-full relative overflow-hidden">
                             {/* Sidebar - Context & History */}
                             <motion.div 
                                 animate={{ width: isSidebarOpen ? (isMobile ? '0px' : '260px') : '0px', opacity: isSidebarOpen ? 1 : 0 }}
@@ -269,40 +269,41 @@ const AiConcierge = () => {
                             {/* Main Interaction Panel */}
                             <div className="flex-1 flex flex-col bg-[#fcfdfe]">
                                 {/* Futuristic Header */}
-                                <div className="px-6 py-5 md:px-8 border-b border-slate-50 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-[100] pt-[env(safe-area-inset-top,20px)]">
+                                <div className="px-6 py-4 md:px-8 border-b border-slate-50 flex items-center justify-between bg-white/90 backdrop-blur-md sticky top-0 z-[100] safe-top">
+                                    <style>{`
+                                        .safe-top {
+                                            padding-top: max(1rem, env(safe-area-inset-top));
+                                        }
+                                    `}</style>
                                     <div className="flex items-center gap-4">
                                         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2.5 hover:bg-slate-50 rounded-xl text-slate-400 transition-colors">
                                             <Menu size={20} />
                                         </button>
                                         <div className="flex flex-col">
                                             <div className="flex items-center gap-2">
-                                                <h2 className="font-bold text-slate-900 text-base md:text-lg tracking-tight">MediSync AI Portal</h2>
-                                                <span className="px-1.5 py-0.5 rounded-md bg-emerald-500 text-white text-[8px] font-black uppercase tracking-widest">Live Node</span>
+                                                <h2 className="font-bold text-slate-900 text-sm md:text-lg tracking-tight truncate max-w-[140px] md:max-w-none">MediSync AI Portal</h2>
+                                                <span className="px-1.5 py-0.5 rounded-md bg-emerald-500 text-white text-[8px] font-black uppercase tracking-widest hidden sm:inline-block">Live Node</span>
                                             </div>
                                             <div className="flex items-center gap-1.5 mt-0.5">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">HIPAA COMPLIANT • SECURE SESSION</p>
+                                                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">SECURE CLINICAL SESSION</p>
                                             </div>
                                         </div>
                                     </div>
                                     
-                                    <div className="flex items-center gap-2">
-                                        <button onClick={() => setLanguage(prev => prev === 'English' ? 'Hindi' : 'English')} className="p-2.5 text-slate-400 hover:bg-slate-50 rounded-xl transition-all flex items-center gap-2">
+                                    <div className="flex items-center gap-1 md:gap-2">
+                                        <button onClick={() => setLanguage(prev => prev === 'English' ? 'Hindi' : 'English')} className="p-2 text-slate-400 hover:bg-slate-50 rounded-xl transition-all flex items-center gap-1.5">
                                             <Languages size={18} />
-                                            <span className="text-[10px] font-black uppercase hidden md:inline">{language}</span>
+                                            <span className="text-[10px] font-black uppercase hidden lg:inline">{language}</span>
                                         </button>
-                                        <button onClick={() => setIsAccessibilityMode(!isAccessibilityMode)} className="p-2.5 text-slate-400 hover:bg-slate-50 rounded-xl transition-all">
-                                            <Volume2 size={18} />
-                                        </button>
-                                        <div className="w-px h-6 bg-slate-100 mx-1"></div>
-                                        <button onClick={() => setIsOpen(false)} className="p-2.5 text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-xl transition-all">
+                                        <button onClick={() => setIsOpen(false)} className="p-2 text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-xl transition-all">
                                             <X size={20} />
                                         </button>
                                     </div>
                                 </div>
 
                                 {/* Chat Window */}
-                                <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 md:p-10 flex flex-col gap-8 chat-scrollbar no-scrollbar pb-32">
+                                <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6 md:px-10 flex flex-col gap-8 chat-scrollbar no-scrollbar scroll-smooth">
                                     {messages.map((m, i) => (
                                         <motion.div 
                                             initial={{ opacity: 0, y: 10 }}
@@ -453,7 +454,12 @@ const AiConcierge = () => {
                                 </div>
 
                                 {/* Smart Input Node */}
-                                <div className="p-6 md:p-8 bg-white border-t border-slate-50 sticky bottom-0 z-[101]">
+                                <div className="p-4 md:p-8 bg-white border-t border-slate-50 sticky bottom-0 z-[101] safe-bottom">
+                                    <style>{`
+                                        .safe-bottom {
+                                            padding-bottom: max(1rem, env(safe-area-inset-bottom));
+                                        }
+                                    `}</style>
                                     {/* Action Chips */}
                                     <div className="flex gap-2 overflow-x-auto no-scrollbar pb-4 mb-2">
                                         {["Book Ambulance", "Find Hospital", "Talk to Doctor", "Check Symptoms", "Emergency Contact"].map(chip => (
@@ -463,9 +469,9 @@ const AiConcierge = () => {
                                         ))}
                                     </div>
 
-                                    <div className="max-w-[800px] mx-auto relative flex items-center bg-slate-50 border border-slate-200 rounded-2xl md:rounded-[24px] p-2 focus-within:border-primary/30 focus-within:bg-white focus-within:shadow-2xl focus-within:shadow-primary/5 transition-all">
-                                        <label className="p-3 text-slate-400 hover:text-primary cursor-pointer">
-                                            <Paperclip size={20} />
+                                    <div className="max-w-[800px] mx-auto relative flex items-center bg-slate-50 border border-slate-200 rounded-2xl md:rounded-[24px] p-1.5 md:p-2 focus-within:border-primary/30 focus-within:bg-white focus-within:shadow-2xl focus-within:shadow-primary/5 transition-all">
+                                        <label className="p-2.5 md:p-3 text-slate-400 hover:text-primary cursor-pointer">
+                                            <Paperclip size={18} />
                                             <input type="file" className="hidden" onChange={(e) => {
                                                 const file = e.target.files[0];
                                                 if (file) {
@@ -476,7 +482,7 @@ const AiConcierge = () => {
                                             }} />
                                         </label>
                                         
-                                        <div className="flex-1 px-2 relative">
+                                        <div className="flex-1 px-1 md:px-2 relative">
                                             {imagePreview && (
                                                 <div className="absolute -top-16 left-0 bg-white p-1.5 rounded-xl shadow-2xl border border-slate-100">
                                                     <img src={imagePreview} className="h-10 w-10 object-cover rounded-lg" />
@@ -487,19 +493,19 @@ const AiConcierge = () => {
                                                 value={input}
                                                 onChange={(e) => setInput(e.target.value)}
                                                 onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                                                placeholder="State your symptoms or medical query..."
-                                                className="w-full bg-transparent border-none outline-none text-sm font-semibold text-slate-700 placeholder:text-slate-400 py-3"
+                                                placeholder={isMobile ? "Query..." : "State your symptoms or medical query..."}
+                                                className="w-full bg-transparent border-none outline-none text-sm font-semibold text-slate-700 placeholder:text-slate-400 py-2.5 md:py-3"
                                             />
                                         </div>
 
-                                        <button className="p-3 text-slate-400 hover:text-primary transition-colors"><Mic size={20} /></button>
+                                        <button className="p-2.5 md:p-3 text-slate-400 hover:text-primary transition-colors"><Mic size={18} /></button>
                                         
                                         <button 
                                             onClick={() => handleSend()}
                                             disabled={isLoading || (!input.trim() && !imagePreview)}
-                                            className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                                            className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary text-white flex items-center justify-center shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                                         >
-                                            <SendHorizontal size={22} />
+                                            <SendHorizontal size={20} />
                                         </button>
                                     </div>
                                 </div>
