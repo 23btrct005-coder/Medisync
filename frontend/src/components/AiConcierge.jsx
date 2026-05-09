@@ -3,7 +3,7 @@ import api from '../api/axiosConfig';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
     SendHorizontal, X, Mic, StopCircle, Maximize2, Minimize2, 
-    MessageCircle, Sparkles, Activity, ShieldCheck, HeartPulse, BrainCircuit
+    MessageCircle, Sparkles, Activity, ShieldCheck, HeartPulse, BrainCircuit, Calendar
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
