@@ -60,42 +60,7 @@ public class AiService {
         // --- POLYGLOT DETECTION ---
         String language = detectLanguage(query);
 
-        // 1. Emergency Detection (High Precision)
-        if (isEmergency(lowerQuery)) {
-            return translate("🚨 **CRITICAL EMERGENCY DETECTED**\n\n- Visit the nearest ER immediately.\n- Call 108 or 911 now.\n- Do not wait for further AI analysis.", language);
-        }
-
-        // 2. Prescription Logic
-        if (userEmail != null && (lowerQuery.contains("medicine") || lowerQuery.contains("prescription") || lowerQuery.contains("மருந்து") || lowerQuery.contains("दवा"))) {
-            List<Prescription> active = prescriptionRepository.findByPatientEmailAndIsActiveTrue(userEmail);
-            if (!active.isEmpty()) {
-                String meds = active.stream().map(Prescription::getMedicineName).collect(Collectors.joining(", "));
-                return translate("💊 **Active Prescriptions:**\n- " + meds + "\n\n### 📝 Note\n- Check your Medical History for full dosage details.", language);
-            }
-        }
-
-        // 3. Symptom to Specialist Mapping
-        String specialty = mapSymptomToSpecialty(lowerQuery);
-        if (specialty != null) {
-            String advice = getGeneralAdvice(specialty);
-            List<Doctor> specialists = doctorRepository.findAll().stream()
-                .filter(d -> d.isApproved() && d.getSpecialization().toLowerCase().contains(specialty))
-                .collect(Collectors.toList());
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("### ✅ ").append(translate("Simple Guidance", language)).append("\n");
-            sb.append("- ").append(translate(advice, language)).append("\n");
-
-            if (!specialists.isEmpty()) {
-                sb.append("\n### 📍 ").append(translate("Nearby Specialists", language)).append("\n");
-                for (Doctor d : specialists.stream().limit(1).collect(Collectors.toList())) {
-                    sb.append("- **Dr. ").append(d.getName()).append("** (").append(d.getSpecialization()).append(")\n");
-                }
-            }
-            return sb.toString();
-        }
-
-        // 4. Real-time Context Extraction (Temporal + Clinical History)
+        // 1. Real-time Context Extraction (Temporal + Clinical History)
         String currentTime = java.time.LocalTime.now().toString();
         String currentDate = java.time.LocalDate.now().toString();
         final StringBuilder clinicalHistory = new StringBuilder(userEmail != null ? "" : "None");
