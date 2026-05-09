@@ -151,15 +151,15 @@ const AiConcierge = () => {
             if (!l) return;
             const lowerL = l.toLowerCase();
             
-            if (lowerL.includes('clinical assessment')) {
+            if (lowerL.includes('clinical assessment') || lowerL.includes('initial assessment')) {
                 currentSection = 'assessment';
-                sections.assessment += l.replace(/clinical assessment:?/i, '').trim() + ' ';
+                sections.assessment += l.replace(/(clinical|initial) assessment:?/i, '').trim() + ' ';
             } else if (lowerL.includes('possible conditions')) {
                 currentSection = 'possibleConditions';
                 sections.possibleConditions += l.replace(/possible conditions:?/i, '').trim() + ' ';
-            } else if (lowerL.includes('risk indicators')) {
+            } else if (lowerL.includes('risk indicators') || lowerL.includes('red flags')) {
                 currentSection = 'riskIndicators';
-                sections.riskIndicators += l.replace(/risk indicators:?/i, '').trim() + ' ';
+                sections.riskIndicators += l.replace(/(risk indicators|red flags):?/i, '').trim() + ' ';
             } else if (lowerL.includes('triage level')) {
                 currentSection = 'severity';
                 const content = l.replace(/triage level:?/i, '').replace(/[\[\]:]/g, '').trim();
@@ -208,9 +208,44 @@ const AiConcierge = () => {
 
     const getSeverityUI = (severity) => {
         const s = severity.toLowerCase();
-        if (s.includes('critical') || s.includes('emergency')) return { label: 'CRITICAL', color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', glow: 'emergency-glow emergency-pulse' };
-        if (s.includes('moderate') || s.includes('urgent')) return { label: 'MODERATE', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200', glow: '' };
-        return { label: 'STABLE', color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200', glow: '' };
+        if (s.includes('critical') || s.includes('emergency')) {
+            return { 
+                label: 'CRITICAL', 
+                header: 'Emergency Alert',
+                color: 'text-red-600', 
+                bg: 'bg-red-50', 
+                border: 'border-red-200', 
+                glow: 'emergency-glow emergency-pulse' 
+            };
+        }
+        if (s.includes('high') || s.includes('urgent')) {
+            return { 
+                label: 'HIGH', 
+                header: 'Urgent Medical Attention',
+                color: 'text-orange-600', 
+                bg: 'bg-orange-50', 
+                border: 'border-orange-200', 
+                glow: '' 
+            };
+        }
+        if (s.includes('moderate')) {
+            return { 
+                label: 'MODERATE', 
+                header: 'Medical Attention Recommended',
+                color: 'text-amber-600', 
+                bg: 'bg-amber-50', 
+                border: 'border-amber-200', 
+                glow: '' 
+            };
+        }
+        return { 
+            label: 'LOW', 
+            header: 'Care Guidance',
+            color: 'text-blue-600', 
+            bg: 'bg-blue-50', 
+            border: 'border-blue-200', 
+            glow: '' 
+        };
     };
 
     if (!user) return null;
@@ -358,36 +393,36 @@ const AiConcierge = () => {
                                                             const s = parseAiResponse(m.text);
                                                             const ui = getSeverityUI(s.severity);
                                                             const isCritical = ui.label === 'CRITICAL';
-                                                            const hasSubstantiveWarning = s.warning && !s.warning.toLowerCase().includes('none') && !s.warning.toLowerCase().includes('n/a');
-                                                            const showEmergency = isCritical || hasSubstantiveWarning;
 
                                                             return (
                                                                 <>
-                                                                    {showEmergency && (
-                                                                        <div className={`p-5 rounded-2xl ${ui.glow || 'bg-red-50 border border-red-200'} flex flex-col gap-4`}>
-                                                                            <div className="flex items-center justify-between">
-                                                                                <div className="flex items-center gap-2 text-red-600 font-black text-xs">
-                                                                                    <AlertCircle size={16} /> EMERGENCY ALERT
-                                                                                </div>
-                                                                                <span className="px-2 py-1 rounded-md bg-red-600 text-white text-[8px] font-black uppercase">Immediate Action</span>
+                                                                    <div className={`p-5 rounded-2xl ${ui.glow || ui.bg} border ${ui.border} flex flex-col gap-4 shadow-sm`}>
+                                                                        <div className="flex items-center justify-between">
+                                                                            <div className={`flex items-center gap-2 ${ui.color} font-black text-xs uppercase tracking-widest`}>
+                                                                                {isCritical ? <AlertCircle size={16} /> : <Info size={16} />} {ui.header}
                                                                             </div>
-                                                                            {s.warning && <p className="text-xs font-bold text-red-700 leading-relaxed italic">{s.warning}</p>}
-                                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                                                                <button 
-                                                                                    onClick={() => navigate('/dashboard/booking?service=Ambulance')} 
-                                                                                    className="py-2.5 bg-red-600 text-white rounded-xl text-[10px] font-black uppercase hover:bg-red-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-red-200"
-                                                                                >
-                                                                                    <HeartPulse size={14} /> Dispatch Ambulance
-                                                                                </button>
-                                                                                <button 
-                                                                                    onClick={() => window.open(s.mapUrl || 'https://www.google.com/maps/search/hospital+near+me', '_blank')}
-                                                                                    className="py-2.5 bg-white border border-red-200 text-red-600 rounded-xl text-[10px] font-black uppercase hover:bg-red-50 transition-all flex items-center justify-center gap-2"
-                                                                                >
-                                                                                    <MapPin size={14} /> Nearest Hospital
-                                                                                </button>
-                                                                            </div>
+                                                                            <span className={`px-2 py-1 rounded-md ${isCritical ? 'bg-red-600' : 'bg-slate-800'} text-white text-[8px] font-black uppercase`}>
+                                                                                {isCritical ? 'Immediate Action' : 'Professional Guidance'}
+                                                                            </span>
                                                                         </div>
-                                                                    )}
+                                                                        {(s.warning && !s.warning.toLowerCase().includes('none') && !s.warning.toLowerCase().includes('n/a')) && (
+                                                                            <p className={`text-xs font-bold ${isCritical ? 'text-red-700' : 'text-slate-600'} leading-relaxed italic`}>{s.warning}</p>
+                                                                        )}
+                                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                                                            <button 
+                                                                                onClick={() => navigate('/dashboard/booking?service=Ambulance')} 
+                                                                                className={`py-2.5 ${isCritical ? 'bg-red-600 hover:bg-red-700' : 'bg-slate-800 hover:bg-slate-900'} text-white rounded-xl text-[10px] font-black uppercase transition-all flex items-center justify-center gap-2 shadow-lg shadow-red-200`}
+                                                                            >
+                                                                                <HeartPulse size={14} /> Dispatch Ambulance
+                                                                            </button>
+                                                                            <button 
+                                                                                onClick={() => window.open(s.mapUrl || 'https://www.google.com/maps/search/hospital+near+me', '_blank')}
+                                                                                className={`py-2.5 bg-white border ${ui.border} ${ui.color} rounded-xl text-[10px] font-black uppercase hover:bg-slate-50 transition-all flex items-center justify-center gap-2`}
+                                                                            >
+                                                                                <MapPin size={14} /> Nearest Hospital
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
 
                                                                     <div className="flex flex-col gap-4">
                                                                         <div className="flex flex-col gap-2">
