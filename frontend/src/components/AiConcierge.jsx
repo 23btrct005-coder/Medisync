@@ -5,7 +5,7 @@ import {
     SendHorizontal, X, Mic, StopCircle, Maximize2, Minimize2, 
     MessageCircle, Sparkles, Activity, ShieldCheck, HeartPulse, BrainCircuit, Calendar, Paperclip,
     ChevronRight, AlertCircle, Clock, Stethoscope, MapPin, CheckCircle2, RotateCcw, 
-    History, Plus, Trash2, Copy, Menu, User, Settings, Info, LogOut, ChevronLeft
+    History, Plus, Trash2, Copy, Menu, User, Settings, Info, LogOut, Languages, Volume2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -16,36 +16,32 @@ const AiConcierge = () => {
     const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1024);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [activeChatId, setActiveChatId] = useState('default');
+    const [isAccessibilityMode, setIsAccessibilityMode] = useState(false);
+    const [language, setLanguage] = useState('English');
 
     useEffect(() => {
         const handleResize = () => {
             const mobile = window.innerWidth <= 768;
             setIsMobile(mobile);
-            if (!mobile && !isSidebarOpen) setIsSidebarOpen(true);
-            if (mobile && isSidebarOpen) setIsSidebarOpen(false);
+            if (!mobile && window.innerWidth > 1024) setIsSidebarOpen(true);
         };
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
     
-    // Chat sessions state
     const [sessions, setSessions] = useState(() => {
         const saved = localStorage.getItem('medisync_chat_sessions');
         if (saved) {
-            try {
-                return JSON.parse(saved);
-            } catch (e) {
-                console.error("Error parsing chat history", e);
-            }
+            try { return JSON.parse(saved); } catch (e) { console.error(e); }
         }
         return {
             'default': {
                 id: 'default',
-                title: 'New Consultation',
-                messages: [{ role: 'ai', text: 'Hi! I am your MediSync Medical Assistant. How can I help you with your symptoms or reports today?' }],
+                title: 'Initial Consultation',
+                messages: [{ role: 'ai', text: 'MediSync Intelligence Node Active. How can I assist with your clinical journey today?', timestamp: Date.now() }],
                 timestamp: Date.now()
             }
         };
@@ -58,20 +54,19 @@ const AiConcierge = () => {
     const [loadingStep, setLoadingStep] = useState(0);
     
     const scrollRef = useRef(null);
-    const recognitionRef = useRef(null);
 
     const loadingMessages = [
-        "Analyzing symptoms...",
-        "Reviewing clinical history...",
-        "Consulting medical database...",
-        "Synthesizing recommendations..."
+        "Synchronizing Medical Records...",
+        "Applying Neural Triage...",
+        "Identifying Institutional Nodes...",
+        "Finalizing Clinical Reasoning..."
     ];
 
     useEffect(() => {
         if (isLoading) {
             const interval = setInterval(() => {
                 setLoadingStep(prev => (prev + 1) % loadingMessages.length);
-            }, 1500);
+            }, 1200);
             return () => clearInterval(interval);
         }
     }, [isLoading]);
@@ -84,35 +79,6 @@ const AiConcierge = () => {
     const activeSession = sessions[activeChatId] || sessions['default'];
     const messages = activeSession.messages;
 
-    const createNewChat = () => {
-        const id = Date.now().toString();
-        const newSession = {
-            id,
-            title: 'New Consultation',
-            messages: [{ role: 'ai', text: 'Hi! How can I help you today?' }],
-            timestamp: Date.now()
-        };
-        setSessions(prev => ({ ...prev, [id]: newSession }));
-        setActiveChatId(id);
-        if (window.innerWidth < 640) setIsSidebarOpen(false);
-    };
-
-    const deleteChat = (id, e) => {
-        e.stopPropagation();
-        if (Object.keys(sessions).length === 1) {
-            resetChat();
-            return;
-        }
-        setSessions(prev => {
-            const next = { ...prev };
-            delete next[id];
-            return next;
-        });
-        if (activeChatId === id) {
-            setActiveChatId(Object.keys(sessions)[0]);
-        }
-    };
-
     const handleSend = async (manualInput) => {
         const textToSend = manualInput || input;
         if (!textToSend.trim() && !imagePreview) return;
@@ -120,13 +86,11 @@ const AiConcierge = () => {
         const currentImg = imagePreview;
         const userMsg = { role: 'user', text: textToSend, image: currentImg, timestamp: Date.now() };
         
-        // Update session with user message
         setSessions(prev => {
             const session = { ...prev[activeChatId] };
             session.messages = [...session.messages, userMsg];
-            // Auto-update title based on first message
             if (session.messages.length === 2) {
-                session.title = textToSend.length > 20 ? textToSend.substring(0, 20) + '...' : textToSend;
+                session.title = textToSend.length > 24 ? textToSend.substring(0, 24) + '...' : textToSend;
             }
             return { ...prev, [activeChatId]: session };
         });
@@ -150,7 +114,7 @@ const AiConcierge = () => {
                 return { ...prev, [activeChatId]: session };
             });
         } catch (error) {
-            const errorMsg = { role: 'ai', text: 'Clinical context interrupted. Please try again.', timestamp: Date.now() };
+            const errorMsg = { role: 'ai', text: 'Clinical synchronization failure. Node offline.', timestamp: Date.now() };
             setSessions(prev => {
                 const session = { ...prev[activeChatId] };
                 session.messages = [...session.messages, errorMsg];
@@ -161,27 +125,10 @@ const AiConcierge = () => {
         }
     };
 
-    const resetChat = () => {
-        setSessions(prev => ({
-            ...prev,
-            [activeChatId]: {
-                ...prev[activeChatId],
-                messages: [{ role: 'ai', text: "Welcome to MediSync Portal. How can I assist you today?" }],
-                timestamp: Date.now()
-            }
-        }));
-        toast.success("Consultation reset.");
-    };
-
-    const copyToClipboard = (text) => {
-        navigator.clipboard.writeText(text);
-        toast.success("Message copied!");
-    };
-
     const parseAiResponse = (text) => {
         const sections = {
             assessment: '',
-            severity: 'Mild',
+            severity: 'Stable',
             questions: [],
             recommendations: [],
             department: '',
@@ -199,16 +146,13 @@ const AiConcierge = () => {
             
             if (lowerL.includes('clinical assessment')) {
                 currentSection = 'assessment';
-                const content = l.replace(/clinical assessment:?/i, '').trim();
-                if (content) sections.assessment += content + ' ';
+                sections.assessment += l.replace(/clinical assessment:?/i, '').trim() + ' ';
             } else if (lowerL.includes('severity estimate')) {
                 currentSection = 'severity';
                 const content = l.replace(/severity estimate:?/i, '').replace(/[:]/, '').trim();
                 if (content) sections.severity = content;
             } else if (lowerL.includes('follow-up questions')) {
                 currentSection = 'questions';
-                const content = l.replace(/follow-up questions:?/i, '').trim();
-                if (content && (content.startsWith('-') || content.startsWith('*'))) sections.questions.push(content.replace(/^[-*]\s*/, ''));
             } else if (lowerL.includes('immediate recommendations')) {
                 currentSection = 'recommendations';
             } else if (lowerL.includes('suggested department')) {
@@ -217,464 +161,326 @@ const AiConcierge = () => {
                 if (content) sections.department = content;
             } else if (lowerL.includes('recommended action')) {
                 currentSection = 'action';
-                const content = l.replace(/recommended action:?/i, '').trim();
-                if (content) sections.action += content + ' ';
+                sections.action += l.replace(/recommended action:?/i, '').trim() + ' ';
             } else {
-                if (currentSection === 'questions' && (l.startsWith('-') || l.startsWith('*'))) {
-                    sections.questions.push(l.replace(/^[-*]\s*/, ''));
+                if (currentSection === 'questions' && (l.startsWith('-') || l.startsWith('*') || /^\d+\./.test(l))) {
+                    sections.questions.push(l.replace(/^[-*\d.]\s*/, ''));
                 } else if (currentSection === 'recommendations' && (l.startsWith('-') || l.startsWith('*'))) {
                     sections.recommendations.push(l.replace(/^[-*]\s*/, ''));
-                } else if (currentSection === 'severity' && !sections.severity) {
-                    sections.severity = l.replace(/^[-*]\s*/, '').replace(/[:]/, '').trim();
                 } else if (currentSection === 'assessment') {
-                    sections.assessment += (l.replace(/^[-*]\s*/, '') + ' ');
-                } else if (currentSection === 'department' && !sections.department) {
-                    sections.department = l.replace(/^[-*]\s*/, '').replace(/[:]/, '').trim();
+                    sections.assessment += l + ' ';
                 } else if (currentSection === 'action') {
-                    sections.action += (l.replace(/^[-*]\s*/, '') + ' ');
+                    sections.action += l + ' ';
                 } else {
-                    sections.other += (l + ' ');
+                    sections.other += l + ' ';
                 }
             }
         });
 
         if (!sections.assessment.trim() && sections.other.trim()) sections.assessment = sections.other;
-        if (sections.department && !sections.action.trim()) sections.action = `Please proceed to book your session for ${sections.department}.`;
-
-        const doctorMatch = sections.action.match(/Dr\.\s+([A-Za-z\s.]+)/i) || text.match(/Dr\.\s+([A-Za-z\s.]+)/i);
-        const suggestedDoctor = doctorMatch ? doctorMatch[1].trim() : null;
-
-        const SERVICES_LIST = [
-            "Emergency & Trauma Care", "Ambulance Services", "ICU (Intensive Care Unit)", 
-            "NICU (Neonatal ICU)", "Operation Theatre (Emergency)", "Casualty Department", 
-            "24/7 Pharmacy", "Blood Bank", "Emergency CT Scan", "Emergency Lab Tests",
-            "Oxygen & Ventilator Support", "Emergency Dialysis",
-            "OPD (Outpatient)", "X-Ray", "MRI Scan", "Ultrasound / सोनोग्राफी", 
-            "ECG & TMT", "Physiotherapy", "Dental Services", "General Surgery (Planned)",
-            "Orthopedic Consultation", "Pediatric Consultation", "Gynecology & Obstetrics",
-            "ENT (Ear, Nose, Throat)", "Ophthalmology (Eye)", "Dermatology (Skin)",
-            "Advanced Laboratory Tests", "Health Checkup Packages"
-        ];
-
-        const matchedService = (() => {
-            const lowerDept = (sections.department || '').toLowerCase();
-            const lowerAction = (sections.action || '').toLowerCase();
-            const lowerAssessment = (sections.assessment || '').toLowerCase();
-
-            // Pass 1: Exact or Strong Department Match
-            const exactMatch = SERVICES_LIST.find(s => {
-                const lowerS = s.toLowerCase();
-                return lowerDept === lowerS || (lowerDept.length > 3 && lowerS.includes(lowerDept)) || (lowerS.length > 3 && lowerDept.includes(lowerS));
-            });
-            if (exactMatch) return exactMatch;
-
-            // Pass 2: Specific Ambulance/Emergency Priority
-            if (lowerDept.includes('ambulance') || text.toLowerCase().includes('ambulance')) {
-                return SERVICES_LIST.find(s => s.toLowerCase().includes('ambulance'));
-            }
-            if (lowerDept.includes('emergency') || lowerDept.includes('trauma')) {
-                return SERVICES_LIST.find(s => s.toLowerCase().includes('emergency & trauma'));
-            }
-
-            // Pass 3: Keyword Search in Action/Assessment (Fallback)
-            return SERVICES_LIST.find(s => {
-                const keywords = s.toLowerCase().split(' ');
-                // Avoid matching common words like 'care', 'services', 'unit'
-                const significantKeywords = keywords.filter(k => k.length > 4 && !['services', 'department', 'clinical', 'intensive'].includes(k));
-                return significantKeywords.some(k => lowerAction.includes(k) || lowerAssessment.includes(k));
-            });
-        })();
-
+        
         const mapMatch = text.match(/https:\/\/www\.google\.com\/maps\/search\/\?api=1&query=([^)\n\s]+)/);
         const mapUrl = mapMatch ? mapMatch[0] : null;
-        const hospitalMatch = text.match(/([A-Z][A-Za-z\s]+(Hospital|Clinic|Medical Center))/i);
-        const suggestedHospital = hospitalMatch ? hospitalMatch[0].trim() : null;
-
-        return { ...sections, suggestedDoctor, matchedService, mapUrl, suggestedHospital };
+        
+        return { ...sections, mapUrl };
     };
 
-    const getSeverityStyles = (severity) => {
+    const getSeverityUI = (severity) => {
         const s = severity.toLowerCase();
-        if (s.includes('emergency') || s.includes('critical')) return { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', icon: <AlertCircle className="text-red-600" size={16} /> };
-        if (s.includes('high') || s.includes('urgent')) return { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', icon: <AlertCircle className="text-orange-600" size={16} /> };
-        if (s.includes('moderate')) return { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', icon: <Clock className="text-amber-600" size={16} /> };
-        return { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', icon: <CheckCircle2 className="text-emerald-600" size={16} /> };
+        if (s.includes('critical') || s.includes('emergency')) return { label: 'CRITICAL', color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', glow: 'emergency-glow emergency-pulse' };
+        if (s.includes('moderate') || s.includes('urgent')) return { label: 'MODERATE', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200', glow: '' };
+        return { label: 'STABLE', color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200', glow: '' };
     };
 
     if (!user) return null;
 
     return (
-        <div className="fixed inset-0 pointer-events-none z-[10000]" style={{ fontFamily: 'Inter, sans-serif' }}>
-            <style>{`
-                .chat-scrollbar::-webkit-scrollbar { width: 5px; }
-                .chat-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                .chat-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-                @keyframes typing { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
-                .typing-dot { animation: typing 1.2s infinite; }
-                .glass-sidebar { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
-                .message-bubble-ai { background: #ffffff; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); }
-                .message-bubble-user { background: #0066FF; color: white; }
-                @media (max-width: 640px) {
-                    .portal-window { width: 100vw !important; height: 100dvh !important; bottom: 0 !important; right: 0 !important; border-radius: 0 !important; }
-                    .message-bubble-ai { padding: 1.25rem !important; border-radius: 20px !important; }
-                    .header-pill { display: none !important; }
-                    .mobile-hide { display: none !important; }
-                }
-                .glass-sidebar { background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(20px); }
-                .portal-window { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
-            `}</style>
-
+        <div className={`fixed inset-0 pointer-events-none z-[10000] ${isAccessibilityMode ? 'text-lg' : 'text-base'}`}>
             <AnimatePresence>
                 {!isOpen && (
                     <motion.button
-                        className="fixed bottom-6 right-6 w-16 h-16 rounded-[22px] bg-[#0066FF] text-white flex items-center justify-center shadow-2xl pointer-events-auto z-[2000] group overflow-hidden"
-                        initial={{ scale: 0, rotate: -15 }}
-                        animate={{ scale: 1, rotate: 0 }}
+                        className="fixed bottom-8 right-8 w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center shadow-2xl pointer-events-auto z-[2000] overflow-hidden"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setIsOpen(true)}
                     >
-                        <BrainCircuit size={30} className="relative z-10" />
-                        <div className="absolute inset-0 bg-gradient-to-tr from-blue-600 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full"></div>
+                        <div className="ai-pulse-ring"></div>
+                        <BrainCircuit size={28} className="relative z-10" />
+                        <div className="absolute top-1 right-1 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></div>
                     </motion.button>
                 )}
 
                 {isOpen && (
                     <motion.div 
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className={`fixed z-[9999] bg-white shadow-2xl overflow-hidden transition-all duration-500 pointer-events-auto portal-window
-                            ${isMobile ? 'inset-0 !w-full !h-[100dvh] !max-h-none rounded-none' : 
-                              isFullscreen ? 'inset-0 !w-full !h-full rounded-0' : 
-                              'bottom-6 right-6 w-[1000px] max-w-[95vw] h-[800px] max-h-[90vh] rounded-[32px] border border-slate-200'}
+                        initial={{ opacity: 0, y: 40, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 40, scale: 0.95 }}
+                        className={`fixed z-[9999] bg-white shadow-[0_32px_80px_-16px_rgba(0,0,0,0.15)] overflow-hidden transition-all duration-500 pointer-events-auto portal-window
+                            ${isMobile ? 'inset-0 w-full h-[100dvh] rounded-none' : 
+                              isFullscreen ? 'inset-4 w-[calc(100%-2rem)] h-[calc(100%-2rem)] rounded-3xl' : 
+                              'bottom-8 right-8 w-[950px] max-w-[90vw] h-[800px] max-h-[85vh] rounded-[32px] border border-slate-100'}
                         `}
                     >
                         <div className="flex h-full w-full relative">
-                            {/* Mobile Overlay Backdrop */}
-                            {isMobile && isSidebarOpen && (
-                                <motion.div 
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    onClick={() => setIsSidebarOpen(false)}
-                                    className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] z-[100]"
-                                />
-                            )}
-
-                            {/* Sidebar - Chat History (Drawer on Mobile) */}
+                            {/* Sidebar - Context & History */}
                             <motion.div 
-                                initial={false}
-                                animate={{ 
-                                    width: isMobile ? (isSidebarOpen ? '85%' : '0%') : (isSidebarOpen ? '280px' : '0px'),
-                                    opacity: isSidebarOpen ? 1 : 0,
-                                    x: isMobile && !isSidebarOpen ? -100 : 0
-                                }}
-                                className={`glass-sidebar h-full border-r border-slate-100 flex flex-col overflow-hidden z-[101] 
-                                    ${isMobile ? 'absolute left-0 top-0 bottom-0 shadow-2xl' : 'relative'}
-                                `}
+                                animate={{ width: isSidebarOpen ? (isMobile ? '0px' : '260px') : '0px', opacity: isSidebarOpen ? 1 : 0 }}
+                                className="glass-sidebar h-full flex flex-col overflow-hidden border-r border-slate-50"
                             >
-                                <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-xs">M</div>
-                                        <span className="font-bold text-slate-800 text-sm tracking-tight">Portal History</span>
+                                <div className="p-6 border-b border-slate-50">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                                            <History size={18} />
+                                        </div>
+                                        <span className="font-bold text-slate-900 text-sm tracking-tight">Intelligence Ledger</span>
                                     </div>
-                                    <button onClick={createNewChat} className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 transition-colors">
-                                        <Plus size={18} />
-                                    </button>
                                 </div>
                                 
-                                <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-1 chat-scrollbar">
-                                    {Object.values(sessions).sort((a, b) => b.timestamp - a.timestamp).map(session => (
+                                <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2 chat-scrollbar">
+                                    {Object.values(sessions).sort((a,b) => b.timestamp - a.timestamp).map(s => (
                                         <button 
-                                            key={session.id}
-                                            onClick={() => {
-                                                setActiveChatId(session.id);
-                                                if (isMobile) setIsSidebarOpen(false);
-                                            }}
-                                            className={`w-full p-3 rounded-xl flex items-center gap-3 group transition-all text-left ${activeChatId === session.id ? 'bg-blue-50 text-blue-600' : 'hover:bg-slate-50 text-slate-500'}`}
+                                            key={s.id}
+                                            onClick={() => setActiveChatId(s.id)}
+                                            className={`w-full p-3.5 rounded-2xl flex items-center gap-3 transition-all text-left group
+                                                ${activeChatId === s.id ? 'bg-primary/5 text-primary' : 'hover:bg-slate-50 text-slate-500'}
+                                            `}
                                         >
-                                            <MessageCircle size={16} className={activeChatId === session.id ? 'text-blue-500' : 'text-slate-300'} />
-                                            <span className="text-xs font-bold flex-1 truncate">{session.title}</span>
-                                            <Trash2 
-                                                size={14} 
-                                                className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-500 transition-all" 
-                                                onClick={(e) => deleteChat(session.id, e)}
-                                            />
+                                            <MessageCircle size={16} className={activeChatId === s.id ? 'text-primary' : 'text-slate-300'} />
+                                            <span className="text-xs font-bold flex-1 truncate">{s.title}</span>
                                         </button>
                                     ))}
                                 </div>
 
-                                <div className="p-4 bg-slate-50/50">
-                                    <div className="flex items-center gap-3 p-2">
-                                        <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
-                                            <User size={16} className="text-slate-500" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="text-[10px] font-bold text-slate-800 truncate">{user.username}</p>
-                                            <p className="text-[9px] text-slate-400 font-medium">Standard Account</p>
-                                        </div>
-                                        <Settings size={14} className="text-slate-300 hover:text-slate-600 cursor-pointer" />
-                                    </div>
+                                <div className="p-6 bg-slate-50/30">
+                                    <button onClick={() => setSessions(prev => ({...prev, [Date.now()]: { id: Date.now().toString(), title: 'New Consultation', messages: [{role:'ai', text:'Node Ready. State your query.', timestamp:Date.now()}], timestamp: Date.now() }}))} className="w-full py-3 bg-white border border-slate-200 rounded-2xl text-[11px] font-black uppercase tracking-widest text-slate-600 shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2">
+                                        <Plus size={14} /> New Consultation
+                                    </button>
                                 </div>
                             </motion.div>
 
-                            {/* Main Chat Area */}
-                            <div className="flex-1 flex flex-col relative bg-[#fcfdfe]">
-                                {/* Header */}
-                                <div className="px-4 py-3 md:px-8 md:py-5 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-[105] shadow-sm pt-[env(safe-area-inset-top,12px)]">
-                                    <div className="flex items-center gap-2 md:gap-3">
-                                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors">
-                                            {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
+                            {/* Main Interaction Panel */}
+                            <div className="flex-1 flex flex-col bg-[#fcfdfe]">
+                                {/* Futuristic Header */}
+                                <div className="px-6 py-5 md:px-8 border-b border-slate-50 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-[100] pt-[env(safe-area-inset-top,20px)]">
+                                    <div className="flex items-center gap-4">
+                                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2.5 hover:bg-slate-50 rounded-xl text-slate-400 transition-colors">
+                                            <Menu size={20} />
                                         </button>
                                         <div className="flex flex-col">
-                                            <div className="flex items-center gap-1.5 md:gap-2">
-                                                <h2 className="font-bold text-slate-900 text-[13px] md:text-lg tracking-tight leading-tight">
-                                                    MediSync Portal
-                                                </h2>
-                                                <span className="header-pill px-1.5 py-0.5 rounded-full bg-blue-600 text-white text-[8px] md:text-[9px] uppercase font-black tracking-widest shadow-sm shadow-blue-200">PRO V2.0</span>
+                                            <div className="flex items-center gap-2">
+                                                <h2 className="font-bold text-slate-900 text-base md:text-lg tracking-tight">MediSync AI Portal</h2>
+                                                <span className="px-1.5 py-0.5 rounded-md bg-emerald-500 text-white text-[8px] font-black uppercase tracking-widest">Live Node</span>
                                             </div>
-                                            <div className="flex items-center gap-1 mt-0.5">
+                                            <div className="flex items-center gap-1.5 mt-0.5">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                                <p className="text-[8px] md:text-[11px] text-slate-400 font-bold uppercase tracking-wider">
-                                                    NODE: <span className="text-emerald-600">ACTIVE REGISTRY SYNC</span>
-                                                </p>
+                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">HIPAA COMPLIANT • SECURE SESSION</p>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-1 md:gap-3">
-                                        {!isMobile && (
-                                            <button onClick={() => setIsFullscreen(!isFullscreen)} className="p-2 text-slate-400 hover:bg-slate-100 rounded-xl transition-all">
-                                                {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
-                                            </button>
-                                        )}
-                                        <button onClick={() => setIsOpen(false)} className="p-2 text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-xl transition-all">
-                                            <X size={22} />
+                                    
+                                    <div className="flex items-center gap-2">
+                                        <button onClick={() => setLanguage(prev => prev === 'English' ? 'Hindi' : 'English')} className="p-2.5 text-slate-400 hover:bg-slate-50 rounded-xl transition-all flex items-center gap-2">
+                                            <Languages size={18} />
+                                            <span className="text-[10px] font-black uppercase hidden md:inline">{language}</span>
+                                        </button>
+                                        <button onClick={() => setIsAccessibilityMode(!isAccessibilityMode)} className="p-2.5 text-slate-400 hover:bg-slate-50 rounded-xl transition-all">
+                                            <Volume2 size={18} />
+                                        </button>
+                                        <div className="w-px h-6 bg-slate-100 mx-1"></div>
+                                        <button onClick={() => setIsOpen(false)} className="p-2.5 text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-xl transition-all">
+                                            <X size={20} />
                                         </button>
                                     </div>
                                 </div>
 
-                                {/* Disclaimer Bar */}
-                                <div className="bg-amber-50/95 backdrop-blur-md px-4 py-2 md:py-3 border-b border-amber-100 flex items-center justify-center gap-2 text-[8px] md:text-[11px] font-bold text-amber-800 sticky top-[64px] md:top-[90px] z-[104] shadow-sm">
-                                     <AlertCircle size={12} className="shrink-0 text-amber-600" />
-                                     <span className="uppercase tracking-widest text-center leading-tight">
-                                         Institutional Registry Active. <span className="hidden xs:inline">Consult a physician.</span>
-                                     </span>
-                                 </div>
-
-                                {/* Messages Area */}
-                                <div 
-                                    ref={scrollRef}
-                                    className="flex-1 overflow-y-auto p-4 md:p-10 flex flex-col gap-6 md:gap-8 chat-scrollbar"
-                                >
-                                    {messages.map((m, i) => {
-                                        if (m.role === 'user') {
-                                            return (
-                                                <div key={i} className="flex flex-col gap-2 items-end">
-                                                    {m.image && <img src={m.image} className="w-48 rounded-2xl border-2 border-white shadow-lg mb-1" />}
-                                                    <div className="message-bubble-user px-4 py-2.5 md:px-5 md:py-3.5 max-w-[85%] text-xs md:text-sm font-medium leading-relaxed rounded-[20px] md:rounded-[24px] rounded-br-none shadow-md">
-                                                        {m.text}
+                                {/* Chat Window */}
+                                <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 md:p-10 flex flex-col gap-8 chat-scrollbar no-scrollbar pb-32">
+                                    {messages.map((m, i) => (
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            key={i} 
+                                            className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'} gap-3`}
+                                        >
+                                            {m.role === 'ai' && (
+                                                <div className="flex items-center gap-2 mb-1 px-1">
+                                                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                                        <BrainCircuit size={12} />
                                                     </div>
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">MediSync Agent</span>
+                                                    <span className="text-[8px] text-slate-300 ml-2 font-medium">{new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                                                 </div>
-                                            );
-                                        }
+                                            )}
 
-                                        const segments = parseAiResponse(m.text);
-                                        const sevStyles = getSeverityStyles(segments.severity);
+                                            <div className={`
+                                                relative p-5 md:p-6 rounded-3xl shadow-sm border max-w-[85%] leading-relaxed
+                                                ${m.role === 'user' ? 
+                                                  'bg-primary text-white border-primary shadow-primary/20 rounded-tr-none' : 
+                                                  'bg-white text-slate-700 border-slate-50 rounded-tl-none'}
+                                            `}>
+                                                {m.image && <img src={m.image} className="w-full max-w-sm rounded-2xl mb-4 border-2 border-white shadow-xl" />}
+                                                
+                                                {m.role === 'ai' ? (
+                                                    <div className="flex flex-col gap-6">
+                                                        {/* Response Processing */}
+                                                        {(() => {
+                                                            const s = parseAiResponse(m.text);
+                                                            const ui = getSeverityUI(s.severity);
+                                                            const isCritical = ui.label === 'CRITICAL';
 
-                                        return (
-                                            <div key={i} className="flex flex-col gap-4 md:gap-5 items-start">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shadow-sm border border-blue-200">
-                                                        <BrainCircuit size={14} />
+                                                            return (
+                                                                <>
+                                                                    {/* Critical Emergency Banner */}
+                                                                    {isCritical && (
+                                                                        <div className={`p-5 rounded-2xl ${ui.glow} border border-red-100 flex flex-col gap-4`}>
+                                                                            <div className="flex items-center justify-between">
+                                                                                <div className="flex items-center gap-2 text-red-600 font-black text-xs">
+                                                                                    <AlertCircle size={16} /> EMERGENCY DETECTED
+                                                                                </div>
+                                                                                <span className="px-2 py-1 rounded-md bg-red-600 text-white text-[8px] font-black">HIGH URGENCY</span>
+                                                                            </div>
+                                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                                                                <button onClick={() => navigate('/dashboard/booking?service=Ambulance')} className="py-2.5 bg-red-600 text-white rounded-xl text-[10px] font-black uppercase hover:bg-red-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-red-200">
+                                                                                    <HeartPulse size={14} /> Call Ambulance
+                                                                                </button>
+                                                                                <button className="py-2.5 bg-white border border-red-200 text-red-600 rounded-xl text-[10px] font-black uppercase hover:bg-red-50 transition-all flex items-center justify-center gap-2">
+                                                                                    <MapPin size={14} /> Share Live Location
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+
+                                                                    <div className="flex flex-col gap-2">
+                                                                        <div className="flex items-center gap-2 mb-1">
+                                                                            <Activity size={14} className="text-primary" />
+                                                                            <span className="text-[10px] font-black text-primary uppercase tracking-widest">Assessment Node</span>
+                                                                        </div>
+                                                                        <p className="text-[13px] md:text-sm font-medium text-slate-700 leading-relaxed">
+                                                                            {s.assessment || s.other}
+                                                                        </p>
+                                                                    </div>
+
+                                                                    {/* Clinical Grid */}
+                                                                    <div className="grid grid-cols-2 gap-3">
+                                                                        <div className={`p-4 rounded-2xl border ${ui.bg} ${ui.border} flex flex-col gap-1`}>
+                                                                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">TRIAGE STATUS</span>
+                                                                            <span className={`text-xs font-black ${ui.color}`}>{ui.label}</span>
+                                                                        </div>
+                                                                        {s.department && (
+                                                                            <div className="p-4 rounded-2xl border border-slate-50 bg-slate-50/50 flex flex-col gap-1">
+                                                                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">SUGGESTED DEPT</span>
+                                                                                <span className="text-xs font-black text-slate-700 truncate">{s.department}</span>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+
+                                                                    {/* Map Preview */}
+                                                                    {s.mapUrl && (
+                                                                        <div className="rounded-2xl overflow-hidden border border-slate-100 shadow-sm">
+                                                                            <div className="h-24 bg-slate-100 flex items-center justify-center relative overflow-hidden bg-[url('https://www.google.com/maps/vt/pb=!1m4!1m3!1i12!2i2361!3i1589!2m3!1e0!2sm!3i420120488!3m8!2sen!3sus!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0!5m1!1e0!23i4111425')] bg-cover">
+                                                                                <div className="relative z-10 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white shadow-xl">
+                                                                                    <MapPin size={16} />
+                                                                                </div>
+                                                                            </div>
+                                                                            <div className="p-3 bg-white flex items-center justify-between">
+                                                                                <span className="text-[10px] font-bold text-slate-800">Nearby Institutional Node</span>
+                                                                                <a href={s.mapUrl} target="_blank" className="text-[9px] font-black uppercase text-primary hover:underline">Launch Navigation</a>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+
+                                                                    {s.action && (
+                                                                        <button 
+                                                                            onClick={() => navigate('/dashboard/booking')}
+                                                                            className="w-full py-4 bg-primary text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-3 shadow-xl shadow-primary/20 group hover:bg-blue-600 transition-all"
+                                                                        >
+                                                                            Secure Clinical Booking <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                                                                        </button>
+                                                                    )}
+                                                                </>
+                                                            );
+                                                        })()}
                                                     </div>
-                                                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Assistant</span>
-                                                </div>
-
-                                                <div className="message-bubble-ai p-4 md:p-8 w-full max-w-full md:max-w-[90%] rounded-[20px] md:rounded-[28px] rounded-tl-none flex flex-col gap-4 md:gap-6 border border-slate-100 shadow-sm">
-                                                    {/* Assessment */}
-                                                    <div className="flex flex-col gap-1.5 md:gap-2">
-                                                        <div className="flex items-center gap-1.5">
-                                                            <Stethoscope size={14} className="text-blue-500" />
-                                                            <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-blue-600">Clinical Assessment</span>
-                                                        </div>
-                                                        <p className="text-[13px] md:text-sm text-slate-700 leading-relaxed font-medium">
-                                                            {segments.assessment || segments.other}
-                                                        </p>
-                                                    </div>
-
-                                                    {/* Severity & Department Grid */}
-                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
-                                                         <div className={`p-3 md:p-4 rounded-xl md:rounded-2xl border flex items-center justify-between ${sevStyles.bg} ${sevStyles.border} transition-all hover:shadow-sm`}>
-                                                             <div className="flex-1 min-w-0">
-                                                                 <span className="text-[7px] md:text-[8px] font-black text-slate-400 uppercase block mb-0.5 tracking-tighter">Triage Level</span>
-                                                                 <div className="flex items-center gap-1.5 overflow-hidden">
-                                                                     {sevStyles.icon}
-                                                                     <span className={`text-[10px] md:text-sm font-black truncate ${sevStyles.text}`}>{segments.severity.toUpperCase()}</span>
-                                                                 </div>
-                                                             </div>
-                                                         </div>
-                                                         
-                                                         {segments.department && (
-                                                             <div className="p-3 md:p-4 rounded-xl md:rounded-2xl border border-slate-100 bg-white flex items-center gap-3 transition-all hover:shadow-sm">
-                                                                 <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 shrink-0">
-                                                                     <MapPin size={14} />
-                                                                 </div>
-                                                                 <div className="flex-1 min-w-0">
-                                                                     <span className="text-[7px] md:text-[8px] font-black text-slate-400 uppercase block mb-0.5 tracking-tighter">Department</span>
-                                                                     <span className="text-[10px] md:text-xs font-bold text-slate-700 truncate block">{segments.department}</span>
-                                                                 </div>
-                                                             </div>
-                                                         )}
-                                                     </div>
-
-                                                    {/* Follow-up / Recommendations */}
-                                                    {segments.recommendations.length > 0 && (
-                                                        <div className="p-5 rounded-2xl border border-emerald-100 bg-emerald-50/30">
-                                                            <div className="flex items-center gap-2 mb-4">
-                                                                <Activity size={16} className="text-emerald-500" />
-                                                                <span className="text-[11px] font-black uppercase tracking-widest text-emerald-600">Action Plan</span>
-                                                            </div>
-                                                            <ul className="flex flex-col gap-3">
-                                                                {segments.recommendations.map((rec, ri) => (
-                                                                    <li key={ri} className="flex gap-3 text-sm text-slate-600 items-start">
-                                                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-2 flex-shrink-0"></div>
-                                                                        <span className="font-medium text-[13px]">{rec}</span>
-                                                                    </li>
-                                                                ))}
-                                                            </ul>
-                                                        </div>
-                                                    )}
-
-                                                    {/* Map Card */}
-                                                    {segments.mapUrl && (
-                                                        <div className="mt-2 rounded-2xl overflow-hidden border border-slate-100 shadow-sm group/map relative">
-                                                            <div className="h-28 bg-slate-100 flex items-center justify-center relative overflow-hidden">
-                                                                <div className="absolute inset-0 bg-[url('https://www.google.com/maps/vt/pb=!1m4!1m3!1i12!2i2361!3i1589!2m3!1e0!2sm!3i420120488!3m8!2sen!3sus!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0!5m1!1e0!23i4111425')] bg-cover opacity-60"></div>
-                                                                <div className="relative z-10 w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white animate-bounce shadow-xl">
-                                                                    <MapPin size={20} />
-                                                                </div>
-                                                            </div>
-                                                            <div className="p-3 bg-white flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
-                                                                <div className="flex-1 min-w-0">
-                                                                    <h4 className="text-[10px] md:text-xs font-black text-slate-800 uppercase tracking-tight break-words">{segments.suggestedHospital || "Recommended Facility"}</h4>
-                                                                    <p className="text-[8px] md:text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Clinical Navigation Ready</p>
-                                                                </div>
-                                                                <a 
-                                                                    href={segments.mapUrl} 
-                                                                    target="_blank" 
-                                                                    rel="noopener noreferrer"
-                                                                    className="w-full md:w-auto px-4 py-2.5 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all shadow-sm text-center"
-                                                                >
-                                                                    Navigate
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {/* Action CTA */}
-                                                    {segments.action && (
-                                                        <div className="mt-2 pt-5 border-t border-slate-100">
-                                                            <p className="text-xs text-slate-500 font-medium mb-4 italic leading-relaxed">
-                                                                {segments.action}
-                                                            </p>
-                                                            <button 
-                                                                onClick={() => {
-                                                                    setIsOpen(false);
-                                                                    let url = '/dashboard/booking';
-                                                                    if (segments.suggestedDoctor) url += `?doctor=${encodeURIComponent(segments.suggestedDoctor)}`;
-                                                                    else if (segments.matchedService) url += `?mode=service&service=${encodeURIComponent(segments.matchedService)}`;
-                                                                    navigate(url);
-                                                                }}
-                                                                className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-xl shadow-blue-100 group"
-                                                            >
-                                                                Secure Clinical Booking <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                                                            </button>
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                {/* Questions Chips */}
-                                                {segments.questions.length > 0 && (
-                                                    <div className="flex flex-wrap gap-2 pt-2 px-1">
-                                                        {segments.questions.map((q, qi) => (
-                                                            <button 
-                                                                key={qi}
-                                                                onClick={() => handleSend(q)}
-                                                                className="px-4 py-2 bg-white border border-slate-200 rounded-full text-[11px] font-bold text-slate-600 hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm flex items-center gap-2"
-                                                            >
-                                                                {q} <Sparkles size={12} className="text-blue-400" />
-                                                            </button>
-                                                        ))}
-                                                    </div>
+                                                ) : (
+                                                    <p className="text-[13px] md:text-sm font-semibold">{m.text}</p>
                                                 )}
                                             </div>
-                                        );
-                                    })}
+
+                                            {m.role === 'ai' && (
+                                                <div className="flex gap-2 mt-2 px-1">
+                                                    <button onClick={() => copyToClipboard(m.text)} className="p-2 text-slate-300 hover:text-slate-500 hover:bg-slate-50 rounded-lg transition-all"><Copy size={14}/></button>
+                                                    <button className="p-2 text-slate-300 hover:text-slate-500 hover:bg-slate-50 rounded-lg transition-all"><RotateCcw size={14}/></button>
+                                                </div>
+                                            )}
+                                        </motion.div>
+                                    ))}
 
                                     {isLoading && (
                                         <div className="flex flex-col gap-4">
-                                            <div className="p-6 rounded-3xl bg-white border border-slate-100 shadow-sm max-w-[400px]">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="flex gap-1.5">
-                                                        {[0, 1, 2].map(d => (
-                                                            <div key={d} className={`w-2 h-2 rounded-full bg-blue-500 typing-dot`} style={{ animationDelay: `${d * 0.2}s` }}></div>
-                                                        ))}
-                                                    </div>
-                                                    <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{loadingMessages[loadingStep]}</span>
+                                            <div className="p-8 rounded-3xl bg-white border border-slate-50 shadow-sm max-w-[320px] flex items-center gap-4">
+                                                <div className="flex gap-1">
+                                                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce"></div>
+                                                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:0.2s]"></div>
+                                                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:0.4s]"></div>
                                                 </div>
+                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{loadingMessages[loadingStep]}</span>
                                             </div>
                                         </div>
                                     )}
                                 </div>
 
-                                {/* Input Area */}
-                                <div className="p-4 md:p-8 bg-white border-t border-slate-100 sticky bottom-0 z-[102] pb-[env(safe-area-inset-bottom,16px)]">
-                                    <div className="max-w-[800px] mx-auto relative flex items-center bg-slate-50 rounded-[20px] md:rounded-[28px] border border-slate-200 p-1 md:p-1.5 transition-all focus-within:border-blue-500/30 focus-within:bg-white focus-within:shadow-xl">
-                                        <div className="flex gap-0.5 md:gap-1 pl-1">
-                                            <label className="p-2 text-slate-400 hover:text-blue-600 cursor-pointer">
-                                                <Paperclip size={18} />
-                                                <input type="file" className="hidden" onChange={(e) => {
-                                                    const file = e.target.files[0];
-                                                    if (file) {
-                                                        const reader = new FileReader();
-                                                        reader.onloadend = () => setImagePreview(reader.result);
-                                                        reader.readAsDataURL(file);
-                                                    }
-                                                }} />
-                                            </label>
-                                        </div>
+                                {/* Smart Input Node */}
+                                <div className="p-6 md:p-8 bg-white border-t border-slate-50 sticky bottom-0 z-[101]">
+                                    {/* Action Chips */}
+                                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-4 mb-2">
+                                        {["Book Ambulance", "Find Hospital", "Talk to Doctor", "Check Symptoms", "Emergency Contact"].map(chip => (
+                                            <button key={chip} onClick={() => handleSend(chip)} className="shrink-0 px-4 py-2 bg-slate-50 border border-slate-100 rounded-full text-[10px] font-bold text-slate-600 hover:border-primary hover:text-primary transition-all shadow-sm">
+                                                {chip}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    <div className="max-w-[800px] mx-auto relative flex items-center bg-slate-50 border border-slate-200 rounded-2xl md:rounded-[24px] p-2 focus-within:border-primary/30 focus-within:bg-white focus-within:shadow-2xl focus-within:shadow-primary/5 transition-all">
+                                        <label className="p-3 text-slate-400 hover:text-primary cursor-pointer">
+                                            <Paperclip size={20} />
+                                            <input type="file" className="hidden" onChange={(e) => {
+                                                const file = e.target.files[0];
+                                                if (file) {
+                                                    const reader = new FileReader();
+                                                    reader.onloadend = () => setImagePreview(reader.result);
+                                                    reader.readAsDataURL(file);
+                                                }
+                                            }} />
+                                        </label>
                                         
                                         <div className="flex-1 px-2 relative">
                                             {imagePreview && (
-                                                <div className="absolute -top-14 left-0 bg-white p-1 rounded-lg shadow-xl border border-slate-200 z-50">
-                                                    <img src={imagePreview} className="h-10 w-10 object-cover rounded" />
-                                                    <button onClick={() => setImagePreview(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 shadow-md">
-                                                        <X size={10} />
-                                                    </button>
+                                                <div className="absolute -top-16 left-0 bg-white p-1.5 rounded-xl shadow-2xl border border-slate-100">
+                                                    <img src={imagePreview} className="h-10 w-10 object-cover rounded-lg" />
+                                                    <button onClick={() => setImagePreview(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg"><X size={10} /></button>
                                                 </div>
                                             )}
                                             <input 
                                                 value={input}
                                                 onChange={(e) => setInput(e.target.value)}
                                                 onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                                                placeholder={isMobile ? "Ask anything..." : "Ask a medical question or describe symptoms..."}
-                                                className="w-full bg-transparent border-none outline-none text-[13px] md:text-sm font-medium text-slate-700 placeholder:text-slate-400 py-2.5"
+                                                placeholder="State your symptoms or medical query..."
+                                                className="w-full bg-transparent border-none outline-none text-sm font-semibold text-slate-700 placeholder:text-slate-400 py-3"
                                             />
                                         </div>
 
+                                        <button className="p-3 text-slate-400 hover:text-primary transition-colors"><Mic size={20} /></button>
+                                        
                                         <button 
                                             onClick={() => handleSend()}
                                             disabled={isLoading || (!input.trim() && !imagePreview)}
-                                            className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all transform active:scale-95 disabled:opacity-50"
+                                            className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                                         >
-                                            <SendHorizontal size={20} />
+                                            <SendHorizontal size={22} />
                                         </button>
                                     </div>
-                                    <p className="text-center text-[8px] text-slate-400 mt-3 font-bold uppercase tracking-[1.5px] opacity-60">
-                                        Secure AI Node • HIPAA Compliant
-                                    </p>
                                 </div>
                             </div>
                         </div>
