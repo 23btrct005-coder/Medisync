@@ -38,6 +38,7 @@ const AiConcierge = () => {
     
     const scrollRef = useRef(null);
     const containerRef = useRef(null);
+    const recognitionRef = useRef(null);
 
     useEffect(() => {
         const loadVoices = () => {
@@ -224,6 +225,7 @@ const AiConcierge = () => {
         if (!SpeechRecognition) return alert('Speech recognition not supported in this browser. Please use Chrome.');
         
         const recognition = new SpeechRecognition();
+        recognitionRef.current = recognition;
         recognition.lang = selectedLang;
         recognition.continuous = false;
         recognition.interimResults = false;
@@ -235,6 +237,12 @@ const AiConcierge = () => {
             setInput(transcript);
         };
         recognition.start();
+    };
+
+    const stopListening = () => {
+        if (recognitionRef.current) {
+            recognitionRef.current.stop();
+        }
     };
 
     return (
@@ -478,7 +486,7 @@ const AiConcierge = () => {
                                                                     <span style={{ fontWeight: '500' }}>{ (line.startsWith('-') || line.startsWith('•') || line.startsWith('*')) ? line.substring(1).trim() : line}</span>
                                                                 </div>
                                                             )}
-                                                            {(hasCoords && isFacility) || (isFacility && isLocationTrigger) ? (
+                                                            {hasCoords || isLocationTrigger ? (
                                                                 <div style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0', marginTop: '4px' }}>
                                                                     <iframe width="100%" height="150" style={{ border: 0 }} loading="lazy" src={mapUrl}></iframe>
                                                                 </div>
@@ -636,7 +644,7 @@ const AiConcierge = () => {
                                     onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                                 />
                                 <button 
-                                    onClick={isListening ? () => {} : startListening} 
+                                    onClick={isListening ? stopListening : startListening} 
                                     style={{ 
                                         position: 'absolute', 
                                         right: '12px', 
