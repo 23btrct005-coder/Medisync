@@ -5,7 +5,7 @@ import {
     SendHorizontal, X, Mic, StopCircle, Maximize2, Minimize2, 
     MessageCircle, Sparkles, Activity, ShieldCheck, HeartPulse, BrainCircuit, Calendar, Paperclip,
     ChevronRight, AlertCircle, Clock, Stethoscope, MapPin, CheckCircle2, RotateCcw, 
-    History, Plus, Trash2, Copy, Menu, User, Settings, Info, LogOut, Languages, Volume2
+    History, Plus, Trash2, Copy, Menu, User, Settings, Info, LogOut, Languages, Volume2, Search, Bot
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -264,293 +264,151 @@ const AiConcierge = () => {
                                             <MessageCircle size={16} className={activeChatId === s.id ? 'text-primary' : 'text-slate-300'} />
                                             <span className="text-xs font-bold flex-1 truncate">{s.title}</span>
                                         </button>
-                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        className="fixed inset-0 md:inset-auto md:right-8 md:bottom-24 md:w-[420px] md:h-[680px] bg-white md:rounded-[32px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden pointer-events-auto border border-slate-100"
-                    >
-                        {/* Smart Assistant Header */}
-                        <div className="px-5 py-4 border-b border-slate-50 flex items-center justify-between bg-white/80 backdrop-blur-xl sticky top-0 z-[100] safe-top">
-                            <style>{`
-                                .safe-top { padding-top: max(1rem, env(safe-area-inset-top)); }
-                                .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
-                                .no-scrollbar::-webkit-scrollbar { display: none; }
-                            `}</style>
-                            <div className="flex items-center gap-3">
-                                <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
-                                <h2 className="font-black text-slate-800 text-[14px] uppercase tracking-wider">Smart Assistant</h2>
-                            </div>
-                            <button onClick={() => setIsOpen(false)} className="p-2 text-slate-400 hover:bg-slate-50 rounded-full transition-all">
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        {/* Interaction Node */}
-                        <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-6 flex flex-col justify-start gap-6 no-scrollbar scroll-smooth bg-slate-50/30">
-                            {messages.length === 0 && (
-                                <div className="my-auto flex flex-col items-center justify-center text-center p-8">
-                                    <div className="w-16 h-16 rounded-full bg-indigo-50 flex items-center justify-center mb-4">
-                                        <Bot size={32} className="text-indigo-500" />
-                                    </div>
-                                    <h3 className="text-sm font-black text-slate-900">Hi! How can I help you today?</h3>
-                                    <p className="text-xs text-slate-400 mt-2 font-medium">I'm your MediSync AI, ready to assist with symptoms or hospital guidance.</p>
-                                </div>
-                            )}
-                                    {messages.map((m, i) => (
-                                        <motion.div 
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            key={i} 
-                                            className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'} gap-3`}
-                                        >
-                                            {m.role === 'ai' && (
-                                                <div className="flex items-center gap-2 mb-1 px-1">
-                                                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                                                        <BrainCircuit size={12} />
-                                                    </div>
-                                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">MediSync Agent</span>
-                                                    <span className="text-[8px] text-slate-300 ml-2 font-medium">{new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                                                </div>
-                                            )}
-
-                                            <div className={`
-                                                relative p-5 md:p-6 rounded-3xl shadow-sm border max-w-[85%] leading-relaxed
-                                                ${m.role === 'user' ? 
-                                                  'bg-primary text-white border-primary shadow-primary/20 rounded-tr-none' : 
-                                                  'bg-white text-slate-700 border-slate-50 rounded-tl-none'}
-                                            `}>
-                                                {m.image && <img src={m.image} className="w-full max-w-sm rounded-2xl mb-4 border-2 border-white shadow-xl" />}
-                                                
-                                                {m.role === 'ai' ? (
-                                                    <div className="flex flex-col gap-6">
-                                                        {/* Response Processing */}
-                                                        {(() => {
-                                                            const s = parseAiResponse(m.text);
-                                                            const ui = getSeverityUI(s.severity);
-                                                            const isCritical = ui.label === 'CRITICAL';
-
-                                                            return (
-                                                                <>
-                                                                    {/* Critical Emergency Banner / Warning */}
-                                                                    {(isCritical || s.warning) && (
-                                                                        <div className={`p-5 rounded-2xl ${ui.glow || 'bg-red-50 border border-red-200'} flex flex-col gap-4`}>
-                                                                            <div className="flex items-center justify-between">
-                                                                                <div className="flex items-center gap-2 text-red-600 font-black text-xs">
-                                                                                    <AlertCircle size={16} /> EMERGENCY ALERT
-                                                                                </div>
-                                                                                <span className="px-2 py-1 rounded-md bg-red-600 text-white text-[8px] font-black uppercase">Immediate Action</span>
-                                                                            </div>
-                                                                            {s.warning && <p className="text-xs font-bold text-red-700 leading-relaxed italic">{s.warning}</p>}
-                                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                                                                <button onClick={() => navigate('/dashboard/booking?service=Ambulance')} className="py-2.5 bg-red-600 text-white rounded-xl text-[10px] font-black uppercase hover:bg-red-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-red-200">
-                                                                                    <HeartPulse size={14} /> Dispatch Ambulance
-                                                                                </button>
-                                                                                <button className="py-2.5 bg-white border border-red-200 text-red-600 rounded-xl text-[10px] font-black uppercase hover:bg-red-50 transition-all flex items-center justify-center gap-2">
-                                                                                    <MapPin size={14} /> Nearest Hospital
-                                                                                </button>
-                                                                            </div>
-                                                                        </div>
-                                                                    )}
-
-                                                                            <div className="flex flex-col gap-4">
-                                                                                <div className="flex flex-col gap-2">
-                                                                                    <div className="flex items-center gap-2 mb-1">
-                                                                                        <Activity size={14} className="text-primary" />
-                                                                                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">Clinical Assessment</span>
-                                                                                    </div>
-                                                                                    <p className="text-[13px] md:text-sm font-medium text-slate-700 leading-relaxed">
-                                                                                        {s.assessment || s.other}
-                                                                                    </p>
-                                                                                </div>
-
-                                                                                {s.possibleConditions && (
-                                                                                    <div className="flex flex-col gap-2 p-4 bg-blue-50/30 rounded-2xl border border-blue-100/50">
-                                                                                        <div className="flex items-center gap-2 mb-1">
-                                                                                            <Search size={14} className="text-blue-500" />
-                                                                                            <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">Possible Causes</span>
-                                                                                        </div>
-                                                                                        <p className="text-xs font-bold text-slate-600 leading-relaxed italic">
-                                                                                            {s.possibleConditions}
-                                                                                        </p>
-                                                                                    </div>
-                                                                                )}
-
-                                                                                {s.riskIndicators && (
-                                                                                    <div className="flex flex-col gap-2 p-3 bg-slate-50/50 rounded-xl border border-slate-100/50">
-                                                                                        <div className="flex items-center gap-2 mb-1">
-                                                                                            <AlertCircle size={12} className="text-amber-500" />
-                                                                                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Clinical Observations</span>
-                                                                                        </div>
-                                                                                        <p className="text-[11px] font-bold text-slate-500 leading-relaxed">
-                                                                                            {s.riskIndicators}
-                                                                                        </p>
-                                                                                    </div>
-                                                                                )}
-                                                                            </div>
-
-                                                                            {/* Clinical Grid */}
-                                                                            <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 mt-2">
-                                                                                <div className={`p-4 rounded-2xl border ${ui.bg} ${ui.border} flex flex-col gap-1 shadow-sm`}>
-                                                                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">TRIAGE LEVEL</span>
-                                                                                    <span className={`text-xs font-black ${ui.color}`}>{ui.label}</span>
-                                                                                </div>
-                                                                                {s.specialist && (
-                                                                                    <div className="p-4 rounded-2xl border border-slate-100 bg-slate-50/30 flex flex-col gap-1 shadow-sm">
-                                                                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">RECOMMENDED SPECIALIST</span>
-                                                                                        <span className="text-xs font-black text-slate-700 truncate">{s.specialist}</span>
-                                                                                    </div>
-                                                                                )}
-                                                                            </div>
-
-                                                                    {/* Map Preview */}
-                                                                    {s.mapUrl && (
-                                                                        <div className="rounded-2xl overflow-hidden border border-slate-100 shadow-sm">
-                                                                            <div className="h-24 bg-slate-100 flex items-center justify-center relative overflow-hidden bg-[url('https://www.google.com/maps/vt/pb=!1m4!1m3!1i12!2i2361!3i1589!2m3!1e0!2sm!3i420120488!3m8!2sen!3sus!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0!5m1!1e0!23i4111425')] bg-cover">
-                                                                                <div className="relative z-10 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white shadow-xl">
-                                                                                    <MapPin size={16} />
-                                                                                </div>
-                                                                            </div>
-                                                                            <div className="p-3 bg-white flex items-center justify-between">
-                                                                                <span className="text-[10px] font-bold text-slate-800">Nearby Institutional Node</span>
-                                                                                <a href={s.mapUrl} target="_blank" className="text-[9px] font-black uppercase text-primary hover:underline">Launch Navigation</a>
-                                                                            </div>
-                                                                        </div>
-                                                                    )}
-
-                                                                    {s.action && (
-                                                                        <button 
-                                                                            onClick={() => navigate('/dashboard/booking')}
-                                                                            className="w-full py-4 bg-primary text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-3 shadow-xl shadow-primary/20 group hover:bg-blue-600 transition-all"
-                                                                        >
-                                                                            Secure Clinical Booking <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                                                                        </button>
-                                                                    )}
-                                                                </>
-                                                            );
-                                                        })()}
-                                                    </div>
-                                                ) : (
-                                                    <p className="text-[13px] md:text-sm font-semibold">{m.text}</p>
-                                                )}
-                                            </div>
-
-                                            {m.role === 'ai' && (
-                                                <div className="flex gap-2 mt-2 px-1">
-                                                    <button onClick={() => copyToClipboard(m.text)} className="p-2 text-slate-300 hover:text-slate-500 hover:bg-slate-50 rounded-lg transition-all"><Copy size={14}/></button>
-                                                    <button className="p-2 text-slate-300 hover:text-slate-500 hover:bg-slate-50 rounded-lg transition-all"><RotateCcw size={14}/></button>
-                                                </div>
-                                            )}
-                                        </motion.div>
                                     ))}
-                                    <h3 className="text-sm font-black text-slate-900 tracking-tight">Hi! How can I help you today?</h3>
-                                    <p className="text-[11px] text-slate-400 mt-2 font-medium leading-relaxed">Describe your symptoms or ask about medical reports.</p>
                                 </div>
-                            )}
+                            </motion.div>
 
-                            {messages.map((m, i) => (
-                                <motion.div 
-                                    key={i}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                                >
-                                    <div className={`max-w-[85%] flex flex-col gap-1.5`}>
-                                        <div className={`p-4 rounded-3xl text-[13px] font-semibold leading-relaxed shadow-sm
-                                            ${m.role === 'user' 
-                                                ? 'bg-indigo-500 text-white rounded-tr-none' 
-                                                : 'bg-white text-slate-700 rounded-tl-none border border-slate-100'}
-                                        `}>
-                                            {m.role === 'ai' ? (
-                                                <div className="flex flex-col gap-5">
-                                                    {parseAiResponse(m.text).assessment && (
-                                                        <p>{parseAiResponse(m.text).assessment}</p>
-                                                    )}
-                                                    
-                                                    {parseAiResponse(m.text).severity && (
-                                                        <div className="flex flex-col gap-3">
-                                                            <div className="p-4 rounded-2xl bg-slate-50/50 border border-slate-100">
-                                                                <span className="text-[10px] font-black text-slate-400 uppercase">Triage Status</span>
-                                                                <p className={`text-sm font-black mt-1 ${
-                                                                    parseAiResponse(m.text).severity === 'CRITICAL' ? 'text-red-500' :
-                                                                    parseAiResponse(m.text).severity === 'HIGH' ? 'text-amber-500' : 'text-emerald-500'
-                                                                }`}>{parseAiResponse(m.text).severity}</p>
-                                                            </div>
-
-                                                            {parseAiResponse(m.text).specialist && (
-                                                                <div className="p-4 rounded-2xl bg-indigo-50/30 border border-indigo-100">
-                                                                    <span className="text-[10px] font-black text-indigo-400 uppercase">Recommendation</span>
-                                                                    <p className="text-sm font-black text-indigo-600 mt-1">{parseAiResponse(m.text).specialist}</p>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    )}
-
-                                                    {!parseAiResponse(m.text).severity && <p>{m.text}</p>}
-                                                </div>
-                                            ) : m.text}
-                                        </div>
-                                        <span className="text-[10px] text-slate-300 font-bold px-2">{new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                    </div>
-                                </motion.div>
-                            ))}
-                            {isLoading && (
-                                <div className="flex justify-start">
-                                    <div className="bg-white border border-slate-100 p-4 rounded-2xl flex gap-1 shadow-sm">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce"></div>
-                                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:0.2s]"></div>
-                                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:0.4s]"></div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Smart Assistant Input */}
-                        <div className="p-5 bg-white border-t border-slate-50 sticky bottom-0 z-[101] safe-bottom">
-                            {/* Suggestion Chips */}
-                            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-3 mb-2">
-                                {["Explain today's symptoms", "Talk to Doctor", "Emergency Help"].map(chip => (
-                                    <button key={chip} onClick={() => handleSend(chip)} className="shrink-0 px-4 py-2 bg-white border border-indigo-100 rounded-full text-[10px] font-bold text-indigo-500 hover:bg-indigo-50 transition-all shadow-sm">
-                                        {chip}
-                                    </button>
-                                ))}
-                            </div>
-
-                            <div className="relative flex items-center gap-2">
-                                <div className="flex-1 relative flex items-center bg-slate-50 border border-slate-200 rounded-2xl p-1.5 focus-within:border-indigo-300 focus-within:bg-white transition-all shadow-inner">
-                                    <label className="p-2 text-slate-400 hover:text-indigo-500 cursor-pointer">
-                                        <Paperclip size={18} />
-                                        <input type="file" className="hidden" onChange={(e) => {
-                                            const file = e.target.files[0];
-                                            if (file) {
-                                                const reader = new FileReader();
-                                                reader.onloadend = () => setImagePreview(reader.result);
-                                                reader.readAsDataURL(file);
-                                            }
-                                        }} />
-                                    </label>
-                                    
-                                    <div className="flex-1 px-1">
-                                        {imagePreview && (
-                                            <div className="absolute -top-14 left-0 bg-white p-1 rounded-xl shadow-2xl border border-slate-200">
-                                                <img src={imagePreview} className="h-10 w-10 object-cover rounded-lg" />
-                                                <button onClick={() => setImagePreview(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"><X size={10} /></button>
+                            {/* Main Chat Area */}
+                            <div className="flex-1 flex flex-col min-w-0 bg-white relative">
+                                {/* Header */}
+                                <div className="px-8 py-5 border-b border-slate-50 flex items-center justify-between sticky top-0 z-20 bg-white/80 backdrop-blur-xl">
+                                    <div className="flex items-center gap-4">
+                                        <button 
+                                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                                            className="p-2 hover:bg-slate-50 rounded-xl transition-all md:hidden"
+                                        >
+                                            <Menu size={20} />
+                                        </button>
+                                        <div className="flex flex-col">
+                                            <h2 className="text-sm font-black text-slate-800 tracking-tight uppercase">
+                                                {activeSession.title}
+                                            </h2>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Neural Node Active</span>
                                             </div>
-                                        )}
-                                        <input 
-                                            value={input}
-                                            onChange={(e) => setInput(e.target.value)}
-                                            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                                            placeholder="Ask me anything..."
-                                            className="w-full bg-transparent border-none outline-none text-[13px] font-semibold text-slate-700 placeholder:text-slate-400 py-2.5"
-                                        />
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <button 
+                                            onClick={() => setIsFullscreen(!isFullscreen)}
+                                            className="p-2.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-xl transition-all hidden md:block"
+                                        >
+                                            {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+                                        </button>
+                                        <button 
+                                            onClick={() => setIsOpen(false)}
+                                            className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                        >
+                                            <X size={18} />
+                                        </button>
                                     </div>
                                 </div>
 
-                                <button 
-                                    onClick={() => handleSend()}
-                                    disabled={isLoading || (!input.trim() && !imagePreview)}
-                                    className="w-12 h-12 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-200 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
-                                >
-                                    <SendHorizontal size={20} />
-                                </button>
+                                {/* Messages Scroll Area */}
+                                <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-8 chat-scrollbar">
+                                    {messages.length === 1 && (
+                                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                                            <div className="w-20 h-20 rounded-3xl bg-primary/5 flex items-center justify-center text-primary mb-6 animate-float">
+                                                <BrainCircuit size={40} />
+                                            </div>
+                                            <h3 className="text-lg font-black text-slate-900 tracking-tight">Clinical Intelligence Node</h3>
+                                            <p className="text-sm text-slate-400 mt-2 max-w-[280px] font-medium leading-relaxed">
+                                                Describe your symptoms or upload a report for professional clinical reasoning.
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {isLoading && (
+                                        <div className="flex justify-start items-center gap-4">
+                                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary animate-spin">
+                                                <RotateCcw size={14} />
+                                            </div>
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-[10px] font-black text-primary uppercase tracking-widest">{loadingMessages[loadingStep]}</span>
+                                                <div className="flex gap-1">
+                                                    <div className="w-1 h-1 rounded-full bg-primary/40 animate-bounce"></div>
+                                                    <div className="w-1 h-1 rounded-full bg-primary/40 animate-bounce [animation-delay:0.2s]"></div>
+                                                    <div className="w-1 h-1 rounded-full bg-primary/40 animate-bounce [animation-delay:0.4s]"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Input Area */}
+                                <div className="p-8 bg-white border-t border-slate-50">
+                                    <div className="max-w-4xl mx-auto flex flex-col gap-4">
+                                        {/* Suggestion Chips */}
+                                        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                                            {["Analyze current symptoms", "Nearby Hospital Node", "Clinical Red Flags", "Book Specialist"].map(chip => (
+                                                <button 
+                                                    key={chip}
+                                                    onClick={() => handleSend(chip)}
+                                                    className="shrink-0 px-4 py-2 rounded-xl bg-slate-50 border border-slate-100 text-[10px] font-bold text-slate-500 hover:bg-primary hover:text-white hover:border-primary transition-all whitespace-nowrap"
+                                                >
+                                                    {chip}
+                                                </button>
+                                            ))}
+                                        </div>
+
+                                        <div className="relative flex items-end gap-3 bg-slate-50 rounded-[24px] p-2 border border-slate-100 focus-within:border-primary/30 focus-within:bg-white transition-all shadow-sm">
+                                            <div className="flex flex-col flex-1 min-w-0 px-2 py-1">
+                                                {imagePreview && (
+                                                    <div className="mb-3 relative w-16 h-16 group">
+                                                        <img src={imagePreview} className="w-full h-full object-cover rounded-xl border-2 border-white shadow-lg" />
+                                                        <button 
+                                                            onClick={() => setImagePreview(null)}
+                                                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        >
+                                                            <X size={10} />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                                <textarea 
+                                                    rows="1"
+                                                    value={input}
+                                                    onChange={(e) => setInput(e.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                                            e.preventDefault();
+                                                            handleSend();
+                                                        }
+                                                    }}
+                                                    placeholder="Inquire about clinical conditions or upload reports..."
+                                                    className="w-full bg-transparent border-none outline-none text-sm font-semibold text-slate-700 placeholder:text-slate-400 py-2 resize-none max-h-32"
+                                                />
+                                            </div>
+
+                                            <div className="flex items-center gap-1 p-1">
+                                                <label className="p-2.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-xl cursor-pointer transition-all">
+                                                    <Paperclip size={20} />
+                                                    <input 
+                                                        type="file" 
+                                                        className="hidden" 
+                                                        accept="image/*"
+                                                        onChange={(e) => {
+                                                            const file = e.target.files[0];
+                                                            if (file) {
+                                                                const reader = new FileReader();
+                                                                reader.onloadend = () => setImagePreview(reader.result);
+                                                                reader.readAsDataURL(file);
+                                                            }
+                                                        }}
+                                                    />
+                                                </label>
+                                                <button 
+                                                    onClick={() => handleSend()}
+                                                    disabled={isLoading || (!input.trim() && !imagePreview)}
+                                                    className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
+                                                >
+                                                    <SendHorizontal size={20} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </motion.div>
