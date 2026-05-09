@@ -337,11 +337,14 @@ const AiConcierge = () => {
 
                 {isOpen && (
                     <motion.div 
-                        initial={{ opacity: 0, scale: 0.9, y: 40 }}
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: 40 }}
-                        className={`fixed bottom-6 right-6 z-[9999] bg-white shadow-2xl overflow-hidden transition-all duration-500 pointer-events-auto portal-window
-                            ${isFullscreen ? 'inset-0 !w-full !h-full rounded-0' : 'w-[950px] max-w-[95vw] h-[750px] max-h-[90vh] rounded-[32px] border border-slate-200'}
+                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                        className={`fixed z-[9999] bg-white shadow-2xl overflow-hidden transition-all duration-500 pointer-events-auto portal-window
+                            ${isMobile ? 'inset-0 !w-full !h-[100dvh] !max-h-none rounded-none' : 
+                              isFullscreen ? 'inset-0 !w-full !h-full rounded-0' : 
+                              'bottom-6 right-6 w-[1000px] max-w-[95vw] h-[800px] max-h-[90vh] rounded-[32px] border border-slate-200'}
                         `}
                     >
                         <div className="flex h-full w-full relative">
@@ -416,39 +419,44 @@ const AiConcierge = () => {
                             {/* Main Chat Area */}
                             <div className="flex-1 flex flex-col relative bg-[#fcfdfe]">
                                 {/* Header */}
-                                <div className="px-4 py-4 md:px-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-[103] shadow-sm pt-[env(safe-area-inset-top,1rem)]">
+                                <div className="px-4 py-4 md:px-8 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-[105] shadow-sm pt-[env(safe-area-inset-top,1.25rem)] pb-4 md:pb-5">
                                     <div className="flex items-center gap-3">
                                         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors">
-                                            {isSidebarOpen ? <ChevronLeft size={20} /> : <Menu size={20} />}
+                                            {isSidebarOpen ? <ChevronLeft size={22} /> : <Menu size={22} />}
                                         </button>
                                         <div className="flex flex-col">
-                                            <h2 className="font-bold text-slate-900 text-sm md:text-base tracking-tight leading-tight flex items-center gap-2">
-                                                MediSync Portal <span className="hidden xs:inline-block px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-600 text-[9px] uppercase font-black">v2.0</span>
-                                            </h2>
+                                            <div className="flex items-center gap-2">
+                                                <h2 className="font-bold text-slate-900 text-sm md:text-lg tracking-tight leading-tight">
+                                                    MediSync Portal
+                                                </h2>
+                                                <span className="px-1.5 py-0.5 rounded-full bg-blue-600 text-white text-[8px] md:text-[9px] uppercase font-black tracking-widest shadow-sm shadow-blue-200">PRO v2.0</span>
+                                            </div>
                                             <div className="flex items-center gap-1.5 mt-0.5">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                                <p className="text-[9px] md:text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                                                    Clinical AI Node Online
+                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                                                <p className="text-[9px] md:text-[11px] text-slate-400 font-bold uppercase tracking-[0.15em]">
+                                                    Node: <span className="text-emerald-600">Active Registry Sync</span>
                                                 </p>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-1">
+                                    <div className="flex items-center gap-1 md:gap-3">
                                         {!isMobile && (
                                             <button onClick={() => setIsFullscreen(!isFullscreen)} className="p-2 text-slate-400 hover:bg-slate-100 rounded-xl transition-all">
-                                                {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+                                                {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
                                             </button>
                                         )}
-                                        <button onClick={() => setIsOpen(false)} className="p-2 text-slate-400 hover:bg-slate-100 rounded-xl transition-all">
-                                            <X size={22} />
+                                        <button onClick={() => setIsOpen(false)} className="p-2 text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-xl transition-all">
+                                            <X size={24} />
                                         </button>
                                     </div>
                                 </div>
 
                                 {/* Disclaimer Bar */}
-                                <div className="bg-amber-50/80 backdrop-blur-sm px-4 py-2 border-b border-amber-100 flex items-center justify-center gap-2 text-[9px] md:text-[10px] font-bold text-amber-700 sticky top-0 z-[102]">
-                                    <AlertCircle size={12} className="shrink-0" />
-                                    <span className="uppercase tracking-wider text-center leading-tight">Clinical Assessment Only. Consult a doctor for diagnosis.</span>
+                                <div className="bg-amber-50/95 backdrop-blur-md px-4 py-2.5 md:py-3 border-b border-amber-100 flex items-center justify-center gap-2.5 text-[9px] md:text-[11px] font-bold text-amber-800 sticky top-[72px] md:top-[90px] z-[104] shadow-sm">
+                                    <AlertCircle size={14} className="shrink-0 text-amber-600" />
+                                    <span className="uppercase tracking-[0.1em] text-center leading-tight">
+                                        Institutional Registry Active. <span className="hidden xs:inline">Consult a physician for diagnosis.</span>
+                                    </span>
                                 </div>
 
                                 {/* Messages Area */}
