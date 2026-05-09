@@ -187,7 +187,7 @@ const AiConcierge = () => {
                 } else if (currentSection === 'department') {
                     sections.department = l.replace(/^[-*]\s*/, '').replace(/[:]/, '').trim();
                 } else if (currentSection === 'action') {
-                    sections.action = l.replace(/^[-*]\s*/, '').replace(/[:]/, '').trim();
+                    sections.action += (l.replace(/^[-*]\s*/, '') + ' ');
                 } else {
                     sections.other += (l + ' ');
                 }
