@@ -128,11 +128,13 @@ const AiConcierge = () => {
     const parseAiResponse = (text) => {
         const sections = {
             assessment: '',
-            severity: 'Stable',
+            riskIndicators: '',
+            severity: 'LOW',
             questions: [],
             recommendations: [],
             department: '',
             action: '',
+            warning: '',
             other: ''
         };
 
@@ -147,30 +149,36 @@ const AiConcierge = () => {
             if (lowerL.includes('clinical assessment')) {
                 currentSection = 'assessment';
                 sections.assessment += l.replace(/clinical assessment:?/i, '').trim() + ' ';
-            } else if (lowerL.includes('severity estimate')) {
+            } else if (lowerL.includes('risk indicators detected')) {
+                currentSection = 'riskIndicators';
+                sections.riskIndicators += l.replace(/risk indicators detected:?/i, '').trim() + ' ';
+            } else if (lowerL.includes('triage level')) {
                 currentSection = 'severity';
-                const content = l.replace(/severity estimate:?/i, '').replace(/[:]/, '').trim();
+                const content = l.replace(/triage level:?/i, '').replace(/[\[\]:]/g, '').trim();
                 if (content) sections.severity = content;
             } else if (lowerL.includes('follow-up questions')) {
                 currentSection = 'questions';
-            } else if (lowerL.includes('immediate recommendations')) {
-                currentSection = 'recommendations';
+            } else if (lowerL.includes('recommended action')) {
+                currentSection = 'action';
+                sections.action += l.replace(/recommended action:?/i, '').trim() + ' ';
             } else if (lowerL.includes('suggested department')) {
                 currentSection = 'department';
                 const content = l.replace(/suggested department:?/i, '').replace(/[:]/, '').trim();
                 if (content) sections.department = content;
-            } else if (lowerL.includes('recommended action')) {
-                currentSection = 'action';
-                sections.action += l.replace(/recommended action:?/i, '').trim() + ' ';
+            } else if (lowerL.includes('emergency warning')) {
+                currentSection = 'warning';
+                sections.warning += l.replace(/emergency warning:?/i, '').trim() + ' ';
             } else {
                 if (currentSection === 'questions' && (l.startsWith('-') || l.startsWith('*') || /^\d+\./.test(l))) {
                     sections.questions.push(l.replace(/^[-*\d.]\s*/, ''));
-                } else if (currentSection === 'recommendations' && (l.startsWith('-') || l.startsWith('*'))) {
-                    sections.recommendations.push(l.replace(/^[-*]\s*/, ''));
                 } else if (currentSection === 'assessment') {
                     sections.assessment += l + ' ';
+                } else if (currentSection === 'riskIndicators') {
+                    sections.riskIndicators += l + ' ';
                 } else if (currentSection === 'action') {
                     sections.action += l + ' ';
+                } else if (currentSection === 'warning') {
+                    sections.warning += l + ' ';
                 } else {
                     sections.other += l + ' ';
                 }
@@ -332,34 +340,49 @@ const AiConcierge = () => {
 
                                                             return (
                                                                 <>
-                                                                    {/* Critical Emergency Banner */}
-                                                                    {isCritical && (
-                                                                        <div className={`p-5 rounded-2xl ${ui.glow} border border-red-100 flex flex-col gap-4`}>
+                                                                    {/* Critical Emergency Banner / Warning */}
+                                                                    {(isCritical || s.warning) && (
+                                                                        <div className={`p-5 rounded-2xl ${ui.glow || 'bg-red-50 border border-red-200'} flex flex-col gap-4`}>
                                                                             <div className="flex items-center justify-between">
                                                                                 <div className="flex items-center gap-2 text-red-600 font-black text-xs">
-                                                                                    <AlertCircle size={16} /> EMERGENCY DETECTED
+                                                                                    <AlertCircle size={16} /> EMERGENCY ALERT
                                                                                 </div>
-                                                                                <span className="px-2 py-1 rounded-md bg-red-600 text-white text-[8px] font-black">HIGH URGENCY</span>
+                                                                                <span className="px-2 py-1 rounded-md bg-red-600 text-white text-[8px] font-black uppercase">Immediate Action</span>
                                                                             </div>
+                                                                            {s.warning && <p className="text-xs font-bold text-red-700 leading-relaxed italic">{s.warning}</p>}
                                                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                                                                 <button onClick={() => navigate('/dashboard/booking?service=Ambulance')} className="py-2.5 bg-red-600 text-white rounded-xl text-[10px] font-black uppercase hover:bg-red-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-red-200">
-                                                                                    <HeartPulse size={14} /> Call Ambulance
+                                                                                    <HeartPulse size={14} /> Dispatch Ambulance
                                                                                 </button>
                                                                                 <button className="py-2.5 bg-white border border-red-200 text-red-600 rounded-xl text-[10px] font-black uppercase hover:bg-red-50 transition-all flex items-center justify-center gap-2">
-                                                                                    <MapPin size={14} /> Share Live Location
+                                                                                    <MapPin size={14} /> Nearest Hospital
                                                                                 </button>
                                                                             </div>
                                                                         </div>
                                                                     )}
 
-                                                                    <div className="flex flex-col gap-2">
-                                                                        <div className="flex items-center gap-2 mb-1">
-                                                                            <Activity size={14} className="text-primary" />
-                                                                            <span className="text-[10px] font-black text-primary uppercase tracking-widest">Assessment Node</span>
+                                                                    <div className="flex flex-col gap-4">
+                                                                        <div className="flex flex-col gap-2">
+                                                                            <div className="flex items-center gap-2 mb-1">
+                                                                                <Activity size={14} className="text-primary" />
+                                                                                <span className="text-[10px] font-black text-primary uppercase tracking-widest">Clinical Assessment</span>
+                                                                            </div>
+                                                                            <p className="text-[13px] md:text-sm font-medium text-slate-700 leading-relaxed">
+                                                                                {s.assessment || s.other}
+                                                                            </p>
                                                                         </div>
-                                                                        <p className="text-[13px] md:text-sm font-medium text-slate-700 leading-relaxed">
-                                                                            {s.assessment || s.other}
-                                                                        </p>
+
+                                                                        {s.riskIndicators && (
+                                                                            <div className="flex flex-col gap-2 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                                                                <div className="flex items-center gap-2 mb-1">
+                                                                                    <AlertCircle size={14} className="text-amber-500" />
+                                                                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Risk Indicators detected</span>
+                                                                                </div>
+                                                                                <p className="text-xs font-bold text-slate-600 leading-relaxed">
+                                                                                    {s.riskIndicators}
+                                                                                </p>
+                                                                            </div>
+                                                                        )}
                                                                     </div>
 
                                                                     {/* Clinical Grid */}
