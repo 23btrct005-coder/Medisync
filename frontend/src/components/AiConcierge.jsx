@@ -265,7 +265,7 @@ const AiConcierge = () => {
             return lowerAction.includes(lowerS.split(' ')[0]) || lowerAssessment.includes(lowerS.split(' ')[0]);
         });
 
-        return { ...sections, mapLink: uniqueMapLink, suggestedDoctor, matchedService };
+        return { ...sections, suggestedDoctor, matchedService };
     };
 
     const getSeverityStyles = (severity) => {
@@ -338,53 +338,49 @@ const AiConcierge = () => {
                 )}
 
                 {isOpen && (
-                    <motion.div
+                    <motion.div 
                         layoutId="ai-concierge"
-                        initial={isFullscreen ? { opacity: 0 } : { opacity: 0, y: 20, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        className={`flex flex-col bg-white shadow-2xl overflow-hidden transition-all duration-500 ease-in-out border border-slate-200/50 pointer-events-auto
-                            ${isFullscreen 
-                                ? 'fixed inset-0 z-[10000] rounded-0' 
-                                : 'fixed bottom-6 right-6 z-[9999] w-[400px] max-w-[95vw] h-[650px] max-h-[85vh] rounded-[32px]'
-                            }`}
+                        className={`fixed bottom-0 right-0 sm:bottom-8 sm:right-8 w-full sm:w-[440px] h-full sm:h-[700px] bg-white sm:rounded-[32px] shadow-2xl flex flex-col overflow-hidden z-[2500] ${isFullscreen ? '!w-screen !h-screen !bottom-0 !right-0 !rounded-0' : ''}`}
+                        initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                        animate={{ 
+                            opacity: 1, y: 0, scale: 1,
+                            width: isFullscreen ? 'min(1200px, calc(100vw - 64px))' : '420px',
+                            height: isFullscreen ? 'calc(100vh - 64px)' : '720px'
+                        }}
+                        exit={{ opacity: 0, y: 50, scale: 0.95 }}
                     >
-                        <div className="bg-white/80 backdrop-blur-xl border-b border-slate-100 px-5 py-4 flex items-center justify-between sticky top-0 z-10">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-2xl bg-[#0066FF]/5 flex items-center justify-center text-[#0066FF] shadow-inner">
-                                    <ShieldCheck size={22} />
+                        {/* Header */}
+                        <div className="p-6 bg-white border-b border-slate-100 flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-[#0066FF]">
+                                    <ShieldCheck size={24} />
                                 </div>
                                 <div>
-                                    <h2 className="font-bold text-slate-900 text-sm tracking-tight leading-tight">AI Concierge</h2>
-                                    <div className="flex items-center gap-1.5 mt-0.5">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Active Node • v4.2</span>
+                                    <h2 className="font-bold text-slate-800 tracking-tight">MediSync AI Concierge</h2>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Active Node • v4.0</span>
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-2">
                                 <button 
                                     onClick={resetChat}
-                                    className="p-2 text-slate-400 hover:text-[#0066FF] hover:bg-slate-50 rounded-xl transition-all"
-                                    title="Reset Session"
+                                    className="p-2 text-slate-400 hover:bg-slate-50 rounded-xl transition-colors"
+                                    title="Reset Clinical Context"
                                 >
-                                    <RotateCcw size={16} />
+                                    <RotateCcw size={18} />
                                 </button>
-                                <button 
-                                    onClick={() => setIsFullscreen(!isFullscreen)} 
-                                    className="p-2 text-slate-400 hover:text-[#0066FF] hover:bg-slate-50 rounded-xl transition-all"
-                                >
-                                    {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                                <button onClick={() => setIsFullscreen(!isFullscreen)} className="p-2.5 text-slate-400 hover:bg-slate-50 rounded-xl transition-colors">
+                                    {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
                                 </button>
-                                <button 
-                                    onClick={() => setIsOpen(false)} 
-                                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                                >
-                                    <X size={18} />
+                                <button onClick={() => setIsOpen(false)} className="p-2.5 text-slate-400 hover:bg-slate-50 rounded-xl transition-colors">
+                                    <X size={20} />
                                 </button>
                             </div>
                         </div>
 
+                        {/* Top Context Bar */}
                         <div className="px-6 py-2.5 bg-white/50 border-b border-slate-100 flex items-center justify-between">
                             <div className="flex gap-2">
                                 {languages.map(l => (
@@ -402,6 +398,7 @@ const AiConcierge = () => {
                             </button>
                         </div>
 
+                        {/* Chat Body */}
                         <div 
                             ref={scrollRef} 
                             onScroll={handleScroll}
@@ -425,6 +422,7 @@ const AiConcierge = () => {
 
                                 return (
                                     <div key={i} className="flex flex-col gap-4">
+                                        {/* Clinical Assessment Card */}
                                         <motion.div 
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
@@ -439,6 +437,7 @@ const AiConcierge = () => {
                                             </p>
                                         </motion.div>
 
+                                        {/* Severity & Triage Info */}
                                         <div className="flex gap-3">
                                             <motion.div 
                                                 initial={{ opacity: 0, x: -10 }}
@@ -447,18 +446,16 @@ const AiConcierge = () => {
                                                 className={`flex-1 ai-card flex items-center justify-between ${sevStyles.bg} ${sevStyles.border}`}
                                             >
                                                 <div>
-                                                    <div className="flex items-center gap-2 mb-2">
-                                                        <Activity size={14} className="text-blue-500" />
-                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Severity Assessment</span>
+                                                    <span className="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">Severity</span>
+                                                    <div className="flex items-center gap-1.5">
+                                                        {sevStyles.icon}
+                                                        <span className={`text-sm font-black ${sevStyles.text}`}>{segments.severity.toUpperCase()}</span>
                                                     </div>
-                                                    <h4 className={`font-black text-[#10B981] leading-tight tracking-tight uppercase ${segments.severity.length > 20 ? 'text-xs' : 'text-lg'}`}>
-                                                        {segments.severity}
-                                                    </h4>
                                                 </div>
-                                                {sevStyles.icon}
                                             </motion.div>
                                             
-                                            <motion.div 
+                                            {segments.department && (
+                                                <motion.div 
                                                     initial={{ opacity: 0, x: 10 }}
                                                     animate={{ opacity: 1, x: 0 }}
                                                     transition={{ delay: 0.2 }}
@@ -499,7 +496,7 @@ const AiConcierge = () => {
                                         )}
 
                                         {/* Embedded Maps Integration */}
-                                        {segments.mapLink && (
+                                        {(m.text.includes('google.com/maps') || segments.action.includes('google.com/maps')) && (
                                             <motion.div 
                                                 initial={{ opacity: 0, scale: 0.95 }}
                                                 animate={{ opacity: 1, scale: 1 }}
@@ -523,7 +520,7 @@ const AiConcierge = () => {
                                                     loading="lazy"
                                                     allowFullScreen
                                                     src={`https://maps.google.com/maps?q=${encodeURIComponent(
-                                                        (segments.mapLink.match(/query=([^&]+)/) || [null, 'Hospital'])[1]?.replace(/\+/g, ' ') || 'Hospital'
+                                                        (m.text.match(/query=([^&]+)/) || segments.action.match(/query=([^&]+)/) || [null, 'Hospital'])[1]?.replace(/\+/g, ' ') || 'Hospital'
                                                     )}&output=embed`}
                                                 ></iframe>
                                             </motion.div>
@@ -537,6 +534,21 @@ const AiConcierge = () => {
                                                 transition={{ delay: 0.4 }}
                                                 className="rounded-[24px] bg-gradient-to-br from-[#0066FF] to-[#0052CC] text-white shadow-xl shadow-blue-200 overflow-hidden"
                                             >
+                                                {/* Integrated Map */}
+                                                {(m.text.includes('google.com/maps') || segments.action.includes('google.com/maps')) && (
+                                                    <div className="w-full h-[180px] bg-slate-100">
+                                                        <iframe
+                                                            width="100%"
+                                                            height="100%"
+                                                            style={{ border: 0 }}
+                                                            loading="lazy"
+                                                            allowFullScreen
+                                                            src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                                                                (m.text.match(/query=([^&]+)/) || segments.action.match(/query=([^&]+)/) || [null, 'Hospital'])[1]?.replace(/\+/g, ' ') || 'Hospital'
+                                                            )}&output=embed`}
+                                                        ></iframe>
+                                                    </div>
+                                                )}
                                                 
                                                 <div className="p-5">
                                                     <div className="flex items-center gap-3 mb-4">
@@ -613,47 +625,41 @@ const AiConcierge = () => {
                                     </AnimatePresence>
                                 </div>
 
-                        {/* Advanced Input Bar */}
-                        <div className="p-4 bg-white/80 backdrop-blur-md border-t border-slate-100">
-                            <div className="flex items-center gap-2 mb-3 px-1 justify-center">
-                                <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider">
-                                    <MapPin size={10} className="text-blue-500" />
-                                    <span>Precision Triage Active</span>
-                                    <div className="w-1 h-1 rounded-full bg-slate-300 mx-1"></div>
-                                    <span>Spatial Sync On</span>
-                                </div>
-                            </div>
-                            <div className="relative group">
-                                <div className="flex items-center bg-slate-50 rounded-[24px] border border-slate-200/50 p-1.5 focus-within:border-blue-400/50 focus-within:bg-white focus-within:shadow-lg focus-within:shadow-blue-500/5 transition-all duration-300">
-                                    <button className="p-2 text-slate-400 hover:text-blue-500 transition-colors" onClick={() => document.getElementById('file-upload')?.click()}>
-                                        <Paperclip size={18} />
-                                        <input id="file-upload" type="file" className="hidden" onChange={handleImageUpload} />
-                                    </button>
-                                    <input
-                                        type="text"
+                        {/* Input Area */}
+                        <div className="p-6 bg-white border-t border-slate-100">
+                            <div className="flex items-center gap-3">
+                                <div className="flex-1 relative flex items-center bg-slate-50 rounded-[24px] border border-slate-100 p-1.5 transition-all focus-within:border-[#0066FF]/30 focus-within:bg-white focus-within:shadow-inner">
+                                    <label className="p-2 text-slate-400 hover:text-[#0066FF] cursor-pointer transition-colors">
+                                        <Paperclip size={20} />
+                                        <input type="file" className="hidden" onChange={handleImageUpload} />
+                                    </label>
+                                    <input 
                                         value={input}
                                         onChange={(e) => setInput(e.target.value)}
                                         onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                                         placeholder="Describe your symptoms..."
-                                        className="flex-1 bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-sm text-slate-800 px-2 placeholder:text-slate-400"
+                                        className="flex-1 bg-transparent border-none outline-none px-3 text-sm font-medium text-slate-700 placeholder:text-slate-400"
                                     />
-                                    <div className="flex items-center gap-1 pr-1">
-                                        <button
-                                            onClick={isListening ? stopListening : startListening}
-                                            className={`p-2 rounded-xl transition-all ${isListening ? 'text-red-500 bg-red-50 animate-pulse' : 'text-slate-400 hover:text-blue-500 hover:bg-blue-50'}`}
-                                        >
-                                            <Mic size={20} />
-                                        </button>
-                                        <button
-                                            onClick={() => handleSend()}
-                                            disabled={!input.trim()}
-                                            className={`p-2.5 rounded-xl transition-all shadow-md ${input.trim() ? 'bg-[#0066FF] text-white shadow-blue-200 scale-100' : 'bg-slate-200 text-slate-400 scale-95 opacity-50 cursor-not-allowed'}`}
-                                        >
-                                            <SendHorizontal size={20} />
-                                        </button>
-                                    </div>
+                                    <button 
+                                        onClick={isListening ? stopListening : startListening}
+                                        className={`p-2 rounded-xl transition-colors ${isListening ? 'bg-red-50 text-red-500' : 'text-slate-400 hover:text-[#0066FF]'}`}
+                                    >
+                                        <Mic size={20} />
+                                    </button>
                                 </div>
+                                <button 
+                                    onClick={() => handleSend()}
+                                    className="w-12 h-12 rounded-2xl bg-[#0066FF] text-white flex items-center justify-center shadow-lg shadow-blue-200 hover:bg-[#0052CC] transition-all transform active:scale-95"
+                                >
+                                    <SendHorizontal size={22} />
+                                </button>
                             </div>
+                            
+                            {!location && (
+                                <button onClick={requestLocation} className="w-full mt-4 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#0066FF] transition-colors">
+                                    <MapPin size={12} /> Sync Patient Geolocation
+                                </button>
+                            )}
                         </div>
                     </motion.div>
                 )}
