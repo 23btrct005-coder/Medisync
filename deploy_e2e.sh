@@ -35,6 +35,7 @@ git pull origin main
 
 # 5. Environment Configuration
 echo "⚙️ HARDENING ENVIRONMENT CONFIGURATION..."
+if [ ! -f .env ]; then
 cat <<EOF > .env
 PORT="8080"
 SPRING_PROFILES_ACTIVE="prod"
@@ -52,6 +53,7 @@ SPRING_DATASOURCE_USERNAME="postgres.bwjmzottkkxrdztqqeju"
 SUPABASE_SERVICE_ROLE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3am16b3R0a2t4cmR6dHFxZWp1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTc1MjgxOCwiZXhwIjoyMDkxMzI4ODE4fQ.x_ZXzqNsDnmCTyd5YLXWLhaXHgbfVuL9CNdHSEyF0aY"
 SUPABASE_URL="https://bwjmzottkkxrdztqqeju.supabase.co"
 EOF
+fi
 
 # 6. Build & Launch
 echo "🚀 EXECUTING UNIFIED INSTITUTIONAL LAUNCH..."

@@ -28,6 +28,7 @@ fi
 
 # 4. Environment Hardening (Now inside project root)
 echo "⚙️ INJECTING SECURE CLINICAL CONTEXT..."
+if [ ! -f .env ]; then
 cat <<EOF > .env
 PORT=8080
 SPRING_PROFILES_ACTIVE=prod
@@ -43,6 +44,7 @@ SPRING_DATASOURCE_URL="jdbc:postgresql://aws-1-ap-south-1.pooler.supabase.com:54
 SPRING_DATASOURCE_USERNAME=postgres.bwjmzottkkxrdztqqeju
 SPRING_DATASOURCE_PASSWORD=Medisync2024
 EOF
+fi
 
 # 5. Build Process
 echo "🌐 BUILDING FRONTEND ASSETS..."
