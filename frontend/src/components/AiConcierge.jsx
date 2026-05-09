@@ -440,77 +440,124 @@ const AiConcierge = () => {
                                             )}
                                         </motion.div>
                                     ))}
+                                    <h3 className="text-sm font-black text-slate-900 tracking-tight">Hi! How can I help you today?</h3>
+                                    <p className="text-[11px] text-slate-400 mt-2 font-medium leading-relaxed">Describe your symptoms or ask about medical reports.</p>
+                                </div>
+                            )}
 
-                                    {isLoading && (
-                                        <div className="flex flex-col gap-4">
-                                            <div className="p-8 rounded-3xl bg-white border border-slate-50 shadow-sm max-w-[320px] flex items-center gap-4">
-                                                <div className="flex gap-1">
-                                                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce"></div>
-                                                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:0.2s]"></div>
-                                                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:0.4s]"></div>
+                            {messages.map((m, i) => (
+                                <motion.div 
+                                    key={i}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                >
+                                    <div className={`max-w-[85%] flex flex-col gap-1.5`}>
+                                        <div className={`p-4 rounded-3xl text-[13px] font-semibold leading-relaxed shadow-sm
+                                            ${m.role === 'user' 
+                                                ? 'bg-indigo-500 text-white rounded-tr-none' 
+                                                : 'bg-white text-slate-700 rounded-tl-none border border-slate-100'}
+                                        `}>
+                                            {m.role === 'ai' ? (
+                                                <div className="flex flex-col gap-5">
+                                                    {parseAiResponse(m.text).assessment && (
+                                                        <p>{parseAiResponse(m.text).assessment}</p>
+                                                    )}
+                                                    
+                                                    {parseAiResponse(m.text).severity && (
+                                                        <div className="flex flex-col gap-3">
+                                                            <div className="p-4 rounded-2xl bg-slate-50/50 border border-slate-100">
+                                                                <span className="text-[10px] font-black text-slate-400 uppercase">Triage Status</span>
+                                                                <p className={`text-sm font-black mt-1 ${
+                                                                    parseAiResponse(m.text).severity === 'CRITICAL' ? 'text-red-500' :
+                                                                    parseAiResponse(m.text).severity === 'HIGH' ? 'text-amber-500' : 'text-emerald-500'
+                                                                }`}>{parseAiResponse(m.text).severity}</p>
+                                                            </div>
+
+                                                            {parseAiResponse(m.text).specialist && (
+                                                                <div className="p-4 rounded-2xl bg-indigo-50/30 border border-indigo-100">
+                                                                    <span className="text-[10px] font-black text-indigo-400 uppercase">Recommendation</span>
+                                                                    <p className="text-sm font-black text-indigo-600 mt-1">{parseAiResponse(m.text).specialist}</p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+
+                                                    {!parseAiResponse(m.text).severity && <p>{m.text}</p>}
                                                 </div>
-                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{loadingMessages[loadingStep]}</span>
-                                            </div>
+                                            ) : m.text}
                                         </div>
-                                    )}
-                                </div>
-
-                                {/* Smart Assistant Input */}
-                                <div className="p-4 bg-white border-t border-slate-50 sticky bottom-0 z-[101] safe-bottom">
-                                    {/* Suggestion Chips */}
-                                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-3 mb-2">
-                                        {["Explain symptoms", "Talk to Doctor", "Emergency Contact", "Find Hospital"].map(chip => (
-                                            <button key={chip} onClick={() => handleSend(chip)} className="shrink-0 px-4 py-2 bg-white border border-indigo-100 rounded-full text-[10px] font-bold text-indigo-500 hover:bg-indigo-50 transition-all shadow-sm">
-                                                {chip}
-                                            </button>
-                                        ))}
+                                        <span className="text-[10px] text-slate-300 font-bold px-2">{new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                     </div>
-
-                                    <div className="relative flex items-center gap-2">
-                                        <div className="flex-1 relative flex items-center bg-slate-50/80 border border-slate-200 rounded-2xl p-1.5 focus-within:border-indigo-300 focus-within:bg-white transition-all">
-                                            <label className="p-2 text-slate-400 hover:text-indigo-500 cursor-pointer">
-                                                <Paperclip size={18} />
-                                                <input type="file" className="hidden" onChange={(e) => {
-                                                    const file = e.target.files[0];
-                                                    if (file) {
-                                                        const reader = new FileReader();
-                                                        reader.onloadend = () => setImagePreview(reader.result);
-                                                        reader.readAsDataURL(file);
-                                                    }
-                                                }} />
-                                            </label>
-                                            
-                                            <div className="flex-1 px-1">
-                                                {imagePreview && (
-                                                    <div className="absolute -top-14 left-0 bg-white p-1 rounded-xl shadow-2xl border border-slate-200">
-                                                        <img src={imagePreview} className="h-10 w-10 object-cover rounded-lg" />
-                                                        <button onClick={() => setImagePreview(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"><X size={10} /></button>
-                                                    </div>
-                                                )}
-                                                <input 
-                                                    value={input}
-                                                    onChange={(e) => setInput(e.target.value)}
-                                                    onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                                                    placeholder="Ask me anything..."
-                                                    className="w-full bg-transparent border-none outline-none text-[13px] font-semibold text-slate-700 placeholder:text-slate-400 py-2"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <button 
-                                            onClick={() => handleSend()}
-                                            disabled={isLoading || (!input.trim() && !imagePreview)}
-                                            className="w-11 h-11 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-200 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
-                                        >
-                                            <SendHorizontal size={20} />
-                                        </button>
+                                </motion.div>
+                            ))}
+                            {isLoading && (
+                                <div className="flex justify-start">
+                                    <div className="bg-white border border-slate-100 p-4 rounded-2xl flex gap-1 shadow-sm">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce"></div>
+                                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:0.2s]"></div>
+                                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:0.4s]"></div>
                                     </div>
                                 </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
-            );
-        };
+                            )}
+                        </div>
+
+                        {/* Smart Assistant Input */}
+                        <div className="p-5 bg-white border-t border-slate-50 sticky bottom-0 z-[101] safe-bottom">
+                            {/* Suggestion Chips */}
+                            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-3 mb-2">
+                                {["Explain today's symptoms", "Talk to Doctor", "Emergency Help"].map(chip => (
+                                    <button key={chip} onClick={() => handleSend(chip)} className="shrink-0 px-4 py-2 bg-white border border-indigo-100 rounded-full text-[10px] font-bold text-indigo-500 hover:bg-indigo-50 transition-all shadow-sm">
+                                        {chip}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="relative flex items-center gap-2">
+                                <div className="flex-1 relative flex items-center bg-slate-50 border border-slate-200 rounded-2xl p-1.5 focus-within:border-indigo-300 focus-within:bg-white transition-all shadow-inner">
+                                    <label className="p-2 text-slate-400 hover:text-indigo-500 cursor-pointer">
+                                        <Paperclip size={18} />
+                                        <input type="file" className="hidden" onChange={(e) => {
+                                            const file = e.target.files[0];
+                                            if (file) {
+                                                const reader = new FileReader();
+                                                reader.onloadend = () => setImagePreview(reader.result);
+                                                reader.readAsDataURL(file);
+                                            }
+                                        }} />
+                                    </label>
+                                    
+                                    <div className="flex-1 px-1">
+                                        {imagePreview && (
+                                            <div className="absolute -top-14 left-0 bg-white p-1 rounded-xl shadow-2xl border border-slate-200">
+                                                <img src={imagePreview} className="h-10 w-10 object-cover rounded-lg" />
+                                                <button onClick={() => setImagePreview(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"><X size={10} /></button>
+                                            </div>
+                                        )}
+                                        <input 
+                                            value={input}
+                                            onChange={(e) => setInput(e.target.value)}
+                                            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                                            placeholder="Ask me anything..."
+                                            className="w-full bg-transparent border-none outline-none text-[13px] font-semibold text-slate-700 placeholder:text-slate-400 py-2.5"
+                                        />
+                                    </div>
+                                </div>
+
+                                <button 
+                                    onClick={() => handleSend()}
+                                    disabled={isLoading || (!input.trim() && !imagePreview)}
+                                    className="w-12 h-12 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-200 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                                >
+                                    <SendHorizontal size={20} />
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+};
 
 export default AiConcierge;
