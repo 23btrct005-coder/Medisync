@@ -81,6 +81,15 @@ public class ChatController {
         return ResponseEntity.ok(chatService.getUnreadCounts(user.getId()));
     }
 
+    @GetMapping("/unread-count")
+    public ResponseEntity<Long> getTotalUnreadCount(@AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        java.util.Map<Long, Long> counts = chatService.getUnreadCounts(user.getId());
+        long total = counts.values().stream().mapToLong(Long::longValue).sum();
+        return ResponseEntity.ok(total);
+    }
+
     @GetMapping("/status/{userId}")
     public ResponseEntity<?> getUserStatus(@PathVariable String userId) {
         try {
