@@ -201,7 +201,15 @@ const AiConcierge = () => {
             }
         });
 
-        return sections;
+        // Deduplicate Map Links
+        const mapRegex = /https:\/\/www\.google\.com\/maps\/search\/\?api=1&query=[^)\s\n]*/g;
+        const allLinks = (text.match(mapRegex) || []).concat(sections.action.match(mapRegex) || []);
+        const uniqueMapLink = allLinks.length > 0 ? allLinks[0] : null;
+
+        // Clean action text from URLs
+        sections.action = sections.action.replace(mapRegex, '').trim();
+
+        return { ...sections, mapLink: uniqueMapLink };
     };
 
     const getSeverityStyles = (severity) => {
@@ -285,7 +293,6 @@ const AiConcierge = () => {
                                 : 'fixed bottom-6 right-6 z-[9999] w-[400px] max-w-[95vw] h-[650px] max-h-[85vh] rounded-[32px]'
                             }`}
                     >
-                        {/* Enhanced Clinical Header */}
                         <div className="bg-white/80 backdrop-blur-xl border-b border-slate-100 px-5 py-4 flex items-center justify-between sticky top-0 z-10">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-2xl bg-[#0066FF]/5 flex items-center justify-center text-[#0066FF] shadow-inner">
@@ -322,7 +329,6 @@ const AiConcierge = () => {
                             </div>
                         </div>
 
-                        {/* Top Context Bar */}
                         <div className="px-6 py-2.5 bg-white/50 border-b border-slate-100 flex items-center justify-between">
                             <div className="flex gap-2">
                                 {languages.map(l => (
@@ -340,7 +346,6 @@ const AiConcierge = () => {
                             </button>
                         </div>
 
-                        {/* Chat Body */}
                         <div 
                             ref={scrollRef} 
                             onScroll={handleScroll}
@@ -364,7 +369,6 @@ const AiConcierge = () => {
 
                                 return (
                                     <div key={i} className="flex flex-col gap-4">
-                                        {/* Clinical Assessment Card */}
                                         <motion.div 
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
@@ -379,7 +383,6 @@ const AiConcierge = () => {
                                             </p>
                                         </motion.div>
 
-                                        {/* Severity & Triage Info */}
                                         <div className="flex gap-3">
                                             <motion.div 
                                                 initial={{ opacity: 0, x: -10 }}
@@ -388,12 +391,15 @@ const AiConcierge = () => {
                                                 className={`flex-1 ai-card flex items-center justify-between ${sevStyles.bg} ${sevStyles.border}`}
                                             >
                                                 <div>
-                                                    <span className="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">Severity</span>
-                                                    <div className="flex items-center gap-1.5">
-                                                        {sevStyles.icon}
-                                                        <span className={`text-sm font-black ${sevStyles.text}`}>{segments.severity.toUpperCase()}</span>
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <Activity size={14} className="text-blue-500" />
+                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Severity Assessment</span>
                                                     </div>
+                                                    <h4 className={`font-black text-[#10B981] leading-tight tracking-tight uppercase ${segments.severity.length > 20 ? 'text-xs' : 'text-lg'}`}>
+                                                        {segments.severity}
+                                                    </h4>
                                                 </div>
+                                                {sevStyles.icon}
                                             </motion.div>
                                             
                                             {segments.department && (
@@ -438,7 +444,7 @@ const AiConcierge = () => {
                                         )}
 
                                         {/* Embedded Maps Integration */}
-                                        {(m.text.includes('google.com/maps') || segments.action.includes('google.com/maps')) && (
+                                        {segments.mapLink && (
                                             <motion.div 
                                                 initial={{ opacity: 0, scale: 0.95 }}
                                                 animate={{ opacity: 1, scale: 1 }}
@@ -462,7 +468,7 @@ const AiConcierge = () => {
                                                     loading="lazy"
                                                     allowFullScreen
                                                     src={`https://maps.google.com/maps?q=${encodeURIComponent(
-                                                        (m.text.match(/query=([^&]+)/) || segments.action.match(/query=([^&]+)/) || [null, 'Hospital'])[1]?.replace(/\+/g, ' ') || 'Hospital'
+                                                        (segments.mapLink.match(/query=([^&]+)/) || [null, 'Hospital'])[1]?.replace(/\+/g, ' ') || 'Hospital'
                                                     )}&output=embed`}
                                                 ></iframe>
                                             </motion.div>
@@ -476,21 +482,6 @@ const AiConcierge = () => {
                                                 transition={{ delay: 0.4 }}
                                                 className="rounded-[24px] bg-gradient-to-br from-[#0066FF] to-[#0052CC] text-white shadow-xl shadow-blue-200 overflow-hidden"
                                             >
-                                                {/* Integrated Map */}
-                                                {(m.text.includes('google.com/maps') || segments.action.includes('google.com/maps')) && (
-                                                    <div className="w-full h-[180px] bg-slate-100">
-                                                        <iframe
-                                                            width="100%"
-                                                            height="100%"
-                                                            style={{ border: 0 }}
-                                                            loading="lazy"
-                                                            allowFullScreen
-                                                            src={`https://maps.google.com/maps?q=${encodeURIComponent(
-                                                                (m.text.match(/query=([^&]+)/) || segments.action.match(/query=([^&]+)/) || [null, 'Hospital'])[1]?.replace(/\+/g, ' ') || 'Hospital'
-                                                            )}&output=embed`}
-                                                        ></iframe>
-                                                    </div>
-                                                )}
                                                 
                                                 <div className="p-5">
                                                     <div className="flex items-center gap-3 mb-4">
