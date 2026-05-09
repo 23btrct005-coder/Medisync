@@ -583,7 +583,7 @@ const AiConcierge = () => {
                                         onChange={(e) => setInput(e.target.value)}
                                         onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                                         placeholder="Describe your symptoms..."
-                                        className="flex-1 bg-transparent border-none focus:ring-0 text-sm text-slate-800 px-2 placeholder:text-slate-400"
+                                        className="flex-1 bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-sm text-slate-800 px-2 placeholder:text-slate-400"
                                     />
                                     <div className="flex items-center gap-1 pr-1">
                                         <button
@@ -602,12 +602,6 @@ const AiConcierge = () => {
                                     </div>
                                 </div>
                             </div>
-                            
-                            {!location && (
-                                <button onClick={requestLocation} className="w-full mt-4 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#0066FF] transition-colors">
-                                    <MapPin size={12} /> Sync Patient Geolocation
-                                </button>
-                            )}
                         </div>
                     </motion.div>
                 )}
