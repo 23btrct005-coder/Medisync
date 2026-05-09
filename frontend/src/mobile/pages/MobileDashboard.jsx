@@ -166,7 +166,7 @@ const MobileDashboard = () => {
             )}
 
             {/* ── CORE SERVICE GRID ── */}
-            <motion.div variants={item} className="grid grid-cols-4 gap-3">
+            <motion.div variants={item} className="grid grid-cols-2 gap-4">
                 {[
                     { name: 'Reports', path: '/dashboard/reports', icon: <FileText size={20} />, color: 'bg-violet-100 text-violet-600' },
                     { name: 'Rx', path: '/dashboard/medications', icon: <Pill size={20} />, color: 'bg-rose-100 text-rose-600' },
@@ -176,10 +176,10 @@ const MobileDashboard = () => {
                     <button 
                         key={s.name}
                         onClick={() => navigate(s.path)}
-                        className="bg-white p-4 rounded-[2rem] border border-slate-100 flex flex-col items-center gap-3 active:scale-90 transition-all hover:border-primary-100 shadow-sm"
+                        className="bg-white p-6 rounded-[2.5rem] border border-slate-100 flex flex-col items-center gap-4 active:scale-95 transition-all hover:border-primary-100 shadow-sm"
                     >
-                        <div className={`h-12 w-12 ${s.color} rounded-2xl flex items-center justify-center shadow-sm`}>
-                            {s.icon}
+                        <div className={`h-16 w-16 ${s.color} rounded-[1.5rem] flex items-center justify-center shadow-sm`}>
+                            {React.cloneElement(s.icon, { size: 28 })}
                         </div>
                         <span className="text-[9px] font-black text-slate-500 uppercase tracking-tighter">{s.name}</span>
                     </button>
