@@ -16,8 +16,20 @@ const AiConcierge = () => {
     const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [activeChatId, setActiveChatId] = useState('default');
+
+    useEffect(() => {
+        const handleResize = () => {
+            const mobile = window.innerWidth <= 768;
+            setIsMobile(mobile);
+            if (!mobile && !isSidebarOpen) setIsSidebarOpen(true);
+            if (mobile && isSidebarOpen) setIsSidebarOpen(false);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
     
     // Chat sessions state
     const [sessions, setSessions] = useState(() => {
@@ -327,12 +339,29 @@ const AiConcierge = () => {
                             ${isFullscreen ? 'inset-0 !w-full !h-full rounded-0' : 'w-[950px] max-w-[95vw] h-[750px] max-h-[90vh] rounded-[32px] border border-slate-200'}
                         `}
                     >
-                        <div className="flex h-full w-full">
-                            {/* Sidebar - Chat History */}
+                        <div className="flex h-full w-full relative">
+                            {/* Mobile Overlay Backdrop */}
+                            {isMobile && isSidebarOpen && (
+                                <motion.div 
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    onClick={() => setIsSidebarOpen(false)}
+                                    className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] z-[100]"
+                                />
+                            )}
+
+                            {/* Sidebar - Chat History (Drawer on Mobile) */}
                             <motion.div 
                                 initial={false}
-                                animate={{ width: isSidebarOpen ? '280px' : '0px', opacity: isSidebarOpen ? 1 : 0 }}
-                                className="glass-sidebar h-full border-r border-slate-100 flex flex-col overflow-hidden relative"
+                                animate={{ 
+                                    width: isMobile ? (isSidebarOpen ? '85%' : '0%') : (isSidebarOpen ? '280px' : '0px'),
+                                    opacity: isSidebarOpen ? 1 : 0,
+                                    x: isMobile && !isSidebarOpen ? -100 : 0
+                                }}
+                                className={`glass-sidebar h-full border-r border-slate-100 flex flex-col overflow-hidden z-[101] 
+                                    ${isMobile ? 'absolute left-0 top-0 bottom-0 shadow-2xl' : 'relative'}
+                                `}
                             >
                                 <div className="p-5 border-b border-slate-100 flex items-center justify-between">
                                     <div className="flex items-center gap-2">
@@ -348,7 +377,10 @@ const AiConcierge = () => {
                                     {Object.values(sessions).sort((a, b) => b.timestamp - a.timestamp).map(session => (
                                         <button 
                                             key={session.id}
-                                            onClick={() => setActiveChatId(session.id)}
+                                            onClick={() => {
+                                                setActiveChatId(session.id);
+                                                if (isMobile) setIsSidebarOpen(false);
+                                            }}
                                             className={`w-full p-3 rounded-xl flex items-center gap-3 group transition-all text-left ${activeChatId === session.id ? 'bg-blue-50 text-blue-600' : 'hover:bg-slate-50 text-slate-500'}`}
                                         >
                                             <MessageCircle size={16} className={activeChatId === session.id ? 'text-blue-500' : 'text-slate-300'} />
