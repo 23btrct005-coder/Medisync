@@ -277,46 +277,51 @@ const AiConcierge = () => {
                             {/* Main Interaction Panel */}
                             <div className="flex-1 flex flex-col bg-[#fcfdfe]">
                                 {/* Futuristic Header */}
-                                <div className="px-4 py-3 md:px-8 border-b border-slate-50 flex items-center justify-between bg-white/95 backdrop-blur-md sticky top-0 z-[100] safe-top shadow-sm">
+                                <div className="px-4 py-2.5 md:px-8 border-b border-slate-100 flex items-center justify-between bg-white/98 backdrop-blur-xl sticky top-0 z-[100] safe-top shadow-sm">
                                     <style>{`
                                         .safe-top {
-                                            padding-top: max(0.75rem, env(safe-area-inset-top));
+                                            padding-top: max(0.5rem, env(safe-area-inset-top));
                                         }
+                                        .safe-bottom {
+                                            padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+                                        }
+                                        .no-scrollbar::-webkit-scrollbar { display: none; }
+                                        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
                                     `}</style>
-                                    <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
-                                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="shrink-0 p-2 hover:bg-slate-50 rounded-xl text-slate-400 transition-colors">
-                                            <Menu size={20} />
+                                    <div className="flex items-center gap-3 overflow-hidden">
+                                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="shrink-0 p-2 hover:bg-slate-50 rounded-xl text-slate-400">
+                                            <Menu size={18} />
                                         </button>
                                         <div className="flex flex-col min-w-0">
-                                            <div className="flex items-center gap-2">
-                                                <h2 className="font-extrabold text-slate-900 text-[13px] md:text-lg tracking-tight truncate">MediSync AI Portal</h2>
-                                                <div className="hidden xs:block shrink-0 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                                            <h2 className="font-black text-slate-900 text-[12px] md:text-lg tracking-tighter truncate leading-none">MEDISYNC AI</h2>
+                                            <div className="flex items-center gap-1 mt-0.5">
+                                                <div className="w-1 h-1 rounded-full bg-emerald-500"></div>
+                                                <span className="text-[8px] text-slate-400 font-bold uppercase tracking-widest truncate">Secure Clinical Node</span>
                                             </div>
-                                            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest truncate">Secure Clinical Node</p>
                                         </div>
                                     </div>
                                     
-                                    <div className="flex items-center gap-1 md:gap-3 shrink-0 ml-2">
-                                        <button onClick={() => setLanguage(prev => prev === 'English' ? 'Hindi' : 'English')} className="p-2 text-slate-400 hover:bg-slate-50 rounded-xl transition-all flex items-center gap-1.5 border border-transparent hover:border-slate-100">
-                                            <Languages size={18} />
-                                            <span className="text-[10px] font-black uppercase hidden sm:inline">{language}</span>
+                                    <div className="flex items-center gap-1 shrink-0">
+                                        <button onClick={() => setLanguage(prev => prev === 'English' ? 'Hindi' : 'English')} className="p-2 text-slate-400 hover:bg-slate-50 rounded-lg transition-all flex items-center gap-1 border border-transparent">
+                                            <Languages size={16} />
+                                            <span className="text-[9px] font-black uppercase hidden xs:inline">{language.substring(0, 3)}</span>
                                         </button>
-                                        <div className="w-px h-6 bg-slate-100 mx-1 hidden xs:block"></div>
-                                        <button onClick={() => setIsOpen(false)} className="p-2 text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-xl transition-all">
-                                            <X size={20} />
+                                        <div className="w-px h-4 bg-slate-100 mx-0.5"></div>
+                                        <button onClick={() => setIsOpen(false)} className="p-2 text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-lg">
+                                            <X size={18} />
                                         </button>
                                     </div>
                                 </div>
 
                                 {/* Chat Window */}
-                                <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 md:px-10 md:py-8 flex flex-col gap-6 md:gap-10 chat-scrollbar no-scrollbar scroll-smooth">
+                                <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 md:px-10 flex flex-col justify-start gap-5 chat-scrollbar no-scrollbar scroll-smooth bg-white">
                                     {messages.length === 0 && (
-                                        <div className="flex-1 flex flex-col items-center justify-center text-center p-8 opacity-40">
-                                            <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4">
-                                                <Activity size={32} className="text-slate-300" />
+                                        <div className="my-auto flex flex-col items-center justify-center text-center p-8 opacity-40">
+                                            <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mb-3">
+                                                <Activity size={24} className="text-slate-300" />
                                             </div>
-                                            <h3 className="text-lg font-black text-slate-400 uppercase tracking-widest">Clinical Session Active</h3>
-                                            <p className="text-sm font-medium text-slate-400 mt-2">State your symptoms to begin triage.</p>
+                                            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">System Ready</h3>
+                                            <p className="text-[11px] font-medium text-slate-400 mt-1">Please describe your symptoms.</p>
                                         </div>
                                     )}
                                     {messages.map((m, i) => (
@@ -481,24 +486,19 @@ const AiConcierge = () => {
                                 </div>
 
                                 {/* Smart Input Node */}
-                                <div className="p-3 md:p-8 bg-white border-t border-slate-50 sticky bottom-0 z-[101] safe-bottom shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)]">
-                                    <style>{`
-                                        .safe-bottom {
-                                            padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
-                                        }
-                                    `}</style>
+                                <div className="p-2 md:p-8 bg-white border-t border-slate-100 sticky bottom-0 z-[101] safe-bottom shadow-[0_-5px_20px_rgba(0,0,0,0.03)]">
                                     {/* Action Chips */}
-                                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-3 mb-1">
-                                        {["Book Ambulance", "Find Hospital", "Talk to Doctor", "Check Symptoms", "Emergency Contact"].map(chip => (
-                                            <button key={chip} onClick={() => handleSend(chip)} className="shrink-0 px-4 py-2 bg-slate-50 border border-slate-100 rounded-full text-[10px] font-bold text-slate-600 hover:border-primary hover:text-primary transition-all shadow-sm">
+                                    <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-2 mb-1">
+                                        {["Book Ambulance", "Find Hospital", "Talk to Doctor", "Emergency Contact"].map(chip => (
+                                            <button key={chip} onClick={() => handleSend(chip)} className="shrink-0 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-full text-[9px] font-black text-slate-500 hover:bg-white hover:border-primary/30 transition-all">
                                                 {chip}
                                             </button>
                                         ))}
                                     </div>
 
-                                    <div className="max-w-[800px] mx-auto relative flex items-center bg-slate-50/80 border border-slate-200 rounded-2xl md:rounded-[24px] p-1 md:p-2 focus-within:border-primary/40 focus-within:bg-white focus-within:shadow-2xl focus-within:shadow-primary/5 transition-all">
-                                        <label className="p-2.5 md:p-3 text-slate-400 hover:text-primary cursor-pointer transition-colors">
-                                            <Paperclip size={18} />
+                                    <div className="max-w-[700px] mx-auto flex items-center bg-slate-50/50 border border-slate-200 rounded-xl md:rounded-[24px] p-1 md:p-2 focus-within:border-primary/40 focus-within:bg-white focus-within:shadow-xl transition-all">
+                                        <label className="p-2 text-slate-400 hover:text-primary cursor-pointer">
+                                            <Paperclip size={16} />
                                             <input type="file" className="hidden" onChange={(e) => {
                                                 const file = e.target.files[0];
                                                 if (file) {
@@ -509,30 +509,30 @@ const AiConcierge = () => {
                                             }} />
                                         </label>
                                         
-                                        <div className="flex-1 px-1 md:px-2 relative">
+                                        <div className="flex-1 px-1 relative">
                                             {imagePreview && (
-                                                <div className="absolute -top-16 left-0 bg-white p-1.5 rounded-xl shadow-2xl border border-slate-200 animate-in slide-in-from-bottom-2">
-                                                    <img src={imagePreview} className="h-10 w-10 object-cover rounded-lg" />
-                                                    <button onClick={() => setImagePreview(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg border border-white"><X size={10} /></button>
+                                                <div className="absolute -top-14 left-0 bg-white p-1 rounded-lg shadow-xl border border-slate-200">
+                                                    <img src={imagePreview} className="h-8 w-8 object-cover rounded" />
+                                                    <button onClick={() => setImagePreview(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5"><X size={8} /></button>
                                                 </div>
                                             )}
                                             <input 
                                                 value={input}
                                                 onChange={(e) => setInput(e.target.value)}
                                                 onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                                                placeholder={isMobile ? "How can I help?" : "State your symptoms or medical query..."}
-                                                className="w-full bg-transparent border-none outline-none text-[13px] md:text-sm font-semibold text-slate-700 placeholder:text-slate-400 py-2.5 md:py-3"
+                                                placeholder={isMobile ? "Describe symptoms..." : "State your symptoms or medical query..."}
+                                                className="w-full bg-transparent border-none outline-none text-[12px] md:text-sm font-bold text-slate-700 placeholder:text-slate-400 py-2 md:py-3"
                                             />
                                         </div>
 
-                                        <button className="p-2.5 md:p-3 text-slate-400 hover:text-primary transition-colors"><Mic size={18} /></button>
+                                        <button className="p-2 text-slate-400 hover:text-primary"><Mic size={16} /></button>
                                         
                                         <button 
                                             onClick={() => handleSend()}
                                             disabled={isLoading || (!input.trim() && !imagePreview)}
-                                            className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/30 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
+                                            className="w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 transition-all disabled:opacity-30"
                                         >
-                                            <SendHorizontal size={18} md:size={20} />
+                                            <SendHorizontal size={16} />
                                         </button>
                                     </div>
                                 </div>
