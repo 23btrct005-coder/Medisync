@@ -244,16 +244,34 @@ const AiConcierge = () => {
             "Advanced Laboratory Tests", "Health Checkup Packages"
         ];
 
-        const matchedService = SERVICES_LIST.find(s => {
-            const lowerS = s.toLowerCase();
+        const matchedService = (() => {
             const lowerDept = (sections.department || '').toLowerCase();
             const lowerAction = (sections.action || '').toLowerCase();
             const lowerAssessment = (sections.assessment || '').toLowerCase();
-            if (lowerS.includes('ambulance') && (text.toLowerCase().includes('ambulance') || lowerDept.includes('ambulance'))) return true;
-            if (lowerDept.includes(lowerS.split(' ')[0]) && lowerS.length > 3) return true;
-            if (lowerS.includes('emergency') && (lowerDept.includes('emergency') || lowerDept.includes('trauma'))) return true;
-            return lowerAction.includes(lowerS.split(' ')[0]) || lowerAssessment.includes(lowerS.split(' ')[0]);
-        });
+
+            // Pass 1: Exact or Strong Department Match
+            const exactMatch = SERVICES_LIST.find(s => {
+                const lowerS = s.toLowerCase();
+                return lowerDept === lowerS || (lowerDept.length > 3 && lowerS.includes(lowerDept)) || (lowerS.length > 3 && lowerDept.includes(lowerS));
+            });
+            if (exactMatch) return exactMatch;
+
+            // Pass 2: Specific Ambulance/Emergency Priority
+            if (lowerDept.includes('ambulance') || text.toLowerCase().includes('ambulance')) {
+                return SERVICES_LIST.find(s => s.toLowerCase().includes('ambulance'));
+            }
+            if (lowerDept.includes('emergency') || lowerDept.includes('trauma')) {
+                return SERVICES_LIST.find(s => s.toLowerCase().includes('emergency & trauma'));
+            }
+
+            // Pass 3: Keyword Search in Action/Assessment (Fallback)
+            return SERVICES_LIST.find(s => {
+                const keywords = s.toLowerCase().split(' ');
+                // Avoid matching common words like 'care', 'services', 'unit'
+                const significantKeywords = keywords.filter(k => k.length > 4 && !['services', 'department', 'clinical', 'intensive'].includes(k));
+                return significantKeywords.some(k => lowerAction.includes(k) || lowerAssessment.includes(k));
+            });
+        })();
 
         return { ...sections, suggestedDoctor, matchedService };
     };
