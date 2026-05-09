@@ -35,6 +35,7 @@ const AiConcierge = () => {
     const [location, setLocation] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
     const [loadingStep, setLoadingStep] = useState(0);
+    const [showScrollButton, setShowScrollButton] = useState(false);
     
     const scrollRef = useRef(null);
     const containerRef = useRef(null);
@@ -61,6 +62,16 @@ const AiConcierge = () => {
         if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         localStorage.setItem('ai_chat_history', JSON.stringify(messages));
     }, [messages, isOpen, isFullscreen]);
+
+    const handleScroll = () => {
+        if (!scrollRef.current) return;
+        const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+        setShowScrollButton(scrollHeight - scrollTop - clientHeight > 300);
+    };
+
+    const scrollToBottom = () => {
+        scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
+    };
 
     if (!user) return null;
 
@@ -305,7 +316,11 @@ const AiConcierge = () => {
                         </div>
 
                         {/* Chat Body */}
-                        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 flex flex-col gap-8 custom-scrollbar">
+                        <div 
+                            ref={scrollRef} 
+                            onScroll={handleScroll}
+                            className="flex-1 overflow-y-auto p-6 flex flex-col gap-8 custom-scrollbar relative"
+                        >
                             {messages.map((m, i) => {
                                 if (m.role === 'user') {
                                     return (
@@ -444,7 +459,7 @@ const AiConcierge = () => {
                                                     {segments.action.split('http')[0].trim()}
                                                 </p>
                                                 <button 
-                                                    onClick={() => navigate('/booking')}
+                                                    onClick={() => navigate('/dashboard/booking')}
                                                     className="w-full bg-white text-[#0066FF] py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors shadow-lg"
                                                 >
                                                     Book Consultation <ChevronRight size={18} />
@@ -472,21 +487,35 @@ const AiConcierge = () => {
                                 );
                             })}
 
-                            {isLoading && (
-                                <div className="flex flex-col gap-4">
-                                    <div className="ai-card bg-slate-50 border-none shadow-none">
-                                        <div className="flex items-center gap-4">
-                                            <div className="flex gap-1.5">
-                                                {[0, 1, 2].map(d => (
-                                                    <div key={d} className={`w-1.5 h-1.5 rounded-full bg-[#0066FF] typing-dot`} style={{ animationDelay: `${d * 0.2}s` }}></div>
-                                                ))}
+                                    {isLoading && (
+                                        <div className="flex flex-col gap-4">
+                                            <div className="ai-card bg-slate-50 border-none shadow-none">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="flex gap-1.5">
+                                                        {[0, 1, 2].map(d => (
+                                                            <div key={d} className={`w-1.5 h-1.5 rounded-full bg-[#0066FF] typing-dot`} style={{ animationDelay: `${d * 0.2}s` }}></div>
+                                                        ))}
+                                                    </div>
+                                                    <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{loadingMessages[loadingStep]}</span>
+                                                </div>
                                             </div>
-                                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{loadingMessages[loadingStep]}</span>
                                         </div>
-                                    </div>
+                                    )}
+
+                                    <AnimatePresence>
+                                        {showScrollButton && (
+                                            <motion.button
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: 10 }}
+                                                onClick={scrollToBottom}
+                                                className="sticky bottom-4 left-1/2 -translate-x-1/2 w-10 h-10 bg-white shadow-xl rounded-full border border-slate-100 flex items-center justify-center text-[#0066FF] hover:bg-slate-50 transition-all z-50"
+                                            >
+                                                <ChevronRight size={18} className="rotate-90" />
+                                            </motion.button>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
-                            )}
-                        </div>
 
                         {/* Input Area */}
                         <div className="p-6 bg-white border-t border-slate-100">
