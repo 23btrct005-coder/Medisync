@@ -897,40 +897,69 @@ const Booking = () => {
                   
                   {SERVICES_24_7.includes(selectedService) ? (
                     <div className="relative group overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-rose-600/10 opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
-                        <div className="relative p-10 bg-white/40 backdrop-blur-xl rounded-[3rem] border-2 border-rose-100/50 text-center space-y-6 shadow-xl shadow-rose-500/5">
-                            <div className="relative w-20 h-20 mx-auto">
-                                <div className="absolute inset-0 bg-rose-500 rounded-full animate-ping opacity-20" />
-                                <div className="relative w-20 h-20 bg-rose-500 rounded-full flex items-center justify-center shadow-2xl shadow-rose-500/40">
-                                    <Activity className="text-white" size={36} />
+                        {/* Background Pulsing Aura */}
+                        <div className="absolute inset-0 bg-gradient-to-tr from-rose-500/10 via-transparent to-primary-500/10 animate-pulse duration-[4000ms]" />
+                        
+                        <div className="relative p-12 bg-white/70 backdrop-blur-3xl rounded-[3.5rem] border border-white shadow-[0_32px_64px_-16px_rgba(225,29,72,0.1)] text-center space-y-8 transition-all duration-700 hover:shadow-[0_48px_80px_-16px_rgba(225,29,72,0.15)]">
+                            
+                            <div className="flex justify-center">
+                              <div className="inline-flex items-center gap-2 px-3 py-1 bg-rose-50 rounded-full border border-rose-100 text-[9px] font-black uppercase tracking-[0.25em] text-rose-500">
+                                <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
+                                Priority Service Active
+                              </div>
+                            </div>
+
+                            <div className="relative w-28 h-28 mx-auto">
+                                <div className="absolute inset-0 bg-rose-500/20 rounded-[2.5rem] animate-ping duration-[3000ms]" />
+                                <div className="relative w-28 h-28 bg-gradient-to-br from-rose-500 to-rose-600 rounded-[2.5rem] flex items-center justify-center shadow-2xl shadow-rose-500/40 rotate-3 group-hover:rotate-0 transition-transform duration-700">
+                                    <Activity className="text-white animate-[pulse_2s_infinite]" size={48} />
                                 </div>
                             </div>
                             
-                            <div className="space-y-2">
-                                <h4 className="text-xl font-black text-slate-900 tracking-tight">Immediate Clinical Protocol</h4>
-                                <p className="text-[10px] font-black text-rose-500 uppercase tracking-[0.2em]">24/7 Priority Emergency Lane</p>
-                                <p className="text-xs text-slate-500 font-medium max-w-xs mx-auto leading-relaxed">
-                                    This institution provides on-demand emergency care. No pre-scheduled slots required for this service.
+                            <div className="space-y-3">
+                                <h4 className="text-3xl font-black text-slate-900 tracking-tighter">Immediate Access Protocol</h4>
+                                <p className="text-slate-500 text-sm font-medium max-w-xs mx-auto leading-relaxed">
+                                    Bypassing standard wait-lists. This institutional node is currently configured for <span className="text-rose-500 font-black italic underline decoration-rose-200">on-demand emergency deployment.</span>
                                 </p>
                             </div>
 
-                            <button 
-                                onClick={() => setSelectedSlot('IMMEDIATE')}
-                                className={`w-full py-5 rounded-[2rem] font-black text-xs uppercase tracking-widest transition-all duration-500 relative overflow-hidden ${
-                                    selectedSlot === 'IMMEDIATE' 
-                                        ? 'bg-rose-600 text-white shadow-2xl shadow-rose-600/40' 
-                                        : 'bg-white text-rose-600 border-2 border-rose-100 hover:border-rose-300 hover:bg-rose-50/50'
-                                }`}
-                            >
-                                <span className="relative z-10 flex items-center justify-center gap-2">
-                                    {selectedSlot === 'IMMEDIATE' ? (
+                            <div className="pt-4">
+                              <button 
+                                  onClick={() => setSelectedSlot('IMMEDIATE')}
+                                  className={`group/btn w-full py-6 rounded-[2.5rem] font-black text-sm uppercase tracking-[0.2em] transition-all duration-700 relative overflow-hidden ${
+                                      selectedSlot === 'IMMEDIATE' 
+                                          ? 'bg-slate-900 text-white shadow-2xl shadow-slate-900/40' 
+                                          : 'bg-rose-500 text-white shadow-xl shadow-rose-500/30 hover:scale-[1.02] active:scale-95'
+                                  }`}
+                              >
+                                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
+                                  <span className="relative z-10 flex items-center justify-center gap-3">
+                                      {selectedSlot === 'IMMEDIATE' ? (
+                                          <>
+                                              <CheckCircle2 size={20} className="text-emerald-400" />
+                                              Protocol Authorized
+                                          </>
+                                      ) : (
                                         <>
-                                            <CheckCircle2 size={18} />
-                                            Protocol Authorized
+                                          <Zap size={18} className="animate-pulse" />
+                                          Authorize Deployment
                                         </>
-                                    ) : 'Activate Immediate Access'}
-                                </span>
-                            </button>
+                                      )}
+                                  </span>
+                              </button>
+                            </div>
+
+                            <div className="flex items-center justify-center gap-6 pt-2">
+                                <div className="flex flex-col items-center">
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Wait Time</span>
+                                    <span className="text-sm font-black text-slate-900">INSTANT</span>
+                                </div>
+                                <div className="w-px h-8 bg-slate-100" />
+                                <div className="flex flex-col items-center">
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Protocol</span>
+                                    <span className="text-sm font-black text-slate-900">PRIORITY-1</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                   ) : (
