@@ -142,11 +142,15 @@ public class AiService {
             textPart.put("text", prompt);
             parts.add(textPart);
 
-            if (imageData != null && !imageData.isEmpty()) {
+            if (imageData != null && imageData.contains(",")) {
+                String[] partsArray = imageData.split(",");
+                String mimeType = partsArray[0].split(":")[1].split(";")[0];
+                String base64Data = partsArray[1];
+
                 Map<String, Object> imagePart = new HashMap<>();
                 Map<String, String> inlineData = new HashMap<>();
-                inlineData.put("mime_type", "image/png");
-                inlineData.put("data", imageData);
+                inlineData.put("mime_type", mimeType);
+                inlineData.put("data", base64Data);
                 imagePart.put("inline_data", inlineData);
                 parts.add(imagePart);
             }
