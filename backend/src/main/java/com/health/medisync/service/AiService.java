@@ -115,18 +115,19 @@ public class AiService {
                 "- Immediate Recommendations\n" +
                 "- Suggested Department\n" +
                 "- Recommended Action\n\n" +
+                "SYMPTOM-COMBINATION RISK ESCALATION:\n" +
+                "- Analyze symptom combinations: Pain + Fever/Vomiting, Chest Pain + Sweating/SOB, Pregnancy + Bleeding, High Fever + Neck Stiffness.\n" +
+                "- Never downplay correlated symptoms. Escalate severity immediately if red flags are detected.\n" +
+                "- RIGHT ABDOMINAL PAIN + FEVER + VOMITING: Escalate to HIGH. Ask about lower right location and movement pain (Appendicitis indicators).\n" +
+                "- CHEST PAIN + SWEATING/SOB: Escalate to EMERGENCY immediately. Advise against self-driving.\n" +
+                "- STROKE SIGNS: Detect facial drooping, slurred speech, or sudden weakness. Escalate to EMERGENCY.\n\n" +
                 "FOLLOW-UP QUESTION ENGINE:\n" +
-                "- CHEST PAIN: Spread to arm/jaw/neck? Shortness of breath or sweating? Sharp, heavy, or pressure? Sudden start?\n" +
-                "- STOMACH PAIN: Exact location? Vomiting, diarrhea, or fever? After eating? Constant or cramp-like?\n" +
-                "- FEVER: Current temperature? Cough, sore throat, or body aches? Duration?\n" +
-                "- HEADACHE: Sudden or gradual? Nausea or light sensitivity? Vision changes?\n" +
-                "- COUGH: Dry or mucus? Fever or breathing difficulty? Duration?\n" +
-                "- SHORTNESS OF BREATH: Sudden start? Chest pain or wheezing? Asthma history?\n" +
-                "- ANXIETY/STRESS: Duration? Sleeping properly? Increased stress recently? Panic episodes?\n" +
-                "- VOMITING: Frequency? Able to keep fluids down? Blood in vomit?\n" +
-                "- PREGNANCY: Weeks pregnant? Bleeding or severe pain? Fetal movement?\n" +
-                "- PEDIATRIC: Age? Eating/drinking normally? Breathing difficulty or lethargy?\n" +
-                "- DIABETES: Sugar level? Regular medication? Excessive thirst?\n\n" +
+                "- CHEST PAIN: Spread to arm/jaw/neck? Sweating? Sharp, heavy, or pressure? Sudden start?\n" +
+                "- STOMACH PAIN: Location (Lower Right)? Fever/Vomiting? After eating? Constant or cramp-like? Pain on movement?\n" +
+                "- FEVER: Temperature? Cough/Body aches? Neck stiffness? Sensitivity to light?\n" +
+                "- HEADACHE: Sudden/Gradual? Nausea/Light sensitivity? Vision changes? Neck stiffness?\n" +
+                "- PREGNANCY: Weeks? Bleeding? Severe cramps? Fetal movement?\n" +
+                "- PEDIATRIC: Age? Lethargy? Eating/Drinking normally? Breathing difficulty?\n\n" +
                 "EMERGENCY DETECTION:\n" +
                 "Immediately escalate for: Chest pain, Breathing difficulty, Stroke symptoms, Severe bleeding, Seizures, Unconsciousness, Severe allergic reactions, Suicidal thoughts, Blood vomiting.\n\n" +
                 "MENTAL HEALTH RULES:\n" +
