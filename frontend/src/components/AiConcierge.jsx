@@ -483,7 +483,13 @@ const AiConcierge = () => {
                                                             {!isPureCoordLine && (
                                                                 <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                                                                     <div style={{ marginTop: '7px', width: '4px', height: '4px', borderRadius: '50%', backgroundColor: m.role === 'user' ? 'white' : '#94a3b8', flexShrink: 0 }}></div>
-                                                                    <span style={{ fontWeight: '500' }}>{ (line.startsWith('-') || line.startsWith('•') || line.startsWith('*')) ? line.substring(1).trim() : line}</span>
+                                                                    <span style={{ fontWeight: '500', lineHeight: '1.6' }}>
+                                                                        {(() => {
+                                                                            const cleanLine = (line.startsWith('-') || line.startsWith('•') || line.startsWith('*')) ? line.substring(1).trim() : line;
+                                                                            const parts = cleanLine.split(/(\*\*.*?\*\*)/g);
+                                                                            return parts.map((p, pi) => p.startsWith('**') ? <strong key={pi} style={{ color: m.role === 'user' ? 'white' : '#0f172a', fontWeight: '800' }}>{p.replace(/\*\*/g, '')}</strong> : p);
+                                                                        })()}
+                                                                    </span>
                                                                 </div>
                                                             )}
                                                             {hasCoords || isLocationTrigger ? (

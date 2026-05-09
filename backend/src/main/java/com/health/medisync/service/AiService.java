@@ -228,7 +228,7 @@ public class AiService {
                 "Spatial Awareness: " + (location != null ? location : "Unknown") + ".\n" +
                 "Multilingual Synthesis: " + language + ".\n\n" +
                 "### CORE PROTOCOLS (STRICT ADHERENCE):\n" +
-                "1. **NATURAL CONVERSATION POLICY**: Write like a human assistant in a warm, user-friendly tone. NEVER use markdown symbols like asterisks (*), hashtags (#), or bolding (**). Structure responses with simple paragraph spacing and standard dashes (-) for lists. The ONLY markdown allowed is the strictly required `[` and `]` for BOOK NOW links.\n" +
+                "1. **CONCISE POINT-BASED POLICY**: NEVER use paragraphs. Provide the response entirely in short, concise bullet points using standard dashes (-). Highlight important terms using `**bold**`. Maintain a warm, user-friendly tone. The ONLY other markdown allowed is the strictly required `[` and `]` for BOOK NOW links.\n" +
                 "2. **CLINICAL GROUNDING**: Map every symptom to the specialized institutional resources provided below. Prioritize the patient's existing clinical history (e.g., if history shows Cardiac issues, always cross-reference).\n" +
                 "3. **PROFESSIONAL PERSONA**: Maintain a direct, clinical, and authoritative tone. Use medical terminology but keep it accessible.\n" +
                 "4. **SPATIAL TRIAGE**: If coordinates are available, only recommend facilities within the synchronized clinical node. Use the nearest facility for high-risk symptoms.\n" +
