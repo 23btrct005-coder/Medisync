@@ -1,100 +1,162 @@
-import { Link, useLocation } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { 
-    LayoutDashboard, Calendar, Clock, Wallet, Users, FileText, 
-    ClipboardList, Pill, ShieldCheck, User, LogOut, ChevronRight, Activity
+  LayoutDashboard, FileText, ClipboardList, User, LogOut, Activity, 
+  Calendar, UserCheck, CalendarPlus, ShieldCheck, Pill, Wallet, 
+  MessageSquare, Settings, HelpCircle, ChevronDown, TrendingUp
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { motion } from 'framer-motion';
+import { useNotifications } from '../context/NotificationContext';
+import api from '../api/axiosConfig';
+import { useState } from 'react';
 
-const Sidebar = () => {
-    const location = useLocation();
-    const { logout, user } = useAuth();
+const Sidebar = ({ isOpen, setIsOpen }) => {
+  const { user, logout } = useAuth();
+  const { unreadChatCount } = useNotifications();
+  const navigate = useNavigate();
+  const [showMore, setShowMore] = useState(false);
 
-    const menuItems = [
-        { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-        { icon: Calendar, label: 'Book Appointment', path: '/dashboard/booking' },
-        { icon: Clock, label: 'My Appointments', path: '/dashboard/appointments' },
-        { icon: Wallet, label: 'Health Wallet', path: '/dashboard/wallet' },
-        { icon: Users, label: 'Doctors', path: '/dashboard/doctors' },
-        { icon: FileText, label: 'Medical History', path: '/dashboard/history' },
-        { icon: ClipboardList, label: 'AI Reports', path: '/dashboard/reports' },
-        { icon: Pill, label: 'Medications', path: '/dashboard/medications' },
-        { icon: ShieldCheck, label: 'Security Ledger', path: '/dashboard/security' },
-        { icon: User, label: 'Profile', path: '/dashboard/profile' },
-    ];
+  const photoUrl = user?.profilePictureUrl || (user?.id ? `${api.defaults.baseURL}/auth/patient/photo/${user.id}` : null);
 
-    return (
-        <aside className="w-72 glass-sidebar h-[100dvh] flex flex-col sticky top-0 z-[50]">
-            {/* Brand Section */}
-            <div className="p-8">
-                <Link to="/dashboard" className="flex items-center gap-3 group">
-                    <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 transition-transform group-hover:scale-110">
-                        <Activity size={22} />
-                    </div>
-                    <div>
-                        <h1 className="font-black text-xl tracking-tighter text-slate-900 leading-none">MediSync</h1>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-primary">Intelligence</span>
-                    </div>
-                </Link>
-            </div>
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
-            {/* Navigation Ledger */}
-            <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto no-scrollbar">
-                {menuItems.map((item) => {
-                    const isActive = location.pathname === item.path;
-                    return (
-                        <Link
-                            key={item.path}
-                            to={item.path}
-                            className={`group relative flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 ${
-                                isActive 
-                                ? 'bg-primary/5 text-primary shadow-sm' 
-                                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-                            }`}
-                        >
-                            <item.icon size={20} className={`transition-colors ${isActive ? 'text-primary' : 'text-slate-400 group-hover:text-slate-600'}`} />
-                            <span className="text-sm font-bold tracking-tight">{item.label}</span>
-                            {isActive && (
-                                <motion.div 
-                                    layoutId="sidebar-active"
-                                    className="absolute left-0 w-1 h-6 bg-primary rounded-r-full"
-                                />
-                            )}
-                        </Link>
-                    );
-                })}
-            </nav>
+  // Pre-fetch logic to make the app feel instant
+  const prefetchData = (path) => {
+    try {
+      if (path === '/dashboard/reports') {
+        api.get('reports').catch(() => {});
+      } else if (path === '/dashboard/records') {
+        api.get('records/my-records').catch(() => {});
+      } else if (path === '/dashboard') {
+        api.get('records/my-records').catch(() => {});
+        api.get('patient/requests').catch(() => {});
+      }
+    } catch (e) {
+      // Silent fail for prefetch
+    }
+  };
 
-            {/* User Access & Exit */}
-            <div className="p-6 border-t border-slate-50">
-                <div className="bg-slate-50/50 p-4 rounded-[24px] mb-4">
-                    <div className="flex items-center gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm">
-                            <User size={20} className="text-slate-400" />
-                        </div>
-                        <div className="flex-1 overflow-hidden">
-                            <p className="text-xs font-black text-slate-900 truncate uppercase tracking-tight">{user?.username || 'PATIENT'}</p>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Clinical Node Verified</p>
-                        </div>
-                    </div>
-                    <div className="w-full h-1 bg-slate-200 rounded-full overflow-hidden">
-                        <div className="w-2/3 h-full bg-emerald-400 rounded-full"></div>
-                    </div>
-                </div>
-                
-                <button 
-                    onClick={logout}
-                    className="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-slate-500 hover:bg-red-50 hover:text-red-500 transition-all font-bold text-sm"
-                >
-                    <div className="flex items-center gap-3">
-                        <LogOut size={18} />
-                        <span>System Logout</span>
-                    </div>
-                    <ChevronRight size={14} />
-                </button>
-            </div>
-        </aside>
-    );
+  // ── MAIN NAV: Most-used features ──
+  const mainItems = [
+    { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
+    { name: 'Messages', path: '/dashboard/messages', icon: <MessageSquare size={20} />, badge: unreadChatCount },
+    { name: 'Book Appointment', path: '/dashboard/booking', icon: <CalendarPlus size={20} /> },
+    { name: 'My Appointments', path: '/dashboard/sessions', icon: <Calendar size={20} /> },
+    { name: 'Health Wallet', path: '/dashboard/wallet', icon: <Wallet size={20} /> },
+    { name: 'My Doctors', path: '/dashboard/doctors', icon: <UserCheck size={20} /> },
+  ];
+
+  // ── MORE APPS: Less frequently used ──
+  const moreItems = [
+    { name: 'Medical History', path: '/dashboard/records', icon: <ClipboardList size={20} /> },
+    { name: 'AI Reports', path: '/dashboard/reports', icon: <FileText size={20} /> },
+    { name: 'Medications', path: '/dashboard/medications', icon: <Pill size={20} /> },
+    { name: 'Security Ledger', path: '/dashboard/security', icon: <ShieldCheck size={20} /> },
+  ];
+
+  const hospitalItems = [
+    { name: 'Command Center', path: '/hospital-dashboard', icon: <LayoutDashboard size={20} /> },
+    { name: 'Appointments', path: '/hospital-dashboard/appointments', icon: <Calendar size={20} /> },
+    { name: 'Staff Roster', path: '/hospital-dashboard/staff', icon: <UserCheck size={20} /> },
+    { name: 'Analytics', path: '/hospital-dashboard/analytics', icon: <TrendingUp size={20} /> },
+    { name: 'Inst. Profile', path: '/hospital-dashboard/profile', icon: <User size={20} /> },
+    { name: 'Inst. Wallet', path: '/dashboard/wallet', icon: <Wallet size={20} /> },
+    { name: 'Compliance', path: '/dashboard/security', icon: <ShieldCheck size={20} /> },
+  ];
+
+  const isHospital = user?.role === 'ROLE_HOSPITAL_ADMIN';
+  const profileItem = { 
+    name: 'My Profile', 
+    path: '/dashboard/profile', 
+    icon: (
+      <div className="h-5 w-5 rounded-full overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center -ml-1 mr-1">
+        {photoUrl ? (
+          <img 
+            src={photoUrl} 
+            alt={user?.name} 
+            className="h-full w-full object-cover"
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'block';
+            }}
+          />
+        ) : null}
+        <User size={14} className={`${photoUrl ? 'hidden' : 'block'} text-slate-400`} />
+      </div>
+    )
+  };
+
+  const NavItem = ({ item, end }) => (
+    <NavLink
+      to={item.path}
+      end={end}
+      onMouseEnter={() => prefetchData(item.path)}
+      className={({ isActive }) =>
+        `flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${
+          isActive
+            ? 'bg-primary-50 text-primary-700 font-semibold shadow-sm border border-primary-100'
+            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+        }`
+      }
+    >
+      <div className="mr-3 relative">
+        {item.icon}
+        {item.badge > 0 && (
+          <div className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold px-1 min-w-[16px] h-[16px] rounded-full flex items-center justify-center shadow-sm border border-white">
+            {item.badge > 9 ? '9+' : item.badge}
+          </div>
+        )}
+      </div>
+      <span className="text-sm font-medium flex-1">{item.name}</span>
+    </NavLink>
+  );
+
+  return (
+    <>
+      <div className={`hidden md:flex flex-col border-r border-slate-200 bg-white shadow-xl z-30 w-64 h-[100dvh] shrink-0`}>
+        <div className="h-16 flex items-center px-6 border-b border-slate-200 shrink-0">
+          <Activity className="text-primary-600 mr-2" size={24} />
+          <span className="text-2xl font-bold text-slate-800 tracking-tight">MEDISYNC</span>
+        </div>
+
+        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto custom-scrollbar">
+          {isHospital ? (
+            hospitalItems.map((item) => (
+              <NavItem key={item.name} item={item} end={item.path === '/hospital-dashboard'} />
+            ))
+          ) : (
+            <>
+              {/* Main Section */}
+              {mainItems.map((item) => (
+                <NavItem key={item.name} item={item} end={item.path === '/dashboard'} />
+              ))}
+
+              {moreItems.map((item) => (
+                <NavItem key={item.name} item={item} />
+              ))}
+
+              {/* Profile (always visible) */}
+              <div className="mt-2 pt-2 border-t border-slate-100">
+                <NavItem item={profileItem} />
+              </div>
+            </>
+          )}
+        </nav>
+
+        <div className="p-3 border-t border-slate-200">
+          <button
+            onClick={handleLogout}
+            className="flex items-center w-full px-4 py-3 text-slate-500 rounded-xl hover:bg-red-50 hover:text-red-600 transition-colors duration-200 text-sm font-medium"
+          >
+            <LogOut size={18} className="mr-3" />
+            Logout
+          </button>
+        </div>
+      </div>
+    </>
+  );
 };
 
 export default Sidebar;
