@@ -72,7 +72,7 @@ public class AiService {
                 });
 
                 // Telemetry integration
-                telemetryRepository.findTopByPatientIdOrderByCreatedAtDesc(u.getId()).ifPresent(t -> {
+                telemetryRepository.findByPatientIdOrderByCreatedAtDesc(u.getId()).stream().findFirst().ifPresent(t -> {
                     clinicalHistory.append("Recent Vitals: ")
                         .append("BP: ").append(t.getBloodPressure()).append(", ")
                         .append("Pulse: ").append(t.getPulse()).append(", ")
@@ -80,7 +80,7 @@ public class AiService {
                 });
 
                 // Medical History (Prescriptions)
-                List<Prescription> historyMeds = prescriptionRepository.findByPatientEmail(userEmail);
+                List<Prescription> historyMeds = prescriptionRepository.findByPatientEmailAndIsActiveTrue(userEmail);
                 if (!historyMeds.isEmpty()) {
                     clinicalHistory.append("Clinical History: ")
                         .append(historyMeds.stream().map(Prescription::getMedicineName).distinct().collect(Collectors.joining(", ")))
@@ -96,7 +96,7 @@ public class AiService {
 
         String doctorList = doctorRepository.findAll().stream()
             .filter(Doctor::isApproved)
-            .map(d -> "- Dr. " + d.getName() + " (" + d.getSpecialization() + ") [ID: " + d.getId() + "] at " + (d.getHospital() != null ? d.getHospital().getName() : "Independent"))
+            .map(d -> "- Dr. " + d.getName() + " (" + d.getSpecialization() + ") [ID: " + d.getId() + "] at " + (d.getHospitalEntity() != null ? d.getHospitalEntity().getName() : (d.getHospital() != null ? d.getHospital() : "Independent")))
             .collect(Collectors.joining("\n"));
 
         // 3. Assemble Multi-Turn History
@@ -200,7 +200,21 @@ public class AiService {
                 "### PATIENT QUERY:\n" + query;
 
         try {
-            String neuralResponse = geminiAiService.getCompletion(prompt, imageData);
+            List<Map<String, Object>> parts = new ArrayList<>();
+            Map<String, Object> textPart = new HashMap<>();
+            textPart.put("text", prompt);
+            parts.add(textPart);
+
+            if (imageData != null && !imageData.isEmpty()) {
+                Map<String, Object> imagePart = new HashMap<>();
+                Map<String, String> inlineData = new HashMap<>();
+                inlineData.put("mime_type", "image/png");
+                inlineData.put("data", imageData);
+                imagePart.put("inline_data", inlineData);
+                parts.add(imagePart);
+            }
+
+            String neuralResponse = geminiAiService.getCompletion(parts);
             
             if (neuralResponse != null && !neuralResponse.contains("error")) {
                 if (userEmail != null) {
