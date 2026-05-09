@@ -174,7 +174,7 @@ const AiConcierge = () => {
             const res = await api.post('/ai/chat', { 
                 message: textToSend,
                 location: location ? `${location.lat},${location.lng}` : null,
-                history: messages.slice(-5),
+                history: messages.slice(-15),
                 imageData: currentImg
             });
             
