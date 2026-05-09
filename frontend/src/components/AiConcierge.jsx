@@ -295,10 +295,10 @@ const AiConcierge = () => {
 
     const getSeverityStyles = (severity) => {
         const s = severity.toLowerCase();
-        if (s.includes('emergency') || s.includes('critical')) return { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', icon: <AlertCircle className="text-red-500" size={14} /> };
-        if (s.includes('high') || s.includes('urgent')) return { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', icon: <AlertCircle className="text-orange-500" size={14} /> };
-        if (s.includes('moderate')) return { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', icon: <Clock className="text-amber-500" size={14} /> };
-        return { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', icon: <CheckCircle2 className="text-emerald-500" size={14} /> };
+        if (s.includes('emergency') || s.includes('critical')) return { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', icon: <AlertCircle className="text-red-600" size={16} /> };
+        if (s.includes('high') || s.includes('urgent')) return { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', icon: <AlertCircle className="text-orange-600" size={16} /> };
+        if (s.includes('moderate')) return { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', icon: <Clock className="text-amber-600" size={16} /> };
+        return { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', icon: <CheckCircle2 className="text-emerald-600" size={16} /> };
     };
 
     if (!user) return null;
@@ -416,27 +416,29 @@ const AiConcierge = () => {
                             {/* Main Chat Area */}
                             <div className="flex-1 flex flex-col relative bg-[#fcfdfe]">
                                 {/* Header */}
-                                <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-20">
-                                    <div className="flex items-center gap-4">
-                                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-400">
+                                <div className="px-4 py-4 md:px-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-[102] shadow-sm">
+                                    <div className="flex items-center gap-3">
+                                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-500">
                                             {isSidebarOpen ? <ChevronLeft size={20} /> : <Menu size={20} />}
                                         </button>
-                                        <div>
-                                            <h2 className="font-bold text-slate-900 text-base tracking-tight leading-tight flex items-center gap-2">
-                                                MediSync Portal <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-600 text-[10px] uppercase font-black tracking-widest">v2.0</span>
+                                        <div className="flex flex-col">
+                                            <h2 className="font-bold text-slate-900 text-sm md:text-base tracking-tight leading-tight flex items-center gap-2">
+                                                MediSync Portal <span className="px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-600 text-[9px] uppercase font-black">v2.0</span>
                                             </h2>
-                                            <p className="text-[10px] text-slate-400 font-bold flex items-center gap-1.5 uppercase tracking-widest mt-0.5">
+                                            <p className="text-[9px] md:text-[10px] text-slate-400 font-bold flex items-center gap-1.5 uppercase tracking-widest mt-0.5">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                                                Clinical Assistant Online
+                                                Clinical Online
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <button onClick={() => setIsFullscreen(!isFullscreen)} className="p-2.5 text-slate-400 hover:bg-slate-100 rounded-xl transition-colors">
-                                            {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-                                        </button>
-                                        <button onClick={() => setIsOpen(false)} className="p-2.5 text-slate-400 hover:bg-slate-100 rounded-xl transition-colors">
-                                            <X size={18} />
+                                    <div className="flex items-center gap-1 md:gap-2">
+                                        {!isMobile && (
+                                            <button onClick={() => setIsFullscreen(!isFullscreen)} className="p-2 text-slate-400 hover:bg-slate-100 rounded-xl">
+                                                {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+                                            </button>
+                                        )}
+                                        <button onClick={() => setIsOpen(false)} className="p-2 text-slate-400 hover:bg-slate-100 rounded-xl">
+                                            <X size={20} />
                                         </button>
                                     </div>
                                 </div>
@@ -450,14 +452,14 @@ const AiConcierge = () => {
                                 {/* Messages Area */}
                                 <div 
                                     ref={scrollRef}
-                                    className="flex-1 overflow-y-auto p-6 md:p-10 flex flex-col gap-8 chat-scrollbar"
+                                    className="flex-1 overflow-y-auto p-4 md:p-10 flex flex-col gap-6 md:gap-8 chat-scrollbar"
                                 >
                                     {messages.map((m, i) => {
                                         if (m.role === 'user') {
                                             return (
                                                 <div key={i} className="flex flex-col gap-2 items-end">
                                                     {m.image && <img src={m.image} className="w-48 rounded-2xl border-2 border-white shadow-lg mb-1" />}
-                                                    <div className="message-bubble-user px-5 py-3.5 max-w-[85%] text-sm font-medium leading-relaxed rounded-[24px] rounded-br-none shadow-lg">
+                                                    <div className="message-bubble-user px-4 py-2.5 md:px-5 md:py-3.5 max-w-[85%] text-xs md:text-sm font-medium leading-relaxed rounded-[20px] md:rounded-[24px] rounded-br-none shadow-md">
                                                         {m.text}
                                                     </div>
                                                 </div>
@@ -468,51 +470,46 @@ const AiConcierge = () => {
                                         const sevStyles = getSeverityStyles(segments.severity);
 
                                         return (
-                                            <div key={i} className="flex flex-col gap-5 items-start">
-                                                <div className="flex items-center gap-3 mb-1">
-                                                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shadow-sm border border-blue-200">
-                                                        <BrainCircuit size={16} />
+                                            <div key={i} className="flex flex-col gap-4 md:gap-5 items-start">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shadow-sm border border-blue-200">
+                                                        <BrainCircuit size={14} />
                                                     </div>
-                                                    <span className="text-[10px] font-black uppercase tracking-[2px] text-slate-400">Assistant</span>
-                                                    <div className="flex gap-2">
-                                                        <button onClick={() => copyToClipboard(m.text)} className="p-1.5 hover:bg-slate-100 rounded text-slate-400 hover:text-slate-600 transition-all">
-                                                            <Copy size={12} />
-                                                        </button>
-                                                    </div>
+                                                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Assistant</span>
                                                 </div>
 
-                                                <div className="message-bubble-ai p-6 md:p-8 w-full max-w-[90%] rounded-[28px] rounded-tl-none flex flex-col gap-6">
+                                                <div className="message-bubble-ai p-5 md:p-8 w-full max-w-[95%] md:max-w-[90%] rounded-[24px] md:rounded-[28px] rounded-tl-none flex flex-col gap-5 md:gap-6">
                                                     {/* Assessment */}
-                                                    <div className="flex flex-col gap-3">
+                                                    <div className="flex flex-col gap-2">
                                                         <div className="flex items-center gap-2">
-                                                            <Stethoscope size={16} className="text-blue-500" />
-                                                            <span className="text-[11px] font-black uppercase tracking-widest text-blue-600">Clinical Assessment</span>
+                                                            <Stethoscope size={14} className="text-blue-500" />
+                                                            <span className="text-[10px] font-black uppercase tracking-widest text-blue-600">Clinical Assessment</span>
                                                         </div>
-                                                        <p className="text-sm text-slate-700 leading-relaxed font-medium">
+                                                        <p className="text-xs md:text-sm text-slate-700 leading-relaxed font-medium">
                                                             {segments.assessment || segments.other}
                                                         </p>
                                                     </div>
 
                                                     {/* Severity & Department Grid */}
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                        <div className={`p-4 rounded-2xl border flex items-center justify-between ${sevStyles.bg} ${sevStyles.border}`}>
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                                                        <div className={`p-3 md:p-4 rounded-xl md:rounded-2xl border flex items-center justify-between ${sevStyles.bg} ${sevStyles.border}`}>
                                                             <div>
-                                                                <span className="text-[9px] font-black text-slate-400 uppercase block mb-0.5">Triage Status</span>
+                                                                <span className="text-[8px] font-black text-slate-400 uppercase block mb-0.5">Triage</span>
                                                                 <div className="flex items-center gap-1.5">
                                                                     {sevStyles.icon}
-                                                                    <span className={`text-sm font-black ${sevStyles.text}`}>{segments.severity.toUpperCase()}</span>
+                                                                    <span className={`text-[11px] md:text-sm font-black ${sevStyles.text}`}>{segments.severity.toUpperCase()}</span>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                         
                                                         {segments.department && (
-                                                            <div className="p-4 rounded-2xl border border-slate-100 bg-slate-50/50 flex items-center gap-3">
-                                                                <div className="w-8 h-8 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 shadow-sm">
-                                                                    <MapPin size={16} />
+                                                            <div className="p-3 md:p-4 rounded-xl md:rounded-2xl border border-slate-100 bg-slate-50/50 flex items-center gap-3">
+                                                                <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 shadow-sm">
+                                                                    <MapPin size={14} />
                                                                 </div>
                                                                 <div>
-                                                                    <span className="text-[9px] font-black text-slate-400 uppercase block mb-0.5">Assigned Unit</span>
-                                                                    <span className="text-xs font-bold text-slate-700">{segments.department}</span>
+                                                                    <span className="text-[8px] font-black text-slate-400 uppercase block mb-0.5">Department</span>
+                                                                    <span className="text-[10px] md:text-xs font-bold text-slate-700 truncate block max-w-[120px]">{segments.department}</span>
                                                                 </div>
                                                             </div>
                                                         )}
@@ -619,11 +616,11 @@ const AiConcierge = () => {
                                 </div>
 
                                 {/* Input Area */}
-                                <div className="p-6 md:p-8 bg-white border-t border-slate-100">
-                                    <div className="max-w-[800px] mx-auto relative flex items-center bg-slate-50 rounded-[28px] border border-slate-200 p-2 transition-all focus-within:border-blue-500/30 focus-within:bg-white focus-within:shadow-xl shadow-inner">
-                                        <div className="flex gap-1 pl-2">
-                                            <label className="p-2.5 text-slate-400 hover:text-blue-600 cursor-pointer transition-colors hover:bg-white rounded-xl shadow-sm border border-transparent hover:border-slate-100">
-                                                <Paperclip size={20} />
+                                <div className="p-4 md:p-8 bg-white border-t border-slate-100 sticky bottom-0 z-[102]">
+                                    <div className="max-w-[800px] mx-auto relative flex items-center bg-slate-50 rounded-[22px] md:rounded-[28px] border border-slate-200 p-1.5 transition-all focus-within:border-blue-500/30 focus-within:bg-white focus-within:shadow-lg">
+                                        <div className="flex gap-0.5 md:gap-1 pl-1">
+                                            <label className="p-2 text-slate-400 hover:text-blue-600 cursor-pointer">
+                                                <Paperclip size={18} />
                                                 <input type="file" className="hidden" onChange={(e) => {
                                                     const file = e.target.files[0];
                                                     if (file) {
@@ -633,15 +630,12 @@ const AiConcierge = () => {
                                                     }
                                                 }} />
                                             </label>
-                                            <button className="p-2.5 text-slate-400 hover:text-blue-600 hover:bg-white rounded-xl shadow-sm border border-transparent hover:border-slate-100">
-                                                <Mic size={20} />
-                                            </button>
                                         </div>
                                         
-                                        <div className="flex-1 px-4 relative">
+                                        <div className="flex-1 px-2 relative">
                                             {imagePreview && (
-                                                <div className="absolute -top-16 left-0 bg-white p-1 rounded-lg shadow-xl border border-slate-200">
-                                                    <img src={imagePreview} className="h-12 w-12 object-cover rounded" />
+                                                <div className="absolute -top-14 left-0 bg-white p-1 rounded-lg shadow-xl border border-slate-200 z-50">
+                                                    <img src={imagePreview} className="h-10 w-10 object-cover rounded" />
                                                     <button onClick={() => setImagePreview(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 shadow-md">
                                                         <X size={10} />
                                                     </button>
@@ -651,21 +645,21 @@ const AiConcierge = () => {
                                                 value={input}
                                                 onChange={(e) => setInput(e.target.value)}
                                                 onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                                                placeholder="Ask a medical question or describe symptoms..."
-                                                className="w-full bg-transparent border-none outline-none text-sm font-medium text-slate-700 placeholder:text-slate-400 py-3"
+                                                placeholder={isMobile ? "Ask anything..." : "Ask a medical question or describe symptoms..."}
+                                                className="w-full bg-transparent border-none outline-none text-[13px] md:text-sm font-medium text-slate-700 placeholder:text-slate-400 py-2.5"
                                             />
                                         </div>
 
                                         <button 
                                             onClick={() => handleSend()}
                                             disabled={isLoading || (!input.trim() && !imagePreview)}
-                                            className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all transform active:scale-95 disabled:opacity-50 disabled:grayscale"
+                                            className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all transform active:scale-95 disabled:opacity-50"
                                         >
-                                            <SendHorizontal size={22} />
+                                            <SendHorizontal size={20} />
                                         </button>
                                     </div>
-                                    <p className="text-center text-[9px] text-slate-400 mt-4 font-bold uppercase tracking-[2px]">
-                                        MediSync Portal Secure AI Node • HIPAA Compliant Environment
+                                    <p className="text-center text-[8px] text-slate-400 mt-3 font-bold uppercase tracking-[1.5px] opacity-60">
+                                        Secure AI Node • HIPAA Compliant
                                     </p>
                                 </div>
                             </div>
