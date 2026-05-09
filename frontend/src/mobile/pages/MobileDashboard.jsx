@@ -78,7 +78,7 @@ const MobileDashboard = () => {
             {/* ── PRIORITY 1: EMERGENCY & URGENT ── */}
             <motion.div variants={item} className="flex gap-3">
                 <button 
-                    onClick={() => navigate(`/dashboard/booking?mode=service&service=${encodeURIComponent('Emergency & Trauma Care')}`)}
+                    onClick={() => navigate('/dashboard/booking?mode=service')}
                     className="flex-1 bg-rose-600 p-4 rounded-[2rem] text-white flex flex-col justify-between h-32 shadow-xl shadow-rose-600/20 active:scale-95 transition-transform"
                 >
                     <div className="h-10 w-10 bg-white/20 rounded-2xl flex items-center justify-center">

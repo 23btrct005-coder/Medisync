@@ -90,9 +90,13 @@ const Booking = () => {
   }, [doctors, doctorNameParam]);
 
   useEffect(() => {
-    if (modeParam === 'service' && serviceParam) {
+    if (modeParam === 'service') {
         setBookingMode('service');
-        setSelectedService(serviceParam);
+        if (serviceParam) {
+            setSelectedService(serviceParam);
+        } else {
+            setSelectedService(null);
+        }
         setBookingStep('list');
     }
   }, [modeParam, serviceParam]);

@@ -110,7 +110,7 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
     };
 
     return (
-        <div className="fixed inset-0 md:inset-auto md:bottom-6 md:right-6 w-full md:w-96 h-full md:h-[500px] bg-white md:rounded-[2rem] shadow-2xl md:border border-slate-100 flex flex-col overflow-hidden z-[100] animate-in slide-in-from-bottom-8 duration-500 text-left">
+        <div className="fixed inset-0 md:inset-auto md:bottom-6 md:right-6 w-full md:w-96 h-full md:h-[500px] bg-white md:rounded-[2rem] shadow-2xl md:border border-slate-100 flex flex-col overflow-hidden z-[300] animate-in slide-in-from-bottom-8 duration-500 text-left pb-[70px] md:pb-0">
             {/* Header */}
             <div className="p-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-3">
