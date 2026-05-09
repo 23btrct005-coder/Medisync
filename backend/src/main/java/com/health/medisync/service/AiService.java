@@ -166,7 +166,12 @@ public class AiService {
                 if (userEmail != null) sessionSummaries.put(userEmail, neuralResponse.length() > 200 ? neuralResponse.substring(0, 200) + "..." : neuralResponse);
                 return neuralResponse;
             }
-        } catch (Exception e) { e.printStackTrace(); }
+            
+            return "I apologize, but I encountered a clinical reasoning interruption while analyzing the image. Please try providing more details in text or re-uploading a clearer image.";
+        } catch (Exception e) { 
+            e.printStackTrace(); 
+            return "System Error: Unable to reach the clinical reasoning brain. Please check your connection.";
+        }
         
         return "### 🧬 MediSync AI Concierge\n- **Status**: Secure Clinical Node active.\n- **Assessment**: I am analyzing your request through the secondary hospital brain.\n- **Action**: Please describe your symptoms (e.g., pain location, duration, or any physical changes) for a detailed triage.";
     }
