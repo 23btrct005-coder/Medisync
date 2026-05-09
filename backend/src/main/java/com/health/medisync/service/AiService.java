@@ -85,7 +85,7 @@ public class AiService {
         }
 
         String hospitalList = hospitalRepository.findAll().stream()
-            .map(h -> "- " + h.getName() + " (" + h.getLocation() + ") [ID: " + h.getId() + "]")
+            .map(h -> "- " + h.getName() + " | Address: " + h.getStreet() + ", " + h.getCity() + ", " + h.getState() + " " + h.getPinCode() + " | Maps: " + (h.getGoogleMapsUrl() != null ? h.getGoogleMapsUrl() : "https://www.google.com/maps/search/?api=1&query=" + h.getName().replace(" ", "+")) + " [ID: " + h.getId() + "]")
             .collect(Collectors.joining("\n"));
 
         String doctorList = doctorRepository.findAll().stream()
@@ -110,7 +110,7 @@ public class AiService {
                 "2. REPORT ANALYSIS: If a user mentions a report or uploads an image, summarize the findings clearly.\n" +
                 "3. MEDICATION GUIDANCE: Explain common medicines and their side effects (Informational only).\n" +
                 "4. RISK DETECTION: Proactively detect emergency symptoms (Chest pain, SOB, Stroke signs, severe bleeding) and warn the user to seek immediate care.\n" +
-                "5. INSTITUTIONAL MATCHING: Suggest the correct hospital department or doctor from the provided registry.\n\n" +
+                "5. INSTITUTIONAL MATCHING: Suggest the correct hospital department or doctor from the provided registry. ALWAYS use the exact hospital names and addresses provided in the database registry below.\n\n" +
                 "GLOBAL RESPONSE RULES:\n" +
                 "- Keep responses concise (100–180 words maximum).\n" +
                 "- NEVER use markdown symbols like '*', '#', or '_' in your final output. Use clean text and spacing only.\n" +
