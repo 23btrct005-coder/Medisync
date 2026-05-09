@@ -125,6 +125,11 @@ const AiConcierge = () => {
         }
     };
 
+    const copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text);
+        toast.success('Clinical intelligence copied to clipboard');
+    };
+
     const parseAiResponse = (text) => {
         const sections = {
             assessment: '',
@@ -308,17 +313,137 @@ const AiConcierge = () => {
 
                                 {/* Messages Scroll Area */}
                                 <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-8 chat-scrollbar">
-                                    {messages.length === 1 && (
-                                        <div className="flex flex-col items-center justify-center py-12 text-center">
-                                            <div className="w-20 h-20 rounded-3xl bg-primary/5 flex items-center justify-center text-primary mb-6 animate-float">
-                                                <BrainCircuit size={40} />
+
+                                    {messages.map((m, i) => (
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            key={i} 
+                                            className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'} gap-3`}
+                                        >
+                                            {m.role === 'ai' && (
+                                                <div className="flex items-center gap-2 mb-1 px-1">
+                                                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                                        <BrainCircuit size={12} />
+                                                    </div>
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">MediSync Agent</span>
+                                                    <span className="text-[8px] text-slate-300 ml-2 font-medium">{new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                                </div>
+                                            )}
+
+                                            <div className={`
+                                                relative p-5 md:p-6 rounded-3xl shadow-sm border max-w-[85%] leading-relaxed
+                                                ${m.role === 'user' ? 
+                                                  'bg-primary text-white border-primary shadow-primary/20 rounded-tr-none' : 
+                                                  'bg-white text-slate-700 border-slate-50 rounded-tl-none'}
+                                            `}>
+                                                {m.image && <img src={m.image} className="w-full max-w-sm rounded-2xl mb-4 border-2 border-white shadow-xl" />}
+                                                
+                                                {m.role === 'ai' ? (
+                                                    <div className="flex flex-col gap-6">
+                                                        {(() => {
+                                                            const s = parseAiResponse(m.text);
+                                                            const ui = getSeverityUI(s.severity);
+                                                            const isCritical = ui.label === 'CRITICAL';
+
+                                                            return (
+                                                                <>
+                                                                    {(isCritical || s.warning) && (
+                                                                        <div className={`p-5 rounded-2xl ${ui.glow || 'bg-red-50 border border-red-200'} flex flex-col gap-4`}>
+                                                                            <div className="flex items-center justify-between">
+                                                                                <div className="flex items-center gap-2 text-red-600 font-black text-xs">
+                                                                                    <AlertCircle size={16} /> EMERGENCY ALERT
+                                                                                </div>
+                                                                                <span className="px-2 py-1 rounded-md bg-red-600 text-white text-[8px] font-black uppercase">Immediate Action</span>
+                                                                            </div>
+                                                                            {s.warning && <p className="text-xs font-bold text-red-700 leading-relaxed italic">{s.warning}</p>}
+                                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                                                                <button onClick={() => navigate('/dashboard/booking?service=Ambulance')} className="py-2.5 bg-red-600 text-white rounded-xl text-[10px] font-black uppercase hover:bg-red-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-red-200">
+                                                                                    <HeartPulse size={14} /> Dispatch Ambulance
+                                                                                </button>
+                                                                                <button className="py-2.5 bg-white border border-red-200 text-red-600 rounded-xl text-[10px] font-black uppercase hover:bg-red-50 transition-all flex items-center justify-center gap-2">
+                                                                                    <MapPin size={14} /> Nearest Hospital
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+
+                                                                    <div className="flex flex-col gap-4">
+                                                                        <div className="flex flex-col gap-2">
+                                                                            <div className="flex items-center gap-2 mb-1">
+                                                                                <Activity size={14} className="text-primary" />
+                                                                                <span className="text-[10px] font-black text-primary uppercase tracking-widest">Clinical Assessment</span>
+                                                                            </div>
+                                                                            <p className="text-[13px] md:text-sm font-medium text-slate-700 leading-relaxed">
+                                                                                {s.assessment || s.other}
+                                                                            </p>
+                                                                        </div>
+
+                                                                        {s.possibleConditions && (
+                                                                            <div className="flex flex-col gap-2 p-4 bg-blue-50/30 rounded-2xl border border-blue-100/50">
+                                                                                <div className="flex items-center gap-2 mb-1">
+                                                                                    <Search size={14} className="text-blue-500" />
+                                                                                    <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">Possible Causes</span>
+                                                                                </div>
+                                                                                <p className="text-xs font-bold text-slate-600 leading-relaxed italic">
+                                                                                    {s.possibleConditions}
+                                                                                </p>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+
+                                                                    <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 mt-2">
+                                                                        <div className={`p-4 rounded-2xl border ${ui.bg} ${ui.border} flex flex-col gap-1 shadow-sm`}>
+                                                                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">TRIAGE LEVEL</span>
+                                                                            <span className={`text-xs font-black ${ui.color}`}>{ui.label}</span>
+                                                                        </div>
+                                                                        {s.specialist && (
+                                                                            <div className="p-4 rounded-2xl border border-slate-100 bg-slate-50/30 flex flex-col gap-1 shadow-sm">
+                                                                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">RECOMMENDED SPECIALIST</span>
+                                                                                <span className="text-xs font-black text-slate-700 truncate">{s.specialist}</span>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+
+                                                                    {s.mapUrl && (
+                                                                        <div className="rounded-2xl overflow-hidden border border-slate-100 shadow-sm">
+                                                                            <div className="h-24 bg-slate-100 flex items-center justify-center relative overflow-hidden bg-[url('https://www.google.com/maps/vt/pb=!1m4!1m3!1i12!2i2361!3i1589!2m3!1e0!2sm!3i420120488!3m8!2sen!3sus!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0!5m1!1e0!23i4111425')] bg-cover">
+                                                                                <div className="relative z-10 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white shadow-xl">
+                                                                                    <MapPin size={16} />
+                                                                                </div>
+                                                                            </div>
+                                                                            <div className="p-3 bg-white flex items-center justify-between">
+                                                                                <span className="text-[10px] font-bold text-slate-800">Nearby Institutional Node</span>
+                                                                                <a href={s.mapUrl} target="_blank" className="text-[9px] font-black uppercase text-primary hover:underline">Launch Navigation</a>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+
+                                                                    {s.action && (
+                                                                        <button 
+                                                                            onClick={() => navigate('/dashboard/booking')}
+                                                                            className="w-full py-4 bg-primary text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-3 shadow-xl shadow-primary/20 group hover:bg-blue-600 transition-all"
+                                                                        >
+                                                                            Secure Clinical Booking <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                                                                        </button>
+                                                                    )}
+                                                                </>
+                                                            );
+                                                        })()}
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-[13px] md:text-sm font-semibold">{m.text}</p>
+                                                )}
                                             </div>
-                                            <h3 className="text-lg font-black text-slate-900 tracking-tight">Clinical Intelligence Node</h3>
-                                            <p className="text-sm text-slate-400 mt-2 max-w-[280px] font-medium leading-relaxed">
-                                                Describe your symptoms or upload a report for professional clinical reasoning.
-                                            </p>
-                                        </div>
-                                    )}
+
+                                            {m.role === 'ai' && (
+                                                <div className="flex gap-2 mt-2 px-1">
+                                                    <button onClick={() => copyToClipboard(m.text)} className="p-2 text-slate-300 hover:text-slate-500 hover:bg-slate-50 rounded-lg transition-all"><Copy size={14}/></button>
+                                                    <button className="p-2 text-slate-300 hover:text-slate-500 hover:bg-slate-50 rounded-lg transition-all"><RotateCcw size={14}/></button>
+                                                </div>
+                                            )}
+                                        </motion.div>
+                                    ))}
 
                                     {isLoading && (
                                         <div className="flex justify-start items-center gap-4">
