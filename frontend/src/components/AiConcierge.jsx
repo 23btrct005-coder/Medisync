@@ -473,8 +473,13 @@ const AiConcierge = () => {
                                                 // Privacy: Don't show the line if it's just raw coordinates or patient location
                                                 if (hasCoords && !isFacility && !line.includes('(/dashboard')) return null;
 
-                                                if (line.startsWith('-') || line.startsWith('•') || line.startsWith('*') || line.length > 60 || hasCoords || (isFacility && isLocationTrigger)) {
-                                                    const query = line.replace(/#|-|•|\*/g, '').trim();
+                                                const isMapNeeded = hasCoords || (isFacility && isLocationTrigger);
+
+                                                // 2. Render Bullet Points or Long Lines
+                                                if (line.startsWith('-') || line.startsWith('•') || line.startsWith('*') || line.length > 60 || isMapNeeded) {
+                                                    const cleanLine = (line.startsWith('-') || line.startsWith('•') || line.startsWith('*')) ? line.substring(1).trim() : line;
+                                                    const parts = cleanLine.split(/(\*\*.*?\*\*)/g);
+                                                    const query = cleanLine.replace(/#|-|•|\*/g, '').trim();
                                                     const encodedQuery = encodeURIComponent(hasCoords ? coordMatch[0] : query);
                                                     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
                                                     const mapUrl = (apiKey && apiKey !== "REPLACE_WITH_YOUR_GOOGLE_MAPS_API_KEY") 
@@ -487,19 +492,15 @@ const AiConcierge = () => {
                                                                 <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                                                                     <div style={{ marginTop: '7px', width: '4px', height: '4px', borderRadius: '50%', backgroundColor: m.role === 'user' ? 'white' : '#94a3b8', flexShrink: 0 }}></div>
                                                                     <span style={{ fontWeight: '500', lineHeight: '1.6' }}>
-                                                                        {(() => {
-                                                                            const cleanLine = (line.startsWith('-') || line.startsWith('•') || line.startsWith('*')) ? line.substring(1).trim() : line;
-                                                                            const parts = cleanLine.split(/(\*\*.*?\*\*)/g);
-                                                                            return parts.map((p, pi) => p.startsWith('**') ? <strong key={pi} style={{ color: m.role === 'user' ? 'white' : '#0f172a', fontWeight: '800' }}>{p.replace(/\*\*/g, '')}</strong> : p);
-                                                                        })()}
+                                                                        {parts.map((p, pi) => p.startsWith('**') ? <strong key={pi} style={{ color: m.role === 'user' ? 'white' : '#0f172a', fontWeight: '800' }}>{p.replace(/\*\*/g, '')}</strong> : p)}
                                                                     </span>
                                                                 </div>
                                                             )}
-                                                            {hasCoords || isLocationTrigger ? (
+                                                            {isMapNeeded && (
                                                                 <div style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0', marginTop: '4px' }}>
                                                                     <iframe width="100%" height="150" style={{ border: 0 }} loading="lazy" src={mapUrl}></iframe>
                                                                 </div>
-                                                            ) : null}
+                                                            )}
                                                         </div>
                                                     );
                                                 }
