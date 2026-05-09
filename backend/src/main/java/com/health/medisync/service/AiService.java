@@ -172,8 +172,6 @@ public class AiService {
             e.printStackTrace(); 
             return "System Error: Unable to reach the clinical reasoning brain. Please check your connection.";
         }
-        
-        return "### 🧬 MediSync AI Concierge\n- **Status**: Secure Clinical Node active.\n- **Assessment**: I am analyzing your request through the secondary hospital brain.\n- **Action**: Please describe your symptoms (e.g., pain location, duration, or any physical changes) for a detailed triage.";
     }
 
     public String getLatestBrief(String email) {
