@@ -138,8 +138,7 @@ public class AiService {
                 "- Reassurance: Provide supportive, non-judgmental guidance. Encourage human connection (contacting trusted people) and immediate professional help.\n" +
                 "- Escalate: Recommend urgent mental health support/crisis lines immediately for high-risk detection.\n\n" +
                 "BOOKING & SPATIAL MAPPING:\n" +
-                "- When recommending a hospital, ALWAYS provide its full address and coordinates from the registry to trigger the live map UI.\n" +
-                "- Include a 'Book Now' link using the format: [Book Appointment](/booking).\n" +
+                "- When recommending a hospital, ALWAYS include its full address and its Google Maps search link (e.g., https://www.google.com/maps/search/?api=1&query=Hospital+Name) at the end of the Recommended Action section to trigger the live map UI.\n" +
                 "- Suggested department must match the symptom category.\n\n" +
                 "MEDICAL LANGUAGE RULES:\n" +
                 "- Use: 'Mild infection', 'Digestive irritation', 'Trapped gas', 'Stomach discomfort', 'Viral illness'.\n" +
