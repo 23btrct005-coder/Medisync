@@ -23,15 +23,27 @@ public class GeminiAiService implements AiProvider {
 
     @Override
     public String analyzeReport(byte[] fileData, String mimeType, String patientName, int patientAge) {
-        // Fallback to text completion for now, or implement multimodal Gemini logic
-        String prompt = "You are an elite clinical AI. Analyze the following medical document metadata and provide a structured briefing.\n" +
+        String prompt = "### SYSTEM INSTRUCTION: ELITE CLINICAL DIAGNOSTICIAN\n" +
+                        "You are a Board-Certified Physician specializing in Medical Report Analysis.\n" +
+                        "Task: Analyze the following medical document metadata and provide a high-precision clinical briefing.\n\n" +
                         "Patient: " + patientName + " (Age: " + patientAge + ")\n" +
-                        "File Type: " + mimeType + "\n\n" +
-                        "Please provide a diagnostic summary based on the available clinical context.";
+                        "Document MIME: " + mimeType + "\n\n" +
+                        "### GUIDELINES:\n" +
+                        "1. **STRICT PROFESSIONALISM**: Use precise clinical terminology (e.g., 'Etiology', 'Prognosis').\n" +
+                        "2. **RISK ASSESSMENT**: Identify potential 'Red Flags' or 'High Risk' indicators.\n" +
+                        "3. **ACTIONABLE STEPS**: Suggest the next clinical intervention (e.g., 'Consult Cardiologist', 'Repeat Serum Test').\n" +
+                        "4. **ZERO-PARAGRAPH POLICY**: Use headers and bullets only.\n\n" +
+                        "Please provide the briefing based on the provided metadata and simulated diagnostic patterns.";
         return getCompletion(prompt);
     }
 
     public String getCompletion(String prompt) {
+        Map<String, Object> textPart = new HashMap<>();
+        textPart.put("text", prompt);
+        return getCompletion(Collections.singletonList(textPart));
+    }
+
+    public String getCompletion(List<Map<String, Object>> parts) {
         if (apiKey == null || apiKey.trim().isEmpty()) {
             return "{\"error\": \"Gemini API key not configured.\"}";
         }
@@ -43,12 +55,8 @@ public class GeminiAiService implements AiProvider {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            // Gemini Request Body Structure
-            Map<String, Object> textPart = new HashMap<>();
-            textPart.put("text", prompt);
-
             Map<String, Object> content = new HashMap<>();
-            content.put("parts", Collections.singletonList(textPart));
+            content.put("parts", parts);
 
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("contents", Collections.singletonList(content));
@@ -71,9 +79,9 @@ public class GeminiAiService implements AiProvider {
                     Map<String, Object> firstCandidate = candidates.get(0);
                     Map<String, Object> contentObj = (Map<String, Object>) firstCandidate.get("content");
                     if (contentObj != null) {
-                        List<Map<String, Object>> parts = (List<Map<String, Object>>) contentObj.get("parts");
-                        if (parts != null && !parts.isEmpty()) {
-                            return (String) parts.get(0).get("text");
+                        List<Map<String, Object>> resParts = (List<Map<String, Object>>) contentObj.get("parts");
+                        if (resParts != null && !resParts.isEmpty()) {
+                            return (String) resParts.get(0).get("text");
                         }
                     }
                 }

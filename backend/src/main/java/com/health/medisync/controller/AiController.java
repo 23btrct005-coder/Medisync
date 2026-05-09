@@ -43,7 +43,8 @@ public class AiController {
                 auth.getAuthorities().forEach(a -> roles.add(a.getAuthority()));
             }
 
-            String response = aiService.generateResponse(userMessage, history, patientEmail, roles, location);
+            String imageData = (String) request.get("imageData");
+            String response = aiService.generateResponse(userMessage, history, patientEmail, roles, location, imageData);
             return ResponseEntity.ok(Map.of("response", response));
         } catch (Exception e) {
             e.printStackTrace();

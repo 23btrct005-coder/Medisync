@@ -81,7 +81,11 @@ const Booking = () => {
 
   useEffect(() => {
     if (doctors.length > 0 && doctorNameParam) {
-        const doc = doctors.find(d => d.name.toLowerCase() === doctorNameParam.toLowerCase());
+        const cleanParam = doctorNameParam.toLowerCase().replace(/^dr\.\s*/, '').trim();
+        const doc = doctors.find(d => {
+            const cleanName = d.name.toLowerCase().replace(/^dr\.\s*/, '').trim();
+            return cleanName === cleanParam;
+        });
         if (doc) {
             setSelectedDoctor(doc);
             setBookingStep('details');

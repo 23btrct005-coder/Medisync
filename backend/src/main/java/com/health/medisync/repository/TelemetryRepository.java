@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface TelemetryRepository extends JpaRepository<Telemetry, Long> {
     List<Telemetry> findByPatientIdOrderByCreatedAtDesc(Long patientId);
+    List<Telemetry> findTop5ByPatientIdOrderByCreatedAtDesc(Long patientId);
 }

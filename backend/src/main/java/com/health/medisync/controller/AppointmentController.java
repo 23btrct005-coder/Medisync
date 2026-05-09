@@ -140,7 +140,14 @@ public class AppointmentController {
                 if (h.getServiceFees() == null || h.getServiceFees().isEmpty()) return false;
                 try {
                     Map<String, Object> fees = mapper.readValue(h.getServiceFees(), Map.class);
-                    Object price = fees.get(service);
+                    // Fuzzy match the fee key
+                    String matchedKey = fees.keySet().stream()
+                        .filter(k -> k.toLowerCase().contains(service.toLowerCase()) || service.toLowerCase().contains(k.toLowerCase()))
+                        .findFirst()
+                        .orElse(null);
+                    
+                    if (matchedKey == null) return false;
+                    Object price = fees.get(matchedKey);
                     if (price == null) return false;
                     double fee = Double.parseDouble(price.toString());
                     return fee > 0;
@@ -168,7 +175,13 @@ public class AppointmentController {
                 if (d.getServiceFees() == null || d.getServiceFees().isEmpty()) return false;
                 try {
                     Map<String, Object> fees = mapper.readValue(d.getServiceFees(), Map.class);
-                    Object price = fees.get(service);
+                    String matchedKey = fees.keySet().stream()
+                        .filter(k -> k.toLowerCase().contains(service.toLowerCase()) || service.toLowerCase().contains(k.toLowerCase()))
+                        .findFirst()
+                        .orElse(null);
+                    
+                    if (matchedKey == null) return false;
+                    Object price = fees.get(matchedKey);
                     if (price == null) return false;
                     double fee = Double.parseDouble(price.toString());
                     return fee > 0;

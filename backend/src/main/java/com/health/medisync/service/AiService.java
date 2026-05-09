@@ -18,11 +18,11 @@ public class AiService {
     private final PrescriptionRepository prescriptionRepository;
     private final AppointmentRepository appointmentRepository;
     private final DoctorService doctorService;
-    private final GroqAiService groqAiService;
+    private final GeminiAiService geminiAiService;
     private final UserRepository userRepository;
     private final PatientRepository patientRepository;
     private final ReportRepository reportRepository;
-    private final GeminiAiService geminiAiService;
+    private final TelemetryRepository telemetryRepository;
     
     private static final Map<String, String> sessionSummaries = new HashMap<>();
 
@@ -32,25 +32,25 @@ public class AiService {
                      PrescriptionRepository prescriptionRepository,
                      AppointmentRepository appointmentRepository,
                      @Lazy DoctorService doctorService,
-                     GroqAiService groqAiService,
                      UserRepository userRepository,
                      PatientRepository patientRepository,
                      ReportRepository reportRepository,
-                     GeminiAiService geminiAiService) {
+                     GeminiAiService geminiAiService,
+                     TelemetryRepository telemetryRepository) {
         this.doctorRepository = doctorRepository;
         this.hospitalRepository = hospitalRepository;
         this.aiQueryLogRepository = aiQueryLogRepository;
         this.prescriptionRepository = prescriptionRepository;
         this.appointmentRepository = appointmentRepository;
         this.doctorService = doctorService;
-        this.groqAiService = groqAiService;
         this.userRepository = userRepository;
         this.patientRepository = patientRepository;
         this.reportRepository = reportRepository;
         this.geminiAiService = geminiAiService;
+        this.telemetryRepository = telemetryRepository;
     }
 
-    public String generateResponse(String query, List<Map<String, String>> history, String userEmail, List<String> roles, String location) {
+    public String generateResponse(String query, List<Map<String, String>> history, String userEmail, List<String> roles, String location, String imageData) {
         String lowerQuery = query.toLowerCase().trim();
         boolean isDoctor = roles != null && roles.stream().anyMatch(r -> r.equalsIgnoreCase("ROLE_DOCTOR"));
         boolean isHospitalAdmin = roles != null && roles.stream().anyMatch(r -> r.equalsIgnoreCase("ROLE_HOSPITAL_ADMIN"));
@@ -113,6 +113,14 @@ public class AiService {
                     if (p.getAllergies() != null) clinicalHistory.append("Allergies: ").append(p.getAllergies()).append(". ");
                     if (p.getPastSurgeries() != null) clinicalHistory.append("History: ").append(p.getPastSurgeries()).append(". ");
                     if (p.getMedicalInfo() != null) clinicalHistory.append("Notes: ").append(p.getMedicalInfo()).append(". ");
+                    
+                    // --- ENHANCED LIFESTYLE & BIOMETRIC DATA ---
+                    if (p.getBloodGroup() != null) clinicalHistory.append("Blood Group: ").append(p.getBloodGroup()).append(". ");
+                    if (p.getWeight() != null) clinicalHistory.append("Weight: ").append(p.getWeight()).append(". ");
+                    if (p.getHeight() != null) clinicalHistory.append("Height: ").append(p.getHeight()).append(". ");
+                    if (p.getSmokingStatus() != null) clinicalHistory.append("Smoking: ").append(p.getSmokingStatus()).append(". ");
+                    if (p.getAlcoholStatus() != null) clinicalHistory.append("Alcohol: ").append(p.getAlcoholStatus()).append(". ");
+                    if (p.getFamilyMedicalHistory() != null) clinicalHistory.append("Family History: ").append(p.getFamilyMedicalHistory()).append(". ");
                 });
 
                 List<Prescription> activeMeds = prescriptionRepository.findByPatientEmailAndIsActiveTrue(userEmail);
@@ -129,6 +137,18 @@ public class AiService {
                     clinicalHistory.append("Today's Schedule: ")
                         .append(todayAppts.stream().map(a -> "- Dr. " + a.getDoctor().getName() + " at " + a.getTimeSlot()).collect(Collectors.joining("; ")))
                         .append(". ");
+                }
+                // --- INTEGRATE TELEMETRY (PROACTIVE SAFETY LOOP) ---
+                List<com.health.medisync.model.Telemetry> telemetry = telemetryRepository.findTop5ByPatientIdOrderByCreatedAtDesc(u.getId());
+                if (!telemetry.isEmpty()) {
+                    clinicalHistory.append("Recent Vitals: ");
+                    telemetry.forEach(t -> {
+                        clinicalHistory.append(String.format("[%s: HR %s, SpO2 %s%%] ", 
+                            t.getCreatedAt(), t.getHeartRate(), t.getSpo2()));
+                        if (t.getHeartRate() > 100 || t.getSpo2() < 95) {
+                            clinicalHistory.append("!! ANOMALY DETECTED !! ");
+                        }
+                    });
                 }
 
                 // --- INTEGRATE LATEST REPORT ---
@@ -211,25 +231,41 @@ public class AiService {
                 "1. **ZERO-PARAGRAPH POLICY**: Use only headers and bullet points. Never use block text.\n" +
                 "2. **CLINICAL GROUNDING**: Map every symptom to the specialized institutional resources provided below. Prioritize the patient's existing clinical history (e.g., if history shows Cardiac issues, always cross-reference).\n" +
                 "3. **PROFESSIONAL PERSONA**: Maintain a direct, clinical, and authoritative tone. Use medical terminology but keep it accessible.\n" +
-                "4. **SPATIAL TRIAGE**: If coordinates are available, only recommend facilities within the synchronized clinical node.\n" +
-                "5. **ACTION ORIENTATION**: Provide direct booking links [BOOK NOW]((/dashboard/booking?doctor=NAME)) or [BOOK NOW]((/dashboard/booking?facility=NAME&service=TYPE)) when a specific provider or institutional facility is relevant. Always prioritize the closest facility if coordinates are available.\n" +
-                "6. **FACILITY MAPPING**: For hospital-specific services (e.g., Ambulance, MRI, ICU), use the institutional booking link with the exact facility name from the registry.\n" +
+                "4. **SPATIAL TRIAGE**: If coordinates are available, only recommend facilities within the synchronized clinical node. Use the nearest facility for high-risk symptoms.\n" +
+                "5. **ACTION ORIENTATION**: Provide direct booking links [BOOK NOW](/dashboard/booking?doctor=NAME) or [BOOK NOW](/dashboard/booking?mode=service&service=TYPE) when a specific provider or institutional facility is relevant. This is CRITICAL for a 'Real World Working Model'.\n" +
+                "6. **FACILITY MAPPING**: For hospital-specific services, use the exact service names: [Ambulance Services, Blood Bank, ICU (Intensive Care Unit), MRI Scan, X-Ray, OPD (Outpatient), Dental Services]. Link format: `/dashboard/booking?mode=service&service=SERVICE_NAME`. Ensure the URL is complete.\n" +
                 "7. **PRIVACY PROTOCOL**: NEVER display raw coordinates (lat, long) or the phrase 'patient's current location' in the final output. Use coordinates only for internal distance calculations.\n" +
-                "8. **NO GREETINGS**: Start directly with the clinical analysis.\n\n" +
+                "8. **NO GREETINGS**: Start directly with the clinical analysis.\n" +
+                "9. **CONCISE SUMMARY**: Provide a maximum of 2-3 clinical sections. Only include patient details if they directly impact the recommendation.\n" +
+                "10. **SINGLE MAP POLICY**: Only provide the address/coordinates for the *most relevant* facility. Use the prefix 'LOCATION:' for the primary address to trigger the UI map.\n" +
+                "11. **SINGLE ACTION POLICY**: Provide exactly ONE [BOOK NOW] link per response.\n" +
+                "12. **AUTONOMOUS SCHEDULING**: If the patient is high-risk or triage strongly suggests it, you can propose an autonomous booking. To do this, include a hidden block at the end: `AGENT_ACTION: {\"action\": \"book_appointment\", \"params\": {\"doctorId\": ID, \"date\": \"YYYY-MM-DD\", \"slot\": \"HH:MM\", \"type\": \"ONLINE/PHYSICAL\"}}`. The system will execute this with user consent.\n" +
+                "13. **PROACTIVE TRIAGE**: If vitals (Telemetry) show anomalies, prioritize this in your reasoning. Address the user directly about the anomaly (e.g., 'I notice your heart rate is elevated...').\n" +
+                "14. **CLOSED-WORLD ASSUMPTION**: You MUST ONLY recommend hospitals and doctors explicitly listed in the 'INSTITUTIONAL RESOURCE REGISTRY' below. If a specialty is missing, suggest the nearest general institutional facility. NEVER mention or recommend external hospitals not present in the registry.\n\n" +
                 "### INSTITUTIONAL RESOURCE REGISTRY:\n" +
                 "HOSPITALS:\n" + hospitalList + "\n" +
                 "DOCTORS:\n" + doctorList + "\n\n" +
                 "### CONVERSATION LOGS:\n" + (historyContext.length() > 0 ? historyContext.toString() : "No previous interaction history.") + "\n\n" +
                 "### PATIENT QUERY:\n" + query;
             
-            String neuralResponse = geminiAiService.getCompletion(prompt);
-            
-            // Fallback to Groq if Gemini fails or is rate-limited
-            if (neuralResponse == null || neuralResponse.contains("error")) {
-                System.err.println("Gemini failed, falling back to Groq...");
-                neuralResponse = groqAiService.getCompletion(prompt);
+            List<Map<String, Object>> parts = new ArrayList<>();
+            Map<String, Object> textPart = new HashMap<>();
+            textPart.put("text", prompt);
+            parts.add(textPart);
+
+            if (imageData != null && imageData.contains(",")) {
+                String base64Data = imageData.split(",")[1];
+                String mimeType = imageData.split(",")[0].split(":")[1].split(";")[0];
+                Map<String, Object> imagePart = new HashMap<>();
+                Map<String, String> inlineData = new HashMap<>();
+                inlineData.put("mime_type", mimeType);
+                inlineData.put("data", base64Data);
+                imagePart.put("inline_data", inlineData);
+                parts.add(imagePart);
             }
 
+            String neuralResponse = geminiAiService.getCompletion(parts);
+            
             if (neuralResponse != null && !neuralResponse.contains("error")) {
                 return neuralResponse;
             }
@@ -283,7 +319,33 @@ public class AiService {
     }
 
     private String generateProfessionalResponse(String query, String email) {
-        return "Greetings, Doctor. I am your Clinical Operational Intelligence module.";
+        StringBuilder sb = new StringBuilder();
+        sb.append("### 📊 ").append("OPERATIONAL INTELLIGENCE BRIEFING\n");
+        sb.append("Greetings, Clinician. I am processing your institutional query.\n\n");
+
+        try {
+            long totalDoctors = doctorRepository.count();
+            long totalHospitals = hospitalRepository.count();
+            long pendingAppts = appointmentRepository.findAll().stream().filter(a -> a.getStatus() == null || a.getStatus().name().equalsIgnoreCase("PENDING")).count();
+
+            sb.append("#### 🏥 ").append("Current Network Status\n");
+            sb.append("- **Active Institutions:** ").append(totalHospitals).append("\n");
+            sb.append("- **Registered Physicians:** ").append(totalDoctors).append("\n");
+            sb.append("- **Pending Appointments:** ").append(pendingAppts).append("\n\n");
+
+            sb.append("#### ⚡ ").append("Operational Recommendations\n");
+            if (pendingAppts > 10) {
+                sb.append("- **Warning:** High appointment backlog detected. Consider optimizing throughput.\n");
+            } else {
+                sb.append("- **Status:** Clinical throughput is within optimal parameters.\n");
+            }
+            
+            sb.append("\nHow can I assist with your clinical operations today?");
+        } catch (Exception e) {
+            sb.append("- Error retrieving real-time telemetry: ").append(e.getMessage());
+        }
+
+        return sb.toString();
     }
 
     private String mapSymptomToSpecialty(String query) {

@@ -65,6 +65,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('ai_chat_history');
     delete api.defaults.headers.common['Authorization'];
     setUser(null);
   };
