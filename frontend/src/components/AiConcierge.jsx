@@ -313,6 +313,17 @@ const AiConcierge = () => {
 
                                 {/* Messages Scroll Area */}
                                 <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-8 chat-scrollbar">
+                                    {messages.length === 1 && (
+                                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                                            <div className="w-20 h-20 rounded-3xl bg-primary/5 flex items-center justify-center text-primary mb-6 animate-float">
+                                                <BrainCircuit size={40} />
+                                            </div>
+                                            <h3 className="text-lg font-black text-slate-900 tracking-tight">Clinical Intelligence Node</h3>
+                                            <p className="text-sm text-slate-400 mt-2 max-w-[280px] font-medium leading-relaxed">
+                                                Describe your symptoms or upload a report for professional clinical reasoning.
+                                            </p>
+                                        </div>
+                                    )}
 
                                     {messages.map((m, i) => (
                                         <motion.div 
@@ -358,10 +369,16 @@ const AiConcierge = () => {
                                                                             </div>
                                                                             {s.warning && <p className="text-xs font-bold text-red-700 leading-relaxed italic">{s.warning}</p>}
                                                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                                                                <button onClick={() => navigate('/dashboard/booking?service=Ambulance')} className="py-2.5 bg-red-600 text-white rounded-xl text-[10px] font-black uppercase hover:bg-red-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-red-200">
+                                                                                <button 
+                                                                                    onClick={() => navigate('/dashboard/booking?service=Ambulance')} 
+                                                                                    className="py-2.5 bg-red-600 text-white rounded-xl text-[10px] font-black uppercase hover:bg-red-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-red-200"
+                                                                                >
                                                                                     <HeartPulse size={14} /> Dispatch Ambulance
                                                                                 </button>
-                                                                                <button className="py-2.5 bg-white border border-red-200 text-red-600 rounded-xl text-[10px] font-black uppercase hover:bg-red-50 transition-all flex items-center justify-center gap-2">
+                                                                                <button 
+                                                                                    onClick={() => window.open(s.mapUrl || 'https://www.google.com/maps/search/hospital+near+me', '_blank')}
+                                                                                    className="py-2.5 bg-white border border-red-200 text-red-600 rounded-xl text-[10px] font-black uppercase hover:bg-red-50 transition-all flex items-center justify-center gap-2"
+                                                                                >
                                                                                     <MapPin size={14} /> Nearest Hospital
                                                                                 </button>
                                                                             </div>
@@ -439,7 +456,7 @@ const AiConcierge = () => {
                                             {m.role === 'ai' && (
                                                 <div className="flex gap-2 mt-2 px-1">
                                                     <button onClick={() => copyToClipboard(m.text)} className="p-2 text-slate-300 hover:text-slate-500 hover:bg-slate-50 rounded-lg transition-all"><Copy size={14}/></button>
-                                                    <button className="p-2 text-slate-300 hover:text-slate-500 hover:bg-slate-50 rounded-lg transition-all"><RotateCcw size={14}/></button>
+                                                    <button onClick={() => handleSend(messages[i-1]?.text)} className="p-2 text-slate-300 hover:text-slate-500 hover:bg-slate-50 rounded-lg transition-all"><RotateCcw size={14}/></button>
                                                 </div>
                                             )}
                                         </motion.div>
