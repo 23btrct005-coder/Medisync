@@ -206,6 +206,7 @@ const AiConcierge = () => {
         const suggestedDoctor = doctorMatch ? doctorMatch[1].trim() : null;
 
         // Map suggested department to predefined services
+        const SERVICES_LIST = [
             "Emergency & Trauma Care", "Ambulance Services", "ICU (Intensive Care Unit)", 
             "NICU (Neonatal ICU)", "Operation Theatre (Emergency)", "Casualty Department", 
             "24/7 Pharmacy", "Blood Bank", "Emergency CT Scan", "Emergency Lab Tests",
