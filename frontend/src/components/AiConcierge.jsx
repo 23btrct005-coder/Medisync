@@ -129,12 +129,10 @@ const AiConcierge = () => {
         const sections = {
             assessment: '',
             possibleConditions: '',
-            riskIndicators: '',
             severity: 'LOW',
-            specialist: '',
-            questions: [],
-            recommendations: [],
+            department: '',
             action: '',
+            questions: [],
             warning: '',
             other: ''
         };
@@ -153,24 +151,21 @@ const AiConcierge = () => {
             } else if (lowerL.includes('possible conditions')) {
                 currentSection = 'possibleConditions';
                 sections.possibleConditions += l.replace(/possible conditions:?/i, '').trim() + ' ';
-            } else if (lowerL.includes('risk indicators')) {
-                currentSection = 'riskIndicators';
-                sections.riskIndicators += l.replace(/risk indicators:?/i, '').trim() + ' ';
-            } else if (lowerL.includes('triage level')) {
+            } else if (lowerL.includes('risk level')) {
                 currentSection = 'severity';
-                const content = l.replace(/triage level:?/i, '').replace(/[\[\]:]/g, '').trim();
+                const content = l.replace(/risk level:?/i, '').replace(/[\[\]:]/g, '').trim();
                 if (content) sections.severity = content;
-            } else if (lowerL.includes('recommended specialist')) {
-                currentSection = 'specialist';
-                sections.specialist += l.replace(/recommended specialist:?/i, '').trim() + ' ';
+            } else if (lowerL.includes('recommended department')) {
+                currentSection = 'department';
+                sections.department += l.replace(/recommended department:?/i, '').trim() + ' ';
             } else if (lowerL.includes('suggested next steps')) {
                 currentSection = 'action';
                 sections.action += l.replace(/suggested next steps:?/i, '').trim() + ' ';
+            } else if (lowerL.includes('follow-up questions')) {
+                currentSection = 'questions';
             } else if (lowerL.includes('emergency warning')) {
                 currentSection = 'warning';
                 sections.warning += l.replace(/emergency warning:?/i, '').trim() + ' ';
-            } else if (lowerL.includes('follow-up questions')) {
-                currentSection = 'questions';
             } else {
                 if (currentSection === 'questions' && (l.startsWith('-') || l.startsWith('*') || /^\d+\./.test(l))) {
                     sections.questions.push(l.replace(/^[-*\d.]\s*/, ''));
@@ -178,10 +173,6 @@ const AiConcierge = () => {
                     sections.assessment += l + ' ';
                 } else if (currentSection === 'possibleConditions') {
                     sections.possibleConditions += l + ' ';
-                } else if (currentSection === 'riskIndicators') {
-                    sections.riskIndicators += l + ' ';
-                } else if (currentSection === 'specialist') {
-                    sections.specialist += l + ' ';
                 } else if (currentSection === 'action') {
                     sections.action += l + ' ';
                 } else if (currentSection === 'warning') {
@@ -368,55 +359,43 @@ const AiConcierge = () => {
                                                                         </div>
                                                                     )}
 
-                                                                        <div className="flex flex-col gap-4">
-                                                                            <div className="flex flex-col gap-2">
-                                                                                <div className="flex items-center gap-2 mb-1">
-                                                                                    <Activity size={14} className="text-primary" />
-                                                                                    <span className="text-[10px] font-black text-primary uppercase tracking-widest">Clinical Assessment</span>
-                                                                                </div>
-                                                                                <p className="text-[13px] md:text-sm font-medium text-slate-700 leading-relaxed">
-                                                                                    {s.assessment || s.other}
-                                                                                </p>
-                                                                            </div>
-
-                                                                            {s.possibleConditions && (
+                                                                            <div className="flex flex-col gap-4">
                                                                                 <div className="flex flex-col gap-2">
                                                                                     <div className="flex items-center gap-2 mb-1">
-                                                                                        <Search size={14} className="text-blue-500" />
-                                                                                        <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">Possible Conditions</span>
+                                                                                        <Activity size={14} className="text-primary" />
+                                                                                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">Clinical Assessment</span>
                                                                                     </div>
-                                                                                    <p className="text-[13px] md:text-sm font-medium text-slate-600 leading-relaxed">
-                                                                                        {s.possibleConditions}
+                                                                                    <p className="text-[13px] md:text-sm font-medium text-slate-700 leading-relaxed">
+                                                                                        {s.assessment || s.other}
                                                                                     </p>
                                                                                 </div>
-                                                                            )}
 
-                                                                            {s.riskIndicators && (
-                                                                                <div className="flex flex-col gap-2 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                                                                    <div className="flex items-center gap-2 mb-1">
-                                                                                        <AlertCircle size={14} className="text-amber-500" />
-                                                                                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Risk Indicators</span>
+                                                                                {s.possibleConditions && (
+                                                                                    <div className="flex flex-col gap-2 p-4 bg-blue-50/30 rounded-2xl border border-blue-100/50">
+                                                                                        <div className="flex items-center gap-2 mb-1">
+                                                                                            <Search size={14} className="text-blue-500" />
+                                                                                            <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">Possible Conditions</span>
+                                                                                        </div>
+                                                                                        <p className="text-xs font-bold text-slate-600 leading-relaxed">
+                                                                                            {s.possibleConditions}
+                                                                                        </p>
                                                                                     </div>
-                                                                                    <p className="text-xs font-bold text-slate-600 leading-relaxed">
-                                                                                        {s.riskIndicators}
-                                                                                    </p>
-                                                                                </div>
-                                                                            )}
-                                                                        </div>
-
-                                                                        {/* Clinical Grid */}
-                                                                        <div className="grid grid-cols-2 gap-3">
-                                                                            <div className={`p-4 rounded-2xl border ${ui.bg} ${ui.border} flex flex-col gap-1`}>
-                                                                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">TRIAGE STATUS</span>
-                                                                                <span className={`text-xs font-black ${ui.color}`}>{ui.label}</span>
+                                                                                )}
                                                                             </div>
-                                                                            {s.specialist && (
-                                                                                <div className="p-4 rounded-2xl border border-slate-50 bg-slate-50/50 flex flex-col gap-1">
-                                                                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">RECOMMENDED SPECIALIST</span>
-                                                                                    <span className="text-xs font-black text-slate-700 truncate">{s.specialist}</span>
+
+                                                                            {/* Clinical Grid */}
+                                                                            <div className="grid grid-cols-2 gap-3">
+                                                                                <div className={`p-4 rounded-2xl border ${ui.bg} ${ui.border} flex flex-col gap-1`}>
+                                                                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">RISK LEVEL</span>
+                                                                                    <span className={`text-xs font-black ${ui.color}`}>{ui.label}</span>
                                                                                 </div>
-                                                                            )}
-                                                                        </div>
+                                                                                {s.department && (
+                                                                                    <div className="p-4 rounded-2xl border border-slate-50 bg-slate-50/50 flex flex-col gap-1">
+                                                                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">RECOMMENDED DEPT</span>
+                                                                                        <span className="text-xs font-black text-slate-700 truncate">{s.department}</span>
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
 
                                                                     {/* Map Preview */}
                                                                     {s.mapUrl && (
