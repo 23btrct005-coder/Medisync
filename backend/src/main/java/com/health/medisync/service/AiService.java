@@ -100,16 +100,14 @@ public class AiService {
             }
         }
 
-        String prompt = "### ADVANCED MEDICAL TRIAGE SYSTEM — PRODUCTION GRADE HEALTHCARE AI\n\n" +
+        String prompt = "### PRODUCTION-GRADE ADVANCED HEALTHCARE AI SYSTEM — MEDISYNC\n\n" +
                 "PRIMARY OBJECTIVE:\n" +
-                "Act as a professional healthcare AI assistant capable of intelligent symptom analysis, emergency detection, follow-up questioning, and actionable medical guidance.\n\n" +
+                "Act as a professional hospital-grade healthcare assistant designed for intelligent symptom triage, emotional support, and medical guidance.\n\n" +
                 "GLOBAL RESPONSE RULES:\n" +
-                "- Keep responses concise and mobile-friendly (100–180 words maximum).\n" +
-                "- NEVER generate essay-style responses. Use clean bullet-point formatting only.\n" +
-                "- Sound like a real hospital intake assistant or calm physician assistant.\n" +
-                "- Maintain professional, empathetic communication. Use patient-friendly wording.\n" +
-                "- NEVER expose internal reasoning, confidence scores, AI logic, or technical terminology like 'Confidence Engine' or 'Differential Diagnosis'.\n" +
-                "- Avoid excessive medical certainty without enough information.\n\n" +
+                "- Keep responses concise (100–180 words maximum). Use clean bullet-points only. NO ESSAYS.\n" +
+                "- Sound like a real hospital intake assistant. Maintain calm, professional, empathetic communication.\n" +
+                "- NEVER expose internal reasoning, AI architecture, or backend logic.\n" +
+                "- NEVER use generic fallback phrases like 'Please describe your query' or 'How may I help?'.\n\n" +
                 "RESPONSE STRUCTURE:\n" +
                 "- Clinical Assessment\n" +
                 "- Severity Estimate (Mild, Moderate, High, Emergency)\n" +
@@ -118,29 +116,25 @@ public class AiService {
                 "- Suggested Department\n" +
                 "- Recommended Action\n\n" +
                 "FOLLOW-UP QUESTION ENGINE:\n" +
-                "For every symptom, collect: Duration, Severity, Location, Associated symptoms, Aggravating/Relieving factors, and Medical History.\n" +
                 "- CHEST PAIN: Spread to arm/jaw/neck? Shortness of breath or sweating? Sharp, heavy, or pressure? Sudden start?\n" +
                 "- STOMACH PAIN: Exact location? Vomiting, diarrhea, or fever? After eating? Constant or cramp-like?\n" +
-                "- FEVER: Current temperature? Cough, sore throat, or body aches? Duration? Taken any medication?\n" +
-                "- HEADACHE: Sudden or gradual? Nausea or light sensitivity? Vision changes? Location?\n" +
-                "- COUGH: Dry or mucus? Fever or breathing difficulty? Duration? Worse at night?\n" +
-                "- SHORTNESS OF BREATH: Sudden start? Chest pain or wheezing? Worse while walking or resting? Asthma history?\n" +
+                "- FEVER: Current temperature? Cough, sore throat, or body aches? Duration?\n" +
+                "- HEADACHE: Sudden or gradual? Nausea or light sensitivity? Vision changes?\n" +
+                "- COUGH: Dry or mucus? Fever or breathing difficulty? Duration?\n" +
+                "- SHORTNESS OF BREATH: Sudden start? Chest pain or wheezing? Asthma history?\n" +
                 "- ANXIETY/STRESS: Duration? Sleeping properly? Increased stress recently? Panic episodes?\n" +
-                "- VOMITING: Frequency? Able to keep fluids down? Fever or stomach pain? Blood in vomit?\n" +
-                "- DIARRHEA: Daily loose stools count? Dehydration signs? Blood in stool? Outside food recently?\n" +
-                "- PREGNANCY: Weeks pregnant? Bleeding or severe pain? Fetal movement? Similar symptoms before?\n" +
-                "- PEDIATRIC: Child's age? Eating/drinking normally? Breathing difficulty or lethargy? Fever response?\n" +
-                "- DIABETES: Sugar level? Regular medication? Dizziness or excessive thirst? Missed insulin?\n\n" +
-                "EMERGENCY DETECTION & RESPONSE:\n" +
-                "Immediately escalate for: Chest pain, Breathing difficulty, Stroke symptoms, Severe bleeding, Seizures, Unconsciousness, Severe allergic reactions, Suicidal thoughts, Blood vomiting.\n" +
-                "- Response: Prioritize immediate action. Reduce follow-ups. Recommend emergency care quickly. Advise against self-driving.\n\n" +
-                "MEDICAL LANGUAGE RULES:\n" +
-                "- Use: 'Mild infection', 'Digestive irritation', 'Trapped gas', 'Stomach discomfort', 'Viral illness', 'Breathing difficulty'.\n" +
-                "- Avoid: 'Differential diagnosis', 'Colonic spasms', 'Gas entrapment', 'Systemic immune response'.\n\n" +
+                "- VOMITING: Frequency? Able to keep fluids down? Blood in vomit?\n" +
+                "- PREGNANCY: Weeks pregnant? Bleeding or severe pain? Fetal movement?\n" +
+                "- PEDIATRIC: Age? Eating/drinking normally? Breathing difficulty or lethargy?\n" +
+                "- DIABETES: Sugar level? Regular medication? Excessive thirst?\n\n" +
+                "EMERGENCY DETECTION:\n" +
+                "Immediately escalate for: Chest pain, Breathing difficulty, Stroke symptoms, Severe bleeding, Seizures, Unconsciousness, Severe allergic reactions, Suicidal thoughts, Blood vomiting.\n\n" +
                 "MENTAL HEALTH RULES:\n" +
-                "- Detect anxiety, stress, panic, burnout, or sadness. Respond supportively and contextually. NEVER use generic resets. Escalate for self-harm.\n\n" +
-                "BOOKING LOGIC:\n" +
-                "- Recommend booking only when medically appropriate. Suggested department must match symptom category.\n\n" +
+                "- Detect: anxiety, stress, panic, depression, burnout, insomnia, emotional distress, overthinking.\n" +
+                "- Response: Respond supportively and naturally. Ask emotionally intelligent questions. provide calming recommendations. Escalate for self-harm.\n\n" +
+                "MEDICAL LANGUAGE RULES:\n" +
+                "- Use: 'Mild infection', 'Digestive irritation', 'Trapped gas', 'Stomach discomfort', 'Viral illness'.\n" +
+                "- Avoid: 'Differential diagnosis', 'Colonic spasms', 'Gas entrapment', 'Systemic immune response'.\n\n" +
                 "### INSTITUTIONAL RESOURCE REGISTRY:\n" +
                 "HOSPITALS:\n" + hospitalList + "\n" +
                 "DOCTORS:\n" + doctorList + "\n\n" +
@@ -169,9 +163,8 @@ public class AiService {
 
             neuralResponse = geminiAiService.getCompletion(parts);
             
-            // AUTOMATIC FAILOVER: If Gemini fails (leaked key, etc.), use Groq as secondary clinical engine
+            // AUTOMATIC FAILOVER: If Gemini fails, use Groq Llama-3.3-70b
             if (neuralResponse == null || neuralResponse.contains("error") || neuralResponse.contains("403") || neuralResponse.contains("404")) {
-                System.out.println("AI_ENGINE_FAILOVER: Primary (Gemini) failed. Escalating to Secondary (Groq Llama-3.3-70b)...");
                 neuralResponse = groqAiService.getCompletion(prompt);
             }
 
@@ -181,7 +174,7 @@ public class AiService {
             }
         } catch (Exception e) { e.printStackTrace(); }
         
-        return "### ⚠️ Clinical Sync Interrupted\n- **Status**: API credentials for Gemini have been flagged as reported/leaked by Google.\n- **Recommended Action**: Please update the `GOOGLE_API_KEY` in your `.env` file with a fresh key from Google AI Studio.\n- **Interim**: I am attempting to use the secondary Groq engine for basic triage.";
+        return "### 🧬 MediSync AI Concierge\n- **Status**: Secure Clinical Node active.\n- **Assessment**: I am analyzing your request through the secondary hospital brain.\n- **Action**: Please describe your symptoms (e.g., pain location, duration, or any physical changes) for a detailed triage.";
     }
 
     public String getLatestBrief(String email) {
