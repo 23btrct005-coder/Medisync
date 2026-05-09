@@ -315,8 +315,13 @@ const AiConcierge = () => {
                 .message-bubble-ai { background: #ffffff; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); }
                 .message-bubble-user { background: #0066FF; color: white; }
                 @media (max-width: 640px) {
-                    .portal-window { width: 100vw !important; height: 100vh !important; bottom: 0 !important; right: 0 !important; border-radius: 0 !important; }
+                    .portal-window { width: 100vw !important; height: 100dvh !important; bottom: 0 !important; right: 0 !important; border-radius: 0 !important; }
+                    .message-bubble-ai { padding: 1.25rem !important; border-radius: 20px !important; }
+                    .header-pill { display: none !important; }
+                    .mobile-hide { display: none !important; }
                 }
+                .glass-sidebar { background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(20px); }
+                .portal-window { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
             `}</style>
 
             <AnimatePresence>
@@ -418,22 +423,22 @@ const AiConcierge = () => {
                             {/* Main Chat Area */}
                             <div className="flex-1 flex flex-col relative bg-[#fcfdfe]">
                                 {/* Header */}
-                                <div className="px-4 py-4 md:px-8 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-[105] shadow-sm pt-[env(safe-area-inset-top,1.25rem)] pb-4 md:pb-5">
-                                    <div className="flex items-center gap-3">
+                                <div className="px-4 py-3 md:px-8 md:py-5 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-[105] shadow-sm pt-[env(safe-area-inset-top,12px)]">
+                                    <div className="flex items-center gap-2 md:gap-3">
                                         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors">
-                                            {isSidebarOpen ? <ChevronLeft size={22} /> : <Menu size={22} />}
+                                            {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
                                         </button>
                                         <div className="flex flex-col">
-                                            <div className="flex items-center gap-2">
-                                                <h2 className="font-bold text-slate-900 text-sm md:text-lg tracking-tight leading-tight">
+                                            <div className="flex items-center gap-1.5 md:gap-2">
+                                                <h2 className="font-bold text-slate-900 text-[13px] md:text-lg tracking-tight leading-tight">
                                                     MediSync Portal
                                                 </h2>
-                                                <span className="px-1.5 py-0.5 rounded-full bg-blue-600 text-white text-[8px] md:text-[9px] uppercase font-black tracking-widest shadow-sm shadow-blue-200">PRO v2.0</span>
+                                                <span className="header-pill px-1.5 py-0.5 rounded-full bg-blue-600 text-white text-[8px] md:text-[9px] uppercase font-black tracking-widest shadow-sm shadow-blue-200">PRO V2.0</span>
                                             </div>
-                                            <div className="flex items-center gap-1.5 mt-0.5">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-                                                <p className="text-[9px] md:text-[11px] text-slate-400 font-bold uppercase tracking-[0.15em]">
-                                                    Node: <span className="text-emerald-600">Active Registry Sync</span>
+                                            <div className="flex items-center gap-1 mt-0.5">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                                                <p className="text-[8px] md:text-[11px] text-slate-400 font-bold uppercase tracking-wider">
+                                                    NODE: <span className="text-emerald-600">ACTIVE REGISTRY SYNC</span>
                                                 </p>
                                             </div>
                                         </div>
@@ -445,18 +450,18 @@ const AiConcierge = () => {
                                             </button>
                                         )}
                                         <button onClick={() => setIsOpen(false)} className="p-2 text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-xl transition-all">
-                                            <X size={24} />
+                                            <X size={22} />
                                         </button>
                                     </div>
                                 </div>
 
                                 {/* Disclaimer Bar */}
-                                <div className="bg-amber-50/95 backdrop-blur-md px-4 py-2.5 md:py-3 border-b border-amber-100 flex items-center justify-center gap-2.5 text-[9px] md:text-[11px] font-bold text-amber-800 sticky top-[72px] md:top-[90px] z-[104] shadow-sm">
-                                    <AlertCircle size={14} className="shrink-0 text-amber-600" />
-                                    <span className="uppercase tracking-[0.1em] text-center leading-tight">
-                                        Institutional Registry Active. <span className="hidden xs:inline">Consult a physician for diagnosis.</span>
-                                    </span>
-                                </div>
+                                <div className="bg-amber-50/95 backdrop-blur-md px-4 py-2 md:py-3 border-b border-amber-100 flex items-center justify-center gap-2 text-[8px] md:text-[11px] font-bold text-amber-800 sticky top-[64px] md:top-[90px] z-[104] shadow-sm">
+                                     <AlertCircle size={12} className="shrink-0 text-amber-600" />
+                                     <span className="uppercase tracking-widest text-center leading-tight">
+                                         Institutional Registry Active. <span className="hidden xs:inline">Consult a physician.</span>
+                                     </span>
+                                 </div>
 
                                 {/* Messages Area */}
                                 <div 
@@ -494,35 +499,35 @@ const AiConcierge = () => {
                                                             <Stethoscope size={14} className="text-blue-500" />
                                                             <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-blue-600">Clinical Assessment</span>
                                                         </div>
-                                                        <p className="text-[12px] md:text-sm text-slate-700 leading-relaxed font-medium">
+                                                        <p className="text-[13px] md:text-sm text-slate-700 leading-relaxed font-medium">
                                                             {segments.assessment || segments.other}
                                                         </p>
                                                     </div>
 
                                                     {/* Severity & Department Grid */}
-                                                    <div className="grid grid-cols-1 xs:grid-cols-2 gap-2.5 md:gap-4">
-                                                        <div className={`p-3 md:p-4 rounded-xl md:rounded-2xl border flex items-center justify-between ${sevStyles.bg} ${sevStyles.border} transition-all hover:shadow-sm`}>
-                                                            <div className="flex-1 min-w-0">
-                                                                <span className="text-[8px] font-black text-slate-400 uppercase block mb-0.5">Triage</span>
-                                                                <div className="flex items-center gap-1.5 overflow-hidden">
-                                                                    {sevStyles.icon}
-                                                                    <span className={`text-[11px] md:text-sm font-black truncate ${sevStyles.text}`}>{segments.severity.toUpperCase()}</span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        
-                                                        {segments.department && (
-                                                            <div className="p-3 md:p-4 rounded-xl md:rounded-2xl border border-slate-100 bg-white flex items-center gap-3 transition-all hover:shadow-sm">
-                                                                <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 shrink-0">
-                                                                    <MapPin size={14} />
-                                                                </div>
-                                                                <div className="flex-1 min-w-0">
-                                                                    <span className="text-[8px] font-black text-slate-400 uppercase block mb-0.5">Department</span>
-                                                                    <span className="text-[10px] md:text-xs font-bold text-slate-700 truncate block">{segments.department}</span>
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                    </div>
+                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
+                                                         <div className={`p-3 md:p-4 rounded-xl md:rounded-2xl border flex items-center justify-between ${sevStyles.bg} ${sevStyles.border} transition-all hover:shadow-sm`}>
+                                                             <div className="flex-1 min-w-0">
+                                                                 <span className="text-[7px] md:text-[8px] font-black text-slate-400 uppercase block mb-0.5 tracking-tighter">Triage Level</span>
+                                                                 <div className="flex items-center gap-1.5 overflow-hidden">
+                                                                     {sevStyles.icon}
+                                                                     <span className={`text-[10px] md:text-sm font-black truncate ${sevStyles.text}`}>{segments.severity.toUpperCase()}</span>
+                                                                 </div>
+                                                             </div>
+                                                         </div>
+                                                         
+                                                         {segments.department && (
+                                                             <div className="p-3 md:p-4 rounded-xl md:rounded-2xl border border-slate-100 bg-white flex items-center gap-3 transition-all hover:shadow-sm">
+                                                                 <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 shrink-0">
+                                                                     <MapPin size={14} />
+                                                                 </div>
+                                                                 <div className="flex-1 min-w-0">
+                                                                     <span className="text-[7px] md:text-[8px] font-black text-slate-400 uppercase block mb-0.5 tracking-tighter">Department</span>
+                                                                     <span className="text-[10px] md:text-xs font-bold text-slate-700 truncate block">{segments.department}</span>
+                                                                 </div>
+                                                             </div>
+                                                         )}
+                                                     </div>
 
                                                     {/* Follow-up / Recommendations */}
                                                     {segments.recommendations.length > 0 && (
@@ -551,16 +556,16 @@ const AiConcierge = () => {
                                                                     <MapPin size={20} />
                                                                 </div>
                                                             </div>
-                                                            <div className="p-4 bg-white flex items-center justify-between">
-                                                                <div className="flex-1">
-                                                                    <h4 className="text-xs font-black text-slate-800 uppercase tracking-tight truncate">{segments.suggestedHospital || "Recommended Facility"}</h4>
-                                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Clinical Navigation Ready</p>
+                                                            <div className="p-3 bg-white flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+                                                                <div className="flex-1 min-w-0">
+                                                                    <h4 className="text-[10px] md:text-xs font-black text-slate-800 uppercase tracking-tight break-words">{segments.suggestedHospital || "Recommended Facility"}</h4>
+                                                                    <p className="text-[8px] md:text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Clinical Navigation Ready</p>
                                                                 </div>
                                                                 <a 
                                                                     href={segments.mapUrl} 
                                                                     target="_blank" 
                                                                     rel="noopener noreferrer"
-                                                                    className="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                                                                    className="w-full md:w-auto px-4 py-2.5 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all shadow-sm text-center"
                                                                 >
                                                                     Navigate
                                                                 </a>
@@ -625,8 +630,8 @@ const AiConcierge = () => {
                                 </div>
 
                                 {/* Input Area */}
-                                <div className="p-4 md:p-8 bg-white border-t border-slate-100 sticky bottom-0 z-[102]">
-                                    <div className="max-w-[800px] mx-auto relative flex items-center bg-slate-50 rounded-[22px] md:rounded-[28px] border border-slate-200 p-1.5 transition-all focus-within:border-blue-500/30 focus-within:bg-white focus-within:shadow-lg">
+                                <div className="p-4 md:p-8 bg-white border-t border-slate-100 sticky bottom-0 z-[102] pb-[env(safe-area-inset-bottom,16px)]">
+                                    <div className="max-w-[800px] mx-auto relative flex items-center bg-slate-50 rounded-[20px] md:rounded-[28px] border border-slate-200 p-1 md:p-1.5 transition-all focus-within:border-blue-500/30 focus-within:bg-white focus-within:shadow-xl">
                                         <div className="flex gap-0.5 md:gap-1 pl-1">
                                             <label className="p-2 text-slate-400 hover:text-blue-600 cursor-pointer">
                                                 <Paperclip size={18} />
