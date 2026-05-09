@@ -167,7 +167,10 @@ const AiConcierge = () => {
 
         if (!sections.assessment.trim() && sections.other.trim()) sections.assessment = sections.other;
         
-        return sections;
+        const mapMatch = text.match(/https:\/\/www\.google\.com\/maps\/[^ \n)\]]*/);
+        const mapUrl = mapMatch ? mapMatch[0] : null;
+
+        return { ...sections, mapUrl };
     };
 
     if (!user) return null;
@@ -259,6 +262,41 @@ const AiConcierge = () => {
                                                                     <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Recommendation</span>
                                                                     <p className="text-xs font-black text-indigo-600 mt-0.5">{s.specialist}</p>
                                                                 </div>
+                                                            )}
+
+                                                            {(s.severity.includes('CRITICAL') || s.severity.includes('HIGH')) && (
+                                                                <div className="flex flex-col gap-2">
+                                                                    <button 
+                                                                        onClick={() => {
+                                                                            toast.success('Deploying Ambulance Dispatch Node');
+                                                                            navigate('/dashboard/booking?service=Ambulance');
+                                                                        }}
+                                                                        className="w-full py-3 bg-red-500 text-white rounded-xl text-[10px] font-black uppercase hover:bg-red-600 transition-all flex items-center justify-center gap-2"
+                                                                    >
+                                                                        <HeartPulse size={14} /> Dispatch Ambulance
+                                                                    </button>
+                                                                    <button 
+                                                                        onClick={() => {
+                                                                            toast.success('Launching Institutional Navigation');
+                                                                            window.open(s.mapUrl || 'https://www.google.com/maps/search/hospital+near+me', '_blank');
+                                                                        }}
+                                                                        className="w-full py-3 bg-white border border-slate-200 text-slate-700 rounded-xl text-[10px] font-black uppercase hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
+                                                                    >
+                                                                        <MapPin size={14} /> Nearest Hospital
+                                                                    </button>
+                                                                </div>
+                                                            )}
+
+                                                            {(s.action && !s.action.toLowerCase().includes('none') && !s.action.toLowerCase().includes('n/a')) && (
+                                                                <button 
+                                                                    onClick={() => {
+                                                                        toast.success('Navigating to Clinical Booking Node');
+                                                                        navigate('/dashboard/booking');
+                                                                    }}
+                                                                    className="w-full py-3 bg-indigo-500 text-white rounded-xl text-[10px] font-black uppercase hover:bg-indigo-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-100"
+                                                                >
+                                                                    Secure Clinical Booking <ChevronRight size={14} />
+                                                                </button>
                                                             )}
                                                             {!s.assessment && !s.severity && <p>{m.text}</p>}
                                                         </>
