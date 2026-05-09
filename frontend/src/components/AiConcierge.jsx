@@ -386,6 +386,37 @@ const AiConcierge = () => {
                                             </motion.div>
                                         )}
 
+                                        {/* Embedded Maps Integration */}
+                                        {(m.text.includes('google.com/maps') || segments.action.includes('google.com/maps')) && (
+                                            <motion.div 
+                                                initial={{ opacity: 0, scale: 0.95 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                className="ai-card overflow-hidden p-0 border-none shadow-xl"
+                                            >
+                                                <div className="bg-slate-50 px-4 py-2 border-b border-slate-100 flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <MapPin size={14} className="text-[#0066FF]" />
+                                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Live Hospital Location</span>
+                                                    </div>
+                                                    <div className="flex gap-1">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-red-400"></div>
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
+                                                    </div>
+                                                </div>
+                                                <iframe
+                                                    width="100%"
+                                                    height="240"
+                                                    style={{ border: 0 }}
+                                                    loading="lazy"
+                                                    allowFullScreen
+                                                    src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyDKFDakzgMgcHol8PQijByDzFuyRty91VA&q=${encodeURIComponent(
+                                                        (m.text.match(/query=([^&]+)/) || segments.action.match(/query=([^&]+)/) || [null, 'Hospital'])[1]?.replace(/\+/g, ' ') || 'Hospital'
+                                                    )}`}
+                                                ></iframe>
+                                            </motion.div>
+                                        )}
+
                                         {/* Actionable CTA */}
                                         {segments.action && (
                                             <motion.div 
@@ -398,7 +429,9 @@ const AiConcierge = () => {
                                                     <Calendar size={20} className="opacity-80" />
                                                     <span className="text-[11px] font-black uppercase tracking-[2px]">Recommended Action</span>
                                                 </div>
-                                                <p className="text-sm font-semibold mb-5 leading-relaxed">{segments.action}</p>
+                                                <p className="text-sm font-semibold mb-5 leading-relaxed">
+                                                    {segments.action.split('http')[0].trim()}
+                                                </p>
                                                 <button 
                                                     onClick={() => navigate('/booking')}
                                                     className="w-full bg-white text-[#0066FF] py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors shadow-lg"
