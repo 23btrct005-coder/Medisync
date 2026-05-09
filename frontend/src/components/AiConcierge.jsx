@@ -416,37 +416,39 @@ const AiConcierge = () => {
                             {/* Main Chat Area */}
                             <div className="flex-1 flex flex-col relative bg-[#fcfdfe]">
                                 {/* Header */}
-                                <div className="px-4 py-4 md:px-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-[102] shadow-sm">
+                                <div className="px-4 py-4 md:px-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-[103] shadow-sm pt-[env(safe-area-inset-top,1rem)]">
                                     <div className="flex items-center gap-3">
-                                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-500">
+                                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors">
                                             {isSidebarOpen ? <ChevronLeft size={20} /> : <Menu size={20} />}
                                         </button>
                                         <div className="flex flex-col">
                                             <h2 className="font-bold text-slate-900 text-sm md:text-base tracking-tight leading-tight flex items-center gap-2">
-                                                MediSync Portal <span className="px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-600 text-[9px] uppercase font-black">v2.0</span>
+                                                MediSync Portal <span className="hidden xs:inline-block px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-600 text-[9px] uppercase font-black">v2.0</span>
                                             </h2>
-                                            <p className="text-[9px] md:text-[10px] text-slate-400 font-bold flex items-center gap-1.5 uppercase tracking-widest mt-0.5">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                                                Clinical Online
-                                            </p>
+                                            <div className="flex items-center gap-1.5 mt-0.5">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                                                <p className="text-[9px] md:text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                                    Clinical AI Node Online
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-1 md:gap-2">
+                                    <div className="flex items-center gap-1">
                                         {!isMobile && (
-                                            <button onClick={() => setIsFullscreen(!isFullscreen)} className="p-2 text-slate-400 hover:bg-slate-100 rounded-xl">
+                                            <button onClick={() => setIsFullscreen(!isFullscreen)} className="p-2 text-slate-400 hover:bg-slate-100 rounded-xl transition-all">
                                                 {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
                                             </button>
                                         )}
-                                        <button onClick={() => setIsOpen(false)} className="p-2 text-slate-400 hover:bg-slate-100 rounded-xl">
-                                            <X size={20} />
+                                        <button onClick={() => setIsOpen(false)} className="p-2 text-slate-400 hover:bg-slate-100 rounded-xl transition-all">
+                                            <X size={22} />
                                         </button>
                                     </div>
                                 </div>
 
                                 {/* Disclaimer Bar */}
-                                <div className="bg-amber-50 px-6 py-2 border-b border-amber-100 flex items-center justify-center gap-2 text-[10px] font-bold text-amber-700">
-                                    <AlertCircle size={12} />
-                                    This is not medical advice. Consult a doctor for diagnosis.
+                                <div className="bg-amber-50/80 backdrop-blur-sm px-4 py-2 border-b border-amber-100 flex items-center justify-center gap-2 text-[9px] md:text-[10px] font-bold text-amber-700 sticky top-0 z-[102]">
+                                    <AlertCircle size={12} className="shrink-0" />
+                                    <span className="uppercase tracking-wider text-center leading-tight">Clinical Assessment Only. Consult a doctor for diagnosis.</span>
                                 </div>
 
                                 {/* Messages Area */}
@@ -478,38 +480,38 @@ const AiConcierge = () => {
                                                     <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Assistant</span>
                                                 </div>
 
-                                                <div className="message-bubble-ai p-5 md:p-8 w-full max-w-[95%] md:max-w-[90%] rounded-[24px] md:rounded-[28px] rounded-tl-none flex flex-col gap-5 md:gap-6">
+                                                <div className="message-bubble-ai p-4 md:p-8 w-full max-w-full md:max-w-[90%] rounded-[20px] md:rounded-[28px] rounded-tl-none flex flex-col gap-4 md:gap-6 border border-slate-100 shadow-sm">
                                                     {/* Assessment */}
-                                                    <div className="flex flex-col gap-2">
-                                                        <div className="flex items-center gap-2">
+                                                    <div className="flex flex-col gap-1.5 md:gap-2">
+                                                        <div className="flex items-center gap-1.5">
                                                             <Stethoscope size={14} className="text-blue-500" />
-                                                            <span className="text-[10px] font-black uppercase tracking-widest text-blue-600">Clinical Assessment</span>
+                                                            <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-blue-600">Clinical Assessment</span>
                                                         </div>
-                                                        <p className="text-xs md:text-sm text-slate-700 leading-relaxed font-medium">
+                                                        <p className="text-[12px] md:text-sm text-slate-700 leading-relaxed font-medium">
                                                             {segments.assessment || segments.other}
                                                         </p>
                                                     </div>
 
                                                     {/* Severity & Department Grid */}
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                                                        <div className={`p-3 md:p-4 rounded-xl md:rounded-2xl border flex items-center justify-between ${sevStyles.bg} ${sevStyles.border}`}>
-                                                            <div>
+                                                    <div className="grid grid-cols-1 xs:grid-cols-2 gap-2.5 md:gap-4">
+                                                        <div className={`p-3 md:p-4 rounded-xl md:rounded-2xl border flex items-center justify-between ${sevStyles.bg} ${sevStyles.border} transition-all hover:shadow-sm`}>
+                                                            <div className="flex-1 min-w-0">
                                                                 <span className="text-[8px] font-black text-slate-400 uppercase block mb-0.5">Triage</span>
-                                                                <div className="flex items-center gap-1.5">
+                                                                <div className="flex items-center gap-1.5 overflow-hidden">
                                                                     {sevStyles.icon}
-                                                                    <span className={`text-[11px] md:text-sm font-black ${sevStyles.text}`}>{segments.severity.toUpperCase()}</span>
+                                                                    <span className={`text-[11px] md:text-sm font-black truncate ${sevStyles.text}`}>{segments.severity.toUpperCase()}</span>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                         
                                                         {segments.department && (
-                                                            <div className="p-3 md:p-4 rounded-xl md:rounded-2xl border border-slate-100 bg-slate-50/50 flex items-center gap-3">
-                                                                <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 shadow-sm">
+                                                            <div className="p-3 md:p-4 rounded-xl md:rounded-2xl border border-slate-100 bg-white flex items-center gap-3 transition-all hover:shadow-sm">
+                                                                <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 shrink-0">
                                                                     <MapPin size={14} />
                                                                 </div>
-                                                                <div>
+                                                                <div className="flex-1 min-w-0">
                                                                     <span className="text-[8px] font-black text-slate-400 uppercase block mb-0.5">Department</span>
-                                                                    <span className="text-[10px] md:text-xs font-bold text-slate-700 truncate block max-w-[120px]">{segments.department}</span>
+                                                                    <span className="text-[10px] md:text-xs font-bold text-slate-700 truncate block">{segments.department}</span>
                                                                 </div>
                                                             </div>
                                                         )}
