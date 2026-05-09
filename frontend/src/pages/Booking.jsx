@@ -93,7 +93,7 @@ const Booking = () => {
     if (modeParam === 'service' && serviceParam) {
         setBookingMode('service');
         setSelectedService(serviceParam);
-        setBookingStep('details');
+        setBookingStep('list');
     }
   }, [modeParam, serviceParam]);
 
