@@ -53,7 +53,7 @@ public class AiService {
         this.telemetryRepository = telemetryRepository;
     }
 
-    public String generateResponse(String query, List<Map<String, String>> history, String userEmail, List<String> roles, String location, String imageData) {
+    public String generateResponse(String query, List<Map<String, Object>> history, String userEmail, List<String> roles, String location, String imageData) {
         String currentTime = java.time.LocalTime.now().toString();
         String currentDate = java.time.LocalDate.now().toString();
         final StringBuilder clinicalHistory = new StringBuilder(userEmail != null ? "" : "None");
@@ -95,8 +95,10 @@ public class AiService {
 
         StringBuilder historyContext = new StringBuilder();
         if (history != null) {
-            for (Map<String, String> msg : history) {
-                historyContext.append(msg.get("role").toUpperCase()).append(": ").append(msg.get("text")).append("\n");
+            for (Map<String, Object> msg : history) {
+                String role = msg.get("role") != null ? msg.get("role").toString() : "UNKNOWN";
+                String text = msg.get("text") != null ? msg.get("text").toString() : "";
+                historyContext.append(role.toUpperCase()).append(": ").append(text).append("\n");
             }
         }
 

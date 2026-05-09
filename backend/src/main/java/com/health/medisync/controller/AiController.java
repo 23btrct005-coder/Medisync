@@ -29,7 +29,11 @@ public class AiController {
         try {
             String userMessage = (String) request.get("message");
             String location = (String) request.get("location");
-            java.util.List<Map<String, String>> history = (java.util.List<Map<String, String>>) request.get("history");
+            Object historyObj = request.get("history");
+            java.util.List<Map<String, Object>> history = null;
+            if (historyObj instanceof java.util.List) {
+                history = (java.util.List<Map<String, Object>>) historyObj;
+            }
 
             if (userMessage == null || userMessage.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Message cannot be empty"));

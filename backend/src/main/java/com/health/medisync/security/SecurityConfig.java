@@ -49,7 +49,7 @@ public class SecurityConfig {
                 .permissionsPolicy(permissions -> permissions.policy("geolocation=(self), camera=(self), microphone=(self)"))
             )
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/ws/**", "/api/hospital/**", "/api/appointments/**", "/api/chat/**").permitAll()
+                .requestMatchers("/api/auth/**", "/ws/**", "/api/hospital/**", "/api/appointments/**", "/api/chat/**", "/api/ai/**").permitAll()
                 // Broadly permit all non-API routes so the frontend can handle routing
                 .requestMatchers(request -> !request.getServletPath().startsWith("/api")).permitAll()
                 .anyRequest().authenticated()
