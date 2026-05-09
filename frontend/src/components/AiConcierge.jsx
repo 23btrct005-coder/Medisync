@@ -274,12 +274,8 @@ const AiConcierge = () => {
                 )}
 
                 {isOpen && (
-                    <motion.div 
-                        layoutId="ai-concierge"
-                        className={`fixed bottom-0 right-0 sm:bottom-8 sm:right-8 w-full sm:w-[440px] h-full sm:h-[700px] bg-white sm:rounded-[32px] shadow-2xl flex flex-col overflow-hidden z-[2500] ${isFullscreen ? '!w-screen !h-screen !bottom-0 !right-0 !rounded-0' : ''}`}
-                        initial={{ opacity: 0, y: 50, scale: 0.95 }}
-                        animate={{ 
                     <motion.div
+                        layoutId="ai-concierge"
                         initial={isFullscreen ? { opacity: 0 } : { opacity: 0, y: 20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
