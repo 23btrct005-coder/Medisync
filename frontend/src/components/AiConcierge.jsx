@@ -277,33 +277,31 @@ const AiConcierge = () => {
                             {/* Main Interaction Panel */}
                             <div className="flex-1 flex flex-col bg-[#fcfdfe]">
                                 {/* Futuristic Header */}
-                                <div className="px-6 py-4 md:px-8 border-b border-slate-50 flex items-center justify-between bg-white/90 backdrop-blur-md sticky top-0 z-[100] safe-top">
+                                <div className="px-4 py-3 md:px-8 border-b border-slate-50 flex items-center justify-between bg-white/95 backdrop-blur-md sticky top-0 z-[100] safe-top shadow-sm">
                                     <style>{`
                                         .safe-top {
-                                            padding-top: max(1rem, env(safe-area-inset-top));
+                                            padding-top: max(0.75rem, env(safe-area-inset-top));
                                         }
                                     `}</style>
-                                    <div className="flex items-center gap-4">
-                                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2.5 hover:bg-slate-50 rounded-xl text-slate-400 transition-colors">
+                                    <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
+                                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="shrink-0 p-2 hover:bg-slate-50 rounded-xl text-slate-400 transition-colors">
                                             <Menu size={20} />
                                         </button>
-                                        <div className="flex flex-col">
+                                        <div className="flex flex-col min-w-0">
                                             <div className="flex items-center gap-2">
-                                                <h2 className="font-bold text-slate-900 text-sm md:text-lg tracking-tight truncate max-w-[140px] md:max-w-none">MediSync AI Portal</h2>
-                                                <span className="px-1.5 py-0.5 rounded-md bg-emerald-500 text-white text-[8px] font-black uppercase tracking-widest hidden sm:inline-block">Live Node</span>
+                                                <h2 className="font-extrabold text-slate-900 text-[13px] md:text-lg tracking-tight truncate">MediSync AI Portal</h2>
+                                                <div className="hidden xs:block shrink-0 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
                                             </div>
-                                            <div className="flex items-center gap-1.5 mt-0.5">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">SECURE CLINICAL SESSION</p>
-                                            </div>
+                                            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest truncate">Secure Clinical Node</p>
                                         </div>
                                     </div>
                                     
-                                    <div className="flex items-center gap-1 md:gap-2">
-                                        <button onClick={() => setLanguage(prev => prev === 'English' ? 'Hindi' : 'English')} className="p-2 text-slate-400 hover:bg-slate-50 rounded-xl transition-all flex items-center gap-1.5">
+                                    <div className="flex items-center gap-1 md:gap-3 shrink-0 ml-2">
+                                        <button onClick={() => setLanguage(prev => prev === 'English' ? 'Hindi' : 'English')} className="p-2 text-slate-400 hover:bg-slate-50 rounded-xl transition-all flex items-center gap-1.5 border border-transparent hover:border-slate-100">
                                             <Languages size={18} />
-                                            <span className="text-[10px] font-black uppercase hidden lg:inline">{language}</span>
+                                            <span className="text-[10px] font-black uppercase hidden sm:inline">{language}</span>
                                         </button>
+                                        <div className="w-px h-6 bg-slate-100 mx-1 hidden xs:block"></div>
                                         <button onClick={() => setIsOpen(false)} className="p-2 text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-xl transition-all">
                                             <X size={20} />
                                         </button>
@@ -311,7 +309,16 @@ const AiConcierge = () => {
                                 </div>
 
                                 {/* Chat Window */}
-                                <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6 md:px-10 flex flex-col gap-8 chat-scrollbar no-scrollbar scroll-smooth">
+                                <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 md:px-10 md:py-8 flex flex-col gap-6 md:gap-10 chat-scrollbar no-scrollbar scroll-smooth">
+                                    {messages.length === 0 && (
+                                        <div className="flex-1 flex flex-col items-center justify-center text-center p-8 opacity-40">
+                                            <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4">
+                                                <Activity size={32} className="text-slate-300" />
+                                            </div>
+                                            <h3 className="text-lg font-black text-slate-400 uppercase tracking-widest">Clinical Session Active</h3>
+                                            <p className="text-sm font-medium text-slate-400 mt-2">State your symptoms to begin triage.</p>
+                                        </div>
+                                    )}
                                     {messages.map((m, i) => (
                                         <motion.div 
                                             initial={{ opacity: 0, y: 10 }}
@@ -405,13 +412,13 @@ const AiConcierge = () => {
                                                                             </div>
 
                                                                             {/* Clinical Grid */}
-                                                                            <div className="grid grid-cols-2 gap-3">
-                                                                                <div className={`p-4 rounded-2xl border ${ui.bg} ${ui.border} flex flex-col gap-1`}>
+                                                                            <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 mt-2">
+                                                                                <div className={`p-4 rounded-2xl border ${ui.bg} ${ui.border} flex flex-col gap-1 shadow-sm`}>
                                                                                     <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">TRIAGE LEVEL</span>
                                                                                     <span className={`text-xs font-black ${ui.color}`}>{ui.label}</span>
                                                                                 </div>
                                                                                 {s.specialist && (
-                                                                                    <div className="p-4 rounded-2xl border border-slate-50 bg-slate-50/50 flex flex-col gap-1">
+                                                                                    <div className="p-4 rounded-2xl border border-slate-100 bg-slate-50/30 flex flex-col gap-1 shadow-sm">
                                                                                         <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">RECOMMENDED SPECIALIST</span>
                                                                                         <span className="text-xs font-black text-slate-700 truncate">{s.specialist}</span>
                                                                                     </div>
@@ -474,14 +481,14 @@ const AiConcierge = () => {
                                 </div>
 
                                 {/* Smart Input Node */}
-                                <div className="p-4 md:p-8 bg-white border-t border-slate-50 sticky bottom-0 z-[101] safe-bottom">
+                                <div className="p-3 md:p-8 bg-white border-t border-slate-50 sticky bottom-0 z-[101] safe-bottom shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)]">
                                     <style>{`
                                         .safe-bottom {
-                                            padding-bottom: max(1rem, env(safe-area-inset-bottom));
+                                            padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
                                         }
                                     `}</style>
                                     {/* Action Chips */}
-                                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-4 mb-2">
+                                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-3 mb-1">
                                         {["Book Ambulance", "Find Hospital", "Talk to Doctor", "Check Symptoms", "Emergency Contact"].map(chip => (
                                             <button key={chip} onClick={() => handleSend(chip)} className="shrink-0 px-4 py-2 bg-slate-50 border border-slate-100 rounded-full text-[10px] font-bold text-slate-600 hover:border-primary hover:text-primary transition-all shadow-sm">
                                                 {chip}
@@ -489,8 +496,8 @@ const AiConcierge = () => {
                                         ))}
                                     </div>
 
-                                    <div className="max-w-[800px] mx-auto relative flex items-center bg-slate-50 border border-slate-200 rounded-2xl md:rounded-[24px] p-1.5 md:p-2 focus-within:border-primary/30 focus-within:bg-white focus-within:shadow-2xl focus-within:shadow-primary/5 transition-all">
-                                        <label className="p-2.5 md:p-3 text-slate-400 hover:text-primary cursor-pointer">
+                                    <div className="max-w-[800px] mx-auto relative flex items-center bg-slate-50/80 border border-slate-200 rounded-2xl md:rounded-[24px] p-1 md:p-2 focus-within:border-primary/40 focus-within:bg-white focus-within:shadow-2xl focus-within:shadow-primary/5 transition-all">
+                                        <label className="p-2.5 md:p-3 text-slate-400 hover:text-primary cursor-pointer transition-colors">
                                             <Paperclip size={18} />
                                             <input type="file" className="hidden" onChange={(e) => {
                                                 const file = e.target.files[0];
@@ -504,17 +511,17 @@ const AiConcierge = () => {
                                         
                                         <div className="flex-1 px-1 md:px-2 relative">
                                             {imagePreview && (
-                                                <div className="absolute -top-16 left-0 bg-white p-1.5 rounded-xl shadow-2xl border border-slate-100">
+                                                <div className="absolute -top-16 left-0 bg-white p-1.5 rounded-xl shadow-2xl border border-slate-200 animate-in slide-in-from-bottom-2">
                                                     <img src={imagePreview} className="h-10 w-10 object-cover rounded-lg" />
-                                                    <button onClick={() => setImagePreview(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg"><X size={10} /></button>
+                                                    <button onClick={() => setImagePreview(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg border border-white"><X size={10} /></button>
                                                 </div>
                                             )}
                                             <input 
                                                 value={input}
                                                 onChange={(e) => setInput(e.target.value)}
                                                 onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                                                placeholder={isMobile ? "Query..." : "State your symptoms or medical query..."}
-                                                className="w-full bg-transparent border-none outline-none text-sm font-semibold text-slate-700 placeholder:text-slate-400 py-2.5 md:py-3"
+                                                placeholder={isMobile ? "How can I help?" : "State your symptoms or medical query..."}
+                                                className="w-full bg-transparent border-none outline-none text-[13px] md:text-sm font-semibold text-slate-700 placeholder:text-slate-400 py-2.5 md:py-3"
                                             />
                                         </div>
 
@@ -523,9 +530,9 @@ const AiConcierge = () => {
                                         <button 
                                             onClick={() => handleSend()}
                                             disabled={isLoading || (!input.trim() && !imagePreview)}
-                                            className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary text-white flex items-center justify-center shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                                            className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/30 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
                                         >
-                                            <SendHorizontal size={20} />
+                                            <SendHorizontal size={18} md:size={20} />
                                         </button>
                                     </div>
                                 </div>
