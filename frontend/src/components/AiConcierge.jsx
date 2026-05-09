@@ -329,13 +329,23 @@ const AiConcierge = () => {
                                             {(s.severity === 'CRITICAL' || s.severity === 'HIGH' || s.severity === 'EMERGENCY') && (
                                                 <div className="flex gap-2">
                                                     <button 
-                                                        onClick={() => navigate('/dashboard/booking?service=Ambulance')}
+                                                        onClick={() => {
+                                                            setIsOpen(false);
+                                                            navigate('/dashboard/booking?service=Ambulance');
+                                                        }}
                                                         className="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-red-200"
                                                     >
                                                         <HeartPulse size={14} /> Ambulance
                                                     </button>
                                                     <button 
-                                                        onClick={() => s.mapUrl ? window.open(s.mapUrl, '_blank') : navigate('/dashboard/booking')}
+                                                        onClick={() => {
+                                                            setIsOpen(false);
+                                                            if (s.mapUrl) {
+                                                                window.open(s.mapUrl, '_blank');
+                                                            } else {
+                                                                navigate('/dashboard/booking');
+                                                            }
+                                                        }}
                                                         className="flex-1 py-3 bg-slate-900 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2"
                                                     >
                                                         <MapPin size={14} /> Nearest Hospital
@@ -345,6 +355,7 @@ const AiConcierge = () => {
 
                                             <button 
                                                 onClick={() => {
+                                                    setIsOpen(false);
                                                     const url = s.specialist ? `/dashboard/booking?doctor=${encodeURIComponent(s.specialist.trim())}` : '/dashboard/booking';
                                                     navigate(url);
                                                     toast.success("Navigating to Clinical Booking Node");
