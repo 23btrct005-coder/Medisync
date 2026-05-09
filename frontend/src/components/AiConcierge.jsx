@@ -350,13 +350,53 @@ const AiConcierge = () => {
                                                     );
                                                 }
 
+                                                // 1. Dashboard Routing Check (Highest Priority for Action)
+                                                if (line.includes('(/dashboard')) {
+                                                    const match = line.match(/\[(.*?)\]\((.*?)\)/);
+                                                    const parenMatch = line.match(/\((.*?)\)/);
+                                                    
+                                                    if (!match && !parenMatch) return <div key={li}>{line}</div>;
+
+                                                    const label = match ? match[1] : "LAUNCH CLINICAL PORTAL";
+                                                    const url = match ? match[2] : (parenMatch ? parenMatch[1] : "#");
+                                                    
+                                                    return (
+                                                        <button 
+                                                            key={li} 
+                                                            onClick={() => { setIsOpen(false); window.location.href = url; }} 
+                                                            style={{ 
+                                                                width: '100%', 
+                                                                marginTop: '12px', 
+                                                                padding: '16px', 
+                                                                backgroundColor: '#7C3AED', 
+                                                                color: 'white', 
+                                                                border: 'none', 
+                                                                borderRadius: '20px', 
+                                                                cursor: 'pointer', 
+                                                                fontWeight: '900', 
+                                                                fontSize: '12px', 
+                                                                letterSpacing: '1.5px', 
+                                                                boxShadow: '0 10px 30px rgba(124, 58, 237, 0.3)', 
+                                                                textTransform: 'uppercase',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                gap: '10px'
+                                                            }}
+                                                        >
+                                                            <Calendar size={18} />
+                                                            {label}
+                                                        </button>
+                                                    );
+                                                }
+
                                                 const coordMatch = line.match(/-?\d+\.\d+,\s*-?\d+\.\d+/);
                                                 const hasCoords = !!coordMatch;
                                                 const isLocation = line.toLowerCase().includes('location') || line.toLowerCase().includes('address') || line.toLowerCase().includes('hospital');
                                                 const isPureCoordLine = hasCoords && line.trim().length < 40;
 
-                                                if (line.startsWith('-') || line.startsWith('•') || line.length > 60 || hasCoords || isLocation) {
-                                                    const query = line.replace(/#|-|•/g, '').trim();
+                                                if (line.startsWith('-') || line.startsWith('•') || line.startsWith('*') || line.length > 60 || hasCoords || isLocation) {
+                                                    const query = line.replace(/#|-|•|\*/g, '').trim();
                                                     const encodedQuery = encodeURIComponent(hasCoords ? coordMatch[0] : query);
                                                     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
                                                     const mapUrl = (apiKey && apiKey !== "REPLACE_WITH_YOUR_GOOGLE_MAPS_API_KEY") 
@@ -368,7 +408,7 @@ const AiConcierge = () => {
                                                             {!isPureCoordLine && (
                                                                 <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                                                                     <div style={{ marginTop: '7px', width: '4px', height: '4px', borderRadius: '50%', backgroundColor: m.role === 'user' ? 'white' : '#94a3b8', flexShrink: 0 }}></div>
-                                                                    <span style={{ fontWeight: '500' }}>{line.startsWith('-') || line.startsWith('•') ? line.substring(1).trim() : line}</span>
+                                                                    <span style={{ fontWeight: '500' }}>{ (line.startsWith('-') || line.startsWith('•') || line.startsWith('*')) ? line.substring(1).trim() : line}</span>
                                                                 </div>
                                                             )}
                                                             {(isLocation || hasCoords) && (
@@ -378,18 +418,6 @@ const AiConcierge = () => {
                                                             )}
                                                         </div>
                                                     );
-                                                }
-
-                                                if (line.includes('(/dashboard')) {
-                                                    const match = line.match(/\[(.*?)\]\((.*?)\)/);
-                                                    const parenMatch = line.match(/\((.*?)\)/);
-                                                    
-                                                    if (!match && !parenMatch) return <div key={li}>{line}</div>;
-
-                                                    const label = match ? match[1] : "LAUNCH CLINICAL PORTAL";
-                                                    const url = match ? match[2] : (parenMatch ? parenMatch[1] : "#");
-                                                    
-                                                    return <button key={li} onClick={() => { setIsOpen(false); window.location.href = url; }} style={{ width: '100%', marginTop: '12px', padding: '14px', backgroundColor: '#0066FF', color: 'white', border: 'none', borderRadius: '16px', cursor: 'pointer', fontWeight: '900', fontSize: '11px', letterSpacing: '1px', boxShadow: '0 8px 20px rgba(0,102,255,0.2)', textTransform: 'uppercase' }}>{label}</button>;
                                                 }
 
                                                 const parts = line.split(/(\*\*.*?\*\*)/g);

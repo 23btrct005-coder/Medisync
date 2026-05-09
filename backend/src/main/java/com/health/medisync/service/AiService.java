@@ -212,8 +212,9 @@ public class AiService {
                 "2. **CLINICAL GROUNDING**: Map every symptom to the specialized institutional resources provided below. Prioritize the patient's existing clinical history (e.g., if history shows Cardiac issues, always cross-reference).\n" +
                 "3. **PROFESSIONAL PERSONA**: Maintain a direct, clinical, and authoritative tone. Use medical terminology but keep it accessible.\n" +
                 "4. **SPATIAL TRIAGE**: If coordinates are available, only recommend facilities within the synchronized clinical node.\n" +
-                "5. **ACTION ORIENTATION**: Provide direct booking links [BOOK NOW]((/dashboard/booking?doctor=NAME)) when a specific provider is relevant.\n" +
-                "6. **NO GREETINGS**: Start directly with the clinical analysis.\n\n" +
+                "5. **ACTION ORIENTATION**: Provide direct booking links [BOOK NOW]((/dashboard/booking?doctor=NAME)) or [BOOK NOW]((/dashboard/booking?facility=NAME&service=TYPE)) when a specific provider or institutional facility is relevant. Always prioritize the closest facility if coordinates are available.\n" +
+                "6. **FACILITY MAPPING**: For hospital-specific services (e.g., Ambulance, MRI, ICU), use the institutional booking link with the exact facility name from the registry.\n" +
+                "7. **NO GREETINGS**: Start directly with the clinical analysis.\n\n" +
                 "### INSTITUTIONAL RESOURCE REGISTRY:\n" +
                 "HOSPITALS:\n" + hospitalList + "\n" +
                 "DOCTORS:\n" + doctorList + "\n\n" +
