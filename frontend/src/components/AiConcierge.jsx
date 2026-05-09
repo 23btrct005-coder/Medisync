@@ -206,31 +206,32 @@ const AiConcierge = () => {
         const suggestedDoctor = doctorMatch ? doctorMatch[1].trim() : null;
 
         // Map suggested department to predefined services
-        const SERVICES_LIST = [
             "Emergency & Trauma Care", "Ambulance Services", "ICU (Intensive Care Unit)", 
             "NICU (Neonatal ICU)", "Operation Theatre (Emergency)", "Casualty Department", 
             "24/7 Pharmacy", "Blood Bank", "Emergency CT Scan", "Emergency Lab Tests",
             "Oxygen & Ventilator Support", "Emergency Dialysis",
-            "OPD (Outpatient)", "X-Ray", "MRI Scan", "Ultrasound", 
-            "ECG & TMT", "Physiotherapy", "Dental Services", "General Surgery",
+            "OPD (Outpatient)", "X-Ray", "MRI Scan", "Ultrasound / सोनोग्राफी", 
+            "ECG & TMT", "Physiotherapy", "Dental Services", "General Surgery (Planned)",
             "Orthopedic Consultation", "Pediatric Consultation", "Gynecology & Obstetrics",
-            "ENT (Ear, Nose, Throat)", "Ophthalmology", "Dermatology",
+            "ENT (Ear, Nose, Throat)", "Ophthalmology (Eye)", "Dermatology (Skin)",
             "Advanced Laboratory Tests", "Health Checkup Packages"
         ];
 
         const matchedService = SERVICES_LIST.find(s => {
             const lowerS = s.toLowerCase();
-            const lowerDept = sections.department?.toLowerCase() || '';
-            const lowerAction = sections.action?.toLowerCase() || '';
+            const lowerDept = (sections.department || '').toLowerCase();
+            const lowerAction = (sections.action || '').toLowerCase();
+            const lowerAssessment = (sections.assessment || '').toLowerCase();
             
-            // Check for direct matches or common synonyms
+            // Priority 1: Ambulance Detection (Critical)
+            if (lowerS.includes('ambulance') && (text.toLowerCase().includes('ambulance') || lowerDept.includes('ambulance'))) return true;
+            
+            // Priority 2: Direct Matches
             if (lowerDept.includes(lowerS.split(' ')[0]) && lowerS.length > 3) return true;
-            if (lowerS.includes('ambulance') && (lowerDept.includes('ambulance') || lowerAction.includes('ambulance'))) return true;
             if (lowerS.includes('emergency') && (lowerDept.includes('emergency') || lowerDept.includes('trauma'))) return true;
-            if (lowerS.includes('mri') && lowerDept.includes('mri')) return true;
-            if (lowerS.includes('x-ray') && lowerDept.includes('x-ray')) return true;
             
-            return lowerDept.includes(lowerS) || lowerAction.includes(lowerS);
+            // Priority 3: Keyword Search in Action/Assessment
+            return lowerAction.includes(lowerS.split(' ')[0]) || lowerAssessment.includes(lowerS.split(' ')[0]);
         });
 
         return { ...sections, mapLink: uniqueMapLink, suggestedDoctor, matchedService };
