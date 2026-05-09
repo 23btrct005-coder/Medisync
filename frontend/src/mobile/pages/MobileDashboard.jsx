@@ -15,20 +15,23 @@ const MobileDashboard = () => {
     const { user } = useAuth();
     const [vitals, setVitals] = useState(null);
     const [appointments, setAppointments] = useState([]);
+    const [unreadChatCount, setUnreadChatCount] = useState(0);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchMobileData = async () => {
             try {
-                const [vitalsRes, apptsRes] = await Promise.all([
+                const [vitalsRes, apptsRes, chatRes] = await Promise.all([
                     api.get('/patient/vitals'),
-                    api.get('/appointments/my-appointments')
+                    api.get('/appointments/my-appointments'),
+                    api.get('/chat/unread-count')
                 ]);
                 if (vitalsRes.data && vitalsRes.data.length > 0) {
                     setVitals(vitalsRes.data[vitalsRes.data.length - 1]);
                 }
                 setAppointments(apptsRes.data || []);
+                setUnreadChatCount(chatRes.data || 0);
             } catch (e) {
                 console.error("Clinical sync failed", e);
             } finally {
