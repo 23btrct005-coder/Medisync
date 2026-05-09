@@ -154,7 +154,7 @@ public class AiService {
                 "- HIGH: Urgent consultation recommended.\n" +
                 "- CRITICAL: Emergency escalation immediately.\n\n" +
                 "EMERGENCY DETECTION:\n" +
-                "Immediately escalate if detecting high-risk patterns. In emergency cases: Skip long triage. Strongly recommend immediate hospital care.\n\n" +
+                "Immediately escalate if detecting high-risk patterns (e.g., Chest pain, Breathing difficulty, Stroke signs, Severe bleeding). In emergency cases: Skip long intake. Assign 'Emergency' severity. Focus only on life-saving guidance and immediate escalation to emergency services.\n\n" +
                 "MULTI-AGENT ORCHESTRATION:\n" +
                 "Internally coordinate specialized agents (Triage, Emergency, Medication, Report, Booking, Memory, Follow-up, Safety).\n\n" +
                 "MEDICAL KNOWLEDGE RAG SYSTEM:\n" +
