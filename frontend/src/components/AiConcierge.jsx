@@ -201,15 +201,30 @@ const AiConcierge = () => {
             }
         });
 
-        // Deduplicate Map Links
-        const mapRegex = /https:\/\/www\.google\.com\/maps\/search\/\?api=1&query=[^)\s\n]*/g;
-        const allLinks = (text.match(mapRegex) || []).concat(sections.action.match(mapRegex) || []);
-        const uniqueMapLink = allLinks.length > 0 ? allLinks[0] : null;
+        // Detect Doctor Recommendation
+        const doctorMatch = sections.action.match(/Dr\.\s+([A-Za-z\s.]+)/i) || text.match(/Dr\.\s+([A-Za-z\s.]+)/i);
+        const suggestedDoctor = doctorMatch ? doctorMatch[1].trim() : null;
 
-        // Clean action text from URLs
-        sections.action = sections.action.replace(mapRegex, '').trim();
+        // Map suggested department to predefined services
+        const SERVICES_LIST = [
+            "Emergency & Trauma Care", "Ambulance Services", "ICU (Intensive Care Unit)", 
+            "NICU (Neonatal ICU)", "Operation Theatre (Emergency)", "Casualty Department", 
+            "24/7 Pharmacy", "Blood Bank", "Emergency CT Scan", "Emergency Lab Tests",
+            "Oxygen & Ventilator Support", "Emergency Dialysis",
+            "OPD (Outpatient)", "X-Ray", "MRI Scan", "Ultrasound", 
+            "ECG & TMT", "Physiotherapy", "Dental Services", "General Surgery",
+            "Orthopedic Consultation", "Pediatric Consultation", "Gynecology & Obstetrics",
+            "ENT (Ear, Nose, Throat)", "Ophthalmology", "Dermatology",
+            "Advanced Laboratory Tests", "Health Checkup Packages"
+        ];
 
-        return { ...sections, mapLink: uniqueMapLink };
+        const matchedService = SERVICES_LIST.find(s => 
+            sections.department?.toLowerCase().includes(s.toLowerCase().split(' ')[0]) ||
+            sections.action?.toLowerCase().includes(s.toLowerCase()) ||
+            sections.recommendations.some(r => r.toLowerCase().includes(s.toLowerCase()))
+        );
+
+        return { ...sections, mapLink: uniqueMapLink, suggestedDoctor, matchedService };
     };
 
     const getSeverityStyles = (severity) => {
@@ -492,7 +507,13 @@ const AiConcierge = () => {
                                                     <button 
                                                         onClick={() => {
                                                             setIsOpen(false);
-                                                            navigate('/dashboard/booking');
+                                                            let url = '/dashboard/booking';
+                                                            if (segments.suggestedDoctor) {
+                                                                url += `?doctor=${encodeURIComponent(segments.suggestedDoctor)}`;
+                                                            } else if (segments.matchedService) {
+                                                                url += `?mode=service&service=${encodeURIComponent(segments.matchedService)}`;
+                                                            }
+                                                            navigate(url);
                                                         }}
                                                         className="w-full bg-white text-[#0066FF] py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors shadow-lg mt-2"
                                                     >
