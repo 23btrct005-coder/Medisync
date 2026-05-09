@@ -19,6 +19,7 @@ public class AiService {
     private final AppointmentRepository appointmentRepository;
     private final DoctorService doctorService;
     private final GeminiAiService geminiAiService;
+    private final GroqAiService groqAiService;
     private final UserRepository userRepository;
     private final PatientRepository patientRepository;
     private final ReportRepository reportRepository;
@@ -36,6 +37,7 @@ public class AiService {
                      PatientRepository patientRepository,
                      ReportRepository reportRepository,
                      GeminiAiService geminiAiService,
+                     GroqAiService groqAiService,
                      TelemetryRepository telemetryRepository) {
         this.doctorRepository = doctorRepository;
         this.hospitalRepository = hospitalRepository;
@@ -47,6 +49,7 @@ public class AiService {
         this.patientRepository = patientRepository;
         this.reportRepository = reportRepository;
         this.geminiAiService = geminiAiService;
+        this.groqAiService = groqAiService;
         this.telemetryRepository = telemetryRepository;
     }
 
@@ -148,6 +151,7 @@ public class AiService {
                 "### CONVERSATION LOGS:\n" + (historyContext.length() > 0 ? historyContext.toString() : "No previous interaction history.") + "\n\n" +
                 "### PATIENT QUERY:\n" + query;
 
+        String neuralResponse = null;
         try {
             List<Map<String, Object>> parts = new ArrayList<>();
             Map<String, Object> textPart = new HashMap<>();
@@ -163,13 +167,21 @@ public class AiService {
                 parts.add(imagePart);
             }
 
-            String neuralResponse = geminiAiService.getCompletion(parts);
+            neuralResponse = geminiAiService.getCompletion(parts);
+            
+            // AUTOMATIC FAILOVER: If Gemini fails (leaked key, etc.), use Groq as secondary clinical engine
+            if (neuralResponse == null || neuralResponse.contains("error") || neuralResponse.contains("403") || neuralResponse.contains("404")) {
+                System.out.println("AI_ENGINE_FAILOVER: Primary (Gemini) failed. Escalating to Secondary (Groq Llama-3.3-70b)...");
+                neuralResponse = groqAiService.getCompletion(prompt);
+            }
+
             if (neuralResponse != null && !neuralResponse.contains("error")) {
                 if (userEmail != null) sessionSummaries.put(userEmail, neuralResponse.length() > 200 ? neuralResponse.substring(0, 200) + "..." : neuralResponse);
                 return neuralResponse;
             }
         } catch (Exception e) { e.printStackTrace(); }
-        return "### 🤖 Clinical Status\n- I am here to help.\n- Please describe your clinical query in detail.";
+        
+        return "### ⚠️ Clinical Sync Interrupted\n- **Status**: API credentials for Gemini have been flagged as reported/leaked by Google.\n- **Recommended Action**: Please update the `GOOGLE_API_KEY` in your `.env` file with a fresh key from Google AI Studio.\n- **Interim**: I am attempting to use the secondary Groq engine for basic triage.";
     }
 
     public String getLatestBrief(String email) {
