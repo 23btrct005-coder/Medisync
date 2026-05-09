@@ -74,8 +74,8 @@ public class AiService {
                 // Telemetry integration
                 telemetryRepository.findByPatientIdOrderByCreatedAtDesc(u.getId()).stream().findFirst().ifPresent(t -> {
                     clinicalHistory.append("Recent Vitals: ")
-                        .append("BP: ").append(t.getBloodPressure()).append(", ")
-                        .append("Pulse: ").append(t.getPulse()).append(", ")
+                        .append("BP: ").append(t.getBloodPressureSystolic()).append("/").append(t.getBloodPressureDiastolic()).append(", ")
+                        .append("Pulse: ").append(t.getHeartRate()).append(" bpm, ")
                         .append("Temp: ").append(t.getTemperature()).append("C. ");
                 });
 
