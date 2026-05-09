@@ -235,7 +235,10 @@ const AiConcierge = () => {
             <AnimatePresence>
                 {!isOpen && (
                     <motion.button
-                        className="fixed bottom-8 right-8 w-16 h-16 rounded-[24px] bg-[#0066FF] text-white flex items-center justify-center shadow-2xl pointer-events-auto"
+                        drag
+                        dragConstraints={containerRef}
+                        whileDrag={{ scale: 1.1, cursor: 'grabbing' }}
+                        className="fixed bottom-8 right-8 w-16 h-16 rounded-[24px] bg-[#0066FF] text-white flex items-center justify-center shadow-2xl pointer-events-auto z-[2000]"
                         initial={{ scale: 0, rotate: -20 }}
                         animate={{ scale: 1, rotate: 0 }}
                         exit={{ scale: 0, rotate: 20 }}
