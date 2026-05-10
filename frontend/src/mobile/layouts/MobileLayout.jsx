@@ -81,6 +81,20 @@ const MobileLayout = () => {
     const primaryNav = getPrimaryNav();
     const secondaryNav = getSecondaryNav();
 
+    // ── HIDE DOCK ON SCROLL ──
+    const [isVisible, setIsVisible] = useState(true);
+    const [lastScrollY, setLastScrollY] = useState(0);
+
+    const handleScroll = (e) => {
+        const currentScrollY = e.currentTarget.scrollTop;
+        if (currentScrollY > lastScrollY && currentScrollY > 60) {
+            setIsVisible(false);
+        } else {
+            setIsVisible(true);
+        }
+        setLastScrollY(currentScrollY);
+    };
+
     const triggerHaptic = () => {
         if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
             window.navigator.vibrate(12);
@@ -120,6 +134,7 @@ const MobileLayout = () => {
 
             {/* ── FLUID MAIN STAGE ── */}
             <motion.main 
+                onScroll={handleScroll}
                 style={{ 
                     scale: isMenuOpen ? 0.94 : 1,
                     filter: isMenuOpen ? 'blur(10px)' : 'blur(0px)',
@@ -144,10 +159,12 @@ const MobileLayout = () => {
 
             {/* ── THUMB-CENTRIC BOTTOM DOCK ── */}
             <motion.nav 
+                initial={false}
                 animate={{ 
-                    y: isMenuOpen ? 100 : 0,
-                    opacity: isMenuOpen ? 0 : 1
+                    y: (!isVisible || isMenuOpen) ? 120 : 0,
+                    opacity: (isVisible && !isMenuOpen) ? 1 : 0
                 }}
+                transition={{ type: "spring", damping: 20, stiffness: 150 }}
                 className="fixed bottom-4 left-4 right-4 h-20 bg-white/90 backdrop-blur-2xl border border-white/40 rounded-[2.5rem] px-4 shadow-[0_20px_50px_rgba(0,0,0,0.12)] z-[200] flex items-center justify-between"
             >
                 {(primaryNav || []).slice(0, 2).map((item) => item && (
@@ -158,7 +175,14 @@ const MobileLayout = () => {
                         end 
                         className={({ isActive }) => `flex flex-col items-center justify-center w-14 h-14 rounded-2xl transition-all duration-300 ${isActive ? 'text-primary-600 bg-primary-50/50' : 'text-slate-400 hover:text-slate-600'}`}
                     >
-                        <motion.div whileTap={{ scale: 0.8 }}>{item.icon}</motion.div>
+                        <motion.div whileTap={{ scale: 0.8 }} className="relative">
+                            {item.icon}
+                            {item.badge > 0 && (
+                                <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[7px] font-black w-4 h-4 flex items-center justify-center rounded-full border-2 border-white shadow-sm">
+                                    {item.badge}
+                                </span>
+                            )}
+                        </motion.div>
                         <span className="text-[7px] font-black uppercase tracking-[0.1em] mt-1.5">{item.name}</span>
                     </NavLink>
                 ))}
@@ -200,7 +224,7 @@ const MobileLayout = () => {
                         >
                             <motion.div whileTap={{ scale: 0.8 }} className="relative">
                                 {item.icon}
-                                {item.badge > 0 && <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[7px] font-black w-4 h-4 flex items-center justify-center rounded-full border-2 border-white">{item.badge}</span>}
+                                {item.badge > 0 && <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[7px] font-black w-4 h-4 flex items-center justify-center rounded-full border-2 border-white shadow-sm">{item.badge}</span>}
                             </motion.div>
                             <span className="text-[7px] font-black uppercase tracking-[0.1em] mt-1.5">{item.name}</span>
                         </NavLink>
