@@ -105,18 +105,33 @@ const MobileLayout = () => {
         <div className="flex flex-col h-[100dvh] bg-slate-50 overflow-hidden font-sans selection:bg-primary-100">
             {/* ── HIGH-FIDELITY HEADER ── */}
             <header className="h-16 bg-white/70 backdrop-blur-2xl border-b border-slate-200/50 flex items-center justify-between px-5 sticky top-0 z-[100] shrink-0">
-                <div className="flex items-center gap-3">
+                <div 
+                    className="flex items-center gap-3 cursor-pointer"
+                    onClick={() => {
+                        triggerHaptic();
+                        const path = isDoctor ? '/doctor-dashboard/profile' : (isHospital ? '/hospital-dashboard/profile' : '/dashboard/profile');
+                        navigate(path);
+                    }}
+                >
                     <motion.div 
                         whileTap={{ scale: 0.9 }}
-                        className="h-10 w-10 bg-gradient-to-tr from-primary-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary/20"
+                        className="h-10 w-10 bg-slate-100 rounded-xl flex items-center justify-center border border-slate-200 overflow-hidden shadow-sm"
                     >
-                        <Activity size={20} className="text-white" />
+                        {user.profilePictureUrl ? (
+                            <img src={user.profilePictureUrl} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                            <User size={20} className="text-slate-400" />
+                        )}
                     </motion.div>
                     <div className="flex flex-col">
-                        <span className="text-xs font-black tracking-tighter text-slate-900 uppercase leading-none">MediSync <span className="text-primary-600 font-black">PRO</span></span>
+                        <span className="text-xs font-black tracking-tighter text-slate-900 uppercase leading-none">
+                            {user.name || 'Anonymous User'}
+                        </span>
                         <div className="flex items-center gap-1.5 mt-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Clinical Node Verified</span>
+                            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+                                {userRole?.replace('ROLE_', '').replace('_', ' ')} Node Active
+                            </span>
                         </div>
                     </div>
                 </div>
