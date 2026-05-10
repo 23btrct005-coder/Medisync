@@ -201,7 +201,11 @@ const AiConcierge = () => {
         });
 
         // Final cleanups and smart mapping
-        const stripMap = (t) => t.replace(/https:\/\/(www\.google\.com\/maps|maps\.app\.goo\.gl)\/[^ \n)\]]*/g, '').trim();
+        const stripMap = (t) => t
+            .replace(/https:\/\/(www\.google\.com\/maps|maps\.app\.goo\.gl)\/[^ \n)\]]*/g, '')
+            .replace(/(immediately\s+)?call\s+(your\s+)?local\s+emergency\s+services\s+(number\s+)?(such\s+as\s+)?108\s+or\s+112\.?/gi, '')
+            .replace(/If\s+you\s+are\s+in\s+the\s+Bengaluru\s+area.*?hospitals?\./gi, '')
+            .trim();
         
         sections.assessment = stripMap(sections.assessment);
         sections.possibleConditions = stripMap(sections.possibleConditions);
