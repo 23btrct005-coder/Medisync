@@ -12,9 +12,23 @@ import java.util.stream.Collectors;
 @Service
 public class AiService {
 
+    private final DoctorRepository doctorRepository;
+    private final HospitalRepository hospitalRepository;
+    private final AiQueryLogRepository aiQueryLogRepository;
+    private final PrescriptionRepository prescriptionRepository;
+    private final AppointmentRepository appointmentRepository;
+    private final DoctorService doctorService;
+    private final UserRepository userRepository;
+    private final PatientRepository patientRepository;
+    private final ReportRepository reportRepository;
+    private final GeminiAiService geminiAiService;
+    private final GroqAiService groqAiService;
+    private final TelemetryRepository telemetryRepository;
     private final MedicalSafetyValidator safetyValidator;
     private final IntentRouterService intentRouter;
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+
+    private static final Map<String, String> sessionSummaries = new HashMap<>();
 
     public AiService(DoctorRepository doctorRepository, 
                      HospitalRepository hospitalRepository,
