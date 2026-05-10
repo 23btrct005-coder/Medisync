@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axiosConfig';
-import { Bell, Sparkles, ShieldAlert, Calendar, CheckCircle2, Clock, Trash2, CheckSquare, ArrowUpRight } from 'lucide-react';
+import { Bell, Sparkles, ShieldAlert, Calendar, CheckCircle2, Clock, Trash2, CheckSquare, ArrowUpRight, MessageSquare, HeartPulse } from 'lucide-react';
 
 const ActivityHub = () => {
   const [notifications, setNotifications] = useState([]);
@@ -8,7 +8,6 @@ const ActivityHub = () => {
 
   useEffect(() => {
     fetchNotifications();
-    // Poll for new activities every 45 seconds for "Ready Product" feel
     const interval = setInterval(fetchNotifications, 45000);
     return () => clearInterval(interval);
   }, []);
@@ -42,155 +41,178 @@ const ActivityHub = () => {
     }
   };
 
-  return (
-    <div className="glass-panel p-8 h-full flex flex-col min-h-[600px] border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white/80 backdrop-blur-xl rounded-[2.5rem] overflow-hidden relative">
-      {/* Decorative Background Elements */}
-      <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
+  const getActivityIcon = (type, isRead) => {
+    const iconClass = isRead ? "text-slate-400" : "text-primary-600";
+    switch (type?.toUpperCase()) {
+      case 'AI_ANALYSIS': return <Sparkles size={16} className={iconClass} />;
+      case 'SECURITY':
+      case 'ACCESS': return <ShieldAlert size={16} className={iconClass} />;
+      case 'APPOINTMENT': return <Calendar size={16} className={iconClass} />;
+      case 'UPDATE': return <CheckCircle2 size={16} className={iconClass} />;
+      case 'CHAT':
+      case 'MESSAGE': return <MessageSquare size={16} className={iconClass} />;
+      default: return <Bell size={16} className={iconClass} />;
+    }
+  };
 
-      <div className="flex items-center justify-between mb-10 relative z-10">
-        <div className="flex items-center gap-4">
-          <div className="h-14 w-14 bg-slate-900 text-white rounded-[1.25rem] flex items-center justify-center shadow-xl shadow-slate-900/20 group transition-all hover:scale-105 active:scale-95">
-            <Bell size={24} className={notifications.some(n => !n.isRead) ? "animate-[bounce_2s_infinite]" : ""} />
-          </div>
-          <div>
-            <h3 className="text-2xl font-black text-slate-900 tracking-tighter uppercase italic">Activity <span className="not-italic text-slate-400">Hub</span></h3>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Live Clinical Telemetry</p>
+  const getStatusColor = (type) => {
+    switch (type?.toUpperCase()) {
+      case 'AI_ANALYSIS': return 'bg-purple-100 text-purple-700 border-purple-200';
+      case 'SECURITY': return 'bg-red-100 text-red-700 border-red-200';
+      case 'APPOINTMENT': return 'bg-blue-100 text-blue-700 border-blue-200';
+      case 'UPDATE': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+      default: return 'bg-slate-100 text-slate-700 border-slate-200';
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-full bg-white border border-slate-200 shadow-xl rounded-[2.5rem] overflow-hidden relative group/hub">
+      {/* Premium Header */}
+      <div className="p-8 border-b border-slate-100 bg-slate-50/50 backdrop-blur-sm sticky top-0 z-20">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-slate-900 text-white rounded-2xl shadow-lg shadow-slate-900/20">
+                <HeartPulse size={24} className="animate-pulse" />
+              </div>
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2 uppercase italic">
+                Clinical <span className="not-italic text-slate-400">Stream</span>
+              </h2>
             </div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Real-time Telemetry Node</p>
           </div>
-        </div>
-        <div className="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100">
-          <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Nodes Active</span>
-          <div className="h-1.5 w-1.5 rounded-full bg-primary animate-ping" />
+          <div className="flex items-center gap-2">
+             <div className="px-3 py-1 bg-emerald-100 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-widest animate-pulse">Live</div>
+             <button onClick={fetchNotifications} className="p-2 hover:bg-slate-200 rounded-xl transition-all text-slate-400 hover:text-slate-900">
+                <Clock size={18} />
+             </button>
+          </div>
         </div>
       </div>
 
-      <div className="flex-1 space-y-2 overflow-y-auto pr-3 custom-scrollbar relative z-10">
+      {/* Content Area */}
+      <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-slate-50/30">
         {loading ? (
-          <div className="h-full flex flex-col items-center justify-center text-center p-12">
-             <div className="w-12 h-12 border-[3px] border-slate-100 border-t-primary rounded-full animate-spin mb-4" />
-             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Syncing Clinical Streams...</p>
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="w-10 h-10 border-4 border-primary/10 border-t-primary rounded-full animate-spin mb-4" />
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Syncing Nodes...</p>
           </div>
         ) : notifications.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center p-12">
-            <div className="w-24 h-24 bg-slate-50 rounded-[2.5rem] flex items-center justify-center mb-6 border border-slate-100 shadow-inner group transition-all hover:rotate-12">
-              <Clock className="text-slate-300" size={40} />
+          <div className="flex flex-col items-center justify-center py-20 text-center px-10">
+            <div className="w-20 h-20 bg-slate-100 rounded-[2rem] flex items-center justify-center mb-6 text-slate-300">
+              <Bell size={40} />
             </div>
-            <h4 className="text-sm font-black text-slate-800 uppercase tracking-tight">Signal Archive Clear</h4>
-            <p className="text-[11px] text-slate-400 mt-2 font-semibold uppercase tracking-tighter leading-relaxed max-w-[200px]">No new clinical signals detected in your workspace.</p>
+            <h4 className="text-sm font-black text-slate-800 uppercase tracking-tight">Stream Isolated</h4>
+            <p className="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-widest">No active signals in your current clinical scope.</p>
           </div>
         ) : (
-          <div className="relative pl-6">
-            {/* The Timeline Line - Improved Alignment */}
-            <div className="absolute left-[11px] top-4 bottom-4 w-0.5 bg-gradient-to-b from-primary/30 via-slate-100 to-transparent rounded-full" />
-            
-            <div className="space-y-10">
-              {notifications.map((n) => (
-                <div 
-                  key={n.id} 
-                  className="relative group animate-in slide-in-from-left-4 duration-500"
-                >
-                  {/* Activity Dot/Icon - Precisely Centered on Line */}
-                  <div className={`absolute -left-[18px] top-1 h-9 w-9 bg-white border-2 ${n.isRead ? 'border-slate-100 text-slate-300 shadow-none' : 'border-primary text-primary shadow-lg shadow-primary/10'} rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 z-20`}>
-                    {getActivityIcon(n.type)}
-                  </div>
+          <div className="space-y-4">
+            {notifications.map((n) => (
+              <div 
+                key={n.id} 
+                className={`relative group rounded-[2rem] border transition-all duration-300 overflow-hidden ${
+                  n.isRead 
+                    ? 'bg-white/40 border-slate-100 opacity-60 grayscale-[0.5]' 
+                    : 'bg-white border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.02)] hover:shadow-2xl hover:shadow-primary/5 hover:border-primary/20'
+                }`}
+              >
+                {/* Status Indicator Bar */}
+                {!n.isRead && (
+                  <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-primary rounded-r-full" />
+                )}
 
-                  {/* Activity Content */}
-                  <div className={`ml-8 p-6 rounded-[2rem] border transition-all relative overflow-hidden group-hover:shadow-xl ${
-                    n.isRead 
-                      ? 'bg-slate-50/30 border-slate-100 opacity-60' 
-                      : 'bg-white border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.03)] hover:border-primary/20'
-                  }`}>
-                    {/* Unread Glow */}
-                    {!n.isRead && (
-                       <div className="absolute -top-12 -right-12 w-24 h-24 bg-primary/5 rounded-full blur-2xl pointer-events-none group-hover:bg-primary/10 transition-all" />
-                    )}
-
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex flex-col">
-                        <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${n.isRead ? 'text-slate-400' : 'text-primary'}`}>
-                          {n.type} Node
-                        </span>
-                        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter mt-0.5">
-                          {new Date(n.createdAt).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
-                        </span>
+                <div className="p-6">
+                  {/* Card Header */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all group-hover:scale-110 ${
+                        n.isRead ? 'bg-slate-50 border-slate-100' : 'bg-primary-50 border-primary-100 shadow-sm'
+                      }`}>
+                        {getActivityIcon(n.type, n.isRead)}
                       </div>
-                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
-                        {!n.isRead && (
-                          <button onClick={() => markRead(n.id)} className="h-8 w-8 flex items-center justify-center text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all active:scale-90" title="Mark Read">
-                            <CheckSquare size={16} />
-                          </button>
-                        )}
-                        <button onClick={() => deleteNotification(n.id)} className="h-8 w-8 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all active:scale-90" title="Delete Signal">
-                          <Trash2 size={16} />
-                        </button>
+                      <div>
+                        <p className={`text-[10px] font-black uppercase tracking-widest ${n.isRead ? 'text-slate-400' : 'text-primary'}`}>
+                          {n.type || 'SIGNAL'}
+                        </p>
+                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">
+                          {new Date(n.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </p>
                       </div>
                     </div>
+                    
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                      {!n.isRead && (
+                        <button onClick={() => markRead(n.id)} className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-lg transition-all" title="Mark Read">
+                          <CheckSquare size={14} />
+                        </button>
+                      )}
+                      <button onClick={() => deleteNotification(n.id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all" title="Delete Signal">
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
 
-                    <h4 className={`text-base font-black mb-2 tracking-tight ${n.isRead ? 'text-slate-600' : 'text-slate-900 uppercase'}`}>
+                  {/* Card Body */}
+                  <div className="space-y-2">
+                    <h4 className={`text-sm font-black tracking-tight leading-tight uppercase ${n.isRead ? 'text-slate-600' : 'text-slate-900 italic'}`}>
                       {n.title}
                     </h4>
-                    <p className="text-xs text-slate-500 font-semibold leading-relaxed mb-5">
+                    <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
                       {n.description}
                     </p>
-                    
-                    {n.actionLink && (
+                  </div>
+
+                  {/* Action Bar */}
+                  {n.actionLink && (
+                    <div className="mt-5 pt-5 border-t border-slate-50 flex items-center justify-between">
                       <a 
                         href={n.actionLink}
-                        className={`inline-flex items-center gap-2 py-3 px-6 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 ${
+                        className={`flex items-center gap-2 py-2 px-4 rounded-xl text-[9px] font-black uppercase tracking-[0.15em] transition-all active:scale-95 ${
                           n.isRead 
                             ? 'bg-slate-100 text-slate-400' 
-                            : 'bg-slate-900 text-white shadow-lg shadow-slate-900/20 hover:bg-black hover:translate-x-1'
+                            : 'bg-slate-900 text-white shadow-lg shadow-slate-900/10 hover:bg-black group/btn'
                         }`}
                       >
                         {n.actionText || 'Process Signal'}
-                        <ArrowUpRight size={14} />
+                        <ArrowUpRight size={12} className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
                       </a>
-                    )}
-                  </div>
+                      {!n.isRead && (
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                          <span className="text-[8px] font-black text-primary uppercase tracking-widest">Priority</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
-      
-      {/* Footer Status */}
-      <div className="mt-10 pt-8 border-t border-slate-100/60 flex items-center justify-between relative z-10">
-          <div className="flex items-center gap-3">
-             <div className="h-8 w-8 bg-indigo-50 rounded-lg flex items-center justify-center">
-                <ShieldAlert size={16} className="text-indigo-500" />
-             </div>
-             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Node Isolation <br/><span className="text-emerald-500">Active</span></span>
-          </div>
-          <button 
-            onClick={fetchNotifications} 
-            className="group flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-all active:scale-95"
-          >
-             <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Resync Nodes</span>
-             <Clock size={14} className="text-slate-400 group-hover:rotate-180 transition-transform duration-500" />
-          </button>
+
+      {/* Footer Info */}
+      <div className="p-6 bg-slate-50/80 border-t border-slate-100">
+         <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+               <div className="w-8 h-8 bg-white rounded-lg border border-slate-200 flex items-center justify-center text-slate-400">
+                  <ShieldAlert size={16} />
+               </div>
+               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">
+                  Node Integrity <br/><span className="text-primary">Secured via RLS</span>
+               </p>
+            </div>
+            <div className="flex -space-x-2">
+                {[1,2,3].map(i => (
+                  <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center overflow-hidden">
+                    <div className="w-full h-full bg-gradient-to-br from-slate-300 to-slate-400" />
+                  </div>
+                ))}
+            </div>
+         </div>
       </div>
     </div>
   );
-};
-
-const getActivityIcon = (type) => {
-  switch (type?.toUpperCase()) {
-    case 'AI_ANALYSIS':
-      return <Sparkles size={12} />;
-    case 'SECURITY':
-    case 'ACCESS':
-      return <ShieldAlert size={12} />;
-    case 'APPOINTMENT':
-      return <Calendar size={12} />;
-    case 'UPDATE':
-      return <CheckCircle2 size={12} />;
-    default:
-      return <Bell size={12} />;
-  }
 };
 
 export default ActivityHub;
