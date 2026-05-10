@@ -51,9 +51,11 @@ public class AiController {
             String imageData = (String) request.get("imageData");
             String historyStr = "";
             if (history != null) {
-                historyStr = history.stream()
-                    .map(h -> String.valueOf(h.get("role")) + ": " + String.valueOf(h.get("text")))
-                    .collect(Collectors.joining("\n"));
+                StringBuilder sb = new StringBuilder();
+                for (Map<String, Object> h : history) {
+                    sb.append(h.get("role")).append(": ").append(h.get("text")).append("\n");
+                }
+                historyStr = sb.toString();
             }
 
             String response = aiService.generateResponse(patientEmail, userMessage, imageData, location, historyStr);
