@@ -898,7 +898,7 @@ const DoctorLogin = () => {
               <User size={18} className="absolute left-3 top-3.5 text-slate-400" />
               <input name="username" type="text" required value={formData.username} onChange={handleChange}
                 className="pl-10 block w-full rounded-xl border-slate-200 px-4 py-3 border text-sm focus:ring-blue-500 focus:border-blue-500 transition"
-                placeholder="Email, Employee ID or License" />
+                placeholder="email id / profile id" />
             </div>
           </div>
 
@@ -909,7 +909,7 @@ const DoctorLogin = () => {
               <input name="password" type={showPassword ? 'text' : 'password'} required
                 value={formData.password} onChange={handleChange}
                 className="pl-10 pr-10 block w-full rounded-xl border-slate-200 px-4 py-3 border text-sm focus:ring-blue-500 focus:border-blue-500 transition"
-                placeholder="Enter your password" />
+                placeholder="password" />
               <button type="button" onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-3.5 text-slate-400 hover:text-blue-600 transition">
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
