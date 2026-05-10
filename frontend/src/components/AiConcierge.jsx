@@ -447,7 +447,7 @@ const AiConcierge = () => {
                                                     <button 
                                                         onClick={() => {
                                                             setIsOpen(false);
-                                                            navigate('/dashboard/booking?mode=service&service=Ambulance Services');
+                                                            navigate(`/dashboard/booking?mode=service&service=${encodeURIComponent('Ambulance Services')}`);
                                                         }}
                                                         className="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-red-200"
                                                     >
@@ -459,7 +459,7 @@ const AiConcierge = () => {
                                                             if (s.mapUrl) {
                                                                 window.open(s.mapUrl, '_blank');
                                                             } else {
-                                                                navigate('/dashboard/booking?mode=service&service=Emergency & Trauma Care');
+                                                                navigate(`/dashboard/booking?mode=service&service=${encodeURIComponent('Emergency & Trauma Care')}`);
                                                             }
                                                         }}
                                                         className="flex-1 py-3 bg-slate-900 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2"
@@ -474,7 +474,7 @@ const AiConcierge = () => {
                                                     setIsOpen(false);
                                                     let url = '/dashboard/booking';
                                                     if (s.service) {
-                                                        url = `/dashboard/booking?mode=service&service=${s.service}`;
+                                                        url = `/dashboard/booking?mode=service&service=${encodeURIComponent(s.service)}`;
                                                     } else if (s.specialist && s.specialist.length > 3 && !s.specialist.toLowerCase().includes('determined') && !s.specialist.toLowerCase().includes('n/a') && !s.specialist.toLowerCase().includes('none')) {
                                                         url = `/dashboard/booking?doctor=${encodeURIComponent(s.specialist)}`;
                                                     }
