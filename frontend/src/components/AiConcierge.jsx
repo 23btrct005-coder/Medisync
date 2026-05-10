@@ -305,10 +305,16 @@ const AiConcierge = () => {
                     <motion.div
                         drag
                         dragMomentum={false}
-                        dragConstraints={containerRef}
+                        dragConstraints={{ 
+                            left: -window.innerWidth + 100, 
+                            right: 0, 
+                            top: -window.innerHeight + 100, 
+                            bottom: 0 
+                        }}
                         onDragEnd={() => {
                             setOrbPosition({ x: dragX.get(), y: dragY.get() });
                         }}
+                        whileDrag={{ scale: 1.1 }}
                         initial={{ opacity: 0, scale: 0.5 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.5 }}
