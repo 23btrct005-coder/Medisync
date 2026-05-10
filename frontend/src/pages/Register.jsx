@@ -544,7 +544,7 @@ const Register = () => {
                             </select>
                           </div>
                           <div><label className={labelClass}>Date of Birth <span className="text-red-500">*</span></label>
-                            <div className="grid grid-cols-3 gap-2">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                               <select className={inputClass} value={formData.dateOfBirth ? formData.dateOfBirth.split('-')[2] : ''} onChange={(e) => handleDateChange('day', e.target.value)} required>
                                 <option value="">Day</option>{Array.from({length: 31}, (_, i) => String(i + 1).padStart(2, '0')).map(d => <option key={d} value={d}>{d}</option>)}
                               </select>
@@ -635,7 +635,7 @@ const Register = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="md:col-span-2">
                            <label className={labelClass}>Lifestyle & Habits</label>
-                           <div className="grid grid-cols-3 gap-3">
+                           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                               <select name="smokingStatus" value={formData.smokingStatus} onChange={handleChange} className={inputClass}><option value="">Smoking</option><option value="Non-Smoker">No</option><option value="Regular">Yes</option></select>
                               <select name="alcoholStatus" value={formData.alcoholStatus} onChange={handleChange} className={inputClass}><option value="">Alcohol</option><option value="None">No</option><option value="Social">Social</option></select>
                               <select name="organDonorStatus" value={formData.organDonorStatus} onChange={handleChange} className={inputClass}><option value="Undecided">Donor</option><option value="Yes">Yes</option><option value="No">No</option></select>
@@ -644,8 +644,16 @@ const Register = () => {
                       </div>
                       <div className="p-6 bg-blue-50/50 rounded-3xl border border-blue-100 space-y-6">
                         <div className="flex items-center gap-3 pb-3 border-b border-blue-100"><Lock size={18} className="text-blue-600" /><h4 className="text-[10px] font-black text-blue-900 uppercase tracking-widest">Account Security</h4></div>
-                        <div><label className={labelClass}>Generated Patient ID</label><input type="text" disabled value={isAddressComplete ? formData.email : 'Complete Step 4 for ID generation'} className={`${inputClass} font-bold ${!isAddressComplete ? 'italic text-slate-400' : 'text-blue-900 bg-white'}`} /></div>
-                        <div className="grid grid-cols-2 gap-5">
+                        <div>
+                          <label className={labelClass}>Generated Patient ID</label>
+                          <input 
+                            type="text" 
+                            disabled 
+                            value={isAddressComplete ? formData.email : 'Complete Step 4 for ID generation'} 
+                            className={`${inputClass} font-bold text-[11px] truncate ${!isAddressComplete ? 'italic text-slate-400' : 'text-blue-900 bg-white'}`} 
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                           <div className="relative">
                             <label className={labelClass}>Create Password <span className="text-red-500">*</span></label>
                             <input type={showPassword ? 'text' : 'password'} name="password" required value={formData.password} onChange={handleChange} className={inputClass} placeholder="Minimum 6 characters" />
@@ -749,7 +757,7 @@ const Register = () => {
                                 </select>
                               </div>
                               <div><label className={labelClass}>Date of Birth <span className="text-red-500">*</span></label>
-                                <div className="grid grid-cols-3 gap-2">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                   <select className={inputClass} value={formData.dateOfBirth ? formData.dateOfBirth.split('-')[2] : ''} onChange={(e) => handleDateChange('day', e.target.value)} required><option value="">Day</option>{Array.from({length: 31}, (_, i) => String(i+1).padStart(2, '0')).map(d => <option key={d} value={d}>{d}</option>)}</select>
                                   <select className={inputClass} value={formData.dateOfBirth ? formData.dateOfBirth.split('-')[1] : ''} onChange={(e) => handleDateChange('month', e.target.value)} required><option value="">Month</option>{['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => <option key={m} value={String(i+1).padStart(2, '0')}>{m}</option>)}</select>
                                   <select className={inputClass} value={formData.dateOfBirth ? formData.dateOfBirth.split('-')[0] : ''} onChange={(e) => handleDateChange('year', e.target.value)} required><option value="">Year</option>{Array.from({length: 100}, (_, i) => new Date().getFullYear() - i).map(y => <option key={y} value={y}>{y}</option>)}</select>
