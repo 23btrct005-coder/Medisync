@@ -115,7 +115,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
   return (
     <>
-      <div className={`hidden md:flex flex-col border-r border-slate-200 bg-white shadow-xl z-30 w-64 h-[100dvh] shrink-0`}>
+      <div className={`flex flex-col border-r border-slate-200 bg-white h-full w-full shrink-0 relative overflow-hidden`}>
         <div className="h-16 flex items-center px-6 border-b border-slate-200 shrink-0">
           <Activity className="text-primary-600 mr-2" size={24} />
           <span className="text-2xl font-bold text-slate-800 tracking-tight">MEDISYNC</span>
