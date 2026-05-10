@@ -43,6 +43,30 @@ public class GeminiAiService implements AiProvider {
         return getCompletion(Collections.singletonList(textPart));
     }
 
+    public String getCompletion(String prompt, String base64Image) {
+        List<Map<String, Object>> parts = new ArrayList<>();
+        
+        Map<String, Object> textPart = new HashMap<>();
+        textPart.put("text", prompt);
+        parts.add(textPart);
+
+        if (base64Image != null && base64Image.contains(",")) {
+            String[] partsArr = base64Image.split(",");
+            String mimeType = partsArr[0].split(":")[1].split(";")[0];
+            String data = partsArr[1];
+
+            Map<String, Object> inlineData = new HashMap<>();
+            inlineData.put("mime_type", mimeType);
+            inlineData.put("data", data);
+
+            Map<String, Object> imagePart = new HashMap<>();
+            imagePart.put("inline_data", inlineData);
+            parts.add(imagePart);
+        }
+
+        return getCompletion(parts);
+    }
+
     public String getCompletion(List<Map<String, Object>> parts) {
         if (apiKey == null || apiKey.trim().isEmpty()) {
             System.err.println("GEMINI_KEY_FAILURE: Institutional API key is missing from environment.");
