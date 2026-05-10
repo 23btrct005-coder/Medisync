@@ -6,7 +6,7 @@ import {
     Heart, Activity, Zap, TrendingUp, Calendar, 
     MessageSquare, AlertCircle, Plus, ChevronRight, 
     Stethoscope, FileText, Pill, ShieldCheck, Wallet,
-    Clock, MapPin, Zap as Flash, Bell, ClipboardList
+    Clock, MapPin, Zap as Flash, Bell, ClipboardList, Users
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
