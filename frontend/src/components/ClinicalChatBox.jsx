@@ -110,26 +110,30 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
     };
 
     return (
-        <div className="fixed inset-0 md:inset-auto md:bottom-6 md:right-6 w-full md:w-96 h-full md:h-[500px] bg-white md:rounded-[2rem] shadow-2xl md:border border-slate-100 flex flex-col overflow-hidden z-[300] animate-in slide-in-from-bottom-8 duration-500 text-left pb-[70px] md:pb-0">
+        <div className="fixed inset-0 w-full h-[100dvh] md:bottom-6 md:right-6 md:w-96 md:h-[500px] bg-white md:rounded-[2rem] shadow-[0_0_80px_rgba(0,0,0,0.2)] md:border border-slate-100 flex flex-col overflow-hidden z-[1000] animate-in slide-in-from-bottom-full md:slide-in-from-bottom-8 duration-500 text-left">
             {/* Header */}
-            <div className="p-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
+            <div className="pt-[env(safe-area-inset-top,20px)] pb-4 px-4 bg-slate-900 text-white flex items-center justify-between shrink-0 shadow-lg relative z-20">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center border border-white/10">
-                        <User size={20} className="text-primary" />
+                    <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10 overflow-hidden">
+                        <User size={24} className="text-white/60" />
                     </div>
                     <div>
-                        <h4 className="text-xs font-black uppercase tracking-tight leading-none">{receiverName}</h4>
-                        <div className="flex items-center gap-1.5 mt-1">
-                            <div className={`w-1.5 h-1.5 rounded-full ${isReceiverOnline ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]' : 'bg-slate-500'}`} />
-                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">
-                                {isReceiverOnline ? 'Online' : 'Last seen recently'}
+                        <h4 className="text-[11px] font-black uppercase tracking-[0.1em] leading-none text-white">{receiverName}</h4>
+                        <div className="flex items-center gap-1.5 mt-1.5">
+                            <div className={`w-1.5 h-1.5 rounded-full ${isReceiverOnline ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'bg-slate-600'}`} />
+                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                                {isReceiverOnline ? 'Clinical Node Online' : 'Offline / Encrypted'}
                             </span>
                         </div>
                     </div>
                 </div>
-                <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-                    <X size={18} />
-                </button>
+                <motion.button 
+                    whileTap={{ scale: 0.9 }}
+                    onClick={onClose} 
+                    className="h-10 w-10 flex items-center justify-center bg-white/5 hover:bg-white/10 rounded-xl transition-all"
+                >
+                    <X size={20} />
+                </motion.button>
             </div>
 
             {/* Messages */}
@@ -190,27 +194,32 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
                 )}
             </div>
 
-            {/* Input */}
-            <form onSubmit={handleSend} className="p-3 bg-[#f0f2f5] flex items-center gap-2 shrink-0">
-                <div className="flex-1 bg-white rounded-[2rem] px-4 py-2 flex items-center shadow-sm">
-                    <input 
-                        type="text"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder="Type a clinical message..."
-                        className="flex-1 bg-transparent border-none outline-none text-[14px] font-medium py-1 placeholder:text-slate-400"
-                    />
-                </div>
-                <button 
-                    type="submit"
-                    disabled={!input.trim()}
-                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-90 shadow-md ${
-                        input.trim() ? 'bg-[#00a884] text-white' : 'bg-slate-300 text-slate-500'
-                    }`}
-                >
-                    <Send size={20} fill={input.trim() ? "currentColor" : "none"} />
-                </button>
-            </form>
+            {/* Input Area */}
+            <div className="pb-[env(safe-area-inset-bottom,20px)] bg-slate-50 border-t border-slate-200/50">
+                <form onSubmit={handleSend} className="p-4 flex items-center gap-3">
+                    <div className="flex-1 bg-white border border-slate-200 rounded-[1.75rem] px-5 py-3.5 flex items-center shadow-inner focus-within:ring-2 ring-primary/10 transition-all">
+                        <input 
+                            type="text"
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            placeholder="Type an encrypted message..."
+                            className="flex-1 bg-transparent border-none outline-none text-sm font-semibold placeholder:text-slate-400"
+                        />
+                    </div>
+                    <motion.button 
+                        whileTap={{ scale: 0.9 }}
+                        type="submit"
+                        disabled={!input.trim()}
+                        className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all shadow-lg ${
+                            input.trim() 
+                                ? 'bg-primary text-white shadow-primary/20' 
+                                : 'bg-slate-100 text-slate-400'
+                        }`}
+                    >
+                        <Send size={20} className={input.trim() ? "translate-x-0.5 -translate-y-0.5" : ""} />
+                    </motion.button>
+                </form>
+            </div>
         </div>
     );
 };
