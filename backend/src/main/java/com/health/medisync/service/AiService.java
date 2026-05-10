@@ -163,17 +163,45 @@ public class AiService {
                 parts.add(imagePart);
             }
 
-            neuralResponse = geminiAiService.getCompletion(parts);
+            // ELITE DUAL-PRIMARY REASONING: Gemini & OpenAI Load-Balanced Loop
+            boolean hasImage = imageData != null && imageData.contains(",");
+            String base64Data = null;
+            String mimeType = null;
             
-            // AUTOMATIC FAILOVER 1: OpenAI GPT-4o
-            if (neuralResponse == null || neuralResponse.contains("error") || neuralResponse.contains("403") || neuralResponse.contains("404")) {
-                System.err.println("Gemini Node Interrupted. Failing over to OpenAI GPT-4o...");
-                neuralResponse = openAiService.getCompletion(prompt);
+            if (hasImage) {
+                String[] partsArray = imageData.split(",");
+                mimeType = partsArray[0].split(":")[1].split(";")[0];
+                base64Data = partsArray[1];
+
+                Map<String, Object> imagePart = new HashMap<>();
+                Map<String, String> inlineData = new HashMap<>();
+                inlineData.put("mime_type", mimeType);
+                inlineData.put("data", base64Data);
+                imagePart.put("inline_data", inlineData);
+                parts.add(imagePart);
             }
 
-            // AUTOMATIC FAILOVER 2: Groq Llama-3.3-70b
+            // Randomly pick primary node to ensure both are 'Primary'
+            boolean startWithGemini = new java.util.Random().nextBoolean();
+            System.out.println("COPILOT_NODE_ROUTING: " + (startWithGemini ? "Gemini 1.5 Flash" : "OpenAI GPT-4o") + " selected as lead intelligence node.");
+
+            if (startWithGemini) {
+                neuralResponse = geminiAiService.getCompletion(parts);
+                if (neuralResponse == null || neuralResponse.contains("error") || neuralResponse.contains("403")) {
+                    System.err.println("Gemini Lead Interrupted. Failing over to OpenAI GPT-4o Primary Backup...");
+                    neuralResponse = openAiService.getCompletion(prompt, base64Data, mimeType);
+                }
+            } else {
+                neuralResponse = openAiService.getCompletion(prompt, base64Data, mimeType);
+                if (neuralResponse == null || neuralResponse.contains("error") || neuralResponse.contains("403")) {
+                    System.err.println("OpenAI Lead Interrupted. Failing over to Gemini 1.5 Flash Primary Backup...");
+                    neuralResponse = geminiAiService.getCompletion(parts);
+                }
+            }
+            
+            // AUTOMATIC SECONDARY FAILOVER: Groq Llama-3.3-70b
             if (neuralResponse == null || neuralResponse.contains("error")) {
-                System.err.println("OpenAI Node Interrupted. Failing over to Groq...");
+                System.err.println("All Primary Intelligence Nodes Interrupted. Failing over to Groq...");
                 neuralResponse = groqAiService.getCompletion(prompt);
             }
 

@@ -140,6 +140,10 @@ public class OpenAiService implements AiProvider {
     }
     @Override
     public String getCompletion(String prompt) {
+        return getCompletion(prompt, null, null);
+    }
+
+    public String getCompletion(String prompt, String base64Image, String mimeType) {
         if (apiKey == null || apiKey.trim().isEmpty()) {
             return "{\"error\": \"OpenAI is disabled. Configure `openai.api.key`.\"}";
         }
@@ -158,9 +162,27 @@ public class OpenAiService implements AiProvider {
             List<Map<String, Object>> messages = new ArrayList<>();
             Map<String, Object> userMessage = new HashMap<>();
             userMessage.put("role", "user");
-            userMessage.put("content", prompt);
-            messages.add(userMessage);
 
+            List<Map<String, Object>> contentList = new ArrayList<>();
+            
+            // Text Part
+            Map<String, Object> textPart = new HashMap<>();
+            textPart.put("type", "text");
+            textPart.put("text", prompt);
+            contentList.add(textPart);
+
+            // Image Part (if present)
+            if (base64Image != null && mimeType != null) {
+                Map<String, Object> imagePart = new HashMap<>();
+                imagePart.put("type", "image_url");
+                Map<String, Object> imageUrl = new HashMap<>();
+                imageUrl.put("url", "data:" + mimeType + ";base64," + base64Image);
+                imagePart.put("image_url", imageUrl);
+                contentList.add(imagePart);
+            }
+
+            userMessage.put("content", contentList);
+            messages.add(userMessage);
             requestBody.put("messages", messages);
 
             HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
