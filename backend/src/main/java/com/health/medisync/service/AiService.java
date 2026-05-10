@@ -18,13 +18,13 @@ public class AiService {
     private final UserRepository userRepository;
 
     public String generateResponse(String email, String query, String imageData, String location, String history) {
-        String profile = userRepository.findByEmail(email).map(u -> 
+        String profile = userRepository.findByUsername(email).map(u -> 
             "Name: " + u.getName() + ", Age: " + u.getAge() + ", History: " + u.getMedicalHistory()
         ).orElse("Unknown Patient");
 
         StringBuilder hospitalSb = new StringBuilder();
         hospitalRepository.findAll().stream().limit(5).forEach(h -> 
-            hospitalSb.append(h.getName()).append(" (").append(h.getAddress()).append("), ")
+            hospitalSb.append(h.getName()).append(" (").append(h.getLocation()).append("), ")
         );
         String hospitals = hospitalSb.toString();
 
