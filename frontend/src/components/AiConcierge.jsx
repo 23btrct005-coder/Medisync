@@ -255,14 +255,36 @@ const AiConcierge = () => {
             if (!sections.service) sections.service = 'Emergency & Trauma Care';
         }
 
-        // 3. Clinical Data Cleanup (Strip leading numbering from content)
-        const cleanContent = (t) => t.trim().replace(/^[\d.\s]+/, '').trim();
-        sections.assessment = cleanContent(sections.assessment);
-        sections.specialist = cleanContent(sections.specialist);
-        sections.action = cleanContent(sections.action);
-        sections.warning = cleanContent(sections.warning);
-        sections.possibleConditions = cleanContent(sections.possibleConditions);
-        
+        // 3. Technical Jargon Filtering (Silent Failover)
+        const jargonFilter = (t) => {
+            const jargon = [
+                'clinical reasoning in failover mode',
+                'portal navigation active',
+                'connectivity transiently interrupted',
+                'connectivity interrupted',
+                'follow the portal routes provided',
+                'none identified',
+                'clinical sync in failover mode',
+                'portal operations manual active',
+                'assessment pending further correlation',
+                'clinical assessment pending further correlation'
+            ];
+            let cleaned = t;
+            jargon.forEach(j => {
+                const regex = new RegExp(j, 'gi');
+                cleaned = cleaned.replace(regex, '');
+            });
+            return cleaned.replace(/^[:/\s-]+/, '').trim();
+        };
+
+        sections.assessment = jargonFilter(sections.assessment);
+        sections.possibleConditions = jargonFilter(sections.possibleConditions);
+        sections.riskIndicators = jargonFilter(sections.riskIndicators);
+        sections.specialist = jargonFilter(sections.specialist);
+        sections.action = jargonFilter(sections.action);
+        sections.warning = jargonFilter(sections.warning);
+        sections.other = jargonFilter(sections.other);
+
         // 4. Physician Extraction (High-precision mapping)
         const doctorMatch = text.match(/Dr\.\s+[A-Z][a-z]+/);
         if (doctorMatch) sections.physician = doctorMatch[0];
