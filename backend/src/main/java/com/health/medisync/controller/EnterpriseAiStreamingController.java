@@ -58,11 +58,7 @@ public class EnterpriseAiStreamingController {
 
         // 3. Initiate Stream
         return geminiStreamingService.streamCompletion(masterPrompt)
-                .map(token -> {
-                    // 4. Progressive Hydration (Repair partial JSON chunks)
-                    return jsonRepair.repair(token);
-                })
-                .doOnNext(chunk -> logger.trace("STREAM_CHUNK: SessionID={}, Size={}", sessionId, chunk.length()))
+                .doOnNext(token -> logger.trace("STREAM_TOKEN: SessionID={}, Size={}", sessionId, token.length()))
                 .doOnComplete(() -> {
                     logger.info("ENTERPRISE_STREAM_COMPLETE: SessionID={}", sessionId);
                     // 5. Finalize Session Memory

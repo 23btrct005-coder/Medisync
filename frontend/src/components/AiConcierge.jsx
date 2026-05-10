@@ -59,23 +59,28 @@ const AiConcierge = ({ userEmail, patientId, patientName }) => {
         try {
             // Attempt to find JSON in potential markdown
             const jsonMatch = content.match(/\{[\s\S]*\}/);
-            const data = JSON.parse(jsonMatch ? jsonMatch[0] : content);
+            // Support raw markdown extraction if AI wraps in code blocks
+            const jsonStr = content.includes('```json') 
+                ? content.split('```json')[1].split('```')[0].trim()
+                : content.trim();
+
+            const parsed = JSON.parse(jsonStr);
             return {
-                assessment: data.clinicalAssessment || "Analyzing clinical data...",
-                severity: data.triageLevel || "ROUTINE",
-                explanation: data.reasoningPath || data.explanation,
-                conditions: data.possibleConditions || [],
-                risk: data.riskIndicators || [],
-                specialist: data.recommendedSpecialist,
-                service: data.service,
-                warning: data.emergencyWarning,
-                questions: data.followUpQuestions || [],
-                verified: data.networkVerified || false,
-                confidence: data.confidenceScore || 0.85,
-                citations: data.evidenceCitations || []
+                assessment: parsed.clinicalAssessment || parsed.assessment || "",
+                severity: parsed.triageLevel || 'ROUTINE',
+                questions: parsed.followUpQuestions || [],
+                confidence: parsed.confidenceScore || 0.85,
+                warning: parsed.emergencyWarning || null,
+                conditions: parsed.possibleConditions || [],
+                requiresAmbulance: parsed.requiresAmbulance || false
             };
         } catch (e) {
-            return { assessment: content, severity: 'ROUTINE', questions: [], confidence: 0.5 };
+            return { 
+                assessment: content.length > 50 ? content.substring(0, 200) + "..." : content, 
+                severity: 'ROUTINE', 
+                questions: [], 
+                confidence: 0.5 
+            };
         }
     };
 
@@ -183,7 +188,7 @@ const AiConcierge = ({ userEmail, patientId, patientName }) => {
                                                                     <Stethoscope size={14} /> Clinical Assessment
                                                                 </h4>
                                                                 <p className="text-[15px] font-bold text-slate-800 leading-relaxed">
-                                                                    {s.assessment}
+                                                                    {s.assessment || "Refining diagnostic analysis..."}
                                                                 </p>
                                                             </div>
 
