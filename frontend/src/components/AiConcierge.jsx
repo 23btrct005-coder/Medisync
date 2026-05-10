@@ -210,6 +210,11 @@ const AiConcierge = () => {
         else if (fullTextLower.includes('casualty')) sections.service = 'Casualty';
         else if (fullTextLower.includes('emergency care')) sections.service = 'Emergency';
 
+        // Frontend safety override for emergency triage
+        if (fullTextLower.includes('ambulance') || fullTextLower.includes('emergency') || fullTextLower.includes('chest pain')) {
+            sections.severity = 'CRITICAL';
+        }
+
         if (!sections.assessment.trim() && sections.other.trim()) sections.assessment = sections.other;
         
         const mapMatch = text.match(/https:\/\/www\.google\.com\/maps\/[^ \n)\]]*/);
@@ -424,7 +429,7 @@ const AiConcierge = () => {
                                                     let url = '/dashboard/booking';
                                                     if (s.service) {
                                                         url = `/dashboard/booking?service=${s.service}`;
-                                                    } else if (s.specialist && s.specialist.length > 3) {
+                                                    } else if (s.specialist && s.specialist.length > 3 && !s.specialist.toLowerCase().includes('determined') && !s.specialist.toLowerCase().includes('n/a') && !s.specialist.toLowerCase().includes('none')) {
                                                         url = `/dashboard/booking?doctor=${encodeURIComponent(s.specialist)}`;
                                                     }
                                                     navigate(url);
