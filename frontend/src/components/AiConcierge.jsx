@@ -38,9 +38,15 @@ const AiConcierge = () => {
     const dragX = useMotionValue(0);
     const dragY = useMotionValue(0);
     const [orbPosition, setOrbPosition] = useState(() => {
-        const saved = localStorage.getItem('ai_orb_position');
+        const saved = localStorage.getItem('ai_orb_position_v3');
         if (saved) {
-            try { return JSON.parse(saved); } catch (e) { return { x: 0, y: 0 }; }
+            try { 
+                const pos = JSON.parse(saved);
+                // Sanitize: ensure not off-screen
+                if (pos.x < -window.innerWidth) pos.x = 0;
+                if (pos.y < -window.innerHeight) pos.y = 0;
+                return pos;
+            } catch (e) { return { x: 0, y: 0 }; }
         }
         return { x: 0, y: 0 };
     });
@@ -48,10 +54,10 @@ const AiConcierge = () => {
     useEffect(() => {
         dragX.set(orbPosition.x);
         dragY.set(orbPosition.y);
-    }, []);
+    }, [orbPosition.x, orbPosition.y]); // Ensure sync on load
 
     useEffect(() => {
-        localStorage.setItem('ai_orb_position', JSON.stringify(orbPosition));
+        localStorage.setItem('ai_orb_position_v3', JSON.stringify(orbPosition));
     }, [orbPosition]);
     
     const scrollRef = useRef(null);
