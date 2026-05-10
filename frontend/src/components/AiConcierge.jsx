@@ -201,11 +201,14 @@ const AiConcierge = () => {
         const mapUrl = mapMatch ? mapMatch[0].replace(/\.$/, '') : null;
 
         const fullTextLower = text.toLowerCase();
-        if (fullTextLower.includes('ambulance')) sections.service = 'Ambulance Services';
+        const isCritical = sections.severity === 'CRITICAL' || sections.severity === 'HIGH';
+
+        if (isCritical && fullTextLower.includes('ambulance')) sections.service = 'Ambulance Services';
+        else if (isCritical && fullTextLower.includes('oxygen')) sections.service = 'Oxygen Supply';
         else if (fullTextLower.includes('casualty') || fullTextLower.includes('trauma')) sections.service = 'Emergency & Trauma Care';
-        else if (fullTextLower.includes('emergency care')) sections.service = 'Emergency & Trauma Care';
         else if (fullTextLower.includes('mri scan') || fullTextLower.includes('mri')) sections.service = 'MRI Scan';
         else if (fullTextLower.includes('pharmacy') || fullTextLower.includes('medicine')) sections.service = 'Pharmacy (24/7)';
+        else if (fullTextLower.includes('skin') || fullTextLower.includes('rash') || fullTextLower.includes('dermatolog')) sections.service = 'General Clinical';
 
         const safetyKeywords = ['ambulance', 'immediate emergency', 'unconscious', 'breathing difficulty', 'heavy bleeding', 'stroke'];
         if (safetyKeywords.some(k => sections.assessment.toLowerCase().includes(k) || sections.warning.toLowerCase().includes(k))) {

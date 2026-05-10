@@ -201,6 +201,14 @@ public class AiService {
             conditions = "Potential hypertensive urgency requiring pharmacological stabilization.";
             instructions = "Rest quietly and avoid physical exertion until you are evaluated by a clinician.";
             warning = "HYPERTENSIVE CRISIS POTENTIAL: IMMEDIATE MEDICAL OVERSIGHT REQUIRED.";
+        } else if (q.contains("skin") || q.contains("rash") || q.contains("itch") || q.contains("hive") || q.contains("allergy") || q.contains("redness") || q.contains("swelling")) {
+            assessment = "Your report of skin-related changes, such as a rash or localized irritation, requires a visual dermatological correlation to rule out acute allergic reactions or inflammatory conditions.";
+            severity = "MODERATE";
+            specialist = "Dermatologist";
+            action = "Secure a teledermatology or in-person consultation for a high-resolution skin assessment.";
+            service = "General Clinical";
+            conditions = "Localized dermatological inflammation or allergic response (Urticaria/Dermatitis).";
+            instructions = "Avoid scratching the affected area and monitor for any spreading or systemic symptoms like fever.";
         } else if (q.contains("report") || q.contains("how can i see") || q.contains("view history")) {
             assessment = "You can access your entire medical history, including lab results and previous diagnoses, in the 'Reports' section of your dashboard.";
             severity = "LOW";
