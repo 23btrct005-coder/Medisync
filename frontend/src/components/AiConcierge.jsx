@@ -289,6 +289,7 @@ const AiConcierge = () => {
                     <motion.div
                         drag
                         dragMomentum={false}
+                        dragConstraints={containerRef}
                         onDragEnd={(e, info) => {
                             const threshold = window.innerWidth / 2;
                             const currentX = dragX.get();
@@ -298,8 +299,8 @@ const AiConcierge = () => {
                                 dragX.set(0); 
                             }
                         }}
-                        initial={{ opacity: 0, scale: 0.5, x: 0 }}
-                        animate={{ opacity: 1, scale: 1, x: dragX.get() }}
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
                         exit={{ 
                             opacity: 0, 
                             scale: 0.8,
