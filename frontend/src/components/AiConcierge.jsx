@@ -401,7 +401,7 @@ const AiConcierge = () => {
                                                     <button 
                                                         onClick={() => {
                                                             setIsOpen(false);
-                                                            navigate('/dashboard/booking?service=Ambulance');
+                                                            navigate('/dashboard/booking?mode=service&service=Ambulance');
                                                         }}
                                                         className="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-red-200"
                                                     >
@@ -428,7 +428,7 @@ const AiConcierge = () => {
                                                     setIsOpen(false);
                                                     let url = '/dashboard/booking';
                                                     if (s.service) {
-                                                        url = `/dashboard/booking?service=${s.service}`;
+                                                        url = `/dashboard/booking?mode=service&service=${s.service}`;
                                                     } else if (s.specialist && s.specialist.length > 3 && !s.specialist.toLowerCase().includes('determined') && !s.specialist.toLowerCase().includes('n/a') && !s.specialist.toLowerCase().includes('none')) {
                                                         url = `/dashboard/booking?doctor=${encodeURIComponent(s.specialist)}`;
                                                     }
