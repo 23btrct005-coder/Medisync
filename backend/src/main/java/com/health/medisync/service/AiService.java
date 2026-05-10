@@ -111,29 +111,31 @@ public class AiService {
 
     private String executeNeuralOrchestration(String query, String imageData, String history, String location, String hospitals, String doctors, String profile) {
         String prompt = "### MEDISYNC MULTI-AGENT ORCHESTRATOR — ELITE CLINICAL MODE\n\n" +
-                "You are the Lead Orchestrator for the MediSync Copilot Expert Swarm.\n" +
-                "Your task is to synthesize inputs from specialized internal agents (Clinical, Visual, Portal).\n\n" +
+                "OBJECTIVE: You are the Lead Orchestrator for the MediSync Copilot. You are a Board-Certified Emergency Physician and Institutional Expert.\n\n" +
+                "### EMERGENCY FIRST PROTOCOL:\n" +
+                "- If the query contains signals of chest pain, shortness of breath, severe trauma, or fainting, IMMEDIATELY prioritize CRITICAL triage.\n" +
+                "- Map cardiovascular symptoms (Chest Pain, Heart, BP) to 'Emergency & Trauma Care' and 'Cardiologist'.\n" +
+                "- Map neurological/head injury symptoms to 'Neurologist' and 'Emergency'.\n\n" +
                 "### COMMUNICATION PROTOCOLS:\n" +
-                "- Maintain absolute board-certified clinical professionalism.\n" +
-                "- NEVER mention internal system states, failover, or technical jargon.\n" +
-                "- NO EMPTY SECTIONS: Every header must provide high-value, specific insight.\n" +
-                "- ADAPTIVE SECTIONS: Adjust detail based on query complexity.\n\n" +
-                "### PORTAL OPERATIONS:\n" +
+                "- Tone: Elite, calm, professional, and clinical. Use 'cranial impact', 'hypertensive urgency', 'cardiovascular stabilization'.\n" +
+                "- NO INTERNAL DISCLOSURE: Never mention failover, nodes, AI models, or technical internal states.\n" +
+                "- NO EMPTY SECTIONS: Every header must provide high-value insight. If a section is redundant, use it for specialized institutional pro-tips.\n\n" +
+                "### PORTAL NAVIGATOR:\n" +
                 "- Booking: '/dashboard/booking' | Reports: '/dashboard/reports' | Vitals: '/dashboard/profile'\n\n" +
-                "### 8-HEADER CLINICAL PROTOCOL:\n" +
-                "1. Copilot Assessment: [Primary reasoning & clinical empathy]\n" +
-                "2. Possible Conditions / Features: [Differential diagnosis or portal feature detail]\n" +
-                "3. Risk Indicators / Instructions: [Clinical red flags or operational steps]\n" +
+                "### 8-HEADER CLINICAL PROTOCOL (ADAPTIVE):\n" +
+                "1. Copilot Assessment: [Primary reasoning & board-certified clinical empathy]\n" +
+                "2. Possible Conditions / Features: [Differential diagnosis or specific portal features]\n" +
+                "3. Risk Indicators / Instructions: [Clinical red flags or operational portal steps]\n" +
                 "4. Triage Level: [LOW | MODERATE | HIGH | CRITICAL]\n" +
-                "5. Recommended specialist / Node: [Specific department or physician type]\n" +
-                "6. Suggested Next Steps: [Actionable advice with MediSync routes]\n" +
-                "7. Follow-up Questions: [Refining the assessment]\n" +
-                "8. Emergency Warning / Portal Tip: [Safety info or platform pro-tip]\n\n" +
-                "### CONTEXT:\n" +
+                "5. Recommended specialist / Node: [Specific department AND specialist type]\n" +
+                "6. Suggested Next Steps: [Actionable advice with specific MediSync portal routes]\n" +
+                "7. Follow-up Questions: [Refining the clinical assessment]\n" +
+                "8. Emergency Warning / Portal Tip: [Safety warning OR institutional healthcare pro-tip]\n\n" +
+                "### CLINICAL CONTEXT:\n" +
                 "REGISTRY:\n" + hospitals + "\n" + doctors + "\n" +
-                "PATIENT: " + profile + "\n" +
+                "PATIENT PROFILE: " + profile + "\n" +
                 "LOCATION: " + location + "\n" +
-                "HISTORY: " + history + "\n\n" +
+                "CHAT HISTORY: " + history + "\n\n" +
                 "### USER QUERY: " + query;
 
         boolean startWithGemini = new java.util.Random().nextBoolean();
@@ -165,21 +167,49 @@ public class AiService {
         String warning = "";
 
         if (q.contains("accident") || q.contains("injury") || q.contains("hit") || q.contains("trauma") || q.contains("fall")) {
-            boolean isHead = q.contains("head");
-            assessment = "I've prioritized your report of a traumatic " + (isHead ? "head " : "") + "injury. Accidental impact require immediate assessment.";
+            boolean isHead = q.contains("head") || q.contains("brain") || q.contains("skull");
+            assessment = "I've prioritized your report of a traumatic " + (isHead ? "head " : "") + "injury. Accidents involving " + (isHead ? "cranial " : "physical ") + "impact require immediate neurological and physical assessment to rule out internal trauma.";
             severity = "CRITICAL";
-            specialist = isHead ? "Neurologist / ER" : "Emergency Physician";
-            action = "Navigate immediately to the nearest Emergency & Trauma node.";
+            specialist = isHead ? "Neurologist / Emergency Trauma Specialist" : "Emergency Physician";
+            action = "Navigate immediately to the nearest Emergency & Trauma node. Do not delay your arrival.";
             service = "Emergency & Trauma Care";
-            conditions = "Potential internal trauma protocol initiated.";
-            warning = "TRAUMA SIGNAL DETECTED: PROCEED TO EMERGENCY.";
-        } else if (q.contains("blood pressure") || q.contains(" bp ") || q.contains("pressure is")) {
-            assessment = "Your blood pressure readings indicate a potentially high-risk state requiring stabilization.";
+            conditions = "Potential internal trauma or acute " + (isHead ? "concussion" : "injury") + " protocol initiated.";
+            instructions = "If you experience dizziness, nausea, or loss of consciousness, seek help immediately.";
+            warning = "TRAUMA SIGNAL DETECTED: PROCEED TO EMERGENCY IMMEDIATELY.";
+        } else if (q.contains("chest") || q.contains("heart") || q.contains("breathing") || q.contains("emergency") || q.contains("cardiac") || (q.contains("pain") && q.contains("sharp"))) {
+            assessment = "Potential acute cardiovascular or respiratory signal identified. I have initiated our Emergency Triage protocol to prioritize your immediate safety.";
             severity = "CRITICAL";
-            specialist = "Cardiologist / ER";
-            action = "Secure immediate evaluation at an Emergency node.";
+            specialist = "Cardiologist / Emergency Specialist";
+            action = "Locate and navigate to the nearest Emergency & Trauma Care node in the registry immediately. Do not drive yourself.";
             service = "Emergency & Trauma Care";
-            warning = "HYPERTENSIVE CRISIS POTENTIAL: SEEK CARE IMMEDIATELY.";
+            conditions = "Acute clinical signals requiring immediate life-safety cardiovascular intervention.";
+            instructions = "If symptoms worsen, contact emergency services (Ambulance) immediately.";
+            warning = "LIFE-SAFETY SIGNAL DETECTED: SEEK EMERGENCY CARE IMMEDIATELY.";
+        } else if (q.contains("blood pressure") || q.contains(" bp ") || q.startsWith("bp ") || q.contains("hypertension") || q.contains("pressure is")) {
+            assessment = "Your blood pressure telemetry indicates a potentially high-risk cardiovascular state. Managing hypertension is critical to preventing acute vascular events.";
+            severity = "CRITICAL";
+            specialist = "Cardiologist / Emergency Specialist";
+            action = "Secure an immediate evaluation at an Emergency node for hypertensive stabilization.";
+            service = "Emergency & Trauma Care";
+            conditions = "Potential hypertensive urgency requiring pharmacological stabilization.";
+            instructions = "Rest quietly and avoid physical exertion until you are evaluated by a clinician.";
+            warning = "HYPERTENSIVE CRISIS POTENTIAL: IMMEDIATE MEDICAL OVERSIGHT REQUIRED.";
+        } else if (q.contains("paracetamol") || q.contains("ibuprofen") || q.contains("aspirin") || q.contains("medicine") || q.contains("tablet") || q.contains("pill")) {
+            assessment = "I've noted your inquiry regarding pharmacological intake. While medications like Paracetamol or Ibuprofen are common, they must be used according to professional dosage guidelines.";
+            severity = "LOW";
+            specialist = "General Practitioner / Pharmacist";
+            action = "Verify safe dosage and potential drug-drug interactions with a pharmacist via our booking portal.";
+            service = "Pharmacy (24/7)";
+            conditions = "Routine pharmaceutical inquiry for symptomatic management.";
+            instructions = "Always check the expiration date and dosage instructions on the packaging.";
+        } else if (q.contains("scan") || q.contains("mri") || q.contains("ct") || q.contains("xray")) {
+            assessment = "I've processed your request for diagnostic imaging. Advanced scanning (MRI/CT) is an essential tool for high-precision internal diagnostics.";
+            severity = "HIGH";
+            specialist = "Radiologist";
+            action = "Secure a slot in the Diagnostic Imaging section of the portal to coordinate your scan.";
+            service = "MRI Scan";
+            conditions = "Diagnostic imaging requested for symptomatic investigation.";
+            instructions = "Ensure you have a referral from your primary physician before your appointment.";
         } else {
             assessment += "I recommend a professional consultation for clinical clarity.";
         }
