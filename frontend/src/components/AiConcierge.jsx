@@ -59,7 +59,14 @@ const AiConcierge = () => {
 
     useEffect(() => {
         if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        localStorage.setItem('ai_chat_history', JSON.stringify(messages));
+        
+        // STABILITY: Strip large image telemetry before persisting to localStorage
+        const historyToSave = messages.slice(-20).map(m => ({
+            role: m.role,
+            text: m.text,
+            image: null // Do not persist base64 images to prevent QuotaExceededError
+        }));
+        localStorage.setItem('ai_chat_history', JSON.stringify(historyToSave));
     }, [messages, isOpen, isFullscreen]);
 
     if (!user) return null;
