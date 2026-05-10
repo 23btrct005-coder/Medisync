@@ -191,23 +191,42 @@ public class AiService {
             specialist = "Hematologist";
             action = "Navigate to the institutional Blood Bank node immediately for coordination.";
             service = "Blood Bank";
-        } else if (q.contains("scan") || q.contains("mri") || q.contains("ct") || q.contains("head") || q.contains("brain")) {
-            assessment += "Imaging request detected. We are preparing the diagnostic node for your arrival.";
+        } else if (q.contains("scan") || q.contains("mri") || q.contains("ct") || q.contains("head") || q.contains("brain") || q.contains("stomach") || q.contains("abdomen")) {
+            boolean isAbdomen = q.contains("stomach") || q.contains("abdomen");
+            assessment += (isAbdomen ? "Abdominal" : "Imaging") + " request detected. We are preparing the diagnostic node for your arrival.";
             severity = "HIGH";
-            specialist = "Radiologist";
-            action = "Secure a slot in the Diagnostic Imaging / MRI section of the portal.";
-            service = "MRI Scan";
-        } else if (q.contains("emergency") || q.contains("pain") || q.contains("breathing") || q.contains("chest")) {
+            specialist = isAbdomen ? "Gastroenterologist" : "Radiologist";
+            action = "Secure a slot in the " + (isAbdomen ? "Ultrasound / Laboratory" : "Diagnostic Imaging / MRI") + " section of the portal.";
+            service = isAbdomen ? "Ultrasound / सोनोग्राफी" : "MRI Scan";
+        } else if (q.contains("bone") || q.contains("fracture") || q.contains("leg") || q.contains("arm") || q.contains("joint")) {
+            assessment += "Orthopedic assessment triggered for potential structural injury.";
+            severity = "HIGH";
+            specialist = "Orthopedic Surgeon";
+            action = "An X-Ray is recommended to rule out fractures. Book via the Radiology node.";
+            service = "X-Ray (Routine & Emergency)";
+        } else if (q.contains("skin") || q.contains("rash") || q.contains("allergy")) {
+            assessment += "Dermatological signal detected. Please avoid applying any unverified clinical ointments.";
+            severity = "LOW";
+            specialist = "Dermatologist";
+            action = "Consult a specialist to determine the etiology of the dermal reaction.";
+            service = "Pharmacy (24/7)";
+        } else if (q.contains("heart") || q.contains("chest") || q.contains("palpitation")) {
+            assessment += "Cardiology protocol active. Cardiovascular monitoring is prioritized.";
+            severity = "CRITICAL";
+            specialist = "Cardiologist";
+            action = "Immediate ECG and vitals check required at the nearest Emergency node.";
+            service = "Emergency & Trauma Care";
+        } else if (q.contains("emergency") || q.contains("pain") || q.contains("breathing")) {
             assessment += "CRITICAL: Potential emergency signal detected. Clinical bypass active.";
             severity = "CRITICAL";
             specialist = "Emergency Specialist";
-            action = "Dispatching ambulance request. Locate the nearest Emergency & Trauma Care node.";
+            action = "Locate the nearest Emergency & Trauma Care node immediately.";
             service = "Emergency & Trauma Care";
         } else {
             assessment += "Based on your clinical query, a follow-up assessment is recommended.";
         }
 
-        return "1. Initial Assessment: " + assessment + (hasImage ? " (Image analysis pending link restoration)" : "") + "\n" +
+        return "1. Initial Assessment: " + assessment + (hasImage ? " (Visual telemetry analysis pending link restoration)" : "") + "\n" +
                "2. Possible Conditions: Clinical sync paused. Symptom correlation required.\n" +
                "3. Risk Indicators: Connectivity transiently interrupted.\n" +
                "4. Triage Level: " + severity + "\n" +

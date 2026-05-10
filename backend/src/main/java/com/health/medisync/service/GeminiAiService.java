@@ -45,8 +45,11 @@ public class GeminiAiService implements AiProvider {
 
     public String getCompletion(List<Map<String, Object>> parts) {
         if (apiKey == null || apiKey.trim().isEmpty()) {
+            System.err.println("GEMINI_KEY_FAILURE: Institutional API key is missing from environment.");
             return "{\"error\": \"Gemini API key not configured.\"}";
         }
+        
+        System.out.println("GEMINI_NODE_ACTIVE: Initializing clinical sync with key prefix [" + apiKey.substring(0, Math.min(4, apiKey.length())) + "...]");
 
         try {
             RestTemplate restTemplate = new RestTemplate();
