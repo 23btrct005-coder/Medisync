@@ -202,9 +202,16 @@ const AiConcierge = () => {
         });
 
         // Final cleanups and smart mapping
-        sections.specialist = sections.specialist.trim();
-        sections.action = sections.action.trim();
-        sections.warning = sections.warning.trim();
+        const stripMap = (t) => t.replace(/https:\/\/(www\.google\.com\/maps|maps\.app\.goo\.gl)\/[^ \n)\]]*/g, '').trim();
+        
+        sections.assessment = stripMap(sections.assessment);
+        sections.possibleConditions = stripMap(sections.possibleConditions);
+        sections.riskIndicators = stripMap(sections.riskIndicators);
+        sections.specialist = stripMap(sections.specialist.trim());
+        sections.action = stripMap(sections.action.trim());
+        sections.warning = stripMap(sections.warning.trim());
+        sections.other = stripMap(sections.other);
+        sections.questions = sections.questions.map(q => stripMap(q));
 
         const fullTextLower = text.toLowerCase();
         if (fullTextLower.includes('ambulance')) sections.service = 'Ambulance';

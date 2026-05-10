@@ -110,7 +110,7 @@ public class AiService {
                 "2. DYNAMIC TRIAGE: Use ONLY [LOW | MODERATE | HIGH | CRITICAL].\n" +
                 "3. EMERGENCY PROTOCOL: Any mention of 'Ambulance', 'Emergency', 'Chest Pain', or 'Severe Breathing Difficulty' MUST be triaged as CRITICAL immediately.\n" +
                 "4. ADAPTIVE HEADERS: If certain, use 'Clinical Assessment'. If vague, use 'Initial Assessment'.\n" +
-                "5. STRICT REGISTRY ADHERENCE: ONLY recommend hospitals and doctors from the provided INSTITUTIONAL REGISTRY. Do not mention any other facilities, clinics, or general hospital names. If recommending a hospital, ALWAYS include its Google Maps link from the registry.\n\n" +
+                "5. STRICT REGISTRY ADHERENCE (MANDATORY): You are FORBIDDEN from suggesting or mentioning any hospital, clinic, or medical facility NOT listed in the INSTITUTIONAL REGISTRY below. Recommending external facilities like 'Narayana Health City' or others not in the list is a CRITICAL FAILURE. If no suitable hospital is in the registry, suggest the 'Nearest MediSync Node'. ALWAYS include the Google Maps link from the registry for any recommended facility.\n\n" +
                 "RESPONSE STRUCTURE (STRICT 8-HEADER PROTOCOL):\n" +
                 "1. Initial Assessment: (Or 'Clinical Assessment' if certainty is high)\n" +
                 "2. Possible Conditions: (Medically cautious list; state 'Assessment pending further details' if vague)\n" +
