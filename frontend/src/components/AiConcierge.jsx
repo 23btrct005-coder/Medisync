@@ -248,8 +248,9 @@ const AiConcierge = () => {
         else if (fullTextLower.includes('laboratory') || fullTextLower.includes('blood test')) sections.service = 'Laboratory Services';
         else if (fullTextLower.includes('pharmacy') || fullTextLower.includes('medicine')) sections.service = 'Pharmacy (24/7)';
 
-        // Frontend safety override for emergency triage
-        if (fullTextLower.includes('ambulance') || fullTextLower.includes('emergency') || fullTextLower.includes('critical') || fullTextLower.includes('chest pain') || fullTextLower.includes('unconscious')) {
+        // Frontend safety override for emergency triage (ONLY for specific life-threatening keywords)
+        const safetyKeywords = ['ambulance', 'emergency', 'chest pain', 'unconscious', 'breathing difficulty', 'heavy bleeding', 'stroke'];
+        if (safetyKeywords.some(k => fullTextLower.includes(k))) {
             sections.severity = 'CRITICAL';
             if (!sections.service) sections.service = 'Emergency & Trauma Care';
         }
@@ -261,6 +262,10 @@ const AiConcierge = () => {
         sections.action = cleanContent(sections.action);
         sections.warning = cleanContent(sections.warning);
         sections.possibleConditions = cleanContent(sections.possibleConditions);
+        
+        // 4. Physician Extraction (High-precision mapping)
+        const doctorMatch = text.match(/Dr\.\s+[A-Z][a-z]+/);
+        if (doctorMatch) sections.physician = doctorMatch[0];
 
         if (!sections.assessment.trim() && sections.other.trim()) sections.assessment = sections.other;
         
@@ -428,7 +433,7 @@ const AiConcierge = () => {
                                                 {s.specialist && (
                                                     <div className="p-4 rounded-2xl border border-slate-50 bg-slate-50/50 flex flex-col gap-1">
                                                         <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">RECOMMENDED SPECIALIST</span>
-                                                        <span className="text-xs font-black text-slate-700 truncate">{s.specialist}</span>
+                                                        <span className="text-xs font-black text-slate-700 leading-tight">{s.specialist}</span>
                                                     </div>
                                                 )}
                                             </div>
@@ -520,13 +525,15 @@ const AiConcierge = () => {
                                                 onClick={() => {
                                                     setIsOpen(false);
                                                     let url = '/dashboard/booking';
-                                                    if (s.service) {
+                                                    if (s.physician) {
+                                                        url = `/dashboard/booking?doctor=${encodeURIComponent(s.physician)}`;
+                                                    } else if (s.service) {
                                                         url = `/dashboard/booking?mode=service&service=${encodeURIComponent(s.service)}`;
                                                     } else if (s.specialist && s.specialist.length > 3 && !s.specialist.toLowerCase().includes('determined') && !s.specialist.toLowerCase().includes('n/a') && !s.specialist.toLowerCase().includes('none')) {
                                                         url = `/dashboard/booking?doctor=${encodeURIComponent(s.specialist)}`;
                                                     }
                                                     navigate(url);
-                                                    toast.success(`Navigating to ${s.service || 'Clinical'} Booking Node`);
+                                                    toast.success(`Navigating to ${s.physician || s.service || 'Clinical'} Booking Node`);
                                                 }}
                                                 className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-3 shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all"
                                             >
