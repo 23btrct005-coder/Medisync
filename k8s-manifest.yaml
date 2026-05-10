@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: medisync-ai-core
+  namespace: medical-ops
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: medisync-ai
+  template:
+    metadata:
+      labels:
+        app: medisync-ai
+    spec:
+      containers:
+      - name: backend
+        image: medisync/ai-core:latest
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1"
+          limits:
+            memory: "4Gi"
+            cpu: "2"
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+        env:
+        - name: SPRING_REDIS_HOST
+          value: "redis-service"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: medisync-ai-service
+  namespace: medical-ops
+spec:
+  selector:
+    app: medisync-ai
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: medisync-ai-hpa
+  namespace: medical-ops
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: medisync-ai-core
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
