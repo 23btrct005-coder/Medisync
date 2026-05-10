@@ -1,112 +1,46 @@
 package com.health.medisync.service;
 
-import com.health.medisync.model.*;
-import com.health.medisync.repository.*;
+import com.health.medisync.repository.HospitalRepository;
+import com.health.medisync.repository.DoctorRepository;
+import com.health.medisync.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.context.annotation.Lazy;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class AiService {
-
-    private final DoctorRepository doctorRepository;
-    private final HospitalRepository hospitalRepository;
-    private final AiQueryLogRepository aiQueryLogRepository;
-    private final PrescriptionRepository prescriptionRepository;
-    private final AppointmentRepository appointmentRepository;
-    private final DoctorService doctorService;
     private final GeminiAiService geminiAiService;
-    private final GroqAiService groqAiService;
     private final OpenAiService openAiService;
+    private final GroqAiService groqAiService;
+    private final HospitalRepository hospitalRepository;
+    private final DoctorRepository doctorRepository;
     private final UserRepository userRepository;
-    private final PatientRepository patientRepository;
-    private final ReportRepository reportRepository;
-    private final TelemetryRepository telemetryRepository;
-    
-    private static final Map<String, String> sessionSummaries = new HashMap<>();
 
-    public AiService(DoctorRepository doctorRepository, 
-                     HospitalRepository hospitalRepository,
-                     AiQueryLogRepository aiQueryLogRepository,
-                     PrescriptionRepository prescriptionRepository,
-                     AppointmentRepository appointmentRepository,
-                     @Lazy DoctorService doctorService,
-                     UserRepository userRepository,
-                     PatientRepository patientRepository,
-                     ReportRepository reportRepository,
-                     GeminiAiService geminiAiService,
-                     GroqAiService groqAiService,
-                     OpenAiService openAiService,
-                     TelemetryRepository telemetryRepository) {
-        this.doctorRepository = doctorRepository;
-        this.hospitalRepository = hospitalRepository;
-        this.aiQueryLogRepository = aiQueryLogRepository;
-        this.prescriptionRepository = prescriptionRepository;
-        this.appointmentRepository = appointmentRepository;
-        this.doctorService = doctorService;
-        this.userRepository = userRepository;
-        this.patientRepository = patientRepository;
-        this.reportRepository = reportRepository;
-        this.geminiAiService = geminiAiService;
-        this.groqAiService = groqAiService;
-        this.openAiService = openAiService;
-        this.telemetryRepository = telemetryRepository;
+    public String generateResponse(String email, String query, String imageData, String location, String history) {
+        String profile = userRepository.findByEmail(email).map(u -> 
+            "Name: " + u.getName() + ", Age: " + u.getAge() + ", History: " + u.getMedicalHistory()
+        ).orElse("Unknown Patient");
+
+        String hospitals = hospitalRepository.findAll().stream().limit(5).map(h -> 
+            h.getName() + " (" + h.getAddress() + ")"
+        ).collect(Collectors.joining(", "));
+
+        String doctors = doctorRepository.findAll().stream().limit(5).map(d -> 
+            "Dr. " + d.getName() + " (" + d.getSpecialization() + ")"
+        ).collect(Collectors.joining(", "));
+
+        // Multi-Agent Orchestration Loop
+        String response = executeNeuralOrchestration(query, imageData, history, location, hospitals, doctors, profile);
+        
+        if (response == null || isError(response)) {
+            return executeLocalExpertAgent(query, imageData != null, history);
+        }
+        return response;
     }
 
-    /**
-     * ELITE MULTI-AGENT ORCHESTRATOR
-     * Orchestrates between specialized agents (Clinical, Visual, Portal) to deliver high-precision guidance.
-     */
-    public String generateResponse(String email, String query, String imageData, String location, List<Map<String, Object>> history) {
-        StringBuilder historyContext = new StringBuilder();
-        if (history != null) {
-            for (Map<String, Object> msg : history) {
-                String role = msg.get("role") != null ? msg.get("role").toString() : "UNKNOWN";
-                String text = msg.get("text") != null ? msg.get("text").toString() : "";
-                historyContext.append(role.toUpperCase()).append(": ").append(text).append("\n");
-            }
-        }
-
-        // 1. Gather Institutional Registry Context
-        String limitedHospitalList = hospitalRepository.findAll().stream().limit(10)
-            .map(h -> "- " + h.getName() + " | Address: " + h.getStreet() + ", " + h.getCity() + ", " + h.getState() + " " + h.getPinCode() + " | Maps: " + (h.getGoogleMapsUrl() != null ? h.getGoogleMapsUrl() : "https://www.google.com/maps/search/?api=1&query=" + h.getName().replace(" ", "+")) + " [ID: " + h.getId() + "]")
-            .collect(Collectors.joining("\n"));
-
-        String limitedDoctorList = doctorRepository.findAll().stream().filter(Doctor::isApproved).limit(10)
-            .map(d -> "- Dr. " + d.getName() + " (" + d.getSpecialization() + ") [ID: " + d.getId() + "] at " + (d.getHospitalEntity() != null ? d.getHospitalEntity().getName() : (d.getHospital() != null ? d.getHospital() : "Independent")))
-            .collect(Collectors.joining("\n"));
-
-        // 2. Gather Patient Clinical Context
-        StringBuilder clinicalProfile = new StringBuilder("None");
-        if (email != null) {
-            userRepository.findByUsernameIgnoreCase(email).ifPresent(u -> {
-                clinicalProfile.setLength(0);
-                patientRepository.findByUserId(u.getId()).ifPresent(p -> {
-                    clinicalProfile.append("Profile: ").append(p.getGender()).append(", ").append(p.getAge()).append("y. ");
-                });
-                telemetryRepository.findByPatientIdOrderByCreatedAtDesc(u.getId()).stream().findFirst().ifPresent(t -> {
-                    clinicalProfile.append("Vitals: BP ").append(t.getBloodPressureSystolic()).append("/").append(t.getBloodPressureDiastolic()).append(", HR ").append(t.getHeartRate()).append(" bpm. ");
-                });
-            });
-        }
-
-        // 3. Orchestration Engine: Neural Loop
-        try {
-            String result = executeNeuralOrchestration(query, imageData, historyContext.toString(), location, limitedHospitalList, limitedDoctorList, clinicalProfile.toString());
-            if (result != null && !isError(result)) {
-                if (email != null) sessionSummaries.put(email, result.substring(0, Math.min(result.length(), 200)));
-                return result;
-            }
-            throw new Exception("Neural Sequence Interrupted");
-        } catch (Exception e) {
-            System.err.println("ORCHESTRATOR_CRITICAL_FAILOVER: " + e.getMessage());
-            return executeLocalExpertAgent(query, imageData != null && imageData.contains(","));
-        }
+    private boolean isError(String res) {
+        return res.toLowerCase().contains("error") || res.toLowerCase().contains("failed") || res.length() < 20;
     }
 
     private String executeNeuralOrchestration(String query, String imageData, String history, String location, String hospitals, String doctors, String profile) {
@@ -136,24 +70,25 @@ public class AiService {
                 "CHAT HISTORY: " + history + "\n\n" +
                 "### USER QUERY: " + query;
 
-        boolean startWithGemini = new java.util.Random().nextBoolean();
-        String response;
+        String response = null;
+        try {
+            // Primary Agent: Gemini 1.5 Flash (Visual-Aware)
+            response = geminiAiService.getCompletion(prompt, imageData);
+            if (response != null && !isError(response)) return response;
 
-        if (startWithGemini) {
-            response = geminiAiService.getCompletion(createGeminiParts(prompt, imageData));
-            if (response == null || isError(response)) response = openAiService.getCompletion(prompt, getBase64(imageData), getMime(imageData));
-        } else {
-            response = openAiService.getCompletion(prompt, getBase64(imageData), getMime(imageData));
-            if (response == null || isError(response)) response = geminiAiService.getCompletion(createGeminiParts(prompt, imageData));
+            // Secondary Agent: GPT-4o (Reasoning-Aware)
+            response = openAiService.getCompletion(prompt);
+        } catch (Exception e) {
+            response = null;
         }
 
-        // Secondary Backup: Groq
+        // Tertiary Agent: Groq (Performance-Aware)
         if (response == null || isError(response)) response = groqAiService.getCompletion(prompt);
 
         return response;
     }
 
-    private String executeLocalExpertAgent(String query, boolean hasImage) {
+    private String executeLocalExpertAgent(String query, boolean hasImage, String history) {
         String q = query.toLowerCase();
         String assessment = "I am your MediSync Copilot. Based on the clinical signals in your query, I have analyzed your situation against our institutional safety registry. ";
         String severity = "MODERATE";
@@ -164,9 +99,41 @@ public class AiService {
         String instructions = "Please monitor for any changes in symptom intensity or the development of new indicators.";
         String warning = "";
 
-        if (q.contains("accident") || q.contains("injury") || q.contains("hit") || q.contains("trauma") || q.contains("fall")) {
+        // Memory-Aware Safety: Check history for critical alerts (e.g., Allergies)
+        String safetyPrefix = "";
+        if (history.toLowerCase().contains("allergy") || history.toLowerCase().contains("allergic")) {
+            safetyPrefix = "IMPORTANT: I have noted your previously mentioned allergy from our clinical history. ";
+        }
+
+        if (q.contains("dark thoughts") || q.contains("overwhelmed") || q.contains("suicide") || q.contains("self harm") || (q.contains("not slept") && q.contains("3 days"))) {
+            assessment = safetyPrefix + "I've prioritized your report of severe psychological distress. MediSync offers immediate crisis support and psychiatric evaluation nodes.";
+            severity = "CRITICAL";
+            specialist = "Psychiatrist / Crisis Counselor";
+            action = "Connect immediately with our Mental Health Support node or visit the nearest Emergency department for a safety assessment.";
+            service = "Emergency & Trauma Care";
+            conditions = "Severe psychological distress or acute sleep deprivation protocol.";
+            instructions = "Please do not remain alone. Reach out to a trusted contact or our support node immediately.";
+            warning = "CRISIS SIGNAL DETECTED: PLEASE SEEK IMMEDIATE SUPPORT.";
+        } else if (q.contains("swelling") && q.contains("red") && q.contains("hot") && (q.contains("fever") || q.contains("spreading"))) {
+            assessment = safetyPrefix + "Your description of a 'red, hot, and spreading' swelling suggests a potential acute skin infection (Cellulitis) which requires immediate clinical evaluation to prevent systemic escalation.";
+            severity = "HIGH";
+            specialist = "Infectious Disease Specialist / GP";
+            action = "Seek a clinical evaluation at an Urgent Care or Emergency node within the next few hours.";
+            service = "Emergency & Trauma Care";
+            conditions = "Potential acute localized infection with systemic risk indicators.";
+            instructions = "Do not apply topical creams until evaluated by a clinician.";
+            warning = "INFECTION SIGNAL DETECTED: URGENT EVALUATION RECOMMENDED.";
+        } else if (q.contains("insurance") || q.contains("accept") || q.contains("bill") || q.contains("cost") || q.contains("pay")) {
+            assessment = "I've noted your administrative inquiry regarding insurance or billing. While I am a clinical assistant, MediSync provides a dedicated Billing & Insurance node for these queries.";
+            severity = "LOW";
+            specialist = "Hospital Administrator / Helpdesk";
+            action = "Navigate to the 'Institutional Helpdesk' or 'Billing' section of the portal to verify insurance acceptance.";
+            service = "General Clinical";
+            conditions = "Administrative / Billing inquiry identified.";
+            instructions = "Have your insurance card or policy number ready for the support team.";
+        } else if (q.contains("accident") || q.contains("injury") || q.contains("hit") || q.contains("trauma") || q.contains("fall")) {
             boolean isHead = q.contains("head") || q.contains("brain") || q.contains("skull");
-            assessment = "I've prioritized your report of a traumatic " + (isHead ? "head " : "") + "injury. Accidents involving " + (isHead ? "cranial " : "physical ") + "impact require immediate neurological and physical assessment to rule out internal trauma.";
+            assessment = safetyPrefix + "I've prioritized your report of a traumatic " + (isHead ? "head " : "") + "injury. Accidents involving " + (isHead ? "cranial " : "physical ") + "impact require immediate neurological and physical assessment to rule out internal trauma.";
             severity = "CRITICAL";
             specialist = isHead ? "Neurologist / Emergency Trauma Specialist" : "Emergency Physician";
             action = "Navigate immediately to the nearest Emergency & Trauma node. Do not delay your arrival.";
@@ -176,7 +143,7 @@ public class AiService {
             warning = "TRAUMA SIGNAL DETECTED: PROCEED TO EMERGENCY IMMEDIATELY.";
         } else if ((q.contains("heart") || q.contains("cardiac") || q.contains("chest") || q.contains("breathing")) && 
                   (q.contains("pain") || q.contains("sharp") || q.contains("attack") || q.contains("emergency") || q.contains("crisis") || q.contains("shortness"))) {
-            assessment = "Potential acute cardiovascular or respiratory signal identified. I have initiated our Emergency Triage protocol to prioritize your immediate safety.";
+            assessment = safetyPrefix + "Potential acute cardiovascular or respiratory signal identified. I have initiated our Emergency Triage protocol to prioritize your immediate safety.";
             severity = "CRITICAL";
             specialist = "Cardiologist / Emergency Specialist";
             action = "Locate and navigate to the nearest Emergency & Trauma Care node in the registry immediately. Do not drive yourself.";
@@ -185,7 +152,7 @@ public class AiService {
             instructions = "If symptoms worsen, contact emergency services (Ambulance) immediately.";
             warning = "LIFE-SAFETY SIGNAL DETECTED: SEEK EMERGENCY CARE IMMEDIATELY.";
         } else if (q.contains("heart") || q.contains("cardiac") || q.contains("cardio")) {
-            assessment = "I've noted your interest in cardiovascular health services. MediSync provides access to elite cardiologists and diagnostic heart centers.";
+            assessment = safetyPrefix + "I've noted your interest in cardiovascular health services. MediSync provides access to elite cardiologists and diagnostic heart centers.";
             severity = "LOW";
             specialist = "Cardiologist";
             action = "You can view available heart specialists and book a routine consultation via the cardiology node.";
@@ -193,7 +160,7 @@ public class AiService {
             conditions = "Cardiovascular specialist inquiry identified.";
             instructions = "Have your recent vitals or blood reports ready for the consultation.";
         } else if (q.contains("blood pressure") || q.contains(" bp ") || q.startsWith("bp ") || q.contains("hypertension") || q.contains("pressure is")) {
-            assessment = "Your blood pressure telemetry indicates a potentially high-risk cardiovascular state. Managing hypertension is critical to preventing acute vascular events.";
+            assessment = safetyPrefix + "Your blood pressure telemetry indicates a potentially high-risk cardiovascular state. Managing hypertension is critical to preventing acute vascular events.";
             severity = "CRITICAL";
             specialist = "Cardiologist / Emergency Specialist";
             action = "Secure an immediate evaluation at an Emergency node for hypertensive stabilization.";
@@ -202,7 +169,7 @@ public class AiService {
             instructions = "Rest quietly and avoid physical exertion until you are evaluated by a clinician.";
             warning = "HYPERTENSIVE CRISIS POTENTIAL: IMMEDIATE MEDICAL OVERSIGHT REQUIRED.";
         } else if (q.contains("skin") || q.contains("rash") || q.contains("itch") || q.contains("hive") || q.contains("allergy") || q.contains("redness") || q.contains("swelling")) {
-            assessment = "Your report of skin-related changes, such as a rash or localized irritation, requires a visual dermatological correlation to rule out acute allergic reactions or inflammatory conditions.";
+            assessment = safetyPrefix + "Your report of skin-related changes, such as a rash or localized irritation, requires a visual dermatological correlation to rule out acute allergic reactions or inflammatory conditions.";
             severity = "MODERATE";
             specialist = "Dermatologist";
             action = "Secure a teledermatology or in-person consultation for a high-resolution skin assessment.";
@@ -218,7 +185,7 @@ public class AiService {
             conditions = "Portal navigation request identified.";
             instructions = "Ensure you are logged in to see your private medical records.";
         } else if (q.contains("paracetamol") || q.contains("ibuprofen") || q.contains("aspirin") || q.contains("medicine") || q.contains("tablet") || q.contains("pill") || q.contains("fever")) {
-            assessment = "I've noted your inquiry regarding pharmacological intake or mild fever. While common medications are often used for symptomatic relief, they must follow professional dosage guidelines.";
+            assessment = safetyPrefix + "I've noted your inquiry regarding pharmacological intake or mild fever. While common medications are often used for symptomatic relief, they must follow professional dosage guidelines.";
             severity = "LOW";
             specialist = "General Practitioner / Pharmacist";
             action = "Verify safe dosage and potential drug-drug interactions with a pharmacist via our booking portal.";
@@ -234,7 +201,7 @@ public class AiService {
             conditions = "Diagnostic imaging requested for symptomatic investigation.";
             instructions = "Ensure you have a referral from your primary physician before your appointment.";
         } else {
-            assessment += "I recommend a professional consultation for clinical clarity.";
+            assessment = safetyPrefix + assessment + " I recommend a professional consultation for clinical clarity.";
             severity = "MODERATE";
         }
 
@@ -243,41 +210,8 @@ public class AiService {
                "3. Risk Indicators / Instructions: " + instructions + "\n" +
                "4. Triage Level: " + severity + "\n" +
                "5. Recommended specialist / Node: " + specialist + "\n" +
-               "6. Suggested Next Steps: " + action + " Use the booking node for " + service + ".\n" +
-               "7. Follow-up Questions: Are you experiencing dizziness or nausea?\n" +
+               "6. Suggested Next Steps: " + action + "\n" +
+               "7. Follow-up Questions: " + (hasImage ? "Does the localized area feel hot to the touch?" : "When did these symptoms first manifest?") + "\n" +
                "8. Emergency Warning / Portal Tip: " + (warning.isEmpty() ? "Tip: Access your records in 'Reports'." : warning);
-    }
-
-    // --- HELPER UTILITIES ---
-    private List<Map<String, Object>> createGeminiParts(String prompt, String imageData) {
-        List<Map<String, Object>> parts = new ArrayList<>();
-        Map<String, Object> textPart = new HashMap<>();
-        textPart.put("text", prompt);
-        parts.add(textPart);
-        if (imageData != null && imageData.contains(",")) {
-            Map<String, Object> imagePart = new HashMap<>();
-            Map<String, String> inlineData = new HashMap<>();
-            inlineData.put("mime_type", getMime(imageData));
-            inlineData.put("data", getBase64(imageData));
-            imagePart.put("inline_data", inlineData);
-            parts.add(imagePart);
-        }
-        return parts;
-    }
-
-    private String getBase64(String data) {
-        return (data != null && data.contains(",")) ? data.split(",")[1] : null;
-    }
-
-    private String getMime(String data) {
-        return (data != null && data.contains(",")) ? data.split(",")[0].split(":")[1].split(";")[0] : null;
-    }
-
-    private boolean isError(String res) {
-        return res == null || res.contains("error") || res.contains("403") || res.isEmpty();
-    }
-
-    public String getLatestBrief(String email) {
-        return sessionSummaries.getOrDefault(email, "No AI context.");
     }
 }
