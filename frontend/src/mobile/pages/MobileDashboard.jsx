@@ -168,39 +168,12 @@ const MobileDashboard = () => {
                 </motion.div>
             )}
 
-            {/* ── CLINICAL CARE TEAM ── */}
-            <motion.div variants={item} className="space-y-3">
-                <div className="flex items-center justify-between px-1">
-                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Clinical Care Team</h3>
-                    <button onClick={() => navigate('/dashboard/doctors')} className="text-[9px] font-black text-primary-600 uppercase tracking-widest">View All</button>
-                </div>
-                <div className="bg-white rounded-[2.5rem] border border-slate-100 p-4 shadow-sm">
-                    <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-                        <button 
-                            onClick={() => navigate('/dashboard/booking')}
-                            className="flex-shrink-0 w-24 flex flex-col items-center gap-2"
-                        >
-                            <div className="h-16 w-16 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex items-center justify-center text-slate-300">
-                                <Plus size={24} />
-                            </div>
-                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Add</span>
-                        </button>
-                        {/* Dummy data for now or fetch from API if available */}
-                        <div className="flex-shrink-0 w-24 flex flex-col items-center gap-2">
-                            <div className="h-16 w-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center font-black text-xl border border-emerald-100">
-                                S
-                            </div>
-                            <span className="text-[8px] font-black text-slate-800 uppercase tracking-tighter text-center">Dr. Sarah</span>
-                        </div>
-                    </div>
-                </div>
-            </motion.div>
             <motion.div variants={item} className="grid grid-cols-2 gap-4">
                 {[
                     { name: 'Reports', path: '/dashboard/reports', icon: <FileText size={28} />, color: 'bg-violet-100 text-violet-600' },
-                    { name: 'Rx', path: '/dashboard/medications', icon: <Pill size={28} />, color: 'bg-rose-100 text-rose-600' },
+                    { name: 'Schedule', path: '/dashboard/sessions', icon: <Calendar size={28} />, color: 'bg-indigo-100 text-indigo-600' },
                     { name: 'Records', path: '/dashboard/records', icon: <ClipboardList size={28} />, color: 'bg-blue-100 text-blue-600' },
-                    { name: 'Security', path: '/dashboard/security', icon: <ShieldCheck size={28} />, color: 'bg-cyan-100 text-cyan-600' },
+                    { name: 'My Doctors', path: '/dashboard/doctors', icon: <Users size={28} />, color: 'bg-emerald-100 text-emerald-600' },
                 ].map((s) => s && (
                     <button 
                         key={s.name}
