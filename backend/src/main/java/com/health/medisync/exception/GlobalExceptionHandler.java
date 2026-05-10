@@ -36,13 +36,18 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
     public ResponseEntity<?> handleDataIntegrity(org.springframework.dao.DataIntegrityViolationException e) {
+        System.err.println("CONFLICT: Data Integrity Violation: " + e.getMessage());
+        if (e.getCause() != null) {
+            System.err.println("CAUSE: " + e.getCause().getMessage());
+        }
         return ResponseEntity.status(HttpStatus.CONFLICT)
-            .body(Map.of("message", "A data conflict occurred. This record may already exist.", "error", "CONFLICT"));
+            .body(Map.of("message", "A data conflict occurred. This record may already exist.", "error", "CONFLICT", "details", e.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGeneralException(Exception ex, WebRequest request) {
-        System.err.println("CRITICAL: Clinical System Error: " + ex.getMessage());
+        System.err.println("CRITICAL: Clinical System Error: [" + ex.getClass().getSimpleName() + "] " + ex.getMessage());
+        ex.printStackTrace();
         
         Map<String, Object> body = new HashMap<>();
         String clinicalMessage = ex.getMessage() != null ? ex.getMessage() : "A secure clinical node exception occurred.";
@@ -56,7 +61,6 @@ public class GlobalExceptionHandler {
             body.put("at", trace[0].toString());
         }
         
-        // Protocol Awareness: Force JSON content type to resolve converter collisions
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .header(org.springframework.http.HttpHeaders.CONTENT_TYPE, org.springframework.http.MediaType.APPLICATION_JSON_VALUE)
             .body(body);
