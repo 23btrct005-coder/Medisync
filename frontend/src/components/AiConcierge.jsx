@@ -282,6 +282,21 @@ const AiConcierge = () => {
                     <motion.div
                         drag
                         dragMomentum={false}
+                        onDragEnd={(e, info) => {
+                            const threshold = window.innerWidth / 2;
+                            // If we dragged past the center, snap to the other side
+                            // Note: dragX is 0 at the start (right side). 
+                            // So if dragX < -threshold, snap to left.
+                            // But since it starts at right:32, it's easier to just calculate the final target.
+                            const currentX = dragX.get();
+                            if (currentX < -threshold + 100) {
+                                dragX.set(currentX); // anchor for animation
+                                // Snap to left edge (approx -window.innerWidth + 80)
+                                dragX.set(-window.innerWidth + 100); 
+                            } else {
+                                dragX.set(0); // Snap back to right edge
+                            }
+                        }}
                         style={{ touchAction: 'none', x: dragX, y: dragY }}
                         className="absolute bottom-8 right-8 pointer-events-auto z-[4000]"
                     >
