@@ -1,262 +1,614 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  X, Send, Sparkles, Bot, User, Loader2, Maximize2, Minimize2, 
-  ShieldCheck, Activity, Brain, Zap, Mic, MicOff, Minus
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
 import api from '../api/axiosConfig';
+import { motion, AnimatePresence, useMotionValue } from 'framer-motion';
+import { 
+    SendHorizontal, X, Mic, StopCircle, Maximize2, Minimize2, 
+    MessageCircle, Sparkles, Activity, ShieldCheck, HeartPulse, BrainCircuit, Calendar, Paperclip,
+    ChevronRight, ChevronDown, AlertCircle, Clock, Stethoscope, MapPin, CheckCircle2, RotateCcw,
+    Volume2, VolumeX, ArrowDown
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
-import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 const AiConcierge = () => {
-  const { user } = useAuth();
-  const { isAiOpen, setAiOpen } = useNotifications();
-  const [isMaximized, setIsMaximized] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
-  const [isListening, setIsListening] = useState(false);
-  const [messages, setMessages] = useState([
-    { 
-      role: 'assistant', 
-      content: `Welcome to MediSync Intelligence, Dr. ${user?.name || 'User'}. I am your clinical triage node. I can help analyze your medical archives, explain diagnostic telemetry, or coordinate with institutional nodes. How can I assist your clinical workflow today?`, 
-      time: '21:49' 
-    }
-  ]);
-  const [input, setInput] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const scrollRef = useRef(null);
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages, isTyping, isMinimized]);
-
-  const handleSend = async (e) => {
-    if (e) e.preventDefault();
-    if (!input.trim()) return;
+    const { user } = useAuth();
+    const { isAiOpen: isOpen, setAiOpen: setIsOpen } = useNotifications();
+    const navigate = useNavigate();
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const [messages, setMessages] = useState(() => {
+        const saved = localStorage.getItem('ai_chat_history');
+        if (saved) {
+            try {
+                return JSON.parse(saved);
+            } catch (e) {
+                console.error("Error parsing chat history", e);
+            }
+        }
+        return [{ role: 'ai', text: 'Hi! I am your MediSync Clinical Assistant. How can I help you today?' }];
+    });
+    const [input, setInput] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [showScrollBottom, setShowScrollBottom] = useState(false);
+    const [isListening, setIsListening] = useState(false);
+    const [selectedLang, setSelectedLang] = useState('en-IN');
+    const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
+    const [location, setLocation] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
+    const [loadingStep, setLoadingStep] = useState(0);
     
-    const now = new Date();
-    const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
-    
-    const userMsg = { role: 'user', content: input, time: timeStr };
-    setMessages(prev => [...prev, userMsg]);
-    const userQuery = input;
-    setInput('');
-    setIsTyping(true);
+    const scrollRef = useRef(null);
+    const messagesEndRef = useRef(null);
+    const containerRef = useRef(null);
+    const recognitionRef = useRef(null);
 
-    try {
-      // Map to hardened backend endpoint with clinical context
-      const res = await api.post('/ai/chat', { 
-        message: userQuery,
-        history: messages.map(m => ({ role: m.role, content: m.content }))
-      });
-      const aiResponse = { 
-        role: 'assistant', 
-        content: res.data.response || "Clinical signal synchronized. Based on your archives, I recommend a follow-up consultation to discuss these findings in detail.",
-        time: timeStr 
-      };
-      setMessages(prev => [...prev, aiResponse]);
-    } catch (err) {
-      const fallback = { 
-        role: 'assistant', 
-        content: "Clinical node connectivity transiently interrupted. However, I have cached your medical history and suggest monitoring your vitals until sync is restored.",
-        time: timeStr 
-      };
-      setMessages(prev => [...prev, fallback]);
-    } finally {
-      setIsTyping(false);
-    }
-  };
+    const loadingMessages = [
+        "Analyzing symptoms...",
+        "Reviewing clinical history...",
+        "Identifying risk factors...",
+        "Correlating vital telemetry...",
+        "Synthesizing recommendations..."
+    ];
 
-  const toggleMic = () => {
-    if (isListening) {
-      setIsListening(false);
-      toast.success("Voice telemetry offline.");
-    } else {
-      setIsListening(true);
-      toast.loading("Listening for clinical signals...");
-      setTimeout(() => {
-        setIsListening(false);
-        toast.dismiss();
-        toast.success("Signal captured.");
-        setInput("Summarize my latest MRI report.");
-      }, 3000);
-    }
-  };
+    useEffect(() => {
+        if (isLoading) {
+            const interval = setInterval(() => {
+                setLoadingStep(prev => (prev + 1) % loadingMessages.length);
+            }, 1500);
+            return () => clearInterval(interval);
+        }
+    }, [isLoading]);
 
-  if (!isAiOpen) return null;
+    useEffect(() => {
+        if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        localStorage.setItem('ai_chat_history', JSON.stringify(messages));
+    }, [messages, isOpen, isFullscreen]);
 
-  return createPortal(
-    <AnimatePresence>
-      {isMinimized && (
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.5, y: 50 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.5, y: 50 }}
-          className="fixed bottom-8 right-8 z-[99999]"
-        >
-          <button 
-            onClick={() => setIsMinimized(false)}
-            className="w-20 h-20 bg-[#111827] text-white rounded-[2rem] flex items-center justify-center shadow-2xl border border-white/10 hover:scale-110 active:scale-95 transition-all group"
-          >
-             <div className="relative">
-                <Brain size={32} className="text-primary-500" />
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#111827] animate-pulse" />
-             </div>
-          </button>
-        </motion.div>
-      )}
+    if (!user) return null;
 
-      {!isMinimized && (
-        <div className="fixed inset-0 z-[99999] flex justify-end bg-slate-900/40 backdrop-blur-md">
-          <motion.div 
-            initial={{ opacity: 0, x: 100 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 100 }}
-            className={`bg-white shadow-[-20px_0_70px_rgba(0,0,0,0.1)] flex flex-col overflow-hidden transition-all duration-500 ease-out ${
-              isMaximized 
-                ? 'w-full h-full' 
-                : 'w-full md:w-[500px] lg:w-[600px] h-[calc(100%-2rem)] md:m-4 md:rounded-[3rem] border border-slate-100'
-            }`}
-          >
-            <div className="p-8 bg-[#111827] text-white relative shrink-0">
-               <div className="flex items-center justify-between relative z-10">
-                  <div className="flex items-center gap-5">
-                     <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center border border-white/10 shadow-inner">
-                        <Brain size={32} className="text-primary-500" />
-                     </div>
-                     <div>
-                        <h3 className="text-2xl font-black tracking-tight flex items-center gap-2">
-                          MEDISYNC <span className="text-primary-500">INTELLIGENCE</span>
-                        </h3>
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mt-1 flex items-center gap-2">
-                           <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                           Secure AI Node Active
-                        </p>
-                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                     <button 
-                        onClick={toggleMic}
-                        className={`p-2.5 rounded-xl transition-all ${isListening ? 'bg-rose-500 text-white animate-pulse' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
-                        title="Voice Telemetry"
-                     >
-                        {isListening ? <MicOff size={24} /> : <Mic size={24} />}
-                     </button>
-                     
-                     <button 
-                        onClick={() => setIsMinimized(true)}
-                        className="p-2.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all"
-                        title="Minimize"
-                     >
-                        <Minus size={24} strokeWidth={3} />
-                     </button>
+    const languages = [
+        { code: 'en-IN', name: 'English', flag: '🇺🇸' },
+        { code: 'hi-IN', name: 'Hindi', flag: '🇮🇳' },
+        { code: 'ta-IN', name: 'Tamil', flag: '🇮🇳' }
+    ];
 
-                     <button 
-                        onClick={() => setIsMaximized(!isMaximized)} 
-                        className="p-2.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all"
-                        title="Maximize"
-                     >
-                        {isMaximized ? <Minimize2 size={24} /> : <Maximize2 size={24} />}
-                     </button>
+    const speak = (text) => {
+        if (!isVoiceEnabled) return;
+        window.speechSynthesis.cancel();
+        let cleanText = text.replace(/\[.*?\]\(.*?\)/g, '').replace(/[*_#]/g, '').trim();
+        if (!cleanText) return;
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        utterance.lang = selectedLang;
+        utterance.rate = 0.95;
+        window.speechSynthesis.speak(utterance);
+    };
 
-                     <button 
-                        onClick={() => setAiOpen(false)} 
-                        className="p-2.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all"
-                        title="Cancel Session"
-                     >
-                        <X size={28} />
-                     </button>
-                  </div>
-               </div>
-            </div>
+    const handleSend = async (manualInput) => {
+        const textToSend = manualInput || input;
+        if (!textToSend.trim() && !imagePreview) return;
 
-            <div 
-              ref={scrollRef}
-              className="flex-1 overflow-y-auto p-8 space-y-10 bg-white custom-scrollbar"
-            >
-              {messages.map((msg, idx) => (
-                <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`flex gap-4 max-w-[90%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                    {msg.role === 'assistant' && (
-                      <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center border border-primary-100 shrink-0 shadow-sm">
-                        <Bot size={20} className="text-primary-600" />
-                      </div>
-                    )}
-                    <div className="space-y-3">
-                      <div className={`p-6 rounded-[2rem] text-[15px] leading-relaxed shadow-sm border transition-all ${
-                        msg.role === 'user' 
-                          ? 'bg-primary-600 text-white border-transparent' 
-                          : 'bg-white text-slate-700 border-slate-100 hover:border-primary-100'
-                      }`}>
-                        {msg.content}
-                      </div>
-                      <p className={`text-[9px] font-black uppercase tracking-widest text-slate-300 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
-                        {msg.time} • {msg.role === 'user' ? 'Encrypted Signal' : 'AI Analysis'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {isTyping && (
-                <div className="flex justify-start">
-                   <div className="flex gap-4 items-start">
-                      <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100">
-                         <Loader2 size={18} className="animate-spin text-slate-300" />
-                      </div>
-                      <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
-                         <div className="flex gap-1">
-                            <div className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce" />
-                            <div className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                            <div className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                         </div>
-                      </div>
-                   </div>
-                </div>
-              )}
-            </div>
+        const currentImg = imagePreview;
+        setMessages(prev => [...prev, { role: 'user', text: textToSend, image: currentImg }]);
+        setInput('');
+        setImagePreview(null);
+        setIsLoading(true);
 
-            <div className="p-8 bg-white border-t border-slate-100">
-               <form onSubmit={handleSend} className="relative flex items-center max-w-xl mx-auto">
-                  <input 
-                    type="text" 
-                    placeholder="Synchronize with your clinical archives..." 
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    className="w-full pl-10 pr-20 py-6 bg-slate-50 border border-slate-200 rounded-full focus:ring-4 ring-primary-500/10 focus:bg-white outline-none transition-all text-[15px] font-medium placeholder:text-slate-400"
-                  />
-                  <button 
-                    type="submit"
-                    disabled={!input.trim()}
-                    className="absolute right-2 p-4 bg-slate-900 text-white rounded-full hover:bg-primary-600 transition-all shadow-xl disabled:opacity-30 active:scale-90"
-                  >
-                    <Send size={24} />
-                  </button>
-               </form>
+        try {
+            const res = await api.post('/ai/chat', { 
+                message: textToSend,
+                location: location ? `${location.lat},${location.lng}` : null,
+                history: messages.slice(-10),
+                imageData: currentImg
+            });
+            const aiMsg = { role: 'ai', text: res.data.response };
+            setMessages(prev => [...prev, aiMsg]);
+            speak(res.data.response);
+        } catch (error) {
+            console.error("AI Error", error);
+            setMessages(prev => [...prev, { role: 'ai', text: 'Error connecting to Clinical Brain. Please ensure you are authorized.' }]);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-               <div className="flex items-center justify-center gap-10 mt-8">
-                  <div className="flex items-center gap-2">
-                     <ShieldCheck size={16} className="text-emerald-500" />
-                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">RLS Hardened</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                     <Activity size={16} className="text-blue-500" />
-                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Telemetry Linked</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                     <Zap size={16} className="text-amber-500" />
-                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Real-time Node</span>
-                  </div>
-               </div>
-            </div>
-          </motion.div>
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => setImagePreview(reader.result);
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const requestLocation = () => {
+        if (!navigator.geolocation) {
+            toast.error("Geolocation not supported");
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            (pos) => setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+            (err) => toast.error("Location access denied")
+        );
+    };
+
+    const resetChat = () => {
+        if (window.confirm("Reset clinical context?")) {
+            setMessages([{ role: 'ai', text: 'MediSync Node Reset. How can I assist today?' }]);
+            localStorage.removeItem('ai_chat_history');
+        }
+    };
+
+    const parseAiResponse = (text) => {
+        const sections = {
+            assessment: '',
+            possibleConditions: '',
+            riskIndicators: '',
+            severity: 'LOW',
+            specialist: '',
+            action: '',
+            questions: [],
+            warning: '',
+            service: '',
+            other: ''
+        };
+
+        const lines = text.split('\n');
+        let currentSection = 'other';
+
+        lines.forEach(l => {
+            const lowerL = l.toLowerCase().trim();
+            // Match headers like "1. Initial Assessment", "Initial Assessment", "Assessment:", etc.
+            if (lowerL.match(/^[\d.\s]*(initial|clinical)\s+assessment/)) {
+                currentSection = 'assessment';
+                const content = l.replace(/^[\d.\s]*(initial|clinical)\s+assessment:?/i, '').trim();
+                if (content) sections.assessment += content + ' ';
+            } else if (lowerL.match(/^[\d.\s]*possible\s+(causes|conditions)/)) {
+                currentSection = 'possibleConditions';
+                const content = l.replace(/^[\d.\s]*possible\s+(causes|conditions):?/i, '').trim();
+                if (content) sections.possibleConditions += content + ' ';
+            } else if (lowerL.match(/^[\d.\s]*risk\s+indicators/)) {
+                currentSection = 'riskIndicators';
+                const content = l.replace(/^[\d.\s]*risk\s+indicators:?/i, '').trim();
+                if (content) sections.riskIndicators += content + ' ';
+            } else if (lowerL.match(/^[\d.\s]*triage\s+level/)) {
+                currentSection = 'severity';
+                const content = l.replace(/^[\d.\s]*triage\s+level:?/i, '').replace(/[\[\]:]/g, '').trim();
+                if (content) sections.severity = content;
+            } else if (lowerL.match(/^[\d.\s]*recommended\s+specialist/)) {
+                currentSection = 'specialist';
+                const content = l.replace(/^[\d.\s]*recommended\s+specialist:?/i, '').trim();
+                if (content) sections.specialist += content + ' ';
+            } else if (lowerL.match(/^[\d.\s]*(suggested\s+next\s+steps|recommended\s+action)/)) {
+                currentSection = 'action';
+                const content = l.replace(/^[\d.\s]*(suggested\s+next\s+steps|recommended\s+action):?/i, '').trim();
+                if (content) sections.action += content + ' ';
+            } else if (lowerL.match(/^[\d.\s]*follow-up\s+questions/)) {
+                currentSection = 'questions';
+            } else if (lowerL.match(/^[\d.\s]*emergency\s+warning/)) {
+                currentSection = 'warning';
+                const content = l.replace(/^[\d.\s]*emergency\s+warning:?/i, '').trim();
+                if (content) sections.warning += content + ' ';
+            } else {
+                if (currentSection === 'questions' && l.match(/^[-*\d.]\s*/)) {
+                    sections.questions.push(l.replace(/^[-*\d.]\s*/, ''));
+                } else if (currentSection === 'assessment') {
+                    sections.assessment += l + ' ';
+                } else if (currentSection === 'possibleConditions') {
+                    sections.possibleConditions += l + ' ';
+                } else if (currentSection === 'riskIndicators') {
+                    sections.riskIndicators += l + ' ';
+                } else if (currentSection === 'specialist') {
+                    sections.specialist += l + ' ';
+                } else if (currentSection === 'action') {
+                    sections.action += l + ' ';
+                } else if (currentSection === 'warning') {
+                    sections.warning += l + ' ';
+                } else if (currentSection === 'severity') {
+                    sections.severity = l.toUpperCase().trim();
+                } else {
+                    sections.other += l + ' ';
+                }
+            }
+        });
+
+        // 1. Extract mapUrl FIRST from raw text
+        const mapMatch = text.match(/https:\/\/(www\.google\.com\/maps|maps\.app\.goo\.gl)[^ \n)\]]*/);
+        const mapUrl = mapMatch ? mapMatch[0].replace(/\.$/, '') : null;
+
+        // 2. Aggressive strip logic
+        const stripMap = (t) => t
+            .replace(/(maps|google\s+maps|navigation|location|facility|hospital|at|seek):\s*https:\/\/(www\.google\.com\/maps|maps\.app\.goo\.gl)[^ \n)\]]*/gi, '')
+            .replace(/https:\/\/(www\.google\.com\/maps|maps\.app\.goo\.gl)[^ \n)\]]*/g, '')
+            .replace(/(immediately\s+)?call\s+(your\s+)?local\s+emergency\s+services\s+(number\s+)?(such\s+as\s+)?108\s+or\s+112\.?/gi, '')
+            .replace(/If\s+you\s+are\s+in\s+the\s+Bengaluru\s+area.*?hospitals?\./gi, '')
+            .replace(/Maps:\s*$/i, '')
+            .trim();
+        
+        sections.assessment = stripMap(sections.assessment);
+        sections.possibleConditions = stripMap(sections.possibleConditions);
+        sections.riskIndicators = stripMap(sections.riskIndicators);
+        sections.specialist = stripMap(sections.specialist.trim());
+        sections.action = stripMap(sections.action.trim());
+        sections.warning = stripMap(sections.warning.trim());
+        sections.other = stripMap(sections.other);
+        sections.questions = sections.questions.map(q => stripMap(q));
+
+        const fullTextLower = text.toLowerCase();
+        if (fullTextLower.includes('ambulance')) sections.service = 'Ambulance Services';
+        else if (fullTextLower.includes('oxygen')) sections.service = 'Oxygen Supply';
+        else if (fullTextLower.includes('casualty') || fullTextLower.includes('trauma')) sections.service = 'Emergency & Trauma Care';
+        else if (fullTextLower.includes('emergency care')) sections.service = 'Emergency & Trauma Care';
+        else if (fullTextLower.includes('icu') || fullTextLower.includes('intensive care')) sections.service = 'ICU (Intensive Care Unit)';
+        else if (fullTextLower.includes('mri scan') || fullTextLower.includes('mri')) sections.service = 'MRI Scan';
+        else if (fullTextLower.includes('ct scan')) sections.service = 'Diagnostic CT Scan';
+        else if (fullTextLower.includes('blood bank') || fullTextLower.includes('blood donation')) sections.service = 'Blood Bank';
+        else if (fullTextLower.includes('x-ray')) sections.service = 'X-Ray (Routine & Emergency)';
+        else if (fullTextLower.includes('ultrasound') || fullTextLower.includes('sonography')) sections.service = 'Ultrasound / सोनोग्राफी';
+        else if (fullTextLower.includes('laboratory') || fullTextLower.includes('blood test')) sections.service = 'Laboratory Services';
+        else if (fullTextLower.includes('pharmacy') || fullTextLower.includes('medicine')) sections.service = 'Pharmacy (24/7)';
+
+        // Frontend safety override for emergency triage (ONLY for specific life-threatening keywords)
+        const safetyKeywords = ['ambulance', 'emergency', 'chest pain', 'unconscious', 'breathing difficulty', 'heavy bleeding', 'stroke'];
+        if (safetyKeywords.some(k => fullTextLower.includes(k))) {
+            sections.severity = 'CRITICAL';
+            if (!sections.service) sections.service = 'Emergency & Trauma Care';
+        }
+
+        // 3. Clinical Data Cleanup (Strip leading numbering from content)
+        const cleanContent = (t) => t.trim().replace(/^[\d.\s]+/, '').trim();
+        sections.assessment = cleanContent(sections.assessment);
+        sections.specialist = cleanContent(sections.specialist);
+        sections.action = cleanContent(sections.action);
+        sections.warning = cleanContent(sections.warning);
+        sections.possibleConditions = cleanContent(sections.possibleConditions);
+        
+        // 4. Physician Extraction (High-precision mapping)
+        const doctorMatch = text.match(/Dr\.\s+[A-Z][a-z]+/);
+        if (doctorMatch) sections.physician = doctorMatch[0];
+
+        if (!sections.assessment.trim() && sections.other.trim()) sections.assessment = sections.other;
+        
+        return { ...sections, mapUrl };
+    };
+
+    const getSeverityStyles = (severity) => {
+        const s = severity.toUpperCase();
+        if (s.includes('CRITICAL') || s.includes('EMERGENCY')) return { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', icon: <AlertCircle className="text-red-500" size={14} />, label: 'CRITICAL' };
+        if (s.includes('HIGH')) return { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', icon: <AlertCircle className="text-orange-500" size={14} />, label: 'HIGH' };
+        if (s.includes('MODERATE')) return { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', icon: <Clock className="text-amber-500" size={14} />, label: 'MODERATE' };
+        return { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', icon: <CheckCircle2 className="text-emerald-500" size={14} />, label: 'LOW' };
+    };
+
+    const scrollToBottom = () => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTo({
+                top: scrollRef.current.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    if (!user) return null;
+
+    return (
+        <div ref={containerRef} className="fixed inset-0 pointer-events-none z-[3000]">
+            <style>{`
+                .ai-orb {
+                    background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+                    box-shadow: 0 10px 40px -10px rgba(99, 102, 241, 0.5),
+                                 inset 0 0 20px rgba(255, 255, 255, 0.3);
+                    position: relative;
+                }
+                .ai-orb::before {
+                    content: '';
+                    position: absolute;
+                    inset: -4px;
+                    border-radius: inherit;
+                    background: inherit;
+                    filter: blur(10px);
+                    opacity: 0.4;
+                    z-index: -1;
+                    animation: orb-pulse 3s infinite;
+                }
+                @keyframes orb-pulse {
+                    0% { transform: scale(1); opacity: 0.4; }
+                    50% { transform: scale(1.2); opacity: 0.2; }
+                    100% { transform: scale(1); opacity: 0.4; }
+                }
+                .mobile-full-chat {
+                    height: 100dvh !important;
+                    width: 100vw !important;
+                    bottom: 0 !important;
+                    right: 0 !important;
+                    border-radius: 0 !important;
+                }
+                @media (max-width: 768px) {
+                    .ai-concierge-window {
+                        height: 100dvh !important;
+                        width: 100vw !important;
+                        bottom: 0 !important;
+                        right: 0 !important;
+                        border-radius: 0 !important;
+                    }
+                }
+            `}</style>
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        className="fixed bottom-8 right-8 bg-[#F8FAFC] rounded-[32px] shadow-[0_30px_100px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden pointer-events-auto border border-white/50 z-[3000] ai-concierge-window"
+                        initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                        animate={{ 
+                            opacity: 1, y: 0, scale: 1,
+                            width: isFullscreen ? 'min(1200px, calc(100vw - 32px))' : (window.innerWidth < 768 ? '100vw' : '420px'),
+                            height: isFullscreen ? 'calc(100vh - 32px)' : (window.innerWidth < 768 ? '100dvh' : '720px'),
+                            bottom: (window.innerWidth < 768) ? 0 : 32,
+                            right: (window.innerWidth < 768) ? 0 : 32,
+                            borderRadius: (window.innerWidth < 768) ? 0 : 32
+                        }}
+                        exit={{ opacity: 0, y: 50, scale: 0.95 }}
+                    >
+                        {/* Header */}
+                        <div className="p-6 bg-white border-b border-slate-100 flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-inner">
+                                    <ShieldCheck size={24} />
+                                </div>
+                                <div>
+                                    <h2 className="font-black text-slate-900 text-sm tracking-tight">Clinical Assistant</h2>
+                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Active Node • v5.0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <button 
+                                    onClick={() => setIsVoiceEnabled(!isVoiceEnabled)} 
+                                    className={`p-2 rounded-xl transition-all ${isVoiceEnabled ? 'text-indigo-600 bg-indigo-50' : 'text-slate-300 hover:text-slate-400 hover:bg-slate-50'}`}
+                                    title={isVoiceEnabled ? "Turn off AI Voice" : "Turn on AI Voice"}
+                                >
+                                    {isVoiceEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+                                </button>
+                                <button onClick={resetChat} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"><RotateCcw size={16} /></button>
+                                <button onClick={() => setIsFullscreen(!isFullscreen)} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">{isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}</button>
+                                <button onClick={() => setIsOpen(false)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><X size={18} /></button>
+                            </div>
+                        </div>
+
+                        {/* Chat Body */}
+                        <div 
+                            ref={scrollRef} 
+                            className="flex-1 overflow-y-auto p-6 flex flex-col gap-8 custom-scrollbar relative"
+                            onScroll={(e) => {
+                                const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+                                const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
+                                setShowScrollBottom(!isAtBottom);
+                            }}
+                        >
+                            {messages.map((m, i) => {
+                                if (m.role === 'user') {
+                                    return (
+                                        <div key={i} className="flex flex-col gap-2 items-end">
+                                            {m.image && <img src={m.image} className="w-48 rounded-2xl border-2 border-white shadow-lg mb-1" />}
+                                            <div className="bg-indigo-600 text-white px-5 py-3.5 rounded-2xl rounded-tr-none text-sm font-medium shadow-lg shadow-indigo-100 max-w-[85%]">
+                                                {m.text}
+                                            </div>
+                                        </div>
+                                    );
+                                }
+
+                                const s = parseAiResponse(m.text);
+                                const ui = getSeverityStyles(s.severity);
+
+                                return (
+                                    <div key={i} className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                                            <div className="flex items-center justify-between gap-2 mb-1">
+                                                <div className="flex items-center gap-2">
+                                                    <Stethoscope size={16} className="text-indigo-600" />
+                                                    <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Clinical Assessment</span>
+                                                </div>
+                                                {s.service && (
+                                                    <button 
+                                                        onClick={() => {
+                                                            setIsOpen(false);
+                                                            navigate(`/dashboard/booking?mode=service&service=${encodeURIComponent(s.service)}`);
+                                                        }}
+                                                        className="px-3 py-1.5 bg-indigo-600 text-white text-[9px] font-black uppercase rounded-lg shadow-lg shadow-indigo-100 hover:scale-105 active:scale-95 transition-all"
+                                                    >
+                                                        Book {s.service}
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <p className="text-sm text-slate-700 leading-relaxed font-medium">
+                                                {s.assessment || s.other}
+                                            </p>
+
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div className={`p-4 rounded-2xl border ${ui.bg} ${ui.border} flex flex-col gap-1`}>
+                                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">TRIAGE LEVEL</span>
+                                                    <span className={`text-xs font-black ${ui.color}`}>{ui.label}</span>
+                                                </div>
+                                                {s.specialist && (
+                                                    <div className="p-4 rounded-2xl border border-slate-50 bg-slate-50/50 flex flex-col gap-1">
+                                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">RECOMMENDED SPECIALIST</span>
+                                                        <span className="text-xs font-black text-slate-700 leading-tight">{s.specialist}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {s.action && (
+                                                <div className="p-4 bg-slate-50 rounded-2xl space-y-2">
+                                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">SUGGESTED NEXT STEPS</span>
+                                                    <p className="text-xs font-semibold text-slate-600 leading-relaxed">{s.action}</p>
+                                                </div>
+                                            )}
+
+                                            {s.possibleConditions && (
+                                                <div className="p-4 bg-indigo-50/50 rounded-2xl space-y-2 border border-indigo-100/50">
+                                                    <span className="text-[8px] font-black text-indigo-400 uppercase tracking-tighter">POSSIBLE CONDITIONS</span>
+                                                    <p className="text-xs font-medium text-slate-600 leading-relaxed">{s.possibleConditions}</p>
+                                                </div>
+                                            )}
+
+                                            {s.riskIndicators && (
+                                                <div className="p-4 bg-amber-50/50 rounded-2xl space-y-2 border border-amber-100/50">
+                                                    <span className="text-[8px] font-black text-amber-500 uppercase tracking-tighter">RISK INDICATORS</span>
+                                                    <p className="text-xs font-medium text-slate-600 leading-relaxed">{s.riskIndicators}</p>
+                                                </div>
+                                            )}
+
+                                            {s.warning && (
+                                                <div className="p-4 bg-red-50 rounded-2xl space-y-2 border border-red-100">
+                                                    <span className="text-[8px] font-black text-red-500 uppercase tracking-tighter flex items-center gap-1"><AlertCircle size={10} /> EMERGENCY WARNING</span>
+                                                    <p className="text-xs font-bold text-red-700 leading-relaxed">{s.warning}</p>
+                                                </div>
+                                            )}
+
+                                            {s.questions && s.questions.length > 0 && (
+                                                <div className="p-4 bg-white rounded-2xl space-y-2 border border-slate-200 shadow-sm">
+                                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">FOLLOW-UP QUESTIONS</span>
+                                                    <ul className="space-y-2">
+                                                        {s.questions.map((q, idx) => (
+                                                            <li key={idx} className="text-xs font-medium text-slate-700 flex items-start gap-2">
+                                                                <span className="text-indigo-400 mt-0.5">•</span>
+                                                                <span>{q}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+
+                                            {s.mapUrl && (
+                                                <div className="rounded-2xl overflow-hidden border border-slate-100 shadow-sm">
+                                                    <div className="h-24 bg-slate-100 flex items-center justify-center relative overflow-hidden bg-[url('https://www.google.com/maps/vt/pb=!1m4!1m3!1i12!2i2361!3i1589!2m3!1e0!2sm!3i420120488!3m8!2sen!3sus!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0!5m1!1e0!23i4111425')] bg-cover">
+                                                        <div className="relative z-10 w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white shadow-xl">
+                                                            <MapPin size={16} />
+                                                        </div>
+                                                    </div>
+                                                    <div className="p-3 bg-white flex items-center justify-between">
+                                                        <span className="text-[10px] font-bold text-slate-800">Institutional Node</span>
+                                                        <a href={s.mapUrl} target="_blank" className="text-[9px] font-black uppercase text-indigo-600 hover:underline">Launch Navigation</a>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {(s.severity === 'CRITICAL' || s.severity === 'HIGH' || s.severity === 'EMERGENCY') && (
+                                                <div className="flex gap-2">
+                                                    <button 
+                                                        onClick={() => {
+                                                            setIsOpen(false);
+                                                            navigate(`/dashboard/booking?mode=service&service=${encodeURIComponent('Ambulance Services')}`);
+                                                        }}
+                                                        className="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-red-200"
+                                                    >
+                                                        <HeartPulse size={14} /> Ambulance
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => {
+                                                            setIsOpen(false);
+                                                            if (s.mapUrl) {
+                                                                window.open(s.mapUrl, '_blank');
+                                                            } else {
+                                                                navigate(`/dashboard/booking?mode=service&service=${encodeURIComponent('Emergency & Trauma Care')}`);
+                                                            }
+                                                        }}
+                                                        className="flex-1 py-3 bg-slate-900 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2"
+                                                    >
+                                                        <MapPin size={14} /> Nearest Hospital
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            <button 
+                                                onClick={() => {
+                                                    setIsOpen(false);
+                                                    let url = '/dashboard/booking';
+                                                    if (s.physician) {
+                                                        url = `/dashboard/booking?doctor=${encodeURIComponent(s.physician)}`;
+                                                    } else if (s.service) {
+                                                        url = `/dashboard/booking?mode=service&service=${encodeURIComponent(s.service)}`;
+                                                    } else if (s.specialist && s.specialist.length > 3 && !s.specialist.toLowerCase().includes('determined') && !s.specialist.toLowerCase().includes('n/a') && !s.specialist.toLowerCase().includes('none')) {
+                                                        url = `/dashboard/booking?doctor=${encodeURIComponent(s.specialist)}`;
+                                                    }
+                                                    navigate(url);
+                                                    toast.success(`Navigating to ${s.physician || s.service || 'Clinical'} Booking Node`);
+                                                }}
+                                                className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-3 shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all"
+                                            >
+                                                Secure Clinical Booking <ChevronRight size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+
+                            {isLoading && (
+                                <div className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm max-w-[280px] animate-pulse">
+                                    <div className="flex gap-1">
+                                        {[0, 1, 2].map(d => <div key={d} className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-bounce" style={{ animationDelay: `${d * 0.2}s` }}></div>)}
+                                    </div>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{loadingMessages[loadingStep]}</span>
+                                </div>
+                            )}
+                            <div ref={messagesEndRef} />
+                        </div>
+
+                        {/* Scroll to Bottom Sync Button */}
+                        <AnimatePresence>
+                            {showScrollBottom && (
+                                <motion.button
+                                    initial={{ opacity: 0, y: 10, scale: 0.8 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.8 }}
+                                    onClick={scrollToBottom}
+                                    className="absolute bottom-32 right-8 p-3 bg-white/95 backdrop-blur-md border border-indigo-100 text-indigo-600 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all z-[3010] flex items-center justify-center animate-bounce-subtle"
+                                    title="Scroll to latest assessment"
+                                >
+                                    <ChevronDown size={24} strokeWidth={3} />
+                                </motion.button>
+                            )}
+                        </AnimatePresence>
+
+                        {/* Input Area */}
+                        <div className="p-6 bg-white border-t border-slate-100">
+                            <div className="relative flex items-center gap-2">
+                                <div className="flex-1 flex items-center bg-slate-50 border border-slate-200 rounded-2xl p-1 focus-within:border-indigo-300 focus-within:bg-white transition-all">
+                                    <label className="p-2 text-slate-400 hover:text-indigo-600 cursor-pointer">
+                                        <Paperclip size={20} />
+                                        <input type="file" className="hidden" onChange={handleImageUpload} />
+                                    </label>
+                                    <input 
+                                        value={input}
+                                        onChange={(e) => setInput(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                                        placeholder="Ask a medical question..."
+                                        className="flex-1 bg-transparent border-none outline-none text-sm font-semibold text-slate-700 px-2 py-3"
+                                    />
+                                    <button onClick={() => isListening ? stopListening() : startListening()} className={`p-2 rounded-xl transition-all ${isListening ? 'text-red-500 bg-red-50' : 'text-slate-400 hover:text-indigo-600'}`}>
+                                        <Mic size={20} />
+                                    </button>
+                                </div>
+                                <button 
+                                    onClick={() => handleSend()}
+                                    disabled={isLoading || (!input.trim() && !imagePreview)}
+                                    className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-100 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                                >
+                                    <SendHorizontal size={22} />
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+            <style>{`
+                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+            `}</style>
         </div>
-      )}
-    </AnimatePresence>,
-    document.body
-  );
+    );
 };
 
 export default AiConcierge;
