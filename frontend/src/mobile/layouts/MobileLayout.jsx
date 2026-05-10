@@ -119,7 +119,15 @@ const MobileLayout = () => {
             </header>
 
             {/* ── FLUID MAIN STAGE ── */}
-            <main className="flex-1 overflow-y-auto no-scrollbar pb-24 scroll-smooth">
+            <motion.main 
+                style={{ 
+                    scale: isMenuOpen ? 0.94 : 1,
+                    filter: isMenuOpen ? 'blur(10px)' : 'blur(0px)',
+                    borderRadius: isMenuOpen ? '2.5rem' : '0rem'
+                }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="flex-1 overflow-y-auto no-scrollbar pb-24 scroll-smooth bg-slate-50 relative z-10"
+            >
                 <AnimatePresence mode="wait">
                     <motion.div 
                         key={location.pathname}
@@ -132,10 +140,16 @@ const MobileLayout = () => {
                         <Outlet />
                     </motion.div>
                 </AnimatePresence>
-            </main>
+            </motion.main>
 
             {/* ── THUMB-CENTRIC BOTTOM DOCK ── */}
-            <nav className="fixed bottom-4 left-4 right-4 h-20 bg-white/90 backdrop-blur-2xl border border-white/40 rounded-[2.5rem] px-4 shadow-[0_20px_50px_rgba(0,0,0,0.12)] z-[200] flex items-center justify-between">
+            <motion.nav 
+                animate={{ 
+                    y: isMenuOpen ? 100 : 0,
+                    opacity: isMenuOpen ? 0 : 1
+                }}
+                className="fixed bottom-4 left-4 right-4 h-20 bg-white/90 backdrop-blur-2xl border border-white/40 rounded-[2.5rem] px-4 shadow-[0_20px_50px_rgba(0,0,0,0.12)] z-[200] flex items-center justify-between"
+            >
                 {(primaryNav || []).slice(0, 2).map((item) => item && (
                     <NavLink 
                         key={item.name} 
@@ -192,9 +206,9 @@ const MobileLayout = () => {
                         </NavLink>
                     );
                 })}
-            </nav>
+            </motion.nav>
 
-            {/* ── CLINICAL HUB OVERLAY ── */}
+            {/* ── ADVANCED GLASS-SHEET HUB (GESTURE-DRIVEN) ── */}
             <AnimatePresence>
                 {isMenuOpen && (
                     <>
@@ -203,43 +217,54 @@ const MobileLayout = () => {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsMenuOpen(false)}
-                            className="fixed inset-0 bg-slate-900/60 backdrop-blur-lg z-[500]"
+                            className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[500]"
                         />
                         <motion.div 
+                            drag="y"
+                            dragConstraints={{ top: 0, bottom: 0 }}
+                            dragElastic={0.2}
+                            onDragEnd={(e, info) => {
+                                if (info.offset.y > 100 || info.velocity.y > 500) {
+                                    setIsMenuOpen(false);
+                                }
+                            }}
                             initial={{ y: "100%" }}
                             animate={{ y: 0 }}
                             exit={{ y: "100%" }}
-                            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[3rem] p-8 pb-12 z-[600] shadow-[0_-20px_50px_rgba(0,0,0,0.2)]"
+                            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+                            className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-3xl rounded-t-[3.5rem] p-8 pb-14 z-[600] shadow-[0_-20px_80px_rgba(0,0,0,0.3)] border-t border-white/40"
                         >
-                            <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-8" />
+                            {/* Visual Handle */}
+                            <div className="w-16 h-1.5 bg-slate-300/50 rounded-full mx-auto mb-10" />
                             
-                            <div className="flex justify-between items-center mb-8">
-                                <div>
-                                    <p className="text-[10px] font-black text-primary-600 uppercase tracking-[0.2em] mb-1">Navigation Hub</p>
-                                    <h2 className="text-2xl font-black text-slate-800 tracking-tight">Services</h2>
+                            <div className="flex justify-between items-center mb-10">
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-black text-primary-600 uppercase tracking-[0.3em]">Clinical Hub</p>
+                                    <h2 className="text-3xl font-black text-slate-900 tracking-tighter uppercase italic">Registry <span className="not-italic text-slate-400">Services</span></h2>
                                 </div>
                                 <motion.button 
                                     whileTap={{ scale: 0.9 }}
                                     onClick={() => setIsMenuOpen(false)} 
-                                    className="h-12 w-12 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-500"
+                                    className="h-12 w-12 bg-slate-900/5 rounded-2xl flex items-center justify-center text-slate-400"
                                 >
                                     <X size={24} />
                                 </motion.button>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-3 mb-10">
-                                {(secondaryNav || []).map((item) => item && (
+                            <div className="grid grid-cols-3 gap-4 mb-12">
+                                {(secondaryNav || []).map((item, idx) => item && (
                                     <motion.button 
                                         key={item.name} 
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0, transition: { delay: idx * 0.05 } }}
                                         whileTap={{ scale: 0.95 }}
                                         onClick={() => { triggerHaptic(); navigate(item.path); setIsMenuOpen(false); }}
-                                        className="flex flex-col items-center gap-3 p-5 rounded-[2rem] bg-slate-50 border border-slate-100 group transition-all active:bg-white"
+                                        className="flex flex-col items-center gap-3 p-5 rounded-[2.5rem] bg-white border border-slate-100 shadow-sm active:bg-slate-50 transition-all hover:border-primary-100"
                                     >
-                                        <div className={`h-12 w-12 ${item.color} rounded-2xl flex items-center justify-center shadow-sm`}>
-                                            {item.icon}
+                                        <div className={`h-14 w-14 ${item.color} rounded-[1.25rem] flex items-center justify-center shadow-inner`}>
+                                            {React.cloneElement(item.icon, { size: 24 })}
                                         </div>
-                                        <span className="text-[9px] font-black text-slate-600 uppercase tracking-tighter text-center">{item.name}</span>
+                                        <span className="text-[9px] font-black text-slate-600 uppercase tracking-tighter text-center leading-tight">{item.name}</span>
                                     </motion.button>
                                 ))}
                             </div>
@@ -247,10 +272,10 @@ const MobileLayout = () => {
                             <motion.button 
                                 whileTap={{ scale: 0.98 }}
                                 onClick={() => { triggerHaptic(); logout(); navigate('/login'); }}
-                                className="w-full py-5 bg-rose-50 text-rose-600 rounded-3xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 border border-rose-100"
+                                className="w-full py-6 bg-rose-600 text-white rounded-[2rem] font-black uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 shadow-xl shadow-rose-600/30 active:scale-95 transition-all"
                             >
                                 <LogOut size={16} />
-                                End Clinical Session
+                                Terminate Clinical Session
                             </motion.button>
                         </motion.div>
                     </>
