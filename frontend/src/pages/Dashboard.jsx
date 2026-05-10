@@ -155,10 +155,13 @@ const Dashboard = () => {
           </div>
         </section>
 
-        {/* Intelligence Feedback */}
-        {!loading && patient && (
-          <div className="animate-in slide-in-from-top-4 duration-700">
-            <ClinicalAlertBanner patient={patient} />
+        {/* Intelligence Feedback & Clinical Signals */}
+        {!loading && (
+          <div className="space-y-8">
+            {patient && <ClinicalAlertBanner patient={patient} />}
+            <div className="hidden lg:block">
+               <ActivityHub />
+            </div>
           </div>
         )}
 
@@ -272,7 +275,9 @@ const Dashboard = () => {
           </div>
 
           <div className="xl:col-span-4 space-y-8">
-            <ActivityHub />
+            <div className="lg:hidden">
+              <ActivityHub />
+            </div>
             
             {/* Quick Access Grid (Restoring Old UI feel) */}
             <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-xl">
