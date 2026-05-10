@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, FileText, ClipboardList, User, LogOut, Activity, 
   Calendar, UserCheck, CalendarPlus, ShieldCheck, Pill, Wallet, 
-  MessageSquare, Settings, HelpCircle, ChevronDown, TrendingUp, Sparkles
+  MessageSquare, Settings, HelpCircle, ChevronDown, TrendingUp
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
@@ -41,7 +41,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   // ── MAIN NAV: Most-used features ──
   const mainItems = [
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
-    { name: 'MediSync AI', action: () => setAiOpen(true), icon: <Sparkles size={20} className="text-primary-600" /> },
     { name: 'Messages', path: '/dashboard/messages', icon: <MessageSquare size={20} />, badge: unreadChatCount },
     { name: 'Book Appointment', path: '/dashboard/booking', icon: <CalendarPlus size={20} /> },
     { name: 'Schedule', path: '/dashboard/sessions', icon: <Calendar size={20} /> },
@@ -95,7 +94,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       end={end}
       onMouseEnter={() => prefetchData(item.path)}
       className={({ isActive }) =>
-        `flex items-center w-full px-4 py-3 rounded-xl transition-all duration-200 ${
+        `flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${
           isActive
             ? 'bg-primary-50 text-primary-700 font-semibold shadow-sm border border-primary-100'
             : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
@@ -110,20 +109,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           </div>
         )}
       </div>
-      <span className="text-sm font-medium flex-1 text-left">{item.name}</span>
+      <span className="text-sm font-medium flex-1">{item.name}</span>
     </NavLink>
-  );
-
-  const ActionItem = ({ item }) => (
-    <button
-      onClick={item.action}
-      className="flex items-center w-full px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all duration-200"
-    >
-      <div className="mr-3 relative">
-        {item.icon}
-      </div>
-      <span className="text-sm font-medium flex-1 text-left">{item.name}</span>
-    </button>
   );
 
   return (
@@ -141,13 +128,21 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             ))
           ) : (
             <>
+              {/* AI Concierge (Priority #1) */}
+              <button
+                onClick={() => setAiOpen(true)}
+                className={`flex items-center w-full px-4 py-3 rounded-xl transition-all duration-200 text-slate-600 hover:bg-primary-50 hover:text-primary-700 font-medium group`}
+              >
+                <div className="mr-3 text-primary-500 group-hover:scale-110 transition-transform">
+                  <TrendingUp size={20} className="rotate-45" /> 
+                </div>
+                <span className="text-sm font-bold text-slate-900">AI Concierge</span>
+                <div className="ml-auto bg-primary-100 text-primary-700 text-[10px] px-1.5 py-0.5 rounded-full font-black uppercase tracking-tighter">Priority</div>
+              </button>
+
               {/* Main Section */}
               {mainItems.map((item) => (
-                item.action ? (
-                  <ActionItem key={item.name} item={item} />
-                ) : (
-                  <NavItem key={item.name} item={item} end={item.path === '/dashboard'} />
-                )
+                <NavItem key={item.name} item={item} end={item.path === '/dashboard'} />
               ))}
 
               {moreItems.map((item) => (

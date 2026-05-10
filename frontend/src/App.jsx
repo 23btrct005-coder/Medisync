@@ -138,8 +138,8 @@ function App() {
         <ThemeProvider>
           <AuthProvider>
             <NotificationProvider>
-              <Toaster position="top-right" toastOptions={{ duration: 4000, style: { background: '#1e293b', color: '#fff' } }} />
               <AiConcierge />
+              <Toaster position="top-right" toastOptions={{ duration: 4000, style: { background: '#1e293b', color: '#fff' } }} />
               
               {isMobile ? (
                 <MobileApp />
