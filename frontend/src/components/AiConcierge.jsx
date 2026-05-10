@@ -225,17 +225,16 @@ const AiConcierge = () => {
         sections.questions = sections.questions.map(q => stripMap(q));
 
         const fullTextLower = text.toLowerCase();
-        if (fullTextLower.includes('ambulance')) sections.service = 'Ambulance';
-        else if (fullTextLower.includes('blood bank') || fullTextLower.includes('blood donor')) sections.service = 'Blood Bank';
-        else if (fullTextLower.includes('pharmacy') || fullTextLower.includes('medicine')) sections.service = '24/7 Pharmacy';
-        else if (fullTextLower.includes('icu') || fullTextLower.includes('intensive care')) sections.service = 'ICU (Intensive Care Unit)';
-        else if (fullTextLower.includes('oxygen')) sections.service = 'Oxygen & Ventilator Support';
-        else if (fullTextLower.includes('casualty')) sections.service = 'Casualty Department';
+        if (fullTextLower.includes('ambulance')) sections.service = 'Ambulance Services';
+        else if (fullTextLower.includes('oxygen')) sections.service = 'Oxygen Supply';
+        else if (fullTextLower.includes('casualty') || fullTextLower.includes('trauma')) sections.service = 'Emergency & Trauma Care';
         else if (fullTextLower.includes('emergency care')) sections.service = 'Emergency & Trauma Care';
+        else if (fullTextLower.includes('icu') || fullTextLower.includes('intensive care')) sections.service = 'ICU (Intensive Care Unit)';
 
         // Frontend safety override for emergency triage
-        if (fullTextLower.includes('ambulance') || fullTextLower.includes('emergency') || fullTextLower.includes('chest pain')) {
+        if (fullTextLower.includes('ambulance') || fullTextLower.includes('emergency') || fullTextLower.includes('chest pain') || fullTextLower.includes('unconscious')) {
             sections.severity = 'CRITICAL';
+            if (!sections.service) sections.service = 'Emergency & Trauma Care';
         }
 
         if (!sections.assessment.trim() && sections.other.trim()) sections.assessment = sections.other;
@@ -448,7 +447,7 @@ const AiConcierge = () => {
                                                     <button 
                                                         onClick={() => {
                                                             setIsOpen(false);
-                                                            navigate('/dashboard/booking?mode=service&service=Ambulance');
+                                                            navigate('/dashboard/booking?mode=service&service=Ambulance Services');
                                                         }}
                                                         className="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-red-200"
                                                     >
