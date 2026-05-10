@@ -279,7 +279,7 @@ const AiConcierge = () => {
                 {!isOpen && (
                     <motion.button
                         drag
-                        dragConstraints={containerRef}
+                        dragMomentum={false}
                         className="fixed bottom-8 right-8 w-16 h-16 rounded-full ai-orb text-white flex items-center justify-center shadow-2xl pointer-events-auto z-[4000]"
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
