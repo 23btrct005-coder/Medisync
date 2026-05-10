@@ -82,6 +82,12 @@
       <version>2.0.29</version>
     </dependency>
 
+    <!-- Redis for Clinical Memory Engine -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
+
     <!-- WebFlux for Streaming -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
