@@ -105,37 +105,42 @@ public class AiService {
             }
         }
 
-        String prompt = "### MEDISYNC AI CORE — PRODUCTION-GRADE CLINICAL INTELLIGENCE\n\n" +
+        String prompt = "### MEDISYNC COPILOT — ELITE CLINICAL & PORTAL INTELLIGENCE\n\n" +
                 "PRIMARY OBJECTIVE:\n" +
-                "Provide safe, intelligent, healthcare guidance. Prioritize patient safety. ground responses in clinical caution.\n\n" +
-                "CLINICAL REASONING PROTOCOL:\n" +
-                "1. QUESTION-FIRST BEHAVIOR: For vague symptoms, DO NOT list possible conditions immediately. FIRST ask clarifying questions about: Location, Severity (1-10), Duration, Onset, and Red Flags.\n" +
-                "2. DYNAMIC TRIAGE: Use ONLY [LOW | MODERATE | HIGH | CRITICAL].\n" +
-                "3. EMERGENCY PROTOCOL: Any mention of 'Ambulance', 'Emergency', 'Chest Pain', 'Blood Bank', or 'Severe Breathing Difficulty' MUST be triaged as HIGH or CRITICAL immediately.\n" +
-                "4. ADAPTIVE HEADERS: If certain, use 'Clinical Assessment'. If vague, use 'Initial Assessment'.\n" +
-                "5. STRICT REGISTRY ADHERENCE (MANDATORY): You are FORBIDDEN from suggesting or mentioning any hospital, clinic, or medical facility NOT listed in the INSTITUTIONAL REGISTRY below. Do NOT mention generic emergency numbers like '108' or '112' in the text; instead, provide the GOOGLE MAPS LINK from the registry for the nearest facility. Recommending external facilities not in the list is a CRITICAL FAILURE. If no suitable hospital is in the registry, suggest the 'Nearest MediSync Node'.\n\n" +
+                "You are the MediSync Copilot. You serve as the bridge between patient health and the MediSync digital ecosystem. You are a Board-Certified Clinical Physician and a MediSync Technical Expert.\n\n" +
+                "DOMAIN 1: CLINICAL REASONING (HEALTH QUESTIONS):\n" +
+                "1. QUESTION-FIRST BEHAVIOR: For vague symptoms, ask clarifying questions first.\n" +
+                "2. DYNAMIC TRIAGE: Use [LOW | MODERATE | HIGH | CRITICAL].\n" +
+                "3. REGISTRY GROUNDING: ONLY recommend hospitals/doctors from the INSTITUTIONAL REGISTRY below.\n\n" +
+                "DOMAIN 2: PORTAL OPERATIONS (MEDISYNC QUESTIONS):\n" +
+                "If the user asks about using the app, guide them to these routes:\n" +
+                "- Booking Appointments: Navigate to '/dashboard/booking'. You can book by Doctor or Service (MRI, Blood Bank, etc.).\n" +
+                "- Medical Reports: View clinical history and test results at '/dashboard/reports'.\n" +
+                "- Profile & Vitals: Update gender, age, and health metrics at '/dashboard/profile'.\n" +
+                "- Active Appointments: Manage scheduled visits at '/dashboard/appointments'.\n" +
+                "- Medications: Check active prescriptions at '/dashboard/medications'.\n" +
+                "- AI Image Analysis: Upload documents using the paperclip icon in this chat.\n\n" +
                 "RESPONSE STRUCTURE (STRICT 8-HEADER PROTOCOL):\n" +
-                "1. Initial Assessment: (Or 'Clinical Assessment' if certainty is high)\n" +
-                "2. Possible Conditions: (Medically cautious list; state 'Assessment pending further details' if vague)\n" +
-                "3. Risk Indicators: (Specific red flags detected or 'None identified')\n" +
+                "1. Copilot Assessment: (Diagnostic summary OR Portal navigation help)\n" +
+                "2. Possible Conditions / Features: (Medical list OR Portal features explanation)\n" +
+                "3. Risk Indicators / Instructions: (Clinical red flags OR Step-by-step app instructions)\n" +
                 "4. Triage Level: [LOW | MODERATE | HIGH | CRITICAL]\n" +
-                "5. Recommended Specialist: (e.g., Gastroenterologist, Cardiologist)\n" +
-                "6. Suggested Next Steps: (Specific action. Include Hospital address/Maps link if relevant).\n" +
-                "7. Follow-up Questions: (Ask 4-5 high-precision clarifying questions to refine the triage)\n" +
-                "8. Emergency Warning: (Explicit life-threatening warning if applicable, otherwise 'None identified')\n\n" +
+                "5. Recommended specialist / Node: (e.g., Cardiologist OR 'Booking Module')\n" +
+                "6. Suggested Next Steps: (Actionable medical OR portal action with route/link).\n" +
+                "7. Follow-up Questions: (Clarifying health questions OR 'Do you need help navigating?')\n" +
+                "8. Emergency Warning / Portal Tip: (Clinical warning OR Pro-tip for using MediSync)\n\n" +
                 "GLOBAL RULES:\n" +
-                "- NO markdown symbols (*, #, _). Use only clean text.\n" +
-                "- Natural disclaimer: 'This information is for guidance and should not replace evaluation by a licensed healthcare professional.'\n" +
-                "- SYMPTOM LOCALIZATION: For any pain, always ask about the exact anatomical location (e.g., upper-right quadrant).\n\n" +
+                "- NO markdown symbols. Use clean text.\n" +
+                "- Ground ALL facility mentions in the registry provided.\n\n" +
                 "### INSTITUTIONAL REGISTRY:\n" +
                 "HOSPITALS:\n" + limitedHospitalList + "\n" +
                 "DOCTORS:\n" + limitedDoctorList + "\n\n" +
-                "### CLINICAL CONTEXT:\n" +
+                "### CLINICAL & SYSTEM CONTEXT:\n" +
                 "DATE: " + currentDate + " | TIME: " + currentTime + "\n" +
-                "PROFILE: " + clinicalHistory.toString() + "\n" +
+                "PATIENT PROFILE: " + clinicalHistory.toString() + "\n" +
                 "LOCATION: " + (location != null ? location : "Unknown") + "\n\n" +
-                "### INTERACTION LOGS:\n" + (historyContext.length() > 0 ? historyContext.toString() : "Initial consultation.") + "\n\n" +
-                "### PATIENT QUERY:\n" + query;
+                "### INTERACTION LOGS:\n" + (historyContext.length() > 0 ? historyContext.toString() : "Copilot initialized.") + "\n\n" +
+                "### USER QUERY:\n" + query;
 
         String neuralResponse = null;
         try {
@@ -188,61 +193,55 @@ public class AiService {
 
     private String performLocalClinicalTriage(String query, boolean hasImage) {
         String q = query.toLowerCase();
-        String assessment = "I apologize, but our neural reasoning node is currently synchronized with backup clinical data. ";
-        String severity = "MODERATE";
-        String specialist = "General Physician";
-        String action = "Please proceed to the nearest MediSync node for evaluation.";
-        String service = "General Clinical";
+        String assessment = "I am the MediSync Copilot. Our neural reasoning node is currently in backup mode. ";
+        String severity = "LOW";
+        String specialist = "MediSync Support";
+        String action = "Please re-submit your query or navigate to our help section.";
+        String service = "General Support";
 
-        if (q.contains("blood") || q.contains("donor")) {
+        // Portal Help Logic
+        if (q.contains("book") || q.contains("appointment") || q.contains("slot")) {
+            assessment += "I can help you with booking. Please navigate to the 'Booking' portal.";
+            action = "Navigate to '/dashboard/booking' to select a physician or service.";
+            service = "General Clinical";
+        } else if (q.contains("report") || q.contains("test") || q.contains("result")) {
+            assessment += "Medical reports are stored in our secure clinical vault.";
+            action = "Navigate to '/dashboard/reports' to view or download your results.";
+            service = "Medical Reports";
+        } else if (q.contains("profile") || q.contains("vitals") || q.contains("age")) {
+            assessment += "You can update your personal clinical profile in the settings.";
+            action = "Navigate to '/dashboard/profile' to update your age, gender, and metrics.";
+            service = "Profile Management";
+        } else if (q.contains("blood") || q.contains("donor")) {
+            // Health Help Logic
             assessment += "Your request for Blood Bank services has been prioritized.";
             severity = "HIGH";
             specialist = "Hematologist";
-            action = "Navigate to the institutional Blood Bank node immediately for coordination.";
+            action = "Navigate to '/dashboard/booking?mode=service&service=Blood+Bank' for coordination.";
             service = "Blood Bank";
         } else if (q.contains("scan") || q.contains("mri") || q.contains("ct") || q.contains("head") || q.contains("brain") || q.contains("stomach") || q.contains("abdomen")) {
             boolean isAbdomen = q.contains("stomach") || q.contains("abdomen");
-            assessment += (isAbdomen ? "Abdominal" : "Imaging") + " request detected. We are preparing the diagnostic node for your arrival.";
+            assessment += (isAbdomen ? "Abdominal" : "Imaging") + " request detected via Copilot failover.";
             severity = "HIGH";
             specialist = isAbdomen ? "Gastroenterologist" : "Radiologist";
-            action = "Secure a slot in the " + (isAbdomen ? "Ultrasound / Laboratory" : "Diagnostic Imaging / MRI") + " section of the portal.";
+            action = "Secure an imaging slot via '/dashboard/booking'.";
             service = isAbdomen ? "Ultrasound / सोनोग्राफी" : "MRI Scan";
-        } else if (q.contains("bone") || q.contains("fracture") || q.contains("leg") || q.contains("arm") || q.contains("joint")) {
-            assessment += "Orthopedic assessment triggered for potential structural injury.";
-            severity = "HIGH";
-            specialist = "Orthopedic Surgeon";
-            action = "An X-Ray is recommended to rule out fractures. Book via the Radiology node.";
-            service = "X-Ray (Routine & Emergency)";
-        } else if (q.contains("skin") || q.contains("rash") || q.contains("allergy")) {
-            assessment += "Dermatological signal detected. Please avoid applying any unverified clinical ointments.";
-            severity = "LOW";
-            specialist = "Dermatologist";
-            action = "Consult a specialist to determine the etiology of the dermal reaction.";
-            service = "Pharmacy (24/7)";
-        } else if (q.contains("heart") || q.contains("chest") || q.contains("palpitation")) {
-            assessment += "Cardiology protocol active. Cardiovascular monitoring is prioritized.";
-            severity = "CRITICAL";
-            specialist = "Cardiologist";
-            action = "Immediate ECG and vitals check required at the nearest Emergency node.";
-            service = "Emergency & Trauma Care";
-        } else if (q.contains("emergency") || q.contains("pain") || q.contains("breathing")) {
-            assessment += "CRITICAL: Potential emergency signal detected. Clinical bypass active.";
+        } else if (q.contains("emergency") || q.contains("pain") || q.contains("heart") || q.contains("chest")) {
+            assessment += "CRITICAL: Potential emergency signal detected. Copilot Emergency Bypass active.";
             severity = "CRITICAL";
             specialist = "Emergency Specialist";
-            action = "Locate the nearest Emergency & Trauma Care node immediately.";
+            action = "Locate the nearest Emergency & Trauma Care node in the MediSync registry.";
             service = "Emergency & Trauma Care";
-        } else {
-            assessment += "Based on your clinical query, a follow-up assessment is recommended.";
         }
 
-        return "1. Initial Assessment: " + assessment + (hasImage ? " (Visual telemetry analysis pending link restoration)" : "") + "\n" +
-               "2. Possible Conditions: Clinical sync paused. Symptom correlation required.\n" +
-               "3. Risk Indicators: Connectivity transiently interrupted.\n" +
+        return "1. Copilot Assessment: " + assessment + (hasImage ? " (Image sync pending)" : "") + "\n" +
+               "2. Possible Conditions / Features: Clinical reasoning interrupted. Portal features remain active.\n" +
+               "3. Risk Indicators / Instructions: Connectivity interrupted. Please follow the portal routes provided.\n" +
                "4. Triage Level: " + severity + "\n" +
-               "5. Recommended Specialist: " + specialist + "\n" +
+               "5. Recommended specialist / Node: " + specialist + "\n" +
                "6. Suggested Next Steps: " + action + " Use the booking node for " + service + ".\n" +
-               "7. Follow-up Questions: Can you specify the duration? Are you experiencing any acute discomfort?\n" +
-               "8. Emergency Warning: " + (severity.equals("CRITICAL") ? "IMMEDIATE ATTENTION REQUIRED" : "None identified during backup sync.");
+               "7. Follow-up Questions: Do you need help navigating to specific sections? Can you describe your symptoms further?\n" +
+               "8. Emergency Warning / Portal Tip: " + (severity.equals("CRITICAL") ? "IMMEDIATE ATTENTION REQUIRED" : "Pro-tip: You can upload old reports via the paperclip icon.");
     }
 
     public String getLatestBrief(String email) {
