@@ -41,6 +41,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   // ── MAIN NAV: Most-used features ──
   const mainItems = [
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
+    { name: 'MediSync AI', action: () => setAiOpen(true), icon: <Sparkles size={20} className="text-primary-600" /> },
     { name: 'Messages', path: '/dashboard/messages', icon: <MessageSquare size={20} />, badge: unreadChatCount },
     { name: 'Book Appointment', path: '/dashboard/booking', icon: <CalendarPlus size={20} /> },
     { name: 'Schedule', path: '/dashboard/sessions', icon: <Calendar size={20} /> },
@@ -94,7 +95,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       end={end}
       onMouseEnter={() => prefetchData(item.path)}
       className={({ isActive }) =>
-        `flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${
+        `flex items-center w-full px-4 py-3 rounded-xl transition-all duration-200 ${
           isActive
             ? 'bg-primary-50 text-primary-700 font-semibold shadow-sm border border-primary-100'
             : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
@@ -109,8 +110,20 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           </div>
         )}
       </div>
-      <span className="text-sm font-medium flex-1">{item.name}</span>
+      <span className="text-sm font-medium flex-1 text-left">{item.name}</span>
     </NavLink>
+  );
+
+  const ActionItem = ({ item }) => (
+    <button
+      onClick={item.action}
+      className="flex items-center w-full px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all duration-200"
+    >
+      <div className="mr-3 relative">
+        {item.icon}
+      </div>
+      <span className="text-sm font-medium flex-1 text-left">{item.name}</span>
+    </button>
   );
 
   return (
@@ -130,7 +143,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             <>
               {/* Main Section */}
               {mainItems.map((item) => (
-                <NavItem key={item.name} item={item} end={item.path === '/dashboard'} />
+                item.action ? (
+                  <ActionItem key={item.name} item={item} />
+                ) : (
+                  <NavItem key={item.name} item={item} end={item.path === '/dashboard'} />
+                )
               ))}
 
               {moreItems.map((item) => (
