@@ -52,7 +52,7 @@ public class AiController {
             String historyStr = "";
             if (history != null) {
                 historyStr = history.stream()
-                    .map(h -> h.get("role") + ": " + h.get("text"))
+                    .map(h -> String.valueOf(h.get("role")) + ": " + String.valueOf(h.get("text")))
                     .collect(Collectors.joining("\n"));
             }
 
