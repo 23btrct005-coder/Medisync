@@ -5,7 +5,7 @@ import com.health.medisync.repository.DoctorRepository;
 import com.health.medisync.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -22,13 +22,17 @@ public class AiService {
             "Name: " + u.getName() + ", Age: " + u.getAge() + ", History: " + u.getMedicalHistory()
         ).orElse("Unknown Patient");
 
-        String hospitals = hospitalRepository.findAll().stream().limit(5).map(h -> 
-            h.getName() + " (" + h.getAddress() + ")"
-        ).collect(Collectors.joining(", "));
+        StringBuilder hospitalSb = new StringBuilder();
+        hospitalRepository.findAll().stream().limit(5).forEach(h -> 
+            hospitalSb.append(h.getName()).append(" (").append(h.getAddress()).append("), ")
+        );
+        String hospitals = hospitalSb.toString();
 
-        String doctors = doctorRepository.findAll().stream().limit(5).map(d -> 
-            "Dr. " + d.getName() + " (" + d.getSpecialization() + ")"
-        ).collect(Collectors.joining(", "));
+        StringBuilder doctorSb = new StringBuilder();
+        doctorRepository.findAll().stream().limit(5).forEach(d -> 
+            doctorSb.append("Dr. ").append(d.getName()).append(" (").append(d.getSpecialization()).append("), ")
+        );
+        String doctors = doctorSb.toString();
 
         // Multi-Agent Orchestration Loop
         String response = executeNeuralOrchestration(query, imageData, history, location, hospitals, doctors, profile);
