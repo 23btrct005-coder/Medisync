@@ -37,6 +37,22 @@ const AiConcierge = () => {
     const [loadingStep, setLoadingStep] = useState(0);
     const dragX = useMotionValue(0);
     const dragY = useMotionValue(0);
+    const [orbPosition, setOrbPosition] = useState(() => {
+        const saved = localStorage.getItem('ai_orb_position');
+        if (saved) {
+            try { return JSON.parse(saved); } catch (e) { return { x: 0, y: 0 }; }
+        }
+        return { x: 0, y: 0 };
+    });
+
+    useEffect(() => {
+        dragX.set(orbPosition.x);
+        dragY.set(orbPosition.y);
+    }, []);
+
+    useEffect(() => {
+        localStorage.setItem('ai_orb_position', JSON.stringify(orbPosition));
+    }, [orbPosition]);
     
     const scrollRef = useRef(null);
     const containerRef = useRef(null);
@@ -289,18 +305,13 @@ const AiConcierge = () => {
                     <motion.div
                         drag
                         dragMomentum={false}
-                        onDragEnd={(e, info) => {
-                            // Explicitly set values to ensure they settle
-                            dragX.set(dragX.get());
-                            dragY.set(dragY.get());
+                        dragConstraints={containerRef}
+                        onDragEnd={() => {
+                            setOrbPosition({ x: dragX.get(), y: dragY.get() });
                         }}
                         initial={{ opacity: 0, scale: 0.5 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        exit={{ 
-                            opacity: 0, 
-                            scale: 0.8,
-                            x: dragX.get() < -window.innerWidth/2 ? -window.innerWidth - 100 : 200 
-                        }}
+                        exit={{ opacity: 0, scale: 0.5 }}
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                         style={{ touchAction: 'none', x: dragX, y: dragY }}
                         className="absolute bottom-8 right-8 pointer-events-auto z-[4000]"
