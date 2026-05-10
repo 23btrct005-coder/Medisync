@@ -48,8 +48,11 @@ public class AiController {
             }
 
             String imageData = (String) request.get("imageData");
-            String response = aiService.generateResponse(userMessage, history, patientEmail, roles, location, imageData);
-            return ResponseEntity.ok(Map.of("response", response));
+            String sessionId = (String) request.get("sessionId");
+            if (sessionId == null) sessionId = "default-session";
+            
+            var response = aiService.processEnterpriseQuery(userMessage, sessionId);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of("error", "Clinical Engine Error: " + e.getMessage()));
