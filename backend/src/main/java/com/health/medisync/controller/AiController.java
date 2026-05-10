@@ -48,7 +48,7 @@ public class AiController {
             }
 
             String imageData = (String) request.get("imageData");
-            String response = aiService.generateResponse(userMessage, history, patientEmail, roles, location, imageData);
+            String response = aiService.generateResponse(patientEmail, userMessage, imageData, location, history);
             return ResponseEntity.ok(Map.of("response", response));
         } catch (Exception e) {
             e.printStackTrace();
