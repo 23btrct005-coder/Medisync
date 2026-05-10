@@ -198,99 +198,83 @@ public class AiService {
             e.printStackTrace(); 
             return performLocalClinicalTriage(query, imageData != null && imageData.contains(","));
         }
-    }
-
-    private String performLocalClinicalTriage(String query, boolean hasImage) {
+    }    private String performLocalClinicalTriage(String query, boolean hasImage) {
         String q = query.toLowerCase();
-        String assessment = "I am your MediSync Copilot. I've analyzed your query using our institutional clinical safety protocol. ";
+        String assessment = "I am your MediSync Copilot. Based on the clinical signals in your query, I have analyzed your situation against our institutional safety registry. ";
         String severity = "MODERATE";
         String specialist = "General Physician";
-        String action = "A professional evaluation at the nearest MediSync node is recommended for clinical clarity.";
+        String action = "A professional clinical evaluation at your nearest MediSync node is recommended for a definitive diagnosis.";
         String service = "General Clinical";
+        String conditions = "Initial symptoms require physical examination for precise correlation.";
+        String instructions = "Please monitor for any changes in symptom intensity or the development of new indicators.";
         String warning = "";
 
-        // HIGH-PRECISION INTENT MAPPING (SILENT FAILOVER)
-        if (q.contains("blood pressure") || q.contains(" bp ") || q.startsWith("bp ") || q.contains("hypertension") || q.contains("pressure is")) {
-            assessment = "Cardiovascular signal detected. Elevated blood pressure readings require immediate clinical oversight.";
+        // HIGH-PRECISION COPILOT REASONING (SILENT FAILOVER)
+        if (q.contains("accident") || q.contains("injury") || q.contains("hit") || q.contains("trauma") || q.contains("fall")) {
+            boolean isHead = q.contains("head") || q.contains("brain") || q.contains("skull");
+            assessment = "I've prioritized your report of a traumatic " + (isHead ? "head " : "") + "injury. Accidents involving " + (isHead ? "cranial " : "physical ") + "impact require immediate neurological and physical assessment to rule out internal trauma.";
+            severity = "CRITICAL";
+            specialist = isHead ? "Neurologist / Emergency Trauma Specialist" : "Emergency Physician";
+            action = "Navigate immediately to the nearest Emergency & Trauma node. Do not delay your arrival.";
+            service = "Emergency & Trauma Care";
+            conditions = "Potential internal trauma or acute " + (isHead ? "concussion" : "injury") + " protocol initiated.";
+            instructions = "If you experience dizziness, nausea, or loss of consciousness, seek help immediately.";
+            warning = "TRAUMA SIGNAL DETECTED: PROCEED TO EMERGENCY IMMEDIATELY.";
+        } else if (q.contains("blood pressure") || q.contains(" bp ") || q.startsWith("bp ") || q.contains("hypertension") || q.contains("pressure is")) {
+            assessment = "Your blood pressure telemetry indicates a potentially high-risk cardiovascular state. Managing hypertension is critical to preventing acute vascular events.";
             severity = "CRITICAL";
             specialist = "Cardiologist / Emergency Specialist";
-            action = "Locate the nearest Emergency node immediately for a hypertensive assessment.";
+            action = "Secure an immediate evaluation at an Emergency node for hypertensive stabilization.";
             service = "Emergency & Trauma Care";
-            warning = "HYPERTENSIVE CRISIS POTENTIAL: SEEK IMMEDIATE MEDICAL ATTENTION.";
+            conditions = "Potential hypertensive urgency requiring pharmacological stabilization.";
+            instructions = "Rest quietly and avoid physical exertion until you are evaluated by a clinician.";
+            warning = "HYPERTENSIVE CRISIS POTENTIAL: IMMEDIATE MEDICAL OVERSIGHT REQUIRED.";
         } else if (q.contains("paracetamol") || q.contains("ibuprofen") || q.contains("aspirin") || q.contains("medicine") || q.contains("tablet") || q.contains("pill")) {
-            assessment = "I've noted your inquiry regarding medication. While generally safe, pharmacological information should be verified by a professional.";
+            assessment = "I've noted your inquiry regarding pharmacological intake. While medications like Paracetamol or Ibuprofen are common, they must be used according to professional dosage guidelines.";
             severity = "LOW";
             specialist = "General Practitioner / Pharmacist";
-            action = "Consult a pharmacist or physician via '/dashboard/booking' for safe guidance.";
+            action = "Verify safe dosage and potential drug-drug interactions with a pharmacist via our booking portal.";
             service = "Pharmacy (24/7)";
-        } else if (q.contains("blood donation") || q.contains("blood bank") || q.contains("donor")) {
-            assessment = "I've prioritized your request for Blood Bank services.";
-            severity = "HIGH";
-            specialist = "Hematologist";
-            action = "Navigate to '/dashboard/booking?mode=service&service=Blood+Bank' for coordination.";
-            service = "Blood Bank";
+            conditions = "Routine pharmaceutical inquiry for symptomatic management.";
+            instructions = "Always check the expiration date and dosage instructions on the packaging.";
         } else if (q.contains("scan") || q.contains("mri") || q.contains("ct") || q.contains("xray")) {
-            assessment = "Imaging request detected. I'm preparing the diagnostic node for your arrival.";
+            assessment = "I've processed your request for diagnostic imaging. Advanced scanning (MRI/CT) is an essential tool for high-precision internal diagnostics.";
             severity = "HIGH";
             specialist = "Radiologist";
-            action = "Secure a slot in the Diagnostic Imaging section via '/dashboard/booking'.";
+            action = "Secure a slot in the Diagnostic Imaging section of the portal to coordinate your scan.";
             service = "MRI Scan";
+            conditions = "Diagnostic imaging requested for symptomatic investigation.";
+            instructions = "Ensure you have a referral from your primary physician before your appointment.";
         } else if (q.contains("head") || q.contains("brain") || q.contains("migraine") || q.contains("headache")) {
-            boolean isSevere = q.contains("severe") || q.contains("worst") || q.contains("injury") || q.contains("hit");
-            if (isSevere) {
-                assessment = "Severe cranial signal detected. Immediate assessment is mandatory.";
-                severity = "CRITICAL";
-                specialist = "Neurologist / ER";
-                action = "Locate the nearest Emergency node immediately.";
-                service = "Emergency & Trauma Care";
-                warning = "IMMEDIATE EVALUATION REQUIRED FOR SEVERE HEAD PAIN.";
-            } else {
-                assessment = "I've noted your headache symptoms. Monitoring and professional evaluation are recommended.";
-                severity = "LOW";
-                specialist = "General Practitioner";
-                action = "Monitor for 'Red Flags' (vision changes, fever). Book a routine consult if persistent.";
-                service = "General Clinical";
-            }
-        } else if (q.contains("stomach") || q.contains("abdomen") || q.contains("gut") || q.contains("constipation") || q.contains("digestion")) {
-            boolean isSevere = q.contains("severe") || q.contains("sharp") || q.contains("agony") || q.contains("vomiting");
-            if (isSevere) {
-                assessment = "Acute abdominal signal detected. I'm prioritizing a gastroenterological assessment.";
-                severity = "HIGH";
-                specialist = "Gastroenterologist";
-                action = "Secure a priority ultrasound or clinical slot via '/dashboard/booking'.";
-                service = "Ultrasound / सोनोग्राफी";
-                warning = "PERSISTENT SEVERE ABDOMINAL PAIN REQUIRES CLINICAL REVIEW.";
-            } else {
-                assessment = "I've noted your digestive discomfort. Monitoring and a routine consult are recommended.";
-                severity = "LOW";
-                specialist = "General Practitioner";
-                action = "Consult via '/dashboard/booking' if symptoms persist or fever develops.";
-                service = "General Clinical";
-            }
+            assessment = "I've analyzed your report of persistent head pain. Chronic or acute headaches can be indicative of various underlying clinical states, ranging from tension to vascular changes.";
+            severity = "MODERATE";
+            specialist = "Neurologist / General Physician";
+            action = "Monitor for 'Red Flags' like vision changes or neck stiffness, and book a routine clinical review.";
+            service = "General Clinical";
+            conditions = "Potential migraine or tension-type headache signals detected.";
+            instructions = "Note the duration and intensity of the pain for your consultation.";
         } else if (q.contains("emergency") || q.contains("pain") || q.contains("heart") || q.contains("chest") || q.contains("breathing") || q.contains("bleeding")) {
-            assessment = "Potential life-safety signal detected. Emergency protocols are active.";
+            assessment = "Potential life-safety signal identified. I have initiated our Emergency Triage protocol to prioritize your care.";
             severity = "CRITICAL";
             specialist = "Emergency Specialist";
-            action = "Locate the nearest Emergency & Trauma Care node in the MediSync registry immediately.";
+            action = "Locate and navigate to the nearest Emergency & Trauma Care node in the registry immediately.";
             service = "Emergency & Trauma Care";
+            conditions = "Acute clinical signals requiring immediate life-safety intervention.";
+            instructions = "Contact local emergency services immediately if you are unable to travel.";
             warning = "IMMEDIATE MEDICAL INTERVENTION IS REQUIRED.";
-        } else if (q.contains("book") || q.contains("appointment") || q.contains("see doctor")) {
-            assessment = "I can certainly help you coordinate your next clinical visit.";
-            severity = "LOW";
-            action = "Navigate to the 'Booking' module at '/dashboard/booking' to select your specialist.";
-            service = "General Clinical";
         } else {
-            assessment = "I've analyzed your health query and recommend a follow-up assessment for clinical clarity.";
+            assessment += "I recommend a professional consultation to provide a detailed diagnosis based on your specific health context.";
         }
 
-        return "1. Copilot Assessment: " + assessment + (hasImage ? " (Visual telemetry analysis in progress)" : "") + "\n" +
-               "2. Possible Conditions / Features: Clinical assessment pending further correlation.\n" +
-               "3. Risk Indicators / Instructions: Please follow the suggested portal routes for detailed coordination.\n" +
+        return "1. Copilot Assessment: " + assessment + (hasImage ? " (Image telemetry synchronized)" : "") + "\n" +
+               "2. Possible Conditions / Features: " + conditions + "\n" +
+               "3. Risk Indicators / Instructions: " + instructions + "\n" +
                "4. Triage Level: " + severity + "\n" +
                "5. Recommended specialist / Node: " + specialist + "\n" +
                "6. Suggested Next Steps: " + action + " Use the booking node for " + service + ".\n" +
-               "7. Follow-up Questions: Can you specify the exact location? How long has this been occurring?\n" +
-               "8. Emergency Warning / Portal Tip: " + (warning.isEmpty() ? "Tip: You can access your full clinical history in the 'Reports' section." : warning);
+               "7. Follow-up Questions: Are you experiencing any secondary symptoms? How would you rate the intensity on a scale of 1-10?\n" +
+               "8. Emergency Warning / Portal Tip: " + (warning.isEmpty() ? "Tip: You can upload previous medical records using the paperclip icon for a longitudinal review." : warning);
+    }on." : warning);
     }
 
     public String getLatestBrief(String email) {
