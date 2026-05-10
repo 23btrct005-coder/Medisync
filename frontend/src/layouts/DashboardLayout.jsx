@@ -31,7 +31,6 @@ const DashboardLayout = () => {
     const photoUrl = user?.profilePictureUrl || (user?.id ? `${api.defaults.baseURL}/auth/patient/photo/${user.id}` : null);
 
     return (
-    return (
         <div className="flex w-full h-[100dvh] bg-slate-50 overflow-hidden font-inter antialiased">
             <TopBarLoader isLoading={globalLoading} />
             <OnboardingTour />
