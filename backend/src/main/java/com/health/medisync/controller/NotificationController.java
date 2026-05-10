@@ -41,12 +41,18 @@ public class NotificationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Notification>> getMyNotifications() {
-        Long userId = UserContext.getCurrentUserId();
-        if (userId == null) {
-            return ResponseEntity.status(401).build();
+    public ResponseEntity<?> getMyNotifications() {
+        try {
+            Long userId = UserContext.getCurrentUserId();
+            if (userId == null) {
+                return ResponseEntity.status(401).body(List.of());
+            }
+            return ResponseEntity.ok(notificationRepository.findByUserIdOrderByCreatedAtDesc(userId));
+        } catch (Exception e) {
+            System.err.println("CRITICAL: Notification fetch failed: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Internal signal error: " + e.getMessage());
         }
-        return ResponseEntity.ok(notificationRepository.findByUserIdOrderByCreatedAtDesc(userId));
     }
 
     @PostMapping("/{id}/read")

@@ -120,88 +120,91 @@ public class AppointmentController {
     public ResponseEntity<?> getHospitalsByService(
             @RequestParam String service,
             @RequestParam(required = false) String bloodGroup) {
-        List<Map<String, Object>> facilities = new java.util.ArrayList<>();
-        ObjectMapper mapper = new ObjectMapper();
-        
-        // Hospitals
-        hospitalRepository.findAll().stream()
-            .filter(h -> h.getServices() != null && h.getServices().toLowerCase().contains(service.toLowerCase()))
-            .filter(h -> {
-                // Blood Bank logic
-                if (service.equalsIgnoreCase("Blood Bank")) {
-                    if (bloodGroup == null || bloodGroup.isEmpty()) return true;
-                    if (h.getBloodStock() == null) return false;
+        try {
+            List<Map<String, Object>> facilities = new java.util.ArrayList<>();
+            ObjectMapper mapper = new ObjectMapper();
+            
+            // Hospitals
+            hospitalRepository.findAll().stream()
+                .filter(h -> h.getServices() != null && h.getServices().toLowerCase().contains(service.toLowerCase()))
+                .filter(h -> {
                     try {
-                        Map<String, Integer> stock = mapper.readValue(h.getBloodStock(), Map.class);
-                        return stock.getOrDefault(bloodGroup, 0) > 0;
+                        // Blood Bank logic
+                        if (service.equalsIgnoreCase("Blood Bank")) {
+                            if (bloodGroup == null || bloodGroup.isEmpty()) return true;
+                            if (h.getBloodStock() == null) return false;
+                            Map<String, Integer> stock = mapper.readValue(h.getBloodStock(), Map.class);
+                            return stock.getOrDefault(bloodGroup, 0) > 0;
+                        }
+                        // Price enforcement: must have a non-zero price for the service
+                        if (h.getServiceFees() == null || h.getServiceFees().isEmpty()) return false;
+                        Map<String, Object> fees = mapper.readValue(h.getServiceFees(), Map.class);
+                        String matchedKey = fees.keySet().stream()
+                            .filter(k -> k.toLowerCase().contains(service.toLowerCase()) || service.toLowerCase().contains(k.toLowerCase()))
+                            .findFirst()
+                            .orElse(null);
+                        
+                        if (matchedKey == null) return false;
+                        Object price = fees.get(matchedKey);
+                        if (price == null) return false;
+                        double fee = Double.parseDouble(price.toString());
+                        return fee > 0;
                     } catch (Exception e) { return false; }
-                }
-                // Price enforcement: must have a non-zero price for the service
-                if (h.getServiceFees() == null || h.getServiceFees().isEmpty()) return false;
-                try {
-                    Map<String, Object> fees = mapper.readValue(h.getServiceFees(), Map.class);
-                    // Fuzzy match the fee key
-                    String matchedKey = fees.keySet().stream()
-                        .filter(k -> k.toLowerCase().contains(service.toLowerCase()) || service.toLowerCase().contains(k.toLowerCase()))
-                        .findFirst()
-                        .orElse(null);
-                    
-                    if (matchedKey == null) return false;
-                    Object price = fees.get(matchedKey);
-                    if (price == null) return false;
-                    double fee = Double.parseDouble(price.toString());
-                    return fee > 0;
-                } catch (Exception e) { return false; }
-            })
-            .forEach(h -> {
-                Map<String, Object> map = new java.util.HashMap<>();
-                map.put("id", "hosp_" + h.getId());
-                map.put("name", h.getName());
-                map.put("logoUrl", h.getLogoUrl());
-                map.put("hospitalType", h.getHospitalType() != null ? h.getHospitalType() : "Medical Center");
-                map.put("city", h.getCity());
-                map.put("state", h.getState());
-                map.put("serviceFees", h.getServiceFees());
-                map.put("latitude", h.getLatitude());
-                map.put("longitude", h.getLongitude());
-                facilities.add(map);
-            });
+                })
+                .forEach(h -> {
+                    Map<String, Object> map = new java.util.HashMap<>();
+                    map.put("id", "hosp_" + h.getId());
+                    map.put("name", h.getName());
+                    map.put("logoUrl", h.getLogoUrl());
+                    map.put("hospitalType", h.getHospitalType() != null ? h.getHospitalType() : "Medical Center");
+                    map.put("city", h.getCity());
+                    map.put("state", h.getState());
+                    map.put("serviceFees", h.getServiceFees());
+                    map.put("latitude", h.getLatitude());
+                    map.put("longitude", h.getLongitude());
+                    facilities.add(map);
+                });
 
-        // Doctors/Clinics
-        appointmentService.getAllApprovedDoctors().stream()
-            .filter(d -> d.getServices() != null && d.getServices().toLowerCase().contains(service.toLowerCase()))
-            .filter(d -> {
-                // Price enforcement for clinics
-                if (d.getServiceFees() == null || d.getServiceFees().isEmpty()) return false;
-                try {
-                    Map<String, Object> fees = mapper.readValue(d.getServiceFees(), Map.class);
-                    String matchedKey = fees.keySet().stream()
-                        .filter(k -> k.toLowerCase().contains(service.toLowerCase()) || service.toLowerCase().contains(k.toLowerCase()))
-                        .findFirst()
-                        .orElse(null);
-                    
-                    if (matchedKey == null) return false;
-                    Object price = fees.get(matchedKey);
-                    if (price == null) return false;
-                    double fee = Double.parseDouble(price.toString());
-                    return fee > 0;
-                } catch (Exception e) { return false; }
-            })
-            .forEach(d -> {
-                Map<String, Object> map = new java.util.HashMap<>();
-                map.put("id", "doc_" + d.getId());
-                map.put("name", d.getName() + (d.getName().toLowerCase().contains("clinic") ? "" : "'s clinic"));
-                map.put("logoUrl", d.getProfilePictureUrl());
-                map.put("hospitalType", "Independent Clinic");
-                map.put("city", d.getClinicCity());
-                map.put("state", d.getClinicState());
-                map.put("serviceFees", d.getServiceFees());
-                map.put("latitude", d.getLatitude());
-                map.put("longitude", d.getLongitude());
-                facilities.add(map);
-            });
+            // Doctors/Clinics
+            appointmentService.getAllApprovedDoctors().stream()
+                .filter(d -> d.getServices() != null && d.getServices().toLowerCase().contains(service.toLowerCase()))
+                .filter(d -> {
+                    try {
+                        // Price enforcement for clinics
+                        if (d.getServiceFees() == null || d.getServiceFees().isEmpty()) return false;
+                        Map<String, Object> fees = mapper.readValue(d.getServiceFees(), Map.class);
+                        String matchedKey = fees.keySet().stream()
+                            .filter(k -> k.toLowerCase().contains(service.toLowerCase()) || service.toLowerCase().contains(k.toLowerCase()))
+                            .findFirst()
+                            .orElse(null);
+                        
+                        if (matchedKey == null) return false;
+                        Object price = fees.get(matchedKey);
+                        if (price == null) return false;
+                        double fee = Double.parseDouble(price.toString());
+                        return fee > 0;
+                    } catch (Exception e) { return false; }
+                })
+                .forEach(d -> {
+                    Map<String, Object> map = new java.util.HashMap<>();
+                    map.put("id", "doc_" + d.getId());
+                    map.put("name", d.getName() + (d.getName().toLowerCase().contains("clinic") ? "" : "'s clinic"));
+                    map.put("logoUrl", d.getProfilePictureUrl());
+                    map.put("hospitalType", "Independent Clinic");
+                    map.put("city", d.getClinicCity());
+                    map.put("state", d.getClinicState());
+                    map.put("serviceFees", d.getServiceFees());
+                    map.put("latitude", d.getLatitude());
+                    map.put("longitude", d.getLongitude());
+                    facilities.add(map);
+                });
 
-        return ResponseEntity.ok(facilities);
+            return ResponseEntity.ok(facilities);
+        } catch (Exception e) {
+            System.err.println("CRITICAL: Facility fetch failed: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(java.util.Collections.emptyList());
+        }
     }
 
     @PostMapping("/book-service")
