@@ -4,7 +4,7 @@ import { motion, AnimatePresence, useMotionValue } from 'framer-motion';
 import { 
     SendHorizontal, X, Mic, StopCircle, Maximize2, Minimize2, 
     MessageCircle, Sparkles, Activity, ShieldCheck, HeartPulse, BrainCircuit, Calendar, Paperclip,
-    ChevronRight, AlertCircle, Clock, Stethoscope, MapPin, CheckCircle2, RotateCcw,
+    ChevronRight, ChevronDown, AlertCircle, Clock, Stethoscope, MapPin, CheckCircle2, RotateCcw,
     Volume2, VolumeX, ArrowDown
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
