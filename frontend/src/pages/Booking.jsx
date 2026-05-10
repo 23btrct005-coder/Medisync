@@ -679,16 +679,36 @@ const Booking = () => {
                                                 </div>
                                             </div>
                                             <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                                                <span className="text-sm font-black text-slate-900">
-                                                    ₹{(() => {
-                                                        try {
-                                                            const fees = typeof h.serviceFees === 'string' ? JSON.parse(h.serviceFees) : h.serviceFees;
-                                                            return fees?.[selectedService] || (selectedService.includes('MRI') ? '2500' : '500');
-                                                        } catch(e) {
-                                                            return selectedService.includes('MRI') ? '2500' : '500';
-                                                        }
-                                                    })()}*
-                                                </span>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-black text-slate-900">
+                                                        ₹{(() => {
+                                                            try {
+                                                                const fees = typeof h.serviceFees === 'string' ? JSON.parse(h.serviceFees) : h.serviceFees;
+                                                                if (!fees) return '500';
+                                                                // Fuzzy match the fee key
+                                                                const matchedKey = Object.keys(fees).find(k => 
+                                                                    k.toLowerCase().includes(selectedService.toLowerCase()) || 
+                                                                    selectedService.toLowerCase().includes(k.toLowerCase())
+                                                                );
+                                                                return matchedKey ? fees[matchedKey] : (selectedService.includes('MRI') ? '2500' : '500');
+                                                            } catch(e) {
+                                                                return selectedService.includes('MRI') ? '2500' : '500';
+                                                            }
+                                                        })()}*
+                                                    </span>
+                                                    {h.latitude && h.longitude && (
+                                                        <a 
+                                                            href={`https://www.google.com/maps?q=${h.latitude},${h.longitude}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            className="flex items-center gap-1 text-[9px] font-black text-blue-600 uppercase tracking-tighter mt-1 hover:underline"
+                                                        >
+                                                            <MapPin size={10} />
+                                                            View Maps
+                                                        </a>
+                                                    )}
+                                                </div>
                                                 <div className="p-2 bg-primary-50 text-primary-600 rounded-xl group-hover:bg-primary-600 group-hover:text-white transition-all">
                                                     <ChevronRight size={18} />
                                                 </div>
