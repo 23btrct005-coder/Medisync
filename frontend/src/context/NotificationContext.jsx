@@ -137,13 +137,13 @@ export const NotificationProvider = ({ children }) => {
     }
   };
 
-  const [isAiOpen, setAiOpen] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
 
   return (
     <NotificationContext.Provider value={{ 
       notifications, unreadCount, markAsRead, fetchNotifications, 
       unreadChatCount, setUnreadChatCount, fetchUnreadChatCount, lastMessage,
-      isAiOpen, setAiOpen
+      aiOpen, setAiOpen
     }}>
       {children}
     </NotificationContext.Provider>
