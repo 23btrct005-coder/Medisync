@@ -48,7 +48,6 @@ const MobileLayout = () => {
             { name: 'Messages', path: '/dashboard/messages', icon: <MessageSquare size={20} />, badge: unreadChatCount },
             { name: 'Home', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
             { name: 'Book', path: '/dashboard/booking', icon: <CalendarPlus size={20} /> },
-            { name: 'AI', action: () => setAiOpen(true), icon: <Sparkles size={20} />, isAction: true },
         ];
     };
 
