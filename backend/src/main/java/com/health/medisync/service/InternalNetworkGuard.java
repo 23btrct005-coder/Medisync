@@ -34,7 +34,7 @@ public class InternalNetworkGuard {
             
             // 2. Search for Doctors in that specialty at that hospital
             List<Doctor> doctors = doctorRepository.findAll().stream()
-                .filter(d -> d.getHospital().getId().equals(hospital.get().getId()))
+                .filter(d -> d.getHospitalEntity() != null && d.getHospitalEntity().getId().equals(hospital.get().getId()))
                 .filter(d -> d.getSpecialization().toLowerCase().contains(specialty.toLowerCase()))
                 .collect(Collectors.toList());
             
