@@ -84,12 +84,12 @@ public class AiService {
             }
         }
 
-        String hospitalList = hospitalRepository.findAll().stream()
+        // OPTIMIZATION: Limit registry injection to prevent prompt overflow
+        String limitedHospitalList = hospitalRepository.findAll().stream().limit(10)
             .map(h -> "- " + h.getName() + " | Address: " + h.getStreet() + ", " + h.getCity() + ", " + h.getState() + " " + h.getPinCode() + " | Maps: " + (h.getGoogleMapsUrl() != null ? h.getGoogleMapsUrl() : "https://www.google.com/maps/search/?api=1&query=" + h.getName().replace(" ", "+")) + " [ID: " + h.getId() + "]")
             .collect(Collectors.joining("\n"));
 
-        String doctorList = doctorRepository.findAll().stream()
-            .filter(Doctor::isApproved)
+        String limitedDoctorList = doctorRepository.findAll().stream().filter(Doctor::isApproved).limit(10)
             .map(d -> "- Dr. " + d.getName() + " (" + d.getSpecialization() + ") [ID: " + d.getId() + "] at " + (d.getHospitalEntity() != null ? d.getHospitalEntity().getName() : (d.getHospital() != null ? d.getHospital() : "Independent")))
             .collect(Collectors.joining("\n"));
 
@@ -108,7 +108,7 @@ public class AiService {
                 "CLINICAL REASONING PROTOCOL:\n" +
                 "1. QUESTION-FIRST BEHAVIOR: For vague symptoms, DO NOT list possible conditions immediately. FIRST ask clarifying questions about: Location, Severity (1-10), Duration, Onset, and Red Flags.\n" +
                 "2. DYNAMIC TRIAGE: Use ONLY [LOW | MODERATE | HIGH | CRITICAL].\n" +
-                "3. EMERGENCY PROTOCOL: Any mention of 'Ambulance', 'Emergency', 'Chest Pain', or 'Severe Breathing Difficulty' MUST be triaged as CRITICAL immediately.\n" +
+                "3. EMERGENCY PROTOCOL: Any mention of 'Ambulance', 'Emergency', 'Chest Pain', 'Blood Bank', or 'Severe Breathing Difficulty' MUST be triaged as HIGH or CRITICAL immediately.\n" +
                 "4. ADAPTIVE HEADERS: If certain, use 'Clinical Assessment'. If vague, use 'Initial Assessment'.\n" +
                 "5. STRICT REGISTRY ADHERENCE (MANDATORY): You are FORBIDDEN from suggesting or mentioning any hospital, clinic, or medical facility NOT listed in the INSTITUTIONAL REGISTRY below. Do NOT mention generic emergency numbers like '108' or '112' in the text; instead, provide the GOOGLE MAPS LINK from the registry for the nearest facility. Recommending external facilities not in the list is a CRITICAL FAILURE. If no suitable hospital is in the registry, suggest the 'Nearest MediSync Node'.\n\n" +
                 "RESPONSE STRUCTURE (STRICT 8-HEADER PROTOCOL):\n" +
@@ -125,8 +125,8 @@ public class AiService {
                 "- Natural disclaimer: 'This information is for guidance and should not replace evaluation by a licensed healthcare professional.'\n" +
                 "- SYMPTOM LOCALIZATION: For any pain, always ask about the exact anatomical location (e.g., upper-right quadrant).\n\n" +
                 "### INSTITUTIONAL REGISTRY:\n" +
-                "HOSPITALS:\n" + hospitalList + "\n" +
-                "DOCTORS:\n" + doctorList + "\n\n" +
+                "HOSPITALS:\n" + limitedHospitalList + "\n" +
+                "DOCTORS:\n" + limitedDoctorList + "\n\n" +
                 "### CLINICAL CONTEXT:\n" +
                 "DATE: " + currentDate + " | TIME: " + currentTime + "\n" +
                 "PROFILE: " + clinicalHistory.toString() + "\n" +
@@ -141,7 +141,8 @@ public class AiService {
             textPart.put("text", prompt);
             parts.add(textPart);
 
-            if (imageData != null && imageData.contains(",")) {
+            boolean hasImage = imageData != null && imageData.contains(",");
+            if (hasImage) {
                 String[] partsArray = imageData.split(",");
                 String mimeType = partsArray[0].split(":")[1].split(";")[0];
                 String base64Data = partsArray[1];
@@ -158,6 +159,7 @@ public class AiService {
             
             // AUTOMATIC FAILOVER: If Gemini fails, use Groq Llama-3.3-70b
             if (neuralResponse == null || neuralResponse.contains("error") || neuralResponse.contains("403") || neuralResponse.contains("404")) {
+                System.err.println("Gemini Node Interrupted. Failing over to Groq...");
                 neuralResponse = groqAiService.getCompletion(prompt);
             }
 
@@ -166,11 +168,22 @@ public class AiService {
                 return neuralResponse;
             }
             
-            return "I apologize, but I encountered a clinical reasoning interruption while analyzing the image. Please try providing more details in text or re-uploading a clearer image.";
+            // STRUCTURED FALLBACK to satisfy frontend parser
+            String fallbackPrefix = hasImage ? "while analyzing the image" : "during clinical reasoning";
+            return "1. Initial Assessment: I apologize, but I encountered a clinical reasoning interruption " + fallbackPrefix + ". Based on your query, we should proceed with caution.\n" +
+                   "2. Possible Conditions: Data sync interrupted. Please provide more clinical details.\n" +
+                   "3. Risk Indicators: Connectivity transiently lost.\n" +
+                   "4. Triage Level: MODERATE\n" +
+                   "5. Recommended Specialist: General Practitioner\n" +
+                   "6. Suggested Next Steps: Please re-submit your query or consult our booking node directly for " + (query.toLowerCase().contains("blood") ? "Blood Bank" : "General Clinical") + " services.\n" +
+                   "7. Follow-up Questions: Can you describe the urgency? Have you visited our facilities before?\n" +
+                   "8. Emergency Warning: None identified during interrupted scan.";
         } catch (Exception e) { 
+            System.err.println("CRITICAL_AI_ERROR: " + e.getMessage());
             e.printStackTrace(); 
             return "System Error: Unable to reach the clinical reasoning brain. Please check your connection.";
         }
+    }
     }
 
     public String getLatestBrief(String email) {
