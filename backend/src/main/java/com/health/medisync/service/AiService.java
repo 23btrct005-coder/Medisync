@@ -3,12 +3,10 @@ package com.health.medisync.service;
 import com.health.medisync.repository.HospitalRepository;
 import com.health.medisync.repository.DoctorRepository;
 import com.health.medisync.repository.PatientRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
-@RequiredArgsConstructor
 public class AiService {
     private final GeminiAiService geminiAiService;
     private final OpenAiService openAiService;
@@ -16,6 +14,16 @@ public class AiService {
     private final HospitalRepository hospitalRepository;
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
+
+    public AiService(GeminiAiService geminiAiService, OpenAiService openAiService, GroqAiService groqAiService,
+                     HospitalRepository hospitalRepository, DoctorRepository doctorRepository, PatientRepository patientRepository) {
+        this.geminiAiService = geminiAiService;
+        this.openAiService = openAiService;
+        this.groqAiService = groqAiService;
+        this.hospitalRepository = hospitalRepository;
+        this.doctorRepository = doctorRepository;
+        this.patientRepository = patientRepository;
+    }
 
     public String generateResponse(String email, String query, String imageData, String location, String history) {
         String profile = patientRepository.findByUserUsernameIgnoreCase(email).map(p -> 
