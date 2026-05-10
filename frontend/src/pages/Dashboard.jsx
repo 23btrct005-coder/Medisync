@@ -198,6 +198,9 @@ const Dashboard = () => {
           />
         </div>
 
+        {/* Signal Telemetry: Horizontal Stream */}
+        <ActivityHub />
+
         {/* Data Architecture Hub */}
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
           
@@ -272,8 +275,6 @@ const Dashboard = () => {
           </div>
 
           <div className="xl:col-span-4 space-y-8">
-            <ActivityHub />
-            
             {/* Quick Access Grid (Restoring Old UI feel) */}
             <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-xl">
                <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest mb-6 flex items-center gap-2">

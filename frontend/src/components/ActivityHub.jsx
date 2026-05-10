@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axiosConfig';
-import { Bell, Sparkles, ShieldAlert, Calendar, CheckCircle2, Clock, Trash2, CheckSquare, ArrowUpRight, MessageSquare, HeartPulse } from 'lucide-react';
+import { Bell, Sparkles, ShieldAlert, Calendar, CheckCircle2, Clock, Trash2, CheckSquare, ArrowUpRight, MessageSquare, HeartPulse, ChevronRight, ChevronLeft } from 'lucide-react';
 
 const ActivityHub = () => {
   const [notifications, setNotifications] = useState([]);
@@ -55,161 +55,146 @@ const ActivityHub = () => {
     }
   };
 
-  const getStatusColor = (type) => {
-    switch (type?.toUpperCase()) {
-      case 'AI_ANALYSIS': return 'bg-purple-100 text-purple-700 border-purple-200';
-      case 'SECURITY': return 'bg-red-100 text-red-700 border-red-200';
-      case 'APPOINTMENT': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'UPDATE': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-      default: return 'bg-slate-100 text-slate-700 border-slate-200';
-    }
-  };
-
   return (
-    <div className="flex flex-col h-full bg-white border border-slate-200 shadow-xl rounded-[2.5rem] overflow-hidden relative group/hub">
-      {/* Premium Header */}
-      <div className="p-8 border-b border-slate-100 bg-slate-50/50 backdrop-blur-sm sticky top-0 z-20">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-slate-900 text-white rounded-2xl shadow-lg shadow-slate-900/20">
-                <HeartPulse size={24} className="animate-pulse" />
-              </div>
-              <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2 uppercase italic">
-                Clinical <span className="not-italic text-slate-400">Stream</span>
-              </h2>
-            </div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Real-time Telemetry Node</p>
+    <div className="w-full space-y-6">
+      {/* Horizontal Header */}
+      <div className="flex items-center justify-between px-2">
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-slate-900/20">
+            <HeartPulse size={24} className="animate-pulse" />
           </div>
-          <div className="flex items-center gap-2">
-             <div className="px-3 py-1 bg-emerald-100 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-widest animate-pulse">Live</div>
-             <button onClick={fetchNotifications} className="p-2 hover:bg-slate-200 rounded-xl transition-all text-slate-400 hover:text-slate-900">
-                <Clock size={18} />
-             </button>
+          <div>
+            <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase italic flex items-center gap-2">
+              Clinical <span className="not-italic text-primary-600">Signals</span>
+            </h2>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Real-time Telemetry Stream</p>
           </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-full">
+            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
+            <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none">Live Sync</span>
+          </div>
+          <button onClick={fetchNotifications} className="p-3 bg-white border border-slate-100 rounded-2xl hover:bg-slate-50 transition-all text-slate-400 hover:text-slate-900 shadow-sm">
+            <Clock size={18} />
+          </button>
         </div>
       </div>
 
-      {/* Content Area */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-slate-50/30">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-10 h-10 border-4 border-primary/10 border-t-primary rounded-full animate-spin mb-4" />
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Syncing Nodes...</p>
-          </div>
-        ) : notifications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center px-10">
-            <div className="w-20 h-20 bg-slate-100 rounded-[2rem] flex items-center justify-center mb-6 text-slate-300">
-              <Bell size={40} />
+      {/* Horizontal Scroll Area */}
+      <div className="relative group">
+        <div className="flex overflow-x-auto gap-6 pb-6 pt-2 px-2 custom-scrollbar no-scrollbar scroll-smooth snap-x">
+          {loading ? (
+            Array.from({length: 4}).map((_, i) => (
+              <div key={i} className="min-w-[320px] h-[220px] bg-white border border-slate-100 rounded-[2.5rem] animate-pulse flex flex-col p-8 space-y-4">
+                <div className="w-10 h-10 bg-slate-100 rounded-xl" />
+                <div className="h-4 w-2/3 bg-slate-100 rounded-full" />
+                <div className="space-y-2">
+                  <div className="h-3 w-full bg-slate-100 rounded-full" />
+                  <div className="h-3 w-5/6 bg-slate-100 rounded-full" />
+                </div>
+              </div>
+            ))
+          ) : notifications.length === 0 ? (
+            <div className="w-full bg-white border border-dashed border-slate-200 rounded-[3rem] p-16 flex flex-col items-center justify-center text-center">
+              <div className="w-20 h-20 bg-slate-50 rounded-[2.5rem] flex items-center justify-center mb-6 text-slate-200">
+                <Bell size={40} />
+              </div>
+              <h4 className="text-lg font-black text-slate-800 uppercase tracking-tight">Clinical Stream Clear</h4>
+              <p className="text-xs text-slate-400 mt-2 font-bold uppercase tracking-widest">No active signals detected in your workspace.</p>
             </div>
-            <h4 className="text-sm font-black text-slate-800 uppercase tracking-tight">Stream Isolated</h4>
-            <p className="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-widest">No active signals in your current clinical scope.</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {notifications.map((n) => (
+          ) : (
+            notifications.map((n) => (
               <div 
                 key={n.id} 
-                className={`relative group rounded-[2rem] border transition-all duration-300 overflow-hidden ${
+                className={`min-w-[320px] md:min-w-[360px] snap-start relative group/card rounded-[2.5rem] border transition-all duration-500 overflow-hidden ${
                   n.isRead 
-                    ? 'bg-white/40 border-slate-100 opacity-60 grayscale-[0.5]' 
-                    : 'bg-white border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.02)] hover:shadow-2xl hover:shadow-primary/5 hover:border-primary/20'
+                    ? 'bg-white/40 border-slate-100 opacity-60' 
+                    : 'bg-white border-slate-100 shadow-[0_15px_40px_rgba(0,0,0,0.03)] hover:shadow-2xl hover:shadow-primary/10 hover:border-primary/30'
                 }`}
               >
-                {/* Status Indicator Bar */}
+                {/* Visual Status Indicator */}
                 {!n.isRead && (
-                  <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-primary rounded-r-full" />
+                  <div className="absolute top-0 left-0 w-2 h-full bg-primary-600 rounded-r-full" />
                 )}
 
-                <div className="p-6">
+                <div className="p-8 h-full flex flex-col">
                   {/* Card Header */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all group-hover:scale-110 ${
+                  <div className="flex items-start justify-between mb-6">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border transition-all group-hover/card:scale-110 group-hover/card:rotate-3 ${
                         n.isRead ? 'bg-slate-50 border-slate-100' : 'bg-primary-50 border-primary-100 shadow-sm'
                       }`}>
                         {getActivityIcon(n.type, n.isRead)}
                       </div>
                       <div>
-                        <p className={`text-[10px] font-black uppercase tracking-widest ${n.isRead ? 'text-slate-400' : 'text-primary'}`}>
+                        <p className={`text-[10px] font-black uppercase tracking-[0.2em] mb-1 ${n.isRead ? 'text-slate-400' : 'text-primary-600'}`}>
                           {n.type || 'SIGNAL'}
                         </p>
-                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">
-                          {new Date(n.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        <p className="text-[9px] font-bold text-slate-400 uppercase">
+                          {new Date(n.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} • {new Date(n.createdAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
                         </p>
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                    <div className="flex items-center gap-1">
                       {!n.isRead && (
-                        <button onClick={() => markRead(n.id)} className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-lg transition-all" title="Mark Read">
-                          <CheckSquare size={14} />
+                        <button onClick={() => markRead(n.id)} className="p-2 text-slate-300 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all" title="Mark Read">
+                          <CheckSquare size={16} />
                         </button>
                       )}
-                      <button onClick={() => deleteNotification(n.id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all" title="Delete Signal">
-                        <Trash2 size={14} />
+                      <button onClick={() => deleteNotification(n.id)} className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all" title="Delete Signal">
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </div>
 
-                  {/* Card Body */}
-                  <div className="space-y-2">
-                    <h4 className={`text-sm font-black tracking-tight leading-tight uppercase ${n.isRead ? 'text-slate-600' : 'text-slate-900 italic'}`}>
+                  {/* Body */}
+                  <div className="flex-1 space-y-3">
+                    <h4 className={`text-xl font-black tracking-tight leading-none uppercase ${n.isRead ? 'text-slate-600' : 'text-slate-900 italic'}`}>
                       {n.title}
                     </h4>
-                    <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+                    <p className="text-xs text-slate-500 font-semibold leading-relaxed line-clamp-3">
                       {n.description}
                     </p>
                   </div>
 
-                  {/* Action Bar */}
+                  {/* Action Link */}
                   {n.actionLink && (
-                    <div className="mt-5 pt-5 border-t border-slate-50 flex items-center justify-between">
+                    <div className="mt-8 pt-6 border-t border-slate-50 flex items-center justify-between">
                       <a 
                         href={n.actionLink}
-                        className={`flex items-center gap-2 py-2 px-4 rounded-xl text-[9px] font-black uppercase tracking-[0.15em] transition-all active:scale-95 ${
+                        className={`inline-flex items-center gap-2 py-3 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 ${
                           n.isRead 
                             ? 'bg-slate-100 text-slate-400' 
-                            : 'bg-slate-900 text-white shadow-lg shadow-slate-900/10 hover:bg-black group/btn'
+                            : 'bg-slate-900 text-white shadow-xl shadow-slate-900/10 hover:bg-black group/btn'
                         }`}
                       >
                         {n.actionText || 'Process Signal'}
-                        <ArrowUpRight size={12} className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+                        <ArrowUpRight size={14} className="group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
                       </a>
                       {!n.isRead && (
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                          <span className="text-[8px] font-black text-primary uppercase tracking-widest">Priority</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary-600 animate-pulse" />
+                          <span className="text-[9px] font-black text-primary-600 uppercase tracking-widest">Active</span>
                         </div>
                       )}
                     </div>
                   )}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            ))
+          )}
+        </div>
 
-      {/* Footer Info */}
-      <div className="p-6 bg-slate-50/80 border-t border-slate-100">
-         <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-               <div className="w-8 h-8 bg-white rounded-lg border border-slate-200 flex items-center justify-center text-slate-400">
-                  <ShieldAlert size={16} />
-               </div>
-               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">
-                  Node Integrity <br/><span className="text-primary">Secured via RLS</span>
-               </p>
+        {/* Scroll Hints */}
+        {notifications.length > 3 && (
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none group-hover:opacity-100 opacity-0 transition-opacity">
+                <div className="p-3 bg-white/80 backdrop-blur-md rounded-full shadow-2xl border border-white/20">
+                    <ChevronRight size={24} className="text-primary-600 animate-bounce-x" />
+                </div>
             </div>
-            <div className="flex -space-x-2">
-                {[1,2,3].map(i => (
-                  <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center overflow-hidden">
-                    <div className="w-full h-full bg-gradient-to-br from-slate-300 to-slate-400" />
-                  </div>
-                ))}
-            </div>
-         </div>
+        )}
       </div>
     </div>
   );
