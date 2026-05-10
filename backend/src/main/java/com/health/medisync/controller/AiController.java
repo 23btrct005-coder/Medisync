@@ -8,6 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/ai")
@@ -48,7 +49,14 @@ public class AiController {
             }
 
             String imageData = (String) request.get("imageData");
-            String response = aiService.generateResponse(patientEmail, userMessage, imageData, location, history);
+            String historyStr = "";
+            if (history != null) {
+                historyStr = history.stream()
+                    .map(h -> h.get("role") + ": " + h.get("text"))
+                    .collect(Collectors.joining("\n"));
+            }
+
+            String response = aiService.generateResponse(patientEmail, userMessage, imageData, location, historyStr);
             return ResponseEntity.ok(Map.of("response", response));
         } catch (Exception e) {
             e.printStackTrace();
