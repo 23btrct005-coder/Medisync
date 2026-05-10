@@ -4,6 +4,7 @@ import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import api, { rawBaseURL } from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
+import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
