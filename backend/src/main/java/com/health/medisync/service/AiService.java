@@ -57,16 +57,23 @@ public class AiService {
         String currentTime = java.time.LocalTime.now().toString();
         String currentDate = java.time.LocalDate.now().toString();
         final StringBuilder clinicalHistory = new StringBuilder(userEmail != null ? "" : "None");
+        String currentPatientId = "UNKNOWN";
+        String currentPatientName = "Guest User";
         
         if (userEmail != null) {
             Optional<User> userOpt = userRepository.findByUsernameIgnoreCase(userEmail);
             if (userOpt.isPresent()) {
                 User u = userOpt.get();
-                patientRepository.findByUserId(u.getId()).ifPresent(p -> {
+                Optional<Patient> pOpt = patientRepository.findByUserId(u.getId());
+                if (pOpt.isPresent()) {
+                    Patient p = pOpt.get();
+                    currentPatientId = p.getPatientId() != null ? p.getPatientId() : "TN-MS-" + u.getId();
+                    currentPatientName = p.getName() != null ? p.getName() : u.getUsername();
+                    
                     clinicalHistory.append("Patient Profile: ")
                         .append(p.getGender() != null ? p.getGender() + ", " : "")
                         .append(p.getAge() != null ? p.getAge() + " years old. " : "");
-                });
+                }
 
                 telemetryRepository.findByPatientIdOrderByCreatedAtDesc(u.getId()).stream().findFirst().ifPresent(t -> {
                     clinicalHistory.append("Recent Vitals: ")
@@ -108,13 +115,13 @@ public class AiService {
                 "The 'Secure Clinical Booking' button must be DYNAMIC. You must resolve user intent into one of the following pathways and state it clearly.\n\n" +
                 "2. TRIAGE FRAMEWORK:\n" +
                 "- RISK STRATIFICATION: Assign Triage [CRITICAL | URGENT | ROUTINE].\n" +
-                "- IDENTITY LOCKING: All actions bound to Patient ID: TN-29-0017 (Abishek A).\n\n" +
+                "- IDENTITY LOCKING: All actions bound to Patient ID: " + currentPatientId + " (" + currentPatientName + ").\n\n" +
                 "3. ROUTING PATHWAYS (SYSTEM INVENTORY):\n" +
                 "- PATHWAY A (SERVICES): Emergency & Trauma Care, Ambulance Services, ICU, NICU, Operation Theatre, CT Scan, X-Ray, MRI, Ultrasound (सोनोग्राफी), Blood Bank, 24/7 Pharmacy.\n" +
                 "- PATHWAY B (SPECIALISTS): Radiology (Dr. Amarthya), Orthopedic, Pediatric, Gynecology, ENT, Ophthalmology, Dermatology (Skin), General Surgery, Dental, Physiotherapy.\n\n" +
                 "4. EXECUTION PROTOCOL:\n" +
                 "- If CRITICAL symptoms (Chest pain, Unconscious, Heavy bleeding) -> LOCK to 'Emergency & Trauma Care'.\n" +
-                "- Map button to: medisync-hos.ddns.net/booking/resolve?path={Service_or_Doctor_ID}&triage={Level}&pid=TN-29-0017\n\n" +
+                "- Map button to: medisync-hos.ddns.net/booking/resolve?path={Service_or_Doctor_ID}&triage={Level}&pid=" + currentPatientId + "\n\n" +
                 "RESPONSE STRUCTURE (STRICT 8-HEADER PROTOCOL):\n" +
                 "1. Initial Assessment: (Direct diagnosis/observation)\n" +
                 "2. Possible Conditions: (Medically cautious list)\n" +
@@ -134,7 +141,7 @@ public class AiService {
                 "### CLINICAL CONTEXT:\n" +
                 "DATE: " + currentDate + " | TIME: " + currentTime + "\n" +
                 "PROFILE: " + clinicalHistory.toString() + "\n" +
-                "ID: TN-29-0017 | NAME: Abishek A\n" +
+                "ID: " + currentPatientId + " | NAME: " + currentPatientName + "\n" +
                 "LOCATION: " + (location != null ? location : "Unknown") + "\n\n" +
                 "### INTERACTION LOGS:\n" + (historyContext.length() > 0 ? historyContext.toString() : "Initial consultation.") + "\n\n" +
                 "### PATIENT QUERY:\n" + query;
