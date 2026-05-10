@@ -277,20 +277,24 @@ const AiConcierge = () => {
             `}</style>
             <AnimatePresence>
                 {!isOpen && (
-                    <motion.button
+                    <motion.div
                         drag
                         dragMomentum={false}
                         style={{ touchAction: 'none' }}
-                        className="absolute bottom-8 right-8 w-16 h-16 rounded-full ai-orb text-white flex items-center justify-center shadow-2xl pointer-events-auto z-[4000]"
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => setIsOpen(true)}
+                        className="absolute bottom-8 right-8 pointer-events-auto z-[4000]"
                     >
-                        <Sparkles size={28} className="animate-pulse" />
-                        <div className="absolute top-0 right-0 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full"></div>
-                    </motion.button>
+                        <motion.button
+                            className="w-16 h-16 rounded-full ai-orb text-white flex items-center justify-center shadow-2xl"
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => setIsOpen(true)}
+                        >
+                            <Sparkles size={28} className="animate-pulse" />
+                            <div className="absolute top-0 right-0 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full"></div>
+                        </motion.button>
+                    </motion.div>
                 )}
 
                 {isOpen && (
@@ -449,7 +453,7 @@ const AiConcierge = () => {
                                                             if (s.mapUrl) {
                                                                 window.open(s.mapUrl, '_blank');
                                                             } else {
-                                                                navigate('/dashboard/booking');
+                                                                navigate('/dashboard/booking?mode=service&service=Emergency & Trauma Care');
                                                             }
                                                         }}
                                                         className="flex-1 py-3 bg-slate-900 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2"
