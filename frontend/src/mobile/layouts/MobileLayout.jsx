@@ -35,7 +35,7 @@ const MobileLayout = () => {
         if (isDoctor) return [
             { name: 'Chats', path: '/doctor-dashboard/messages', icon: <MessageSquare size={20} />, badge: unreadChatCount },
             { name: 'Console', path: '/doctor-dashboard', icon: <LayoutDashboard size={20} /> },
-            { name: 'Calendar', path: '/doctor-dashboard/appointments', icon: <Calendar size={20} /> },
+            { name: 'Schedule', path: '/doctor-dashboard/appointments', icon: <Calendar size={20} /> },
             { name: 'Registry', path: '/doctor-dashboard/patients', icon: <Users size={20} /> },
         ];
         if (isHospital) return [
@@ -72,7 +72,7 @@ const MobileLayout = () => {
             { name: 'AI Reports', path: '/dashboard/reports', icon: <FileText size={22} />, color: 'bg-violet-50 text-violet-600' },
             { name: 'Rx Vault', path: '/dashboard/medications', icon: <Pill size={22} />, color: 'bg-rose-50 text-rose-600' },
             { name: 'Security', path: '/dashboard/security', icon: <ShieldCheck size={22} />, color: 'bg-emerald-50 text-emerald-600' },
-            { name: 'Sessions', path: '/dashboard/sessions', icon: <Calendar size={22} />, color: 'bg-indigo-50 text-indigo-600' },
+            { name: 'Schedule', path: '/dashboard/sessions', icon: <Calendar size={22} />, color: 'bg-indigo-50 text-indigo-600' },
             { name: 'Identity', path: '/dashboard/profile', icon: <User size={22} />, color: 'bg-blue-50 text-blue-600' },
             { name: 'Settings', path: '/dashboard/settings', icon: <Settings size={22} />, color: 'bg-slate-50 text-slate-600' },
         ];
@@ -135,28 +135,30 @@ const MobileLayout = () => {
             </main>
 
             {/* ── THUMB-CENTRIC BOTTOM DOCK ── */}
-            <nav className="fixed bottom-4 left-4 right-4 h-20 bg-white/90 backdrop-blur-2xl border border-white/40 rounded-[2.5rem] px-2 shadow-[0_20px_50px_rgba(0,0,0,0.12)] z-[200] flex items-center justify-around">
+            <nav className="fixed bottom-4 left-4 right-4 h-20 bg-white/90 backdrop-blur-2xl border border-white/40 rounded-[2.5rem] px-4 shadow-[0_20px_50px_rgba(0,0,0,0.12)] z-[200] flex items-center justify-between">
                 {(primaryNav || []).slice(0, 2).map((item) => item && (
                     <NavLink 
                         key={item.name} 
                         to={item.path} 
                         onClick={triggerHaptic}
                         end 
-                        className={({ isActive }) => `flex flex-col items-center justify-center w-16 h-16 rounded-3xl transition-all duration-300 ${isActive ? 'text-primary-600 bg-primary-50/50' : 'text-slate-400'}`}
+                        className={({ isActive }) => `flex flex-col items-center justify-center w-14 h-14 rounded-2xl transition-all duration-300 ${isActive ? 'text-primary-600 bg-primary-50/50' : 'text-slate-400 hover:text-slate-600'}`}
                     >
                         <motion.div whileTap={{ scale: 0.8 }}>{item.icon}</motion.div>
-                        <span className="text-[8px] font-black uppercase tracking-tight mt-1.5">{item.name}</span>
+                        <span className="text-[7px] font-black uppercase tracking-[0.1em] mt-1.5">{item.name}</span>
                     </NavLink>
                 ))}
 
                 {/* CENTRAL ACTION TRIGGER */}
-                <motion.button 
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => { triggerHaptic(); setIsMenuOpen(true); }}
-                    className="h-14 w-14 bg-slate-900 rounded-[1.25rem] flex items-center justify-center shadow-2xl shadow-slate-900/40 text-white relative -top-6 border-4 border-slate-50"
-                >
-                    <Grid size={24} />
-                </motion.button>
+                <div className="relative h-full flex items-center justify-center">
+                    <motion.button 
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => { triggerHaptic(); setIsMenuOpen(true); }}
+                        className="h-14 w-14 bg-slate-900 rounded-2xl flex items-center justify-center shadow-2xl shadow-slate-900/40 text-white relative -top-6 border-4 border-slate-50"
+                    >
+                        <Grid size={24} />
+                    </motion.button>
+                </div>
 
                 {(primaryNav || []).slice(2, 4).map((item) => {
                     if (!item) return null;
@@ -165,12 +167,12 @@ const MobileLayout = () => {
                             <button
                                 key={item.name}
                                 onClick={() => { triggerHaptic(); item.action(); }}
-                                className="flex flex-col items-center justify-center w-16 h-16 rounded-3xl transition-all duration-300 text-slate-400 hover:text-primary-600 hover:bg-primary-50/50"
+                                className="flex flex-col items-center justify-center w-14 h-14 rounded-2xl transition-all duration-300 text-slate-400 hover:text-primary-600 hover:bg-primary-50/50"
                             >
                                 <motion.div whileTap={{ scale: 0.8 }} className="relative">
                                     {item.icon}
                                 </motion.div>
-                                <span className="text-[8px] font-black uppercase tracking-tight mt-1.5">{item.name}</span>
+                                <span className="text-[7px] font-black uppercase tracking-[0.1em] mt-1.5">{item.name}</span>
                             </button>
                         );
                     }
@@ -179,13 +181,14 @@ const MobileLayout = () => {
                             key={item.name} 
                             to={item.path} 
                             onClick={triggerHaptic}
-                            className={({ isActive }) => `flex flex-col items-center justify-center w-16 h-16 rounded-3xl transition-all duration-300 ${isActive ? 'text-primary-600 bg-primary-50/50' : 'text-slate-400'}`}
+                            end
+                            className={({ isActive }) => `flex flex-col items-center justify-center w-14 h-14 rounded-2xl transition-all duration-300 ${isActive ? 'text-primary-600 bg-primary-50/50' : 'text-slate-400 hover:text-slate-600'}`}
                         >
                             <motion.div whileTap={{ scale: 0.8 }} className="relative">
                                 {item.icon}
                                 {item.badge > 0 && <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[7px] font-black w-4 h-4 flex items-center justify-center rounded-full border-2 border-white">{item.badge}</span>}
                             </motion.div>
-                            <span className="text-[8px] font-black uppercase tracking-tight mt-1.5">{item.name}</span>
+                            <span className="text-[7px] font-black uppercase tracking-[0.1em] mt-1.5">{item.name}</span>
                         </NavLink>
                     );
                 })}

@@ -424,7 +424,7 @@ const SessionDetailModal = ({ appt, onClose, onVerifyClick }) => {
     const { user } = useAuth();
     return (
         <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="bg-white rounded-[2.5rem] w-full max-w-lg p-10 shadow-2xl animate-in zoom-in-95 duration-300 relative overflow-hidden">
+            <div className="bg-white rounded-[2.5rem] w-full max-w-lg p-6 md:p-10 shadow-2xl animate-in zoom-in-95 duration-300 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-6">
                     <button onClick={onClose} className="p-3 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-2xl transition-all">
                         <X size={20} />
@@ -500,17 +500,17 @@ const SessionDetailModal = ({ appt, onClose, onVerifyClick }) => {
                         )}
                     </div>
 
-                    <div className="mt-10 pt-8 border-t border-slate-100 flex gap-4">
+                    <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col md:flex-row gap-3">
                         <button 
                             onClick={(e) => {
                                 e.stopPropagation();
                                 window.location.href = `/doctor-dashboard/patients/${appt.patient?.id}`;
                             }}
-                            className="flex-1 py-4 bg-slate-900 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl hover:bg-primary transition-all active:scale-[0.98]"
+                            className="w-full py-4 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl hover:bg-primary transition-all active:scale-[0.98]"
                         >
                             Review Medical Dossier
                         </button>
-                        <button onClick={onClose} className="px-8 py-4 bg-slate-100 text-slate-500 text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-slate-200 transition-all">
+                        <button onClick={onClose} className="w-full md:w-auto px-8 py-4 bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-slate-200 transition-all">
                             Close
                         </button>
                     </div>

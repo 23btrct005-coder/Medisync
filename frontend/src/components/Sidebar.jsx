@@ -43,7 +43,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
     { name: 'Messages', path: '/dashboard/messages', icon: <MessageSquare size={20} />, badge: unreadChatCount },
     { name: 'Book Appointment', path: '/dashboard/booking', icon: <CalendarPlus size={20} /> },
-    { name: 'My Appointments', path: '/dashboard/sessions', icon: <Calendar size={20} /> },
+    { name: 'Schedule', path: '/dashboard/sessions', icon: <Calendar size={20} /> },
     { name: 'Health Wallet', path: '/dashboard/wallet', icon: <Wallet size={20} /> },
     { name: 'My Doctors', path: '/dashboard/doctors', icon: <UserCheck size={20} /> },
   ];
@@ -58,7 +58,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
   const hospitalItems = [
     { name: 'Command Center', path: '/hospital-dashboard', icon: <LayoutDashboard size={20} /> },
-    { name: 'Appointments', path: '/hospital-dashboard/appointments', icon: <Calendar size={20} /> },
+    { name: 'Schedule', path: '/hospital-dashboard/appointments', icon: <Calendar size={20} /> },
     { name: 'Staff Roster', path: '/hospital-dashboard/staff', icon: <UserCheck size={20} /> },
     { name: 'Analytics', path: '/hospital-dashboard/analytics', icon: <TrendingUp size={20} /> },
     { name: 'Inst. Profile', path: '/hospital-dashboard/profile', icon: <User size={20} /> },

@@ -27,7 +27,7 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
     },
     ...(!isAdmin && user?.canManageAppointments !== false ? [
       { 
-        name: 'My Appointments', 
+        name: 'Schedule', 
         path: `${prefix}/appointments`, 
         icon: <Calendar size={20} /> 
       }

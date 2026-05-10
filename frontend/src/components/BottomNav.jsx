@@ -45,13 +45,13 @@ const BottomNav = () => {
     const secondaryNav = isDoctor ? [
         { name: 'Profile', path: '/doctor-dashboard/profile', icon: <User size={20} />, description: 'Clinical identity' },
     ] : isHospital ? [
-        { name: 'Appointments', path: '/hospital-dashboard/appointments', icon: <Calendar size={20} />, description: 'Schedule mgmt' },
+        { name: 'Schedule', path: '/hospital-dashboard/appointments', icon: <Calendar size={20} />, description: 'Schedule mgmt' },
         { name: 'Profile', path: '/hospital-dashboard/profile', icon: <Stethoscope size={20} />, description: 'Institutional info' },
         { name: 'Wallet', path: '/dashboard/wallet', icon: <Wallet size={20} />, description: 'Financial hub' },
         { name: 'Compliance', path: '/dashboard/security', icon: <ShieldCheck size={20} />, description: 'Access ledger' },
     ] : [
         { name: 'My Doctors', path: '/dashboard/doctors', icon: <UserCheck size={20} />, description: 'Care team' },
-        { name: 'Appointments', path: '/dashboard/sessions', icon: <Calendar size={20} />, description: 'My timeline' },
+        { name: 'Schedule', path: '/dashboard/sessions', icon: <Calendar size={20} />, description: 'My timeline' },
         { name: 'Records', path: '/dashboard/records', icon: <ClipboardList size={20} />, description: 'Medical history' },
         { name: 'AI Briefs', path: '/dashboard/reports', icon: <FileText size={20} />, description: 'Smart analysis' },
         { name: 'Medications', path: '/dashboard/medications', icon: <Pill size={20} />, description: 'Adherence tracker' },

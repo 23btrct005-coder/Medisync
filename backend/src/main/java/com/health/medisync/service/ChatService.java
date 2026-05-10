@@ -34,6 +34,7 @@ public class ChatService {
 
     @Transactional
     public ChatMessageDTO sendMessage(ChatMessage message) {
+        message.setId(null); // Force insert to prevent 409 conflicts if ID is pre-set
         ChatMessage saved = chatMessageRepository.save(message);
         
         // Resolve Identity for the sender

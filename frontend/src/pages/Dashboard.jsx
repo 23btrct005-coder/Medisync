@@ -286,7 +286,7 @@ const Dashboard = () => {
                    { name: 'Meds', path: '/dashboard/medications', icon: <Pill size={18} />, color: 'bg-amber-50 text-amber-600' },
                    { name: 'Security', path: '/dashboard/security', icon: <ShieldCheck size={18} />, color: 'bg-slate-50 text-slate-600' },
                    { name: 'Wallet', path: '/dashboard/wallet', icon: <Wallet size={18} />, color: 'bg-indigo-50 text-indigo-600' },
-                   { name: 'Calendar', path: '/dashboard/sessions', icon: <Calendar size={18} />, color: 'bg-rose-50 text-rose-600' },
+                   { name: 'Schedule', path: '/dashboard/sessions', icon: <Calendar size={18} />, color: 'bg-rose-50 text-rose-600' },
                  ].map((app) => (
                    <button 
                      key={app.name}
