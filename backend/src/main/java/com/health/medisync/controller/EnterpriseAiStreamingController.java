@@ -4,6 +4,8 @@ import com.health.medisync.service.*;
 import com.health.medisync.model.ClinicalAiResponseV2;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import java.util.Map;
 
@@ -15,6 +17,7 @@ import java.util.Map;
 @RequestMapping("/api/ai/v2")
 public class EnterpriseAiStreamingController {
 
+    private static final Logger logger = LoggerFactory.getLogger(EnterpriseAiStreamingController.class);
     private final GeminiStreamingService geminiStreamingService;
     private final JsonRepairService jsonRepair;
     private final MedicalGuardrailEngine guardrails;
@@ -36,10 +39,14 @@ public class EnterpriseAiStreamingController {
 
     @GetMapping(value = "/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> streamClinicalReasoning(@RequestParam String query, @RequestParam String sessionId) {
+        logger.info("ENTERPRISE_STREAM_START: SessionID={}, Query='{}'", sessionId, query);
+        
         // 1. Retrieve Context from Redis
         var history = memory.getHistory(sessionId);
         var state = memory.getMedicalState(sessionId);
         var networkContext = networkGuard.getGroundingContext();
+
+        logger.debug("CONTEXT_RETRIEVED: HistorySize={}, StateKeys={}", history.size(), state.keySet());
 
         // 2. Assemble Master Prompt
         String masterPrompt = "SYSTEM: You are the MediSync Enterprise Copilot. " +
@@ -55,10 +62,12 @@ public class EnterpriseAiStreamingController {
                     // 4. Progressive Hydration (Repair partial JSON chunks)
                     return jsonRepair.repair(token);
                 })
+                .doOnNext(chunk -> logger.trace("STREAM_CHUNK: SessionID={}, Size={}", sessionId, chunk.length()))
                 .doOnComplete(() -> {
+                    logger.info("ENTERPRISE_STREAM_COMPLETE: SessionID={}", sessionId);
                     // 5. Finalize Session Memory
                     memory.storeMessage(sessionId, "user", query);
-                    // In a full implementation, we'd store the assistant's final response too
-                });
+                })
+                .doOnError(e -> logger.error("ENTERPRISE_STREAM_ERROR: SessionID={}, Error={}", sessionId, e.getMessage()));
     }
 }

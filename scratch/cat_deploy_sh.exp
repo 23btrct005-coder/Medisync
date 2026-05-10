@@ -1,0 +1,7 @@
+#!/usr/bin/expect -f
+set timeout 30
+set password "PVYZKN@etxcm588"
+spawn ssh -o StrictHostKeyChecking=no root@164.52.213.234 "cat /root/Medisync/deploy_e2e.sh"
+expect "password:"
+send "$password\r"
+expect eof
