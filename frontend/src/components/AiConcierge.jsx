@@ -106,15 +106,15 @@ const AiConcierge = () => {
       )}
 
       {!isMinimized && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 md:p-6 bg-slate-900/60 backdrop-blur-md">
+        <div className="fixed inset-0 z-[99999] flex justify-end bg-slate-900/40 backdrop-blur-md">
           <motion.div 
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className={`bg-white shadow-[0_20px_70px_rgba(0,0,0,0.4)] flex flex-col overflow-hidden transition-all duration-500 ease-out border border-white/10 ${
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 100 }}
+            className={`bg-white shadow-[-20px_0_70px_rgba(0,0,0,0.1)] flex flex-col overflow-hidden transition-all duration-500 ease-out ${
               isMaximized 
-                ? 'w-full h-full rounded-[2.5rem]' 
-                : 'w-full md:w-[600px] h-[85vh] md:h-[750px] rounded-[3.5rem]'
+                ? 'w-full h-full' 
+                : 'w-full md:w-[500px] lg:w-[600px] h-[calc(100%-2rem)] md:m-4 md:rounded-[3rem] border border-slate-100'
             }`}
           >
             <div className="p-8 bg-[#111827] text-white relative shrink-0">
