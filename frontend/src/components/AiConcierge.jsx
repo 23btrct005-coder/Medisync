@@ -278,41 +278,36 @@ const AiConcierge = () => {
                 }
             `}</style>
             <AnimatePresence>
-                {!isOpen && (
-                    <motion.div
-                        drag
-                        dragMomentum={false}
-                        onDragEnd={(e, info) => {
-                            const threshold = window.innerWidth / 2;
-                            // If we dragged past the center, snap to the other side
-                            // Note: dragX is 0 at the start (right side). 
-                            // So if dragX < -threshold, snap to left.
-                            // But since it starts at right:32, it's easier to just calculate the final target.
-                            const currentX = dragX.get();
-                            if (currentX < -threshold + 100) {
-                                dragX.set(currentX); // anchor for animation
-                                // Snap to left edge (approx -window.innerWidth + 80)
-                                dragX.set(-window.innerWidth + 100); 
-                            } else {
-                                dragX.set(0); // Snap back to right edge
-                            }
-                        }}
-                        style={{ touchAction: 'none', x: dragX, y: dragY }}
-                        className="absolute bottom-8 right-8 pointer-events-auto z-[4000]"
+                <motion.div
+                    drag
+                    dragMomentum={false}
+                    onDragEnd={(e, info) => {
+                        const threshold = window.innerWidth / 2;
+                        const currentX = dragX.get();
+                        if (currentX < -threshold + 100) {
+                            dragX.set(-window.innerWidth + 100); 
+                        } else {
+                            dragX.set(0); 
+                        }
+                    }}
+                    animate={{ 
+                        x: isOpen ? (dragX.get() < -window.innerWidth/2 ? -window.innerWidth - 100 : 150) : dragX.get(),
+                        opacity: isOpen ? 0 : 1,
+                        scale: isOpen ? 0.8 : 1
+                    }}
+                    style={{ touchAction: 'none', x: dragX, y: dragY }}
+                    className="absolute bottom-8 right-8 pointer-events-auto z-[4000]"
+                >
+                    <motion.button
+                        className="w-16 h-16 rounded-full ai-orb text-white flex items-center justify-center shadow-2xl"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setIsOpen(true)}
                     >
-                        <motion.button
-                            className="w-16 h-16 rounded-full ai-orb text-white flex items-center justify-center shadow-2xl"
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => setIsOpen(true)}
-                        >
-                            <Sparkles size={28} className="animate-pulse" />
-                            <div className="absolute top-0 right-0 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full"></div>
-                        </motion.button>
-                    </motion.div>
-                )}
+                        <Sparkles size={28} className="animate-pulse" />
+                        <div className="absolute top-0 right-0 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full"></div>
+                    </motion.button>
+                </motion.div>
 
                 {isOpen && (
                     <motion.div
