@@ -24,5 +24,4 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     java.util.List<Doctor> searchDoctors(@org.springframework.data.repository.query.Param("query") String query);
 
     java.util.List<Doctor> findByHospitalEntity(com.health.medisync.model.Hospital hospital);
-    java.util.List<Doctor> findBySpecializationContainingIgnoreCase(String specialization);
 }
