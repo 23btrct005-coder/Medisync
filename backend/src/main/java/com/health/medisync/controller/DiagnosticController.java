@@ -36,6 +36,8 @@ public class DiagnosticController {
         } catch (Exception e) {
             return java.util.Map.of("error", e.getMessage());
         }
+    }
+
     @GetMapping("/inspect-chat-schema")
     public java.util.List<java.util.Map<String, Object>> inspectChatSchema() {
         try {
