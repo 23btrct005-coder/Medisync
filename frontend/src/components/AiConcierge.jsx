@@ -157,28 +157,38 @@ const AiConcierge = () => {
         let currentSection = 'other';
 
         lines.forEach(l => {
-            const lowerL = l.toLowerCase();
-            if (lowerL.includes('clinical assessment')) {
+            const lowerL = l.toLowerCase().trim();
+            // Match headers like "1. Initial Assessment", "Initial Assessment", "Assessment:", etc.
+            if (lowerL.match(/^[\d.\s]*(initial|clinical)\s+assessment/)) {
                 currentSection = 'assessment';
-            } else if (lowerL.includes('possible causes') || lowerL.includes('possible conditions')) {
+                const content = l.replace(/^[\d.\s]*(initial|clinical)\s+assessment:?/i, '').trim();
+                if (content) sections.assessment += content + ' ';
+            } else if (lowerL.match(/^[\d.\s]*possible\s+(causes|conditions)/)) {
                 currentSection = 'possibleConditions';
-            } else if (lowerL.includes('risk indicators')) {
+                const content = l.replace(/^[\d.\s]*possible\s+(causes|conditions):?/i, '').trim();
+                if (content) sections.possibleConditions += content + ' ';
+            } else if (lowerL.match(/^[\d.\s]*risk\s+indicators/)) {
                 currentSection = 'riskIndicators';
-            } else if (lowerL.includes('triage level')) {
+                const content = l.replace(/^[\d.\s]*risk\s+indicators:?/i, '').trim();
+                if (content) sections.riskIndicators += content + ' ';
+            } else if (lowerL.match(/^[\d.\s]*triage\s+level/)) {
                 currentSection = 'severity';
-                const content = l.replace(/triage level:?/i, '').replace(/[\[\]:]/g, '').trim();
+                const content = l.replace(/^[\d.\s]*triage\s+level:?/i, '').replace(/[\[\]:]/g, '').trim();
                 if (content) sections.severity = content;
-            } else if (lowerL.includes('recommended specialist')) {
+            } else if (lowerL.match(/^[\d.\s]*recommended\s+specialist/)) {
                 currentSection = 'specialist';
-                sections.specialist += l.replace(/recommended specialist:?/i, '').trim() + ' ';
-            } else if (lowerL.includes('suggested next steps') || lowerL.includes('recommended action')) {
+                const content = l.replace(/^[\d.\s]*recommended\s+specialist:?/i, '').trim();
+                if (content) sections.specialist += content + ' ';
+            } else if (lowerL.match(/^[\d.\s]*(suggested\s+next\s+steps|recommended\s+action)/)) {
                 currentSection = 'action';
-                sections.action += l.replace(/(suggested next steps|recommended action):?/i, '').trim() + ' ';
-            } else if (lowerL.includes('follow-up questions')) {
+                const content = l.replace(/^[\d.\s]*(suggested\s+next\s+steps|recommended\s+action):?/i, '').trim();
+                if (content) sections.action += content + ' ';
+            } else if (lowerL.match(/^[\d.\s]*follow-up\s+questions/)) {
                 currentSection = 'questions';
-            } else if (lowerL.includes('emergency warning')) {
+            } else if (lowerL.match(/^[\d.\s]*emergency\s+warning/)) {
                 currentSection = 'warning';
-                sections.warning += l.replace(/emergency warning:?/i, '').trim() + ' ';
+                const content = l.replace(/^[\d.\s]*emergency\s+warning:?/i, '').trim();
+                if (content) sections.warning += content + ' ';
             } else {
                 if (currentSection === 'questions' && l.match(/^[-*\d.]\s*/)) {
                     sections.questions.push(l.replace(/^[-*\d.]\s*/, ''));
@@ -231,17 +241,26 @@ const AiConcierge = () => {
         else if (fullTextLower.includes('emergency care')) sections.service = 'Emergency & Trauma Care';
         else if (fullTextLower.includes('icu') || fullTextLower.includes('intensive care')) sections.service = 'ICU (Intensive Care Unit)';
         else if (fullTextLower.includes('mri scan') || fullTextLower.includes('mri')) sections.service = 'MRI Scan';
-        else if (fullTextLower.includes('ct scan')) sections.service = 'Emergency CT Scan';
+        else if (fullTextLower.includes('ct scan')) sections.service = 'Diagnostic CT Scan';
         else if (fullTextLower.includes('blood bank') || fullTextLower.includes('blood donation')) sections.service = 'Blood Bank';
-        else if (fullTextLower.includes('x-ray')) sections.service = 'X-Ray';
+        else if (fullTextLower.includes('x-ray')) sections.service = 'X-Ray (Routine & Emergency)';
         else if (fullTextLower.includes('ultrasound') || fullTextLower.includes('sonography')) sections.service = 'Ultrasound / सोनोग्राफी';
-        else if (fullTextLower.includes('pharmacy') || fullTextLower.includes('medicine')) sections.service = '24/7 Pharmacy';
+        else if (fullTextLower.includes('laboratory') || fullTextLower.includes('blood test')) sections.service = 'Laboratory Services';
+        else if (fullTextLower.includes('pharmacy') || fullTextLower.includes('medicine')) sections.service = 'Pharmacy (24/7)';
 
         // Frontend safety override for emergency triage
-        if (fullTextLower.includes('ambulance') || fullTextLower.includes('emergency') || fullTextLower.includes('chest pain') || fullTextLower.includes('unconscious')) {
+        if (fullTextLower.includes('ambulance') || fullTextLower.includes('emergency') || fullTextLower.includes('critical') || fullTextLower.includes('chest pain') || fullTextLower.includes('unconscious')) {
             sections.severity = 'CRITICAL';
             if (!sections.service) sections.service = 'Emergency & Trauma Care';
         }
+
+        // 3. Clinical Data Cleanup (Strip leading numbering from content)
+        const cleanContent = (t) => t.trim().replace(/^[\d.\s]+/, '').trim();
+        sections.assessment = cleanContent(sections.assessment);
+        sections.specialist = cleanContent(sections.specialist);
+        sections.action = cleanContent(sections.action);
+        sections.warning = cleanContent(sections.warning);
+        sections.possibleConditions = cleanContent(sections.possibleConditions);
 
         if (!sections.assessment.trim() && sections.other.trim()) sections.assessment = sections.other;
         
@@ -254,6 +273,15 @@ const AiConcierge = () => {
         if (s.includes('HIGH')) return { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', icon: <AlertCircle className="text-orange-500" size={14} />, label: 'HIGH' };
         if (s.includes('MODERATE')) return { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', icon: <Clock className="text-amber-500" size={14} />, label: 'MODERATE' };
         return { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', icon: <CheckCircle2 className="text-emerald-500" size={14} />, label: 'LOW' };
+    };
+
+    const scrollToBottom = () => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTo({
+                top: scrollRef.current.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
     };
 
     if (!user) return null;
@@ -527,10 +555,11 @@ const AiConcierge = () => {
                                     initial={{ opacity: 0, y: 10, scale: 0.8 }}
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                     exit={{ opacity: 0, y: 10, scale: 0.8 }}
-                                    onClick={() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })}
-                                    className="absolute bottom-32 right-8 p-3 bg-white/90 backdrop-blur-md border border-slate-200 text-indigo-600 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all z-[3005]"
+                                    onClick={scrollToBottom}
+                                    className="absolute bottom-32 right-8 p-3 bg-white/95 backdrop-blur-md border border-indigo-100 text-indigo-600 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all z-[3010] flex items-center justify-center animate-bounce-subtle"
+                                    title="Scroll to latest assessment"
                                 >
-                                    <ArrowDown size={20} />
+                                    <ChevronDown size={24} strokeWidth={3} />
                                 </motion.button>
                             )}
                         </AnimatePresence>

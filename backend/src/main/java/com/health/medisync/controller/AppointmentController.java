@@ -129,26 +129,26 @@ public class AppointmentController {
                 .filter(h -> h.getServices() != null && h.getServices().toLowerCase().contains(service.toLowerCase()))
                 .filter(h -> {
                     try {
-                        // Blood Bank logic
+                        // 1. Capability Verification: The hospital MUST support the requested service
+                        if (h.getServices() == null || h.getServices().isEmpty()) return false;
+                        String[] hospitalServices = h.getServices().split(",");
+                        boolean serviceMatched = java.util.Arrays.stream(hospitalServices)
+                            .anyMatch(s -> s.trim().equalsIgnoreCase(service) || 
+                                          s.toLowerCase().contains(service.toLowerCase()) || 
+                                          service.toLowerCase().contains(s.trim().toLowerCase()));
+                        
+                        if (!serviceMatched) return false;
+
+                        // 2. Specialized Logic: Blood Bank stock verification
                         if (service.equalsIgnoreCase("Blood Bank")) {
                             if (bloodGroup == null || bloodGroup.isEmpty()) return true;
                             if (h.getBloodStock() == null) return false;
                             Map<String, Integer> stock = mapper.readValue(h.getBloodStock(), Map.class);
                             return stock.getOrDefault(bloodGroup, 0) > 0;
                         }
-                        // Price enforcement: must have a non-zero price for the service
-                        if (h.getServiceFees() == null || h.getServiceFees().isEmpty()) return false;
-                        Map<String, Object> fees = mapper.readValue(h.getServiceFees(), Map.class);
-                        String matchedKey = fees.keySet().stream()
-                            .filter(k -> k.toLowerCase().contains(service.toLowerCase()) || service.toLowerCase().contains(k.toLowerCase()))
-                            .findFirst()
-                            .orElse(null);
-                        
-                        if (matchedKey == null) return false;
-                        Object price = fees.get(matchedKey);
-                        if (price == null) return false;
-                        double fee = Double.parseDouble(price.toString());
-                        return fee > 0;
+
+                        // 3. Institutional Triage: Hospitals with the service match even if fees aren't configured yet
+                        return true; 
                     } catch (Exception e) { return false; }
                 })
                 .forEach(h -> {
