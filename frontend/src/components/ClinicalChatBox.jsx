@@ -137,9 +137,10 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
                 ref={scrollRef} 
                 className="flex-1 overflow-y-auto p-4 space-y-4 relative"
                 style={{
-                    backgroundColor: '#e5ddd5',
-                    backgroundImage: `url("https://w0.peakpx.com/wallpaper/508/606/HD-wallpaper-whatsapp-l-background-doodle-pattern-thumbnail.jpg")`,
+                    backgroundColor: '#f8fafc',
+                    backgroundImage: `url("/assets/medical-doodle.png")`,
                     backgroundSize: '400px',
+                    backgroundRepeat: 'repeat',
                     backgroundBlendMode: 'overlay'
                 }}
             >
