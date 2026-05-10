@@ -2,7 +2,7 @@ package com.health.medisync.service;
 
 import com.health.medisync.repository.HospitalRepository;
 import com.health.medisync.repository.DoctorRepository;
-import com.health.medisync.repository.UserRepository;
+import com.health.medisync.repository.PatientRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.*;
@@ -15,11 +15,11 @@ public class AiService {
     private final GroqAiService groqAiService;
     private final HospitalRepository hospitalRepository;
     private final DoctorRepository doctorRepository;
-    private final UserRepository userRepository;
+    private final PatientRepository patientRepository;
 
     public String generateResponse(String email, String query, String imageData, String location, String history) {
-        String profile = userRepository.findByUsername(email).map(u -> 
-            "Name: " + u.getName() + ", Age: " + u.getAge() + ", History: " + u.getMedicalHistory()
+        String profile = patientRepository.findByUserUsernameIgnoreCase(email).map(p -> 
+            "Name: " + p.getName() + ", Age: " + p.getAge() + ", Allergies: " + p.getAllergies() + ", Medical Info: " + p.getMedicalInfo()
         ).orElse("Unknown Patient");
 
         StringBuilder hospitalSb = new StringBuilder();
@@ -105,7 +105,8 @@ public class AiService {
 
         // Memory-Aware Safety: Check history for critical alerts (e.g., Allergies)
         String safetyPrefix = "";
-        if (history.toLowerCase().contains("allergy") || history.toLowerCase().contains("allergic")) {
+        String fullContext = (history + " " + q).toLowerCase();
+        if (fullContext.contains("allergy") || fullContext.contains("allergic") || fullContext.contains("penicillin")) {
             safetyPrefix = "IMPORTANT: I have noted your previously mentioned allergy from our clinical history. ";
         }
 
@@ -188,8 +189,8 @@ public class AiService {
             service = "General Clinical";
             conditions = "Portal navigation request identified.";
             instructions = "Ensure you are logged in to see your private medical records.";
-        } else if (q.contains("paracetamol") || q.contains("ibuprofen") || q.contains("aspirin") || q.contains("medicine") || q.contains("tablet") || q.contains("pill") || q.contains("fever")) {
-            assessment = safetyPrefix + "I've noted your inquiry regarding pharmacological intake or mild fever. While common medications are often used for symptomatic relief, they must follow professional dosage guidelines.";
+        } else if (q.contains("paracetamol") || q.contains("ibuprofen") || q.contains("aspirin") || q.contains("medicine") || q.contains("tablet") || q.contains("pill") || q.contains("fever") || q.contains("throat")) {
+            assessment = safetyPrefix + "I've noted your inquiry regarding pharmacological intake or localized discomfort. While common medications are often used for symptomatic relief, they must follow professional dosage guidelines and avoid known allergens.";
             severity = "LOW";
             specialist = "General Practitioner / Pharmacist";
             action = "Verify safe dosage and potential drug-drug interactions with a pharmacist via our booking portal.";
