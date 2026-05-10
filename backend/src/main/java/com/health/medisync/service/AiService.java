@@ -149,20 +149,6 @@ public class AiService {
             textPart.put("text", prompt);
             parts.add(textPart);
 
-            boolean hasImage = imageData != null && imageData.contains(",");
-            if (hasImage) {
-                String[] partsArray = imageData.split(",");
-                String mimeType = partsArray[0].split(":")[1].split(";")[0];
-                String base64Data = partsArray[1];
-
-                Map<String, Object> imagePart = new HashMap<>();
-                Map<String, String> inlineData = new HashMap<>();
-                inlineData.put("mime_type", mimeType);
-                inlineData.put("data", base64Data);
-                imagePart.put("inline_data", inlineData);
-                parts.add(imagePart);
-            }
-
             // ELITE DUAL-PRIMARY REASONING: Gemini & OpenAI Load-Balanced Loop
             boolean hasImage = imageData != null && imageData.contains(",");
             String base64Data = null;
