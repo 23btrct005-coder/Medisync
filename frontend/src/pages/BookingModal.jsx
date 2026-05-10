@@ -54,11 +54,13 @@ const BookingModal = ({ doctor, onClose, onBookingSuccess }) => {
 
       const appointment = res.data;
 
-      // 2. Load Razorpay
-      const isLoaded = await loadRazorpayScript();
-      if (!isLoaded) {
-        toast.error("Razorpay SDK failed to load. Are you online?");
-        return;
+      // 2. Load Razorpay if not already available
+      if (typeof window.Razorpay === 'undefined') {
+        const isLoaded = await loadRazorpayScript();
+        if (!isLoaded) {
+          toast.error("Razorpay SDK failed to load. Are you online?");
+          return;
+        }
       }
 
       const options = {
