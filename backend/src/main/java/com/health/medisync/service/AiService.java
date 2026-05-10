@@ -274,8 +274,8 @@ public class AiService {
                "6. Suggested Next Steps: " + action + " Use the booking node for " + service + ".\n" +
                "7. Follow-up Questions: Are you experiencing any secondary symptoms? How would you rate the intensity on a scale of 1-10?\n" +
                "8. Emergency Warning / Portal Tip: " + (warning.isEmpty() ? "Tip: You can upload previous medical records using the paperclip icon for a longitudinal review." : warning);
-    }on." : warning);
     }
+
 
     public String getLatestBrief(String email) {
         return sessionSummaries.getOrDefault(email, "No AI context.");
