@@ -6,6 +6,7 @@ import {
     RefreshCw
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import AiChatSidebar from '../components/AiChatSidebar';
 import SkeletonCard from '../components/SkeletonCard';
 import ReportPreviewModal from '../components/ReportPreviewModal';
 import StructuredAiReport from '../components/StructuredAiReport';
@@ -44,6 +45,7 @@ const Reports = () => {
   const [stream, setStream] = useState(null);
 
   const [selectedReport, setSelectedReport] = useState(null);
+  const [isAiOpen, setIsAiOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('date-desc');
 
@@ -238,6 +240,7 @@ const Reports = () => {
 
   const handleAskAi = (report) => {
     setSelectedReport(report);
+    setIsAiOpen(true);
   };
 
   return (
@@ -370,6 +373,17 @@ const Reports = () => {
                     </button>
                     <div className="w-px h-5 bg-slate-200 mx-1" />
                     <button 
+                      onClick={() => toggleAiReveal(report.id)}
+                      className={`p-2 rounded-xl transition-all ${revealedAiReports[report.id] ? 'text-primary bg-primary/10' : 'text-slate-400 hover:text-primary hover:bg-primary/5'}`}
+                      title={revealedAiReports[report.id] ? "Minimize AI Insight" : "Maximize AI Insight"}
+                    >
+                      {!report.aiSummary ? (
+                        <Loader2 size={18} className="animate-spin text-amber-500" />
+                      ) : (
+                        <Sparkles size={18} className={!revealedAiReports[report.id] ? 'animate-pulse' : ''} />
+                      )}
+                    </button>
+                    <button 
                       onClick={(e) => { e.stopPropagation(); handleDelete(report.id); }}
                       disabled={deletingId === report.id}
                       className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
@@ -435,6 +449,13 @@ const Reports = () => {
            </div>
         </div>
       )}
+
+      {/* Chat Sidebar Integration */}
+      <AiChatSidebar 
+        isOpen={isAiOpen} 
+        onClose={() => setIsAiOpen(false)} 
+        reportData={selectedReport}
+      />
 
       <ReportPreviewModal 
         isOpen={previewData.isOpen}
