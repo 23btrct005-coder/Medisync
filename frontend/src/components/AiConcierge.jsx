@@ -8,13 +8,14 @@ import {
     Volume2, VolumeX
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 const AiConcierge = () => {
     const { user } = useAuth();
+    const { isAiOpen: isOpen, setAiOpen: setIsOpen } = useNotifications();
     const navigate = useNavigate();
-    const [isOpen, setIsOpen] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [messages, setMessages] = useState(() => {
         const saved = localStorage.getItem('ai_chat_history');
@@ -35,30 +36,6 @@ const AiConcierge = () => {
     const [location, setLocation] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
     const [loadingStep, setLoadingStep] = useState(0);
-    const dragX = useMotionValue(0);
-    const dragY = useMotionValue(0);
-    const [orbPosition, setOrbPosition] = useState(() => {
-        const saved = localStorage.getItem('ai_orb_position_v3');
-        if (saved) {
-            try { 
-                const pos = JSON.parse(saved);
-                // Sanitize: ensure not off-screen
-                if (pos.x < -window.innerWidth) pos.x = 0;
-                if (pos.y < -window.innerHeight) pos.y = 0;
-                return pos;
-            } catch (e) { return { x: 0, y: 0 }; }
-        }
-        return { x: 0, y: 0 };
-    });
-
-    useEffect(() => {
-        dragX.set(orbPosition.x);
-        dragY.set(orbPosition.y);
-    }, [orbPosition.x, orbPosition.y]); // Ensure sync on load
-
-    useEffect(() => {
-        localStorage.setItem('ai_orb_position_v3', JSON.stringify(orbPosition));
-    }, [orbPosition]);
     
     const scrollRef = useRef(null);
     const containerRef = useRef(null);
@@ -307,39 +284,6 @@ const AiConcierge = () => {
                 }
             `}</style>
             <AnimatePresence>
-                {!isOpen && (
-                    <motion.div
-                        drag
-                        dragMomentum={false}
-                        dragConstraints={{ 
-                            left: -window.innerWidth + 100, 
-                            right: 0, 
-                            top: -window.innerHeight + 100, 
-                            bottom: 0 
-                        }}
-                        onDragEnd={() => {
-                            setOrbPosition({ x: dragX.get(), y: dragY.get() });
-                        }}
-                        whileDrag={{ scale: 1.1 }}
-                        initial={{ opacity: 0, scale: 0.5 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.5 }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        style={{ touchAction: 'none', x: dragX, y: dragY }}
-                        className="absolute bottom-8 right-8 pointer-events-auto z-[4000]"
-                    >
-                        <motion.button
-                            className="w-16 h-16 rounded-full ai-orb text-white flex items-center justify-center shadow-2xl"
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => setIsOpen(true)}
-                        >
-                            <Sparkles size={28} className="animate-pulse" />
-                            <div className="absolute top-0 right-0 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full"></div>
-                        </motion.button>
-                    </motion.div>
-                )}
-
                 {isOpen && (
                     <motion.div
                         className="fixed bottom-8 right-8 bg-[#F8FAFC] rounded-[32px] shadow-[0_30px_100px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden pointer-events-auto border border-white/50 z-[3000] ai-concierge-window"
