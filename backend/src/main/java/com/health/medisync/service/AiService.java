@@ -112,26 +112,24 @@ public class AiService {
     private String executeNeuralOrchestration(String query, String imageData, String history, String location, String hospitals, String doctors, String profile) {
         String prompt = "### MEDISYNC MULTI-AGENT ORCHESTRATOR — ELITE CLINICAL MODE\n\n" +
                 "OBJECTIVE: You are the Lead Orchestrator for the MediSync Copilot. You are a Board-Certified Emergency Physician and Institutional Expert.\n\n" +
-                "### EMERGENCY FIRST PROTOCOL:\n" +
-                "- If the query contains signals of chest pain, shortness of breath, severe trauma, or fainting, IMMEDIATELY prioritize CRITICAL triage.\n" +
-                "- Map cardiovascular symptoms (Chest Pain, Heart, BP) to 'Emergency & Trauma Care' and 'Cardiologist'.\n" +
-                "- Map neurological/head injury symptoms to 'Neurologist' and 'Emergency'.\n\n" +
+                "### EMERGENCY VS. REGISTRY DISCERNMENT:\n" +
+                "- SYMPTOMS (Chest pain, Heart attack, trauma): IMMEDIATELY prioritize CRITICAL triage and map to Emergency/Cardiology.\n" +
+                "- INQUIRIES (Heart specialist, Best doctor, How to book): Prioritize LOW triage and map to specific specialist booking without emergency escalation.\n\n" +
                 "### COMMUNICATION PROTOCOLS:\n" +
-                "- Tone: Elite, calm, professional, and clinical. Use 'cranial impact', 'hypertensive urgency', 'cardiovascular stabilization'.\n" +
-                "- NO INTERNAL DISCLOSURE: Never mention failover, nodes, AI models, or technical internal states.\n" +
-                "- NO EMPTY SECTIONS: Every header must provide high-value insight. If a section is redundant, use it for specialized institutional pro-tips.\n\n" +
+                "- Tone: Elite, calm, professional. Use high-fidelity clinical terms only for actual clinical situations.\n" +
+                "- NO INTERNAL DISCLOSURE: Never mention models, nodes, or technical states.\n\n" +
                 "### PORTAL NAVIGATOR:\n" +
-                "- Booking: '/dashboard/booking' | Reports: '/dashboard/reports' | Vitals: '/dashboard/profile'\n\n" +
-                "### 8-HEADER CLINICAL PROTOCOL (ADAPTIVE):\n" +
+                "- Booking: '/dashboard/booking' | Reports: '/dashboard/reports'\n\n" +
+                "### 8-HEADER CLINICAL PROTOCOL:\n" +
                 "1. Copilot Assessment: [Primary reasoning & board-certified clinical empathy]\n" +
-                "2. Possible Conditions / Features: [Differential diagnosis or specific portal features]\n" +
-                "3. Risk Indicators / Instructions: [Clinical red flags or operational portal steps]\n" +
+                "2. Possible Conditions / Features: [Differential diagnosis OR portal features]\n" +
+                "3. Risk Indicators / Instructions: [Clinical red flags OR operational steps]\n" +
                 "4. Triage Level: [LOW | MODERATE | HIGH | CRITICAL]\n" +
                 "5. Recommended specialist / Node: [Specific department AND specialist type]\n" +
-                "6. Suggested Next Steps: [Actionable advice with specific MediSync portal routes]\n" +
-                "7. Follow-up Questions: [Refining the clinical assessment]\n" +
-                "8. Emergency Warning / Portal Tip: [Safety warning OR institutional healthcare pro-tip]\n\n" +
-                "### CLINICAL CONTEXT:\n" +
+                "6. Suggested Next Steps: [Actionable advice with MediSync routes]\n" +
+                "7. Follow-up Questions: [Refining the assessment]\n" +
+                "8. Emergency Warning / Portal Tip: [Safety info OR institutional pro-tip]\n\n" +
+                "### CONTEXT:\n" +
                 "REGISTRY:\n" + hospitals + "\n" + doctors + "\n" +
                 "PATIENT PROFILE: " + profile + "\n" +
                 "LOCATION: " + location + "\n" +
@@ -176,7 +174,8 @@ public class AiService {
             conditions = "Potential internal trauma or acute " + (isHead ? "concussion" : "injury") + " protocol initiated.";
             instructions = "If you experience dizziness, nausea, or loss of consciousness, seek help immediately.";
             warning = "TRAUMA SIGNAL DETECTED: PROCEED TO EMERGENCY IMMEDIATELY.";
-        } else if (q.contains("chest") || q.contains("heart") || q.contains("breathing") || q.contains("emergency") || q.contains("cardiac") || (q.contains("pain") && q.contains("sharp"))) {
+        } else if ((q.contains("heart") || q.contains("cardiac") || q.contains("chest") || q.contains("breathing")) && 
+                  (q.contains("pain") || q.contains("sharp") || q.contains("attack") || q.contains("emergency") || q.contains("crisis") || q.contains("shortness"))) {
             assessment = "Potential acute cardiovascular or respiratory signal identified. I have initiated our Emergency Triage protocol to prioritize your immediate safety.";
             severity = "CRITICAL";
             specialist = "Cardiologist / Emergency Specialist";
@@ -185,6 +184,14 @@ public class AiService {
             conditions = "Acute clinical signals requiring immediate life-safety cardiovascular intervention.";
             instructions = "If symptoms worsen, contact emergency services (Ambulance) immediately.";
             warning = "LIFE-SAFETY SIGNAL DETECTED: SEEK EMERGENCY CARE IMMEDIATELY.";
+        } else if (q.contains("heart") || q.contains("cardiac") || q.contains("cardio")) {
+            assessment = "I've noted your interest in cardiovascular health services. MediSync provides access to elite cardiologists and diagnostic heart centers.";
+            severity = "LOW";
+            specialist = "Cardiologist";
+            action = "You can view available heart specialists and book a routine consultation via the cardiology node.";
+            service = "General Clinical";
+            conditions = "Cardiovascular specialist inquiry identified.";
+            instructions = "Have your recent vitals or blood reports ready for the consultation.";
         } else if (q.contains("blood pressure") || q.contains(" bp ") || q.startsWith("bp ") || q.contains("hypertension") || q.contains("pressure is")) {
             assessment = "Your blood pressure telemetry indicates a potentially high-risk cardiovascular state. Managing hypertension is critical to preventing acute vascular events.";
             severity = "CRITICAL";
