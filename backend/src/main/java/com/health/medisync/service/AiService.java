@@ -209,14 +209,21 @@ public class AiService {
         String service = "General Clinical";
         String warning = "";
 
-        // HIGH-PRECISION INTENT MAPPING
-        if (q.contains("paracetamol") || q.contains("ibuprofen") || q.contains("aspirin") || q.contains("medicine") || q.contains("tablet") || q.contains("pill")) {
+        // HIGH-PRECISION INTENT MAPPING (SILENT FAILOVER)
+        if (q.contains("blood pressure") || q.contains(" bp ") || q.startsWith("bp ") || q.contains("hypertension") || q.contains("pressure is")) {
+            assessment = "Cardiovascular signal detected. Elevated blood pressure readings require immediate clinical oversight.";
+            severity = "CRITICAL";
+            specialist = "Cardiologist / Emergency Specialist";
+            action = "Locate the nearest Emergency node immediately for a hypertensive assessment.";
+            service = "Emergency & Trauma Care";
+            warning = "HYPERTENSIVE CRISIS POTENTIAL: SEEK IMMEDIATE MEDICAL ATTENTION.";
+        } else if (q.contains("paracetamol") || q.contains("ibuprofen") || q.contains("aspirin") || q.contains("medicine") || q.contains("tablet") || q.contains("pill")) {
             assessment = "I've noted your inquiry regarding medication. While generally safe, pharmacological information should be verified by a professional.";
             severity = "LOW";
             specialist = "General Practitioner / Pharmacist";
             action = "Consult a pharmacist or physician via '/dashboard/booking' for safe guidance.";
             service = "Pharmacy (24/7)";
-        } else if (q.contains("blood") || q.contains("donor")) {
+        } else if (q.contains("blood donation") || q.contains("blood bank") || q.contains("donor")) {
             assessment = "I've prioritized your request for Blood Bank services.";
             severity = "HIGH";
             specialist = "Hematologist";
