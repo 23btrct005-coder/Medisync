@@ -146,6 +146,7 @@ const AiConcierge = () => {
             action: '',
             questions: [],
             warning: '',
+            service: '',
             other: ''
         };
 
@@ -197,6 +198,17 @@ const AiConcierge = () => {
                 }
             }
         });
+
+        // Final cleanups and smart mapping
+        sections.specialist = sections.specialist.trim();
+        sections.action = sections.action.trim();
+        sections.warning = sections.warning.trim();
+
+        const fullTextLower = text.toLowerCase();
+        if (fullTextLower.includes('ambulance')) sections.service = 'Ambulance';
+        else if (fullTextLower.includes('oxygen')) sections.service = 'Oxygen';
+        else if (fullTextLower.includes('casualty')) sections.service = 'Casualty';
+        else if (fullTextLower.includes('emergency care')) sections.service = 'Emergency';
 
         if (!sections.assessment.trim() && sections.other.trim()) sections.assessment = sections.other;
         
@@ -364,9 +376,14 @@ const AiConcierge = () => {
                                             <button 
                                                 onClick={() => {
                                                     setIsOpen(false);
-                                                    const url = s.specialist ? `/dashboard/booking?doctor=${encodeURIComponent(s.specialist.trim())}` : '/dashboard/booking';
+                                                    let url = '/dashboard/booking';
+                                                    if (s.service) {
+                                                        url = `/dashboard/booking?service=${s.service}`;
+                                                    } else if (s.specialist && s.specialist.length > 3) {
+                                                        url = `/dashboard/booking?doctor=${encodeURIComponent(s.specialist)}`;
+                                                    }
                                                     navigate(url);
-                                                    toast.success("Navigating to Clinical Booking Node");
+                                                    toast.success(`Navigating to ${s.service || 'Clinical'} Booking Node`);
                                                 }}
                                                 className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-3 shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all"
                                             >
