@@ -301,7 +301,6 @@ const AiConcierge = () => {
 
                 {isOpen && (
                     <motion.div
-                        style={{ x: dragX, y: dragY }}
                         className="fixed bottom-8 right-8 bg-[#F8FAFC] rounded-[32px] shadow-[0_30px_100px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden pointer-events-auto border border-white/50 z-[3000] ai-concierge-window"
                         initial={{ opacity: 0, y: 50, scale: 0.95 }}
                         animate={{ 
