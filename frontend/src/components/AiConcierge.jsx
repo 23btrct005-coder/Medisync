@@ -248,9 +248,9 @@ const AiConcierge = () => {
         else if (fullTextLower.includes('laboratory') || fullTextLower.includes('blood test')) sections.service = 'Laboratory Services';
         else if (fullTextLower.includes('pharmacy') || fullTextLower.includes('medicine')) sections.service = 'Pharmacy (24/7)';
 
-        // Frontend safety override for emergency triage (ONLY for specific life-threatening keywords)
-        const safetyKeywords = ['ambulance', 'emergency', 'chest pain', 'unconscious', 'breathing difficulty', 'heavy bleeding', 'stroke'];
-        if (safetyKeywords.some(k => fullTextLower.includes(k))) {
+        // Frontend safety override for emergency triage (ONLY for specific life-threatening keywords in the ASSESSMENT)
+        const safetyKeywords = ['ambulance', 'immediate emergency', 'unconscious', 'breathing difficulty', 'heavy bleeding', 'stroke'];
+        if (safetyKeywords.some(k => sections.assessment.toLowerCase().includes(k) || sections.warning.toLowerCase().includes(k))) {
             sections.severity = 'CRITICAL';
             if (!sections.service) sections.service = 'Emergency & Trauma Care';
         }
@@ -296,10 +296,10 @@ const AiConcierge = () => {
 
     const getSeverityStyles = (severity) => {
         const s = severity.toUpperCase();
-        if (s.includes('CRITICAL') || s.includes('EMERGENCY')) return { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', icon: <AlertCircle className="text-red-500" size={14} />, label: 'CRITICAL' };
-        if (s.includes('HIGH')) return { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', icon: <AlertCircle className="text-orange-500" size={14} />, label: 'HIGH' };
-        if (s.includes('MODERATE')) return { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', icon: <Clock className="text-amber-500" size={14} />, label: 'MODERATE' };
-        return { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', icon: <CheckCircle2 className="text-emerald-500" size={14} />, label: 'LOW' };
+        if (s.includes('CRITICAL') || s.includes('EMERGENCY')) return { bg: 'bg-red-50', color: 'text-red-700', border: 'border-red-200', icon: <AlertCircle className="text-red-500" size={14} />, label: 'CRITICAL' };
+        if (s.includes('HIGH')) return { bg: 'bg-orange-50', color: 'text-orange-700', border: 'border-orange-200', icon: <AlertCircle className="text-orange-500" size={14} />, label: 'HIGH' };
+        if (s.includes('MODERATE')) return { bg: 'bg-amber-50', color: 'text-amber-700', border: 'border-amber-200', icon: <Clock className="text-amber-500" size={14} />, label: 'MODERATE' };
+        return { bg: 'bg-emerald-50', color: 'text-emerald-700', border: 'border-emerald-200', icon: <CheckCircle2 className="text-emerald-500" size={14} />, label: 'LOW' };
     };
 
     const scrollToBottom = () => {
@@ -596,11 +596,26 @@ const AiConcierge = () => {
                         {/* Input Area */}
                         <div className="p-6 bg-white border-t border-slate-100">
                             <div className="relative flex items-center gap-2">
-                                <div className="flex-1 flex items-center bg-slate-50 border border-slate-200 rounded-2xl p-1 focus-within:border-indigo-300 focus-within:bg-white transition-all">
-                                    <label className="p-2 text-slate-400 hover:text-indigo-600 cursor-pointer">
-                                        <Paperclip size={20} />
-                                        <input type="file" className="hidden" onChange={handleImageUpload} />
-                                    </label>
+                                <div className="flex-1 flex flex-col bg-slate-50 border border-slate-200 rounded-2xl p-1 focus-within:border-indigo-300 focus-within:bg-white transition-all">
+                                    {imagePreview && (
+                                        <div className="p-2 flex items-center gap-2">
+                                            <div className="relative">
+                                                <img src={imagePreview} className="w-12 h-12 rounded-lg object-cover border border-slate-200" />
+                                                <button 
+                                                    onClick={() => setImagePreview(null)}
+                                                    className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 shadow-sm"
+                                                >
+                                                    <X size={10} />
+                                                </button>
+                                            </div>
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Image telemetry attached</span>
+                                        </div>
+                                    )}
+                                    <div className="flex items-center">
+                                        <label className="p-2 text-slate-400 hover:text-indigo-600 cursor-pointer transition-colors">
+                                            <Paperclip size={20} />
+                                            <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                                        </label>
                                     <input 
                                         value={input}
                                         onChange={(e) => setInput(e.target.value)}

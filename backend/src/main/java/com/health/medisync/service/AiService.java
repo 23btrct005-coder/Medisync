@@ -194,13 +194,21 @@ public class AiService {
             conditions = "Potential hypertensive urgency requiring pharmacological stabilization.";
             instructions = "Rest quietly and avoid physical exertion until you are evaluated by a clinician.";
             warning = "HYPERTENSIVE CRISIS POTENTIAL: IMMEDIATE MEDICAL OVERSIGHT REQUIRED.";
-        } else if (q.contains("paracetamol") || q.contains("ibuprofen") || q.contains("aspirin") || q.contains("medicine") || q.contains("tablet") || q.contains("pill")) {
-            assessment = "I've noted your inquiry regarding pharmacological intake. While medications like Paracetamol or Ibuprofen are common, they must be used according to professional dosage guidelines.";
+        } else if (q.contains("report") || q.contains("how can i see") || q.contains("view history")) {
+            assessment = "You can access your entire medical history, including lab results and previous diagnoses, in the 'Reports' section of your dashboard.";
+            severity = "LOW";
+            specialist = "MediSync Support";
+            action = "Navigate to /dashboard/reports to view your digitized clinical history.";
+            service = "General Clinical";
+            conditions = "Portal navigation request identified.";
+            instructions = "Ensure you are logged in to see your private medical records.";
+        } else if (q.contains("paracetamol") || q.contains("ibuprofen") || q.contains("aspirin") || q.contains("medicine") || q.contains("tablet") || q.contains("pill") || q.contains("fever")) {
+            assessment = "I've noted your inquiry regarding pharmacological intake or mild fever. While common medications are often used for symptomatic relief, they must follow professional dosage guidelines.";
             severity = "LOW";
             specialist = "General Practitioner / Pharmacist";
             action = "Verify safe dosage and potential drug-drug interactions with a pharmacist via our booking portal.";
             service = "Pharmacy (24/7)";
-            conditions = "Routine pharmaceutical inquiry for symptomatic management.";
+            conditions = "Routine pharmaceutical or symptomatic inquiry.";
             instructions = "Always check the expiration date and dosage instructions on the packaging.";
         } else if (q.contains("scan") || q.contains("mri") || q.contains("ct") || q.contains("xray")) {
             assessment = "I've processed your request for diagnostic imaging. Advanced scanning (MRI/CT) is an essential tool for high-precision internal diagnostics.";
@@ -212,6 +220,7 @@ public class AiService {
             instructions = "Ensure you have a referral from your primary physician before your appointment.";
         } else {
             assessment += "I recommend a professional consultation for clinical clarity.";
+            severity = "MODERATE";
         }
 
         return "1. Copilot Assessment: " + assessment + "\n" +
