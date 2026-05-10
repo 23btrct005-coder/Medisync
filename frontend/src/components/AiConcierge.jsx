@@ -76,9 +76,14 @@ const AiConcierge = ({ userEmail, patientId, patientName }) => {
             };
         } catch (e) {
             return { 
-                assessment: content.length > 50 ? content.substring(0, 200) + "..." : content, 
+                assessment: (content && content.length > 50) ? content.substring(0, 200) + "..." : (content || "Institutional briefing interrupted. Retrying..."), 
                 severity: 'ROUTINE', 
+                explanation: "Processing medical reasoning path...",
                 questions: [], 
+                conditions: [],
+                risk: [],
+                citations: [],
+                verified: false,
                 confidence: 0.5 
             };
         }
@@ -206,7 +211,7 @@ const AiConcierge = ({ userEmail, patientId, patientName }) => {
                                                                     <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Medical Reasoning</h4>
                                                                     <p className="text-[11px] text-slate-600 leading-relaxed line-clamp-3">{s.explanation}</p>
                                                                 </div>
-                                                                {s.risk.length > 0 && (
+                                                                {s.risk && s.risk.length > 0 && (
                                                                     <div className="p-4 bg-rose-50/50 rounded-2xl border border-rose-100/50 space-y-2">
                                                                         <h4 className="text-[9px] font-black text-rose-400 uppercase tracking-widest">Risk Indicators</h4>
                                                                         <p className="text-[11px] font-bold text-rose-700">{s.risk[0]}</p>
@@ -215,7 +220,7 @@ const AiConcierge = ({ userEmail, patientId, patientName }) => {
                                                             </div>
 
                                                             {/* Evidence Sidebar Toggle */}
-                                                            {s.citations.length > 0 && (
+                                                            {s.citations && s.citations.length > 0 && (
                                                                 <button 
                                                                     onClick={() => setShowEvidence(true)}
                                                                     className="w-full py-3 bg-indigo-50/30 hover:bg-indigo-50 text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-indigo-100/50 flex items-center justify-center gap-2 transition-all"
