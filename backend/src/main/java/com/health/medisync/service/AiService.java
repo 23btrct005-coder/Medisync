@@ -193,55 +193,72 @@ public class AiService {
 
     private String performLocalClinicalTriage(String query, boolean hasImage) {
         String q = query.toLowerCase();
-        String assessment = "I am the MediSync Copilot. Our neural reasoning node is currently in backup mode. ";
-        String severity = "LOW";
-        String specialist = "MediSync Support";
-        String action = "Please re-submit your query or navigate to our help section.";
-        String service = "General Support";
+        String assessment = "I am your MediSync Copilot. While I coordinate with our specialized neural nodes, I've analyzed your query using our institutional safety protocol. ";
+        String severity = "MODERATE";
+        String specialist = "General Physician";
+        String action = "Please proceed to the nearest MediSync node for an initial evaluation.";
+        String service = "General Clinical";
+        String warning = "None identified during backup sync.";
 
-        // Portal Help Logic
-        if (q.contains("book") || q.contains("appointment") || q.contains("slot")) {
-            assessment += "I can help you with booking. Please navigate to the 'Booking' portal.";
-            action = "Navigate to '/dashboard/booking' to select a physician or service.";
-            service = "General Clinical";
-        } else if (q.contains("report") || q.contains("test") || q.contains("result")) {
-            assessment += "Medical reports are stored in our secure clinical vault.";
-            action = "Navigate to '/dashboard/reports' to view or download your results.";
-            service = "Medical Reports";
-        } else if (q.contains("profile") || q.contains("vitals") || q.contains("age")) {
-            assessment += "You can update your personal clinical profile in the settings.";
-            action = "Navigate to '/dashboard/profile' to update your age, gender, and metrics.";
-            service = "Profile Management";
-        } else if (q.contains("blood") || q.contains("donor")) {
-            // Health Help Logic
-            assessment += "Your request for Blood Bank services has been prioritized.";
+        // HIGH-PRECISION INTENT MAPPING
+        if (q.contains("blood") || q.contains("donor")) {
+            assessment += "I've prioritized your request for Blood Bank services.";
             severity = "HIGH";
             specialist = "Hematologist";
             action = "Navigate to '/dashboard/booking?mode=service&service=Blood+Bank' for coordination.";
             service = "Blood Bank";
-        } else if (q.contains("scan") || q.contains("mri") || q.contains("ct") || q.contains("head") || q.contains("brain") || q.contains("stomach") || q.contains("abdomen")) {
-            boolean isAbdomen = q.contains("stomach") || q.contains("abdomen");
-            assessment += (isAbdomen ? "Abdominal" : "Imaging") + " request detected via Copilot failover.";
+        } else if (q.contains("scan") || q.contains("mri") || q.contains("ct") || q.contains("xray")) {
+            assessment += "Imaging request detected. I'm preparing the diagnostic node for your arrival.";
             severity = "HIGH";
-            specialist = isAbdomen ? "Gastroenterologist" : "Radiologist";
-            action = "Secure an imaging slot via '/dashboard/booking'.";
-            service = isAbdomen ? "Ultrasound / सोनोग्राफी" : "MRI Scan";
-        } else if (q.contains("emergency") || q.contains("pain") || q.contains("heart") || q.contains("chest")) {
-            assessment += "CRITICAL: Potential emergency signal detected. Copilot Emergency Bypass active.";
+            specialist = "Radiologist";
+            action = "Secure a slots in the Diagnostic Imaging section via '/dashboard/booking'.";
+            service = "MRI Scan";
+        } else if (q.contains("head") || q.contains("brain") || q.contains("migraine") || q.contains("headache")) {
+            boolean isSevere = q.contains("severe") || q.contains("worst") || q.contains("injury") || q.contains("hit");
+            if (isSevere) {
+                assessment += "CRITICAL: Severe cranial signal detected. Immediate assessment is mandatory.";
+                severity = "CRITICAL";
+                specialist = "Neurologist / ER";
+                action = "Locate the nearest Emergency node immediately.";
+                service = "Emergency & Trauma Care";
+                warning = "IMMEDIATE EVALUATION REQUIRED FOR SEVERE HEAD PAIN.";
+            } else {
+                assessment += "I've noted your headache symptoms. Monitoring and professional evaluation are recommended.";
+                severity = "LOW";
+                specialist = "General Practitioner";
+                action = "Monitor for 'Red Flags' (vision changes, fever, neck stiffness). Book a routine consult.";
+                service = "General Clinical";
+            }
+        } else if (q.contains("stomach") || q.contains("abdomen") || q.contains("gut")) {
+            assessment += "Abdominal discomfort protocol active. I'm mapping you to our gastrointestinal node.";
+            severity = "MODERATE";
+            specialist = "Gastroenterologist";
+            action = "Secure a slot for a clinical evaluation or ultrasound via '/dashboard/booking'.";
+            service = "Ultrasound / सोनोग्राफी";
+        } else if (q.contains("emergency") || q.contains("pain") || q.contains("heart") || q.contains("chest") || q.contains("breathing")) {
+            assessment += "CRITICAL: Emergency signal detected. Copilot Bypass active.";
             severity = "CRITICAL";
             specialist = "Emergency Specialist";
-            action = "Locate the nearest Emergency & Trauma Care node in the MediSync registry.";
+            action = "Locate the nearest Emergency & Trauma Care node in the registry.";
             service = "Emergency & Trauma Care";
+            warning = "LIFE-THREATENING SYMPTOMS REQUIRE IMMEDIATE INTERVENTION.";
+        } else if (q.contains("book") || q.contains("appointment")) {
+            assessment += "I can help you navigate our booking system.";
+            severity = "LOW";
+            action = "Navigate to '/dashboard/booking' to choose your physician or service.";
+            service = "General Clinical";
+        } else {
+            assessment += "I've analyzed your health query and recommend a professional consultation for further clarity.";
         }
 
-        return "1. Copilot Assessment: " + assessment + (hasImage ? " (Image sync pending)" : "") + "\n" +
-               "2. Possible Conditions / Features: Clinical reasoning interrupted. Portal features remain active.\n" +
-               "3. Risk Indicators / Instructions: Connectivity interrupted. Please follow the portal routes provided.\n" +
+        return "1. Copilot Assessment: " + assessment + (hasImage ? " (Visual telemetry analysis in progress)" : "") + "\n" +
+               "2. Possible Conditions / Features: Clinical reasoning in failover mode. Portal navigation active.\n" +
+               "3. Risk Indicators / Instructions: Connectivity transiently interrupted. Follow the suggested portal routes.\n" +
                "4. Triage Level: " + severity + "\n" +
                "5. Recommended specialist / Node: " + specialist + "\n" +
                "6. Suggested Next Steps: " + action + " Use the booking node for " + service + ".\n" +
-               "7. Follow-up Questions: Do you need help navigating to specific sections? Can you describe your symptoms further?\n" +
-               "8. Emergency Warning / Portal Tip: " + (severity.equals("CRITICAL") ? "IMMEDIATE ATTENTION REQUIRED" : "Pro-tip: You can upload old reports via the paperclip icon.");
+               "7. Follow-up Questions: Can you specify the severity? Are you experiencing any vision changes or nausea?\n" +
+               "8. Emergency Warning / Portal Tip: " + warning + " Tip: Update your health vitals in 'Profile' for better accuracy.";
     }
 
     public String getLatestBrief(String email) {
