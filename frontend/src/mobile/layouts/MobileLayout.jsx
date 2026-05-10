@@ -5,7 +5,7 @@ import {
     LayoutDashboard, MessageSquare, CalendarPlus, ClipboardList, 
     User, Menu, Bell, Search, X, Activity, Wallet, ShieldCheck, 
     Stethoscope, Users, UserCheck, Settings, HelpCircle, LogOut,
-    PlusCircle, FileText, Pill, Grid, Calendar, Zap, AlertCircle, ChevronRight
+    PlusCircle, FileText, Pill, Grid, Calendar, Zap, AlertCircle, ChevronRight, Sparkles
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
@@ -13,7 +13,7 @@ import NotificationBell from '../../components/NotificationBell';
 
 const MobileLayout = () => {
     const { user, userRole, logout } = useAuth();
-    const { unreadChatCount } = useNotifications();
+    const { unreadChatCount, setAiOpen } = useNotifications();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -48,7 +48,7 @@ const MobileLayout = () => {
             { name: 'Messages', path: '/dashboard/messages', icon: <MessageSquare size={20} />, badge: unreadChatCount },
             { name: 'Home', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
             { name: 'Book', path: '/dashboard/booking', icon: <CalendarPlus size={20} /> },
-            { name: 'Wallet', path: '/dashboard/wallet', icon: <Wallet size={20} /> },
+            { name: 'AI', action: () => setAiOpen(true), icon: <Sparkles size={20} />, isAction: true },
         ];
     };
 
@@ -67,6 +67,7 @@ const MobileLayout = () => {
             { name: 'Config', path: '/hospital-dashboard/settings', icon: <Settings size={22} />, color: 'bg-slate-50 text-slate-600' },
         ];
         return [
+            { name: 'Wallet', path: '/dashboard/wallet', icon: <Wallet size={22} />, color: 'bg-emerald-50 text-emerald-600' },
             { name: 'Records', path: '/dashboard/records', icon: <ClipboardList size={22} />, color: 'bg-cyan-50 text-cyan-600' },
             { name: 'AI Reports', path: '/dashboard/reports', icon: <FileText size={22} />, color: 'bg-violet-50 text-violet-600' },
             { name: 'Rx Vault', path: '/dashboard/medications', icon: <Pill size={22} />, color: 'bg-rose-50 text-rose-600' },
@@ -157,20 +158,37 @@ const MobileLayout = () => {
                     <Grid size={24} />
                 </motion.button>
 
-                {(primaryNav || []).slice(2, 4).map((item) => item && (
-                    <NavLink 
-                        key={item.name} 
-                        to={item.path} 
-                        onClick={triggerHaptic}
-                        className={({ isActive }) => `flex flex-col items-center justify-center w-16 h-16 rounded-3xl transition-all duration-300 ${isActive ? 'text-primary-600 bg-primary-50/50' : 'text-slate-400'}`}
-                    >
-                        <motion.div whileTap={{ scale: 0.8 }} className="relative">
-                            {item.icon}
-                            {item.badge > 0 && <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[7px] font-black w-4 h-4 flex items-center justify-center rounded-full border-2 border-white">{item.badge}</span>}
-                        </motion.div>
-                        <span className="text-[8px] font-black uppercase tracking-tight mt-1.5">{item.name}</span>
-                    </NavLink>
-                ))}
+                {(primaryNav || []).slice(2, 4).map((item) => {
+                    if (!item) return null;
+                    if (item.isAction) {
+                        return (
+                            <button
+                                key={item.name}
+                                onClick={() => { triggerHaptic(); item.action(); }}
+                                className="flex flex-col items-center justify-center w-16 h-16 rounded-3xl transition-all duration-300 text-slate-400 hover:text-primary-600 hover:bg-primary-50/50"
+                            >
+                                <motion.div whileTap={{ scale: 0.8 }} className="relative">
+                                    {item.icon}
+                                </motion.div>
+                                <span className="text-[8px] font-black uppercase tracking-tight mt-1.5">{item.name}</span>
+                            </button>
+                        );
+                    }
+                    return (
+                        <NavLink 
+                            key={item.name} 
+                            to={item.path} 
+                            onClick={triggerHaptic}
+                            className={({ isActive }) => `flex flex-col items-center justify-center w-16 h-16 rounded-3xl transition-all duration-300 ${isActive ? 'text-primary-600 bg-primary-50/50' : 'text-slate-400'}`}
+                        >
+                            <motion.div whileTap={{ scale: 0.8 }} className="relative">
+                                {item.icon}
+                                {item.badge > 0 && <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[7px] font-black w-4 h-4 flex items-center justify-center rounded-full border-2 border-white">{item.badge}</span>}
+                            </motion.div>
+                            <span className="text-[8px] font-black uppercase tracking-tight mt-1.5">{item.name}</span>
+                        </NavLink>
+                    );
+                })}
             </nav>
 
             {/* ── CLINICAL HUB OVERLAY ── */}
