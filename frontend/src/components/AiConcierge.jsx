@@ -5,7 +5,7 @@ import {
     SendHorizontal, X, Mic, StopCircle, Maximize2, Minimize2, 
     MessageCircle, Sparkles, Activity, ShieldCheck, HeartPulse, BrainCircuit, Calendar, Paperclip,
     ChevronRight, AlertCircle, Clock, Stethoscope, MapPin, CheckCircle2, RotateCcw,
-    Volume2, VolumeX
+    Volume2, VolumeX, ArrowDown
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
@@ -30,6 +30,7 @@ const AiConcierge = () => {
     });
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [showScrollBottom, setShowScrollBottom] = useState(false);
     const [isListening, setIsListening] = useState(false);
     const [selectedLang, setSelectedLang] = useState('en-IN');
     const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
@@ -200,12 +201,17 @@ const AiConcierge = () => {
             }
         });
 
-        // Final cleanups and smart mapping
+        // 1. Extract mapUrl FIRST from raw text
+        const mapMatch = text.match(/https:\/\/(www\.google\.com\/maps|maps\.app\.goo\.gl)[^ \n)\]]*/);
+        const mapUrl = mapMatch ? mapMatch[0].replace(/\.$/, '') : null;
+
+        // 2. Aggressive strip logic
         const stripMap = (t) => t
-            .replace(/(maps|google\s+maps|navigation|location):\s*https:\/\/(www\.google\.com\/maps|maps\.app\.goo\.gl)\/[^ \n)\]]*/gi, '')
-            .replace(/https:\/\/(www\.google\.com\/maps|maps\.app\.goo\.gl)\/[^ \n)\]]*/g, '')
+            .replace(/(maps|google\s+maps|navigation|location|facility|hospital|at|seek):\s*https:\/\/(www\.google\.com\/maps|maps\.app\.goo\.gl)[^ \n)\]]*/gi, '')
+            .replace(/https:\/\/(www\.google\.com\/maps|maps\.app\.goo\.gl)[^ \n)\]]*/g, '')
             .replace(/(immediately\s+)?call\s+(your\s+)?local\s+emergency\s+services\s+(number\s+)?(such\s+as\s+)?108\s+or\s+112\.?/gi, '')
             .replace(/If\s+you\s+are\s+in\s+the\s+Bengaluru\s+area.*?hospitals?\./gi, '')
+            .replace(/Maps:\s*$/i, '')
             .trim();
         
         sections.assessment = stripMap(sections.assessment);
@@ -230,9 +236,6 @@ const AiConcierge = () => {
 
         if (!sections.assessment.trim() && sections.other.trim()) sections.assessment = sections.other;
         
-        const mapMatch = text.match(/https:\/\/(www\.google\.com\/maps|maps\.app\.goo\.gl)\/[^ \n)\]]*/);
-        const mapUrl = mapMatch ? mapMatch[0] : null;
-
         return { ...sections, mapUrl };
     };
 
@@ -332,7 +335,15 @@ const AiConcierge = () => {
                         </div>
 
                         {/* Chat Body */}
-                        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 flex flex-col gap-8 custom-scrollbar">
+                        <div 
+                            ref={scrollRef} 
+                            className="flex-1 overflow-y-auto p-6 flex flex-col gap-8 custom-scrollbar relative"
+                            onScroll={(e) => {
+                                const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+                                const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
+                                setShowScrollBottom(!isAtBottom);
+                            }}
+                        >
                             {messages.map((m, i) => {
                                 if (m.role === 'user') {
                                     return (
@@ -477,14 +488,30 @@ const AiConcierge = () => {
                             })}
 
                             {isLoading && (
-                                <div className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm max-w-[280px]">
+                                <div className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm max-w-[280px] animate-pulse">
                                     <div className="flex gap-1">
                                         {[0, 1, 2].map(d => <div key={d} className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-bounce" style={{ animationDelay: `${d * 0.2}s` }}></div>)}
                                     </div>
                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{loadingMessages[loadingStep]}</span>
                                 </div>
                             )}
+                            <div ref={messagesEndRef} />
                         </div>
+
+                        {/* Scroll to Bottom Sync Button */}
+                        <AnimatePresence>
+                            {showScrollBottom && (
+                                <motion.button
+                                    initial={{ opacity: 0, y: 10, scale: 0.8 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.8 }}
+                                    onClick={() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })}
+                                    className="absolute bottom-32 right-8 p-3 bg-white/90 backdrop-blur-md border border-slate-200 text-indigo-600 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all z-[3005]"
+                                >
+                                    <ArrowDown size={20} />
+                                </motion.button>
+                            )}
+                        </AnimatePresence>
 
                         {/* Input Area */}
                         <div className="p-6 bg-white border-t border-slate-100">
