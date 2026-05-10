@@ -47,7 +47,11 @@ const AiConcierge = () => {
     setIsTyping(true);
 
     try {
-      const res = await api.post('/ai/triage', { query: userQuery });
+      // Map to hardened backend endpoint with clinical context
+      const res = await api.post('/ai/chat', { 
+        message: userQuery,
+        history: messages.map(m => ({ role: m.role, content: m.content }))
+      });
       const aiResponse = { 
         role: 'assistant', 
         content: res.data.response || "Clinical signal synchronized. Based on your archives, I recommend a follow-up consultation to discuss these findings in detail.",
