@@ -69,13 +69,16 @@ public class EmailService {
             return err;
         }
 
-        String cleanToken = apiKey.trim();
+        // Sanitize credentials (strip potential quotes from .env parsing)
+        String cleanToken = apiKey.trim().replace("\"", "").replace("'", "");
+        String cleanSender = (senderEmail != null) ? senderEmail.trim().replace("\"", "").replace("'", "") : "";
+        
         String tokenHead = (cleanToken.length() >= 4) ? cleanToken.substring(0, 4) : "[SHORT]";
         String tokenTail = (cleanToken.length() >= 4) ? cleanToken.substring(cleanToken.length() - 4) : "";
         
         System.out.println("DIAGNOSTIC: Attempting Brevo send to " + to);
         System.out.println("DIAGNOSTIC: Using API Key: " + tokenHead + "..." + tokenTail);
-        System.out.println("DIAGNOSTIC: Sender Email: " + senderEmail);
+        System.out.println("DIAGNOSTIC: Sender Email: " + cleanSender);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(new MediaType("application", "json", java.nio.charset.StandardCharsets.UTF_8));
@@ -86,7 +89,7 @@ public class EmailService {
         Map<String, Object> payload = new HashMap<>();
         Map<String, String> sender = new HashMap<>();
         sender.put("name", "MediSync Portal");
-        sender.put("email", senderEmail);
+        sender.put("email", cleanSender);
         payload.put("sender", sender);
 
         Map<String, String> recipient = new HashMap<>();
