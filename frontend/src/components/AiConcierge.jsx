@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../api/axiosConfig';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue } from 'framer-motion';
 import { 
     SendHorizontal, X, Mic, StopCircle, Maximize2, Minimize2, 
     MessageCircle, Sparkles, Activity, ShieldCheck, HeartPulse, BrainCircuit, Calendar, Paperclip,
@@ -35,6 +35,8 @@ const AiConcierge = () => {
     const [location, setLocation] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
     const [loadingStep, setLoadingStep] = useState(0);
+    const dragX = useMotionValue(0);
+    const dragY = useMotionValue(0);
     
     const scrollRef = useRef(null);
     const containerRef = useRef(null);
@@ -217,7 +219,7 @@ const AiConcierge = () => {
 
         if (!sections.assessment.trim() && sections.other.trim()) sections.assessment = sections.other;
         
-        const mapMatch = text.match(/https:\/\/www\.google\.com\/maps\/[^ \n)\]]*/);
+        const mapMatch = text.match(/https:\/\/(www\.google\.com\/maps|maps\.app\.goo\.gl)\/[^ \n)\]]*/);
         const mapUrl = mapMatch ? mapMatch[0] : null;
 
         return { ...sections, mapUrl };
@@ -280,7 +282,7 @@ const AiConcierge = () => {
                     <motion.div
                         drag
                         dragMomentum={false}
-                        style={{ touchAction: 'none' }}
+                        style={{ touchAction: 'none', x: dragX, y: dragY }}
                         className="absolute bottom-8 right-8 pointer-events-auto z-[4000]"
                     >
                         <motion.button
@@ -299,6 +301,7 @@ const AiConcierge = () => {
 
                 {isOpen && (
                     <motion.div
+                        style={{ x: dragX, y: dragY }}
                         className="fixed bottom-8 right-8 bg-[#F8FAFC] rounded-[32px] shadow-[0_30px_100px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden pointer-events-auto border border-white/50 z-[3000] ai-concierge-window"
                         initial={{ opacity: 0, y: 50, scale: 0.95 }}
                         animate={{ 
