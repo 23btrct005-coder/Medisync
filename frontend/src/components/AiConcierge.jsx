@@ -25,6 +25,17 @@ const AiConcierge = ({ userEmail, patientId, patientName }) => {
 
     const { streamQuery, streamingText, isStreaming, error, abortStream } = useStreamingAi(sessionId.current);
 
+    // Finalize Streaming Response into Messages Array
+    useEffect(() => {
+        if (!isStreaming && streamingText) {
+            setMessages(prev => [...prev, { 
+                role: 'assistant', 
+                content: streamingText, 
+                timestamp: new Date() 
+            }]);
+        }
+    }, [isStreaming, streamingText]);
+
     // Auto-scroll logic
     useEffect(() => {
         if (messagesEndRef.current) {
