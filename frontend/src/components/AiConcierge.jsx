@@ -354,6 +354,9 @@ const AiConcierge = () => {
                         border-radius: 0 !important;
                     }
                 }
+                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
             `}</style>
             <AnimatePresence>
                 {isOpen && (
@@ -616,16 +619,22 @@ const AiConcierge = () => {
                                             <Paperclip size={20} />
                                             <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                                         </label>
-                                    <input 
-                                        value={input}
-                                        onChange={(e) => setInput(e.target.value)}
-                                        onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                                        placeholder="Ask a medical question..."
-                                        className="flex-1 bg-transparent border-none outline-none text-sm font-semibold text-slate-700 px-2 py-3"
-                                    />
-                                    <button onClick={() => isListening ? stopListening() : startListening()} className={`p-2 rounded-xl transition-all ${isListening ? 'text-red-500 bg-red-50' : 'text-slate-400 hover:text-indigo-600'}`}>
-                                        <Mic size={20} />
-                                    </button>
+                                    <div className="flex items-center">
+                                        <label className="p-2 text-slate-400 hover:text-indigo-600 cursor-pointer transition-colors">
+                                            <Paperclip size={20} />
+                                            <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                                        </label>
+                                        <input 
+                                            value={input}
+                                            onChange={(e) => setInput(e.target.value)}
+                                            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                                            placeholder="Ask a medical question..."
+                                            className="flex-1 bg-transparent border-none outline-none text-sm font-semibold text-slate-700 px-2 py-3"
+                                        />
+                                        <button onClick={() => isListening ? stopListening() : startListening()} className={`p-2 rounded-xl transition-all ${isListening ? 'text-red-500 bg-red-50' : 'text-slate-400 hover:text-indigo-600'}`}>
+                                            <Mic size={20} />
+                                        </button>
+                                    </div>
                                 </div>
                                 <button 
                                     onClick={() => handleSend()}
@@ -639,11 +648,6 @@ const AiConcierge = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
-            <style>{`
-                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-            `}</style>
         </div>
     );
 };
