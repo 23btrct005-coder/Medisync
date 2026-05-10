@@ -376,10 +376,45 @@ const AiConcierge = () => {
                                                 )}
                                             </div>
 
-                                            {s.recommendations && (
+                                            {s.action && (
                                                 <div className="p-4 bg-slate-50 rounded-2xl space-y-2">
                                                     <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">SUGGESTED NEXT STEPS</span>
                                                     <p className="text-xs font-semibold text-slate-600 leading-relaxed">{s.action}</p>
+                                                </div>
+                                            )}
+
+                                            {s.possibleConditions && (
+                                                <div className="p-4 bg-indigo-50/50 rounded-2xl space-y-2 border border-indigo-100/50">
+                                                    <span className="text-[8px] font-black text-indigo-400 uppercase tracking-tighter">POSSIBLE CONDITIONS</span>
+                                                    <p className="text-xs font-medium text-slate-600 leading-relaxed">{s.possibleConditions}</p>
+                                                </div>
+                                            )}
+
+                                            {s.riskIndicators && (
+                                                <div className="p-4 bg-amber-50/50 rounded-2xl space-y-2 border border-amber-100/50">
+                                                    <span className="text-[8px] font-black text-amber-500 uppercase tracking-tighter">RISK INDICATORS</span>
+                                                    <p className="text-xs font-medium text-slate-600 leading-relaxed">{s.riskIndicators}</p>
+                                                </div>
+                                            )}
+
+                                            {s.warning && (
+                                                <div className="p-4 bg-red-50 rounded-2xl space-y-2 border border-red-100">
+                                                    <span className="text-[8px] font-black text-red-500 uppercase tracking-tighter flex items-center gap-1"><AlertCircle size={10} /> EMERGENCY WARNING</span>
+                                                    <p className="text-xs font-bold text-red-700 leading-relaxed">{s.warning}</p>
+                                                </div>
+                                            )}
+
+                                            {s.questions && s.questions.length > 0 && (
+                                                <div className="p-4 bg-white rounded-2xl space-y-2 border border-slate-200 shadow-sm">
+                                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">FOLLOW-UP QUESTIONS</span>
+                                                    <ul className="space-y-2">
+                                                        {s.questions.map((q, idx) => (
+                                                            <li key={idx} className="text-xs font-medium text-slate-700 flex items-start gap-2">
+                                                                <span className="text-indigo-400 mt-0.5">•</span>
+                                                                <span>{q}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
                                                 </div>
                                             )}
 
