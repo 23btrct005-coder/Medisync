@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axiosConfig';
-import { Bell, Sparkles, ShieldAlert, Calendar, CheckCircle2, Clock, Trash2, CheckSquare } from 'lucide-react';
+import { Bell, Sparkles, ShieldAlert, Calendar, CheckCircle2, Clock, Trash2, CheckSquare, ArrowUpRight } from 'lucide-react';
 
 const ActivityHub = () => {
   const [notifications, setNotifications] = useState([]);
