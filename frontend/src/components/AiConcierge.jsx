@@ -289,7 +289,11 @@ const AiConcierge = () => {
                     <motion.div
                         drag
                         dragMomentum={false}
-                        dragConstraints={containerRef}
+                        onDragEnd={(e, info) => {
+                            // Explicitly set values to ensure they settle
+                            dragX.set(dragX.get());
+                            dragY.set(dragY.get());
+                        }}
                         initial={{ opacity: 0, scale: 0.5 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ 
