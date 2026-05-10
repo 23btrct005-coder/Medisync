@@ -184,7 +184,6 @@ public class AiService {
             return "System Error: Unable to reach the clinical reasoning brain. Please check your connection.";
         }
     }
-    }
 
     public String getLatestBrief(String email) {
         return sessionSummaries.getOrDefault(email, "No AI context.");
