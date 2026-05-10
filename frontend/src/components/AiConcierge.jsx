@@ -226,33 +226,78 @@ const AiConcierge = () => {
         return { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', icon: <CheckCircle2 className="text-emerald-500" size={14} />, label: 'LOW' };
     };
 
+    if (!user) return null;
+
     return (
-        <div ref={containerRef} className="fixed inset-0 pointer-events-none z-[2000]">
+        <div ref={containerRef} className="fixed inset-0 pointer-events-none z-[3000]">
+            <style>{`
+                .ai-orb {
+                    background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+                    box-shadow: 0 10px 40px -10px rgba(99, 102, 241, 0.5),
+                                inset 0 0 20px rgba(255, 255, 255, 0.3);
+                    position: relative;
+                }
+                .ai-orb::before {
+                    content: '';
+                    position: absolute;
+                    inset: -4px;
+                    border-radius: inherit;
+                    background: inherit;
+                    filter: blur(10px);
+                    opacity: 0.4;
+                    z-index: -1;
+                    animation: orb-pulse 3s infinite;
+                }
+                @keyframes orb-pulse {
+                    0% { transform: scale(1); opacity: 0.4; }
+                    50% { transform: scale(1.2); opacity: 0.2; }
+                    100% { transform: scale(1); opacity: 0.4; }
+                }
+                .mobile-full-chat {
+                    height: 100dvh !important;
+                    width: 100vw !important;
+                    bottom: 0 !important;
+                    right: 0 !important;
+                    border-radius: 0 !important;
+                }
+                @media (max-width: 768px) {
+                    .ai-concierge-window {
+                        height: 100dvh !important;
+                        width: 100vw !important;
+                        bottom: 0 !important;
+                        right: 0 !important;
+                        border-radius: 0 !important;
+                    }
+                }
+            `}</style>
             <AnimatePresence>
                 {!isOpen && (
                     <motion.button
-                        className="fixed bottom-8 right-8 h-16 px-6 rounded-full bg-indigo-600 text-white flex items-center justify-center gap-3 shadow-2xl pointer-events-auto border-2 border-indigo-400/30 group overflow-hidden"
-                        initial={{ scale: 0, rotate: -20 }}
-                        animate={{ scale: 1, rotate: 0 }}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        drag
+                        dragConstraints={containerRef}
+                        className="fixed bottom-8 right-8 w-16 h-16 rounded-full ai-orb text-white flex items-center justify-center shadow-2xl pointer-events-auto z-[4000]"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
                         onClick={() => setIsOpen(true)}
                     >
-                        <div className="absolute inset-0 bg-gradient-to-tr from-indigo-700 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <BrainCircuit size={28} className="relative z-10" />
-                        <span className="text-sm font-black tracking-[0.1em] relative z-10">AI</span>
-                        <div className="absolute top-1.5 right-1.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></div>
+                        <Sparkles size={28} className="animate-pulse" />
+                        <div className="absolute top-0 right-0 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full"></div>
                     </motion.button>
                 )}
 
                 {isOpen && (
                     <motion.div
-                        className="fixed bottom-8 right-8 bg-[#F8FAFC] rounded-[32px] shadow-[0_30px_100px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden pointer-events-auto border border-white/50 z-[3000]"
+                        className="fixed bottom-8 right-8 bg-[#F8FAFC] rounded-[32px] shadow-[0_30px_100px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden pointer-events-auto border border-white/50 z-[3000] ai-concierge-window"
                         initial={{ opacity: 0, y: 50, scale: 0.95 }}
                         animate={{ 
                             opacity: 1, y: 0, scale: 1,
-                            width: isFullscreen ? 'min(1200px, calc(100vw - 64px))' : '420px',
-                            height: isFullscreen ? 'calc(100vh - 64px)' : '720px'
+                            width: isFullscreen ? 'min(1200px, calc(100vw - 32px))' : (window.innerWidth < 768 ? '100vw' : '420px'),
+                            height: isFullscreen ? 'calc(100vh - 32px)' : (window.innerWidth < 768 ? '100dvh' : '720px'),
+                            bottom: (window.innerWidth < 768) ? 0 : 32,
+                            right: (window.innerWidth < 768) ? 0 : 32,
+                            borderRadius: (window.innerWidth < 768) ? 0 : 32
                         }}
                         exit={{ opacity: 0, y: 50, scale: 0.95 }}
                     >
