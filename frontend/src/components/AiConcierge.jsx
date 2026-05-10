@@ -4,7 +4,7 @@ import {
     Activity, Shield, Zap, AlertCircle, ChevronRight, 
     Mic, SendHorizontal, Paperclip, X, Maximize2, 
     Minimize2, RotateCcw, MapPin, Stethoscope, Clock,
-    BookOpen, CheckCircle2, Info, ArrowDown
+    BookOpen, CheckCircle2, Info, ArrowDown, Lock
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
