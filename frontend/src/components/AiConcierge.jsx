@@ -39,6 +39,7 @@ const AiConcierge = () => {
     const [loadingStep, setLoadingStep] = useState(0);
     
     const scrollRef = useRef(null);
+    const messagesEndRef = useRef(null);
     const containerRef = useRef(null);
     const recognitionRef = useRef(null);
 
