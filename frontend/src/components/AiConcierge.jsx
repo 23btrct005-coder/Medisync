@@ -283,223 +283,169 @@ const AiConcierge = () => {
                                 setShowScrollBottom(!isAtBottom);
                             }}
                         >
-                            {messages.map((m, i) => {
-                                if (m.role === 'user') {
-                                    return (
-                                        <div key={i} className="flex flex-col gap-2 items-end">
-                                            {m.image && <img src={m.image} className="w-48 rounded-2xl border-2 border-white shadow-lg mb-1" />}
-                                            <div className="bg-indigo-600 text-white px-5 py-3.5 rounded-2xl rounded-tr-none text-sm font-medium shadow-lg shadow-indigo-100 max-w-[85%]">
-                                                {m.text}
-                                            </div>
-                                        </div>
-                                    );
-                                }
-
-                                const s = parseAiResponse(m.text);
-                                const ui = getSeverityStyles(s.severity);
-
-                                return (
-                                    <div key={i} className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                                        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <Stethoscope size={16} className="text-indigo-600" />
-                                                <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Clinical Assessment</span>
-                                            </div>
-                                            <p className="text-sm text-slate-700 leading-relaxed font-medium">
-                                                {s.assessment || s.other}
-                                            </p>
-
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <div className={`p-4 rounded-2xl border ${ui.bg} ${ui.border} flex flex-col gap-1`}>
-                                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">TRIAGE LEVEL</span>
-                                                    <span className={`text-xs font-black ${ui.color}`}>{ui.label}</span>
-                                                </div>
-                                                {s.specialist && (
-                                                    <div className="p-4 rounded-2xl border border-slate-50 bg-slate-50/50 flex flex-col gap-1">
-                                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">RECOMMENDED SPECIALIST</span>
-                                                        <span className="text-xs font-black text-slate-700 truncate">{s.specialist}</span>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {s.action && (
-                                                <div className="p-4 bg-slate-50 rounded-2xl space-y-2">
-                                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">SUGGESTED NEXT STEPS</span>
-                                                    <p className="text-xs font-semibold text-slate-600 leading-relaxed">{s.action}</p>
-                                                </div>
-                                            )}
-
-                                            {s.possibleConditions && (
-                                                <div className="p-4 bg-indigo-50/50 rounded-2xl space-y-2 border border-indigo-100/50">
-                                                    <span className="text-[8px] font-black text-indigo-400 uppercase tracking-tighter">POSSIBLE CONDITIONS</span>
-                                                    <p className="text-xs font-medium text-slate-600 leading-relaxed">{s.possibleConditions}</p>
-                                                </div>
-                                            )}
-
-                                            {s.riskIndicators && (
-                                                <div className="p-4 bg-amber-50/50 rounded-2xl space-y-2 border border-amber-100/50">
-                                                    <span className="text-[8px] font-black text-amber-500 uppercase tracking-tighter">RISK INDICATORS</span>
-                                                    <p className="text-xs font-medium text-slate-600 leading-relaxed">{s.riskIndicators}</p>
                             {messages.map((msg, i) => (
-                                    <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} mb-8 group`}>
-                                        <div className={`max-w-[85%] rounded-[24px] ${
-                                            msg.role === 'user' 
-                                            ? 'bg-indigo-600 text-white p-4 shadow-lg shadow-indigo-100 rounded-tr-none' 
-                                            : 'bg-white border border-slate-100 shadow-sm p-6 rounded-tl-none'
-                                        }`}>
-                                            {msg.role === 'user' ? (
+                                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} mb-8 group`}>
+                                    <div className={`max-w-[85%] rounded-[24px] ${
+                                        msg.role === 'user' 
+                                        ? 'bg-indigo-600 text-white p-4 shadow-lg shadow-indigo-100 rounded-tr-none' 
+                                        : 'bg-white border border-slate-100 shadow-sm p-6 rounded-tl-none'
+                                    }`}>
+                                        {msg.role === 'user' ? (
+                                            <div className="space-y-2">
+                                                {msg.image && <img src={msg.image} className="w-48 rounded-2xl border-2 border-white/20 shadow-md mb-2" />}
                                                 <p className="text-sm font-medium leading-relaxed">{msg.content}</p>
-                                            ) : (
-                                                <div className="space-y-6">
-                                                    {(() => {
-                                                        const s = parseAiResponse(msg.content);
-                                                        const severity = getSeverityStyles(s.severity);
-                                                        return (
-                                                            <>
-                                                                {/* Enterprise Header */}
-                                                                <div className="flex items-center justify-between gap-4 pb-4 border-b border-slate-50">
-                                                                    <div className={`px-3 py-1.5 rounded-full ${severity.bg} ${severity.text} ${severity.border} border text-[10px] font-black uppercase tracking-wider flex items-center gap-2`}>
-                                                                        {severity.icon} {severity.label} TRIAGE
-                                                                    </div>
-                                                                    {s.confidence > 0 && (
-                                                                        <div className="flex items-center gap-2">
-                                                                            <div className="h-1.5 w-16 bg-slate-100 rounded-full overflow-hidden">
-                                                                                <div className="h-full bg-indigo-500 transition-all" style={{ width: `${s.confidence * 100}%` }} />
-                                                                            </div>
-                                                                            <span className="text-[9px] font-bold text-slate-400">{(s.confidence * 100).toFixed(0)}% Certainty</span>
-                                                                        </div>
-                                                                    )}
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-6">
+                                                {(() => {
+                                                    const s = parseAiResponse(msg.content);
+                                                    const severity = getSeverityStyles(s.severity);
+                                                    return (
+                                                        <>
+                                                            {/* Enterprise Header */}
+                                                            <div className="flex items-center justify-between gap-4 pb-4 border-b border-slate-50">
+                                                                <div className={`px-3 py-1.5 rounded-full ${severity.bg} ${severity.text} ${severity.border} border text-[10px] font-black uppercase tracking-wider flex items-center gap-2`}>
+                                                                    {severity.icon} {severity.label} TRIAGE
                                                                 </div>
+                                                                {s.confidence > 0 && (
+                                                                    <div className="flex items-center gap-2">
+                                                                        <div className="h-1.5 w-16 bg-slate-100 rounded-full overflow-hidden">
+                                                                            <div className="h-full bg-indigo-500 transition-all" style={{ width: `${s.confidence * 100}%` }} />
+                                                                        </div>
+                                                                        <span className="text-[9px] font-bold text-slate-400">{(s.confidence * 100).toFixed(0)}% Certainty</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
 
-                                                                {/* Clinical Assessment */}
+                                                            {/* Clinical Assessment */}
+                                                            <div className="space-y-2">
+                                                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                                    <Activity size={12} className="text-indigo-500" /> Clinical Assessment
+                                                                </h4>
+                                                                <p className="text-sm font-semibold text-slate-700 leading-relaxed italic border-l-2 border-indigo-100 pl-4">
+                                                                    {s.assessment}
+                                                                </p>
+                                                            </div>
+
+                                                            {/* Reasoning Card */}
+                                                            {s.explanation && (
+                                                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
+                                                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Medical Reasoning</h4>
+                                                                    <p className="text-xs text-slate-600 leading-relaxed">{s.explanation}</p>
+                                                                </div>
+                                                            )}
+
+                                                            {/* Risk & Conditions */}
+                                                            <div className="grid grid-cols-2 gap-4">
+                                                                {s.possibleConditions && (
+                                                                    <div className="p-4 bg-indigo-50/30 rounded-2xl border border-indigo-100/50">
+                                                                        <h4 className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-2">Possible Conditions</h4>
+                                                                        <p className="text-xs font-bold text-indigo-700">{s.possibleConditions}</p>
+                                                                    </div>
+                                                                )}
+                                                                {s.riskIndicators && (
+                                                                    <div className="p-4 bg-rose-50/30 rounded-2xl border border-rose-100/50">
+                                                                        <h4 className="text-[9px] font-black text-rose-400 uppercase tracking-widest mb-2">Risk Indicators</h4>
+                                                                        <p className="text-xs font-bold text-rose-700">{s.riskIndicators}</p>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Abnormal Findings */}
+                                                            {s.abnormalFindings && s.abnormalFindings.length > 0 && (
                                                                 <div className="space-y-2">
-                                                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                                                        <Activity size={12} className="text-indigo-500" /> Clinical Assessment
-                                                                    </h4>
-                                                                    <p className="text-sm font-semibold text-slate-700 leading-relaxed italic border-l-2 border-indigo-100 pl-4">
-                                                                        {s.assessment}
-                                                                    </p>
-                                                                </div>
-
-                                                                {/* Reasoning Card */}
-                                                                {s.explanation && (
-                                                                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
-                                                                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Medical Reasoning</h4>
-                                                                        <p className="text-xs text-slate-600 leading-relaxed">{s.explanation}</p>
+                                                                    <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-widest">Abnormal Findings Detected</h4>
+                                                                    <div className="flex flex-wrap gap-2">
+                                                                        {s.abnormalFindings.map((f, i) => (
+                                                                            <span key={i} className="px-2 py-1 bg-rose-50 text-rose-600 rounded-lg text-[10px] font-bold border border-rose-100">{f}</span>
+                                                                        ))}
                                                                     </div>
-                                                                )}
-
-                                                                {/* Risk & Conditions */}
-                                                                <div className="grid grid-cols-2 gap-4">
-                                                                    {s.possibleConditions && (
-                                                                        <div className="p-4 bg-indigo-50/30 rounded-2xl border border-indigo-100/50">
-                                                                            <h4 className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-2">Possible Conditions</h4>
-                                                                            <p className="text-xs font-bold text-indigo-700">{s.possibleConditions}</p>
-                                                                        </div>
-                                                                    )}
-                                                                    {s.riskIndicators && (
-                                                                        <div className="p-4 bg-rose-50/30 rounded-2xl border border-rose-100/50">
-                                                                            <h4 className="text-[9px] font-black text-rose-400 uppercase tracking-widest mb-2">Risk Indicators</h4>
-                                                                            <p className="text-xs font-bold text-rose-700">{s.riskIndicators}</p>
-                                                                        </div>
-                                                                    )}
                                                                 </div>
+                                                            )}
 
-                                                                {/* Abnormal Findings */}
-                                                                {s.abnormalFindings && s.abnormalFindings.length > 0 && (
+                                                            {/* Follow-up Questions */}
+                                                            {s.questions.length > 0 && (
+                                                                <div className="space-y-3 pt-2">
+                                                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Clinical Refinement Questions</h4>
                                                                     <div className="space-y-2">
-                                                                        <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-widest">Abnormal Findings Detected</h4>
-                                                                        <div className="flex flex-wrap gap-2">
-                                                                            {s.abnormalFindings.map((f, i) => (
-                                                                                <span key={i} className="px-2 py-1 bg-rose-50 text-rose-600 rounded-lg text-[10px] font-bold border border-rose-100">{f}</span>
-                                                                            ))}
-                                                                        </div>
-                                                                    </div>
-                                                                )}
-
-                                                                {/* Follow-up Questions */}
-                                                                {s.questions.length > 0 && (
-                                                                    <div className="space-y-3 pt-2">
-                                                                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Clinical Refinement Questions</h4>
-                                                                        <div className="space-y-2">
-                                                                            {s.questions.map((q, idx) => (
-                                                                                <button 
-                                                                                    key={idx}
-                                                                                    onClick={() => {
-                                                                                        setInput(q);
-                                                                                        handleSend(q);
-                                                                                    }}
-                                                                                    className="w-full text-left p-3 text-xs font-medium text-slate-600 bg-slate-50 hover:bg-indigo-50 border border-slate-100 hover:border-indigo-200 rounded-xl transition-all flex items-center justify-between group/q"
-                                                                                >
-                                                                                    {q} <ChevronRight size={14} className="opacity-0 group-hover/q:opacity-100 transition-all text-indigo-500" />
-                                                                                </button>
-                                                                            ))}
-                                                                        </div>
-                                                                    </div>
-                                                                )}
-
-                                                                {/* Emergency Alert */}
-                                                                {s.warning && (
-                                                                    <div className="p-4 bg-red-600 text-white rounded-2xl flex items-start gap-3 animate-pulse shadow-xl shadow-red-200">
-                                                                        <AlertCircle size={20} className="shrink-0" />
-                                                                        <p className="text-[11px] font-black leading-tight uppercase tracking-wide">{s.warning}</p>
-                                                                    </div>
-                                                                )}
-
-                                                                {/* Mapping & Booking Nodes */}
-                                                                <div className="space-y-3 pt-4 border-t border-slate-50">
-                                                                    {s.mapUrl && (
-                                                                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between gap-4">
-                                                                            <div className="flex items-center gap-3 overflow-hidden">
-                                                                                <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
-                                                                                    <MapPin size={16} className="text-indigo-600" />
-                                                                                </div>
-                                                                                <div className="overflow-hidden">
-                                                                                    <div className="text-[10px] font-black text-slate-400 uppercase truncate">Clinical Navigation Node</div>
-                                                                                    <div className="text-[8px] text-slate-500 truncate">{s.mapUrl}</div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <a href={s.mapUrl} target="_blank" className="px-3 py-2 bg-white text-indigo-600 text-[9px] font-black uppercase rounded-lg border border-indigo-100 shadow-sm hover:bg-indigo-50 transition-all shrink-0">Launch</a>
-                                                                        </div>
-                                                                    )}
-
-                                                                    <div className="flex gap-2">
-                                                                        {(s.severity === 'CRITICAL' || s.severity === 'HIGH' || s.service === 'Ambulance Services') && (
+                                                                        {s.questions.map((q, idx) => (
                                                                             <button 
+                                                                                key={idx}
                                                                                 onClick={() => {
-                                                                                    setIsOpen(false);
-                                                                                    navigate('/dashboard/booking?mode=service&service=Ambulance Services');
+                                                                                    setInput(q);
+                                                                                    handleSend(q);
                                                                                 }}
-                                                                                className="flex-1 py-4 bg-red-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl shadow-red-100 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                                                                className="w-full text-left p-3 text-xs font-medium text-slate-600 bg-slate-50 hover:bg-indigo-50 border border-slate-100 hover:border-indigo-200 rounded-xl transition-all flex items-center justify-between group/q"
                                                                             >
-                                                                                <Activity size={16} /> Urgent Ambulance
+                                                                                {q} <ChevronRight size={14} className="opacity-0 group-hover/q:opacity-100 transition-all text-indigo-500" />
                                                                             </button>
-                                                                        )}
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            )}
+
+                                                            {/* Emergency Alert */}
+                                                            {s.warning && (
+                                                                <div className="p-4 bg-red-600 text-white rounded-2xl flex items-start gap-3 animate-pulse shadow-xl shadow-red-200">
+                                                                    <AlertCircle size={20} className="shrink-0" />
+                                                                    <p className="text-[11px] font-black leading-tight uppercase tracking-wide">{s.warning}</p>
+                                                                </div>
+                                                            )}
+
+                                                            {/* Mapping & Booking Nodes */}
+                                                            <div className="space-y-3 pt-4 border-t border-slate-50">
+                                                                {s.mapUrl && (
+                                                                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between gap-4">
+                                                                        <div className="flex items-center gap-3 overflow-hidden">
+                                                                            <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
+                                                                                <MapPin size={16} className="text-indigo-600" />
+                                                                            </div>
+                                                                            <div className="overflow-hidden">
+                                                                                <div className="text-[10px] font-black text-slate-400 uppercase truncate">Clinical Navigation Node</div>
+                                                                                <div className="text-[8px] text-slate-500 truncate">{s.mapUrl}</div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <a href={s.mapUrl} target="_blank" className="px-3 py-2 bg-white text-indigo-600 text-[9px] font-black uppercase rounded-lg border border-indigo-100 shadow-sm hover:bg-indigo-50 transition-all shrink-0">Launch</a>
+                                                                    </div>
+                                                                )}
+
+                                                                <div className="flex gap-2">
+                                                                    {(s.severity === 'CRITICAL' || s.severity === 'HIGH' || s.service === 'Ambulance Services') && (
                                                                         <button 
                                                                             onClick={() => {
                                                                                 setIsOpen(false);
-                                                                                let url = '/dashboard/booking';
-                                                                                if (s.service) {
-                                                                                    url = `/dashboard/booking?mode=service&service=${encodeURIComponent(s.service)}`;
-                                                                                } else if (s.specialist) {
-                                                                                    url = `/dashboard/booking?mode=service&service=${encodeURIComponent(s.specialist)}`;
-                                                                                }
-                                                                                navigate(url);
-                                                                                toast.success(`Navigating to ${s.service || s.specialist || 'Clinical'} Node`);
+                                                                                navigate('/dashboard/booking?mode=service&service=Ambulance Services');
                                                                             }}
-                                                                            className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl shadow-slate-200 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                                                            className="flex-1 py-4 bg-red-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl shadow-red-100 hover:scale-[1.02] active:scale-[0.98] transition-all"
                                                                         >
-                                                                            Secure Clinical Booking <ChevronRight size={14} />
+                                                                            <Activity size={16} /> Urgent Ambulance
                                                                         </button>
-                                                                    </div>
+                                                                    )}
+                                                                    <button 
+                                                                        onClick={() => {
+                                                                            setIsOpen(false);
+                                                                            let url = '/dashboard/booking';
+                                                                            if (s.service) {
+                                                                                url = `/dashboard/booking?mode=service&service=${encodeURIComponent(s.service)}`;
+                                                                            } else if (s.specialist) {
+                                                                                url = `/dashboard/booking?mode=service&service=${encodeURIComponent(s.specialist)}`;
+                                                                            }
+                                                                            navigate(url);
+                                                                            toast.success(`Navigating to ${s.service || s.specialist || 'Clinical'} Node`);
+                                                                        }}
+                                                                        className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl shadow-slate-200 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                                                    >
+                                                                        Secure Clinical Booking <ChevronRight size={14} />
+                                                                    </button>
                                                                 </div>
-                                                            </>
-                                                        );
-                                                    })()}
-                                                </div>
-                                            )}
-                                        </div>
+                                                            </div>
+                                                        </>
+                                                    );
+                                                })()}
+                                            </div>
+                                        )}
                                     </div>
+                                </div>
                             ))}
 
                             {isLoading && (
