@@ -243,36 +243,46 @@ public class AiService {
                 action = "Monitor for 'Red Flags' (vision changes, fever, neck stiffness). Book a routine consult.";
                 service = "General Clinical";
             }
-        } else if (q.contains("stomach") || q.contains("abdomen") || q.contains("gut")) {
-            assessment += "Abdominal discomfort protocol active. I'm mapping you to our gastrointestinal node.";
-            severity = "MODERATE";
-            specialist = "Gastroenterologist";
-            action = "Secure a slot for a clinical evaluation or ultrasound via '/dashboard/booking'.";
-            service = "Ultrasound / सोनोग्राफी";
-        } else if (q.contains("emergency") || q.contains("pain") || q.contains("heart") || q.contains("chest") || q.contains("breathing")) {
-            assessment += "CRITICAL: Emergency signal detected. Copilot Bypass active.";
+        } else if (q.contains("stomach") || q.contains("abdomen") || q.contains("gut") || q.contains("constipation") || q.contains("digestion")) {
+            boolean isSevere = q.contains("severe") || q.contains("sharp") || q.contains("agony") || q.contains("vomiting");
+            if (isSevere) {
+                assessment += "Acute abdominal signal detected. I'm prioritizing a gastroenterological assessment.";
+                severity = "HIGH";
+                specialist = "Gastroenterologist";
+                action = "Secure a priority ultrasound or clinical slot via '/dashboard/booking'.";
+                service = "Ultrasound / सोनोग्राफी";
+                warning = "PERSISTENT SEVERE ABDOMINAL PAIN REQUIRES CLINICAL REVIEW.";
+            } else {
+                assessment += "I've noted your digestive discomfort. Monitoring dietary intake and a routine consult are recommended.";
+                severity = "LOW";
+                specialist = "General Practitioner";
+                action = "Monitor for localized pain or fever. Consult via '/dashboard/booking' if symptoms persist.";
+                service = "General Clinical";
+            }
+        } else if (q.contains("emergency") || q.contains("pain") || q.contains("heart") || q.contains("chest") || q.contains("breathing") || q.contains("bleeding")) {
+            assessment += "CRITICAL: Potential life-safety signal detected. Copilot Emergency Bypass active.";
             severity = "CRITICAL";
             specialist = "Emergency Specialist";
-            action = "Locate the nearest Emergency & Trauma Care node in the registry.";
+            action = "Locate the nearest Emergency & Trauma Care node in the MediSync registry immediately.";
             service = "Emergency & Trauma Care";
-            warning = "LIFE-THREATENING SYMPTOMS REQUIRE IMMEDIATE INTERVENTION.";
-        } else if (q.contains("book") || q.contains("appointment")) {
-            assessment += "I can help you navigate our booking system.";
+            warning = "IMMEDIATE MEDICAL INTERVENTION IS REQUIRED.";
+        } else if (q.contains("book") || q.contains("appointment") || q.contains("see doctor")) {
+            assessment += "I can certainly help you coordinate your next clinical visit.";
             severity = "LOW";
-            action = "Navigate to '/dashboard/booking' to choose your physician or service.";
+            action = "Navigate to the 'Booking' module at '/dashboard/booking' to select your specialist.";
             service = "General Clinical";
         } else {
             assessment += "I've analyzed your health query and recommend a professional consultation for further clarity.";
         }
 
         return "1. Copilot Assessment: " + assessment + (hasImage ? " (Visual telemetry analysis in progress)" : "") + "\n" +
-               "2. Possible Conditions / Features: Clinical reasoning in failover mode. Portal navigation active.\n" +
-               "3. Risk Indicators / Instructions: Connectivity transiently interrupted. Follow the suggested portal routes.\n" +
+               "2. Possible Conditions / Features: Clinical sync in failover mode. Portal operations manual active.\n" +
+               "3. Risk Indicators / Instructions: Connectivity transiently interrupted. Please follow the portal routes provided.\n" +
                "4. Triage Level: " + severity + "\n" +
                "5. Recommended specialist / Node: " + specialist + "\n" +
                "6. Suggested Next Steps: " + action + " Use the booking node for " + service + ".\n" +
-               "7. Follow-up Questions: Can you specify the severity? Are you experiencing any vision changes or nausea?\n" +
-               "8. Emergency Warning / Portal Tip: " + warning + " Tip: Update your health vitals in 'Profile' for better accuracy.";
+               "7. Follow-up Questions: Can you specify the exact location of the discomfort? How long has this been occurring?\n" +
+               "8. Emergency Warning / Portal Tip: " + warning + " Tip: You can access your full clinical history in the 'Reports' section.";
     }
 
     public String getLatestBrief(String email) {

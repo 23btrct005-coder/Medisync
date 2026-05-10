@@ -158,14 +158,14 @@ const AiConcierge = () => {
 
         lines.forEach(l => {
             const lowerL = l.toLowerCase().trim();
-            // Match headers like "1. Initial Assessment", "Initial Assessment", "Assessment:", etc.
-            if (lowerL.match(/^[\d.\s]*(initial|clinical)\s+assessment/)) {
+            // Match headers like "1. Initial Assessment", "1. Copilot Assessment", "Initial Assessment", "Assessment:", etc.
+            if (lowerL.match(/^[\d.\s]*(initial|clinical|copilot)\s+assessment/)) {
                 currentSection = 'assessment';
-                const content = l.replace(/^[\d.\s]*(initial|clinical)\s+assessment:?/i, '').trim();
+                const content = l.replace(/^[\d.\s]*(initial|clinical|copilot)\s+assessment:?/i, '').trim();
                 if (content) sections.assessment += content + ' ';
-            } else if (lowerL.match(/^[\d.\s]*possible\s+(causes|conditions)/)) {
+            } else if (lowerL.match(/^[\d.\s]*possible\s+(causes|conditions|features)/)) {
                 currentSection = 'possibleConditions';
-                const content = l.replace(/^[\d.\s]*possible\s+(causes|conditions):?/i, '').trim();
+                const content = l.replace(/^[\d.\s]*possible\s+(causes|conditions|features):?/i, '').trim();
                 if (content) sections.possibleConditions += content + ' ';
             } else if (lowerL.match(/^[\d.\s]*risk\s+indicators/)) {
                 currentSection = 'riskIndicators';
