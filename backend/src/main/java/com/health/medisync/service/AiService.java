@@ -12,20 +12,9 @@ import java.util.stream.Collectors;
 @Service
 public class AiService {
 
-    private final DoctorRepository doctorRepository;
-    private final HospitalRepository hospitalRepository;
-    private final AiQueryLogRepository aiQueryLogRepository;
-    private final PrescriptionRepository prescriptionRepository;
-    private final AppointmentRepository appointmentRepository;
-    private final DoctorService doctorService;
-    private final GeminiAiService geminiAiService;
-    private final GroqAiService groqAiService;
-    private final UserRepository userRepository;
-    private final PatientRepository patientRepository;
-    private final ReportRepository reportRepository;
-    private final TelemetryRepository telemetryRepository;
-    
-    private static final Map<String, String> sessionSummaries = new HashMap<>();
+    private final MedicalSafetyValidator safetyValidator;
+    private final IntentRouterService intentRouter;
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     public AiService(DoctorRepository doctorRepository, 
                      HospitalRepository hospitalRepository,
@@ -38,7 +27,9 @@ public class AiService {
                      ReportRepository reportRepository,
                      GeminiAiService geminiAiService,
                      GroqAiService groqAiService,
-                     TelemetryRepository telemetryRepository) {
+                     TelemetryRepository telemetryRepository,
+                     MedicalSafetyValidator safetyValidator,
+                     IntentRouterService intentRouter) {
         this.doctorRepository = doctorRepository;
         this.hospitalRepository = hospitalRepository;
         this.aiQueryLogRepository = aiQueryLogRepository;
@@ -51,11 +42,18 @@ public class AiService {
         this.geminiAiService = geminiAiService;
         this.groqAiService = groqAiService;
         this.telemetryRepository = telemetryRepository;
+        this.safetyValidator = safetyValidator;
+        this.intentRouter = intentRouter;
+        this.objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
     }
 
     public String generateResponse(String query, List<Map<String, Object>> history, String userEmail, List<String> roles, String location, String imageData) {
         String currentTime = java.time.LocalTime.now().toString();
         String currentDate = java.time.LocalDate.now().toString();
+        
+        String intent = intentRouter.classifyIntent(query);
+        String intentPrompt = intentRouter.getPromptTemplate(intent);
+
         final StringBuilder clinicalHistory = new StringBuilder(userEmail != null ? "" : "None");
         String currentPatientId = "UNKNOWN";
         String currentPatientName = "Guest User";
@@ -109,44 +107,40 @@ public class AiService {
             }
         }
 
-        String prompt = "### MEDISYNC MASTER SYSTEM PROMPT: DYNAMIC CLINICAL ROUTER & TRIAGE LOGIC (V5.0)\n\n" +
-                "ROLE: You are the MediSync Clinical Concierge. You are the intelligent controller for the 'Secure Clinical Booking' button. Your objective is to bridge user symptoms to the exact hospital pathway.\n\n" +
-                "1. CORE DIRECTIVE:\n" +
-                "The 'Secure Clinical Booking' button must be DYNAMIC. You must resolve user intent into one of the following pathways and state it clearly.\n\n" +
-                "2. TRIAGE FRAMEWORK:\n" +
-                "- RISK STRATIFICATION: Assign Triage [CRITICAL | URGENT | ROUTINE].\n" +
-                "- IDENTITY LOCKING: All actions bound to Patient ID: " + currentPatientId + " (" + currentPatientName + ").\n\n" +
-                "3. ROUTING PATHWAYS (SYSTEM INVENTORY):\n" +
-                "- PATHWAY A (SERVICES): Emergency & Trauma Care, Ambulance Services, ICU, NICU, Operation Theatre, CT Scan, X-Ray, MRI, Ultrasound (सोनोग्राफी), Blood Bank, 24/7 Pharmacy.\n" +
-                "- PATHWAY B (SPECIALISTS): Radiology (Dr. Amarthya), Orthopedic, Pediatric, Gynecology, ENT, Ophthalmology, Dermatology (Skin), General Surgery, Dental, Physiotherapy.\n\n" +
-                "4. EXECUTION PROTOCOL:\n" +
-                "- If CRITICAL symptoms (Chest pain, Unconscious, Heavy bleeding) -> LOCK to 'Emergency & Trauma Care'.\n" +
-                "- Map button to: medisync-hos.ddns.net/booking/resolve?path={Service_or_Doctor_ID}&triage={Level}&pid=" + currentPatientId + "\n\n" +
-                "RESPONSE STRUCTURE (STRICT 8-HEADER PROTOCOL):\n" +
-                "1. Initial Assessment: (Direct diagnosis/observation)\n" +
-                "2. Possible Conditions: (Medically cautious list)\n" +
-                "3. Risk Indicators: (Specific red flags or 'None identified')\n" +
-                "4. Triage Level: [CRITICAL | URGENT | ROUTINE]\n" +
-                "5. Recommended Specialist: (Match to PATHWAY B if applicable)\n" +
-                "6. Suggested Next Steps: (State: 'I have configured your booking for [Service/Doctor] based on your symptoms.')\n" +
-                "7. Follow-up Questions: (4-5 clarifying questions)\n" +
-                "8. Emergency Warning: (Life-threatening warning or 'None identified')\n\n" +
-                "GLOBAL RULES:\n" +
-                "- NO markdown symbols (*, #, _). Use clean text.\n" +
-                "- BILINGUAL SUPPORT: Use both English and localized terms (e.g., Ultrasound/सोनोग्राफी).\n" +
-                "- SECURITY: Remind user: 'Booking encrypted and logged in your Security Ledger'.\n\n" +
+        String prompt = "### MEDISYNC ENTERPRISE CLINICAL COPILOT (V6.0)\n\n" +
+                "ROLE: You are an enterprise-grade clinical intelligence engine. You must respond ONLY in structured JSON.\n\n" +
+                "INTENT CONTEXT: " + intentPrompt + "\n" +
+                "PATIENT ID: " + currentPatientId + " | NAME: " + currentPatientName + "\n\n" +
+                "JSON SCHEMA (STRICT COMPLIANCE REQUIRED):\n" +
+                "{\n" +
+                "  \"sessionId\": \"string\",\n" +
+                "  \"intent\": \"string\",\n" +
+                "  \"triageLevel\": \"LOW | MODERATE | HIGH | CRITICAL\",\n" +
+                "  \"confidenceScore\": 0.0 to 1.0,\n" +
+                "  \"requiresAmbulance\": boolean,\n" +
+                "  \"clinicalAssessment\": \"string\",\n" +
+                "  \"possibleConditions\": [\"string\"],\n" +
+                "  \"riskIndicators\": [\"string\"],\n" +
+                "  \"recommendedSpecialist\": \"string\",\n" +
+                "  \"suggestedNextSteps\": [\"string\"],\n" +
+                "  \"followUpQuestions\": [\"string\"],\n" +
+                "  \"emergencyWarning\": \"string\",\n" +
+                "  \"abnormalFindings\": [\"string\"],\n" +
+                "  \"explanation\": \"string (medically detailed why this matters)\",\n" +
+                "  \"safetyFlags\": [\"string\"]\n" +
+                "}\n\n" +
                 "### INSTITUTIONAL REGISTRY:\n" +
                 "HOSPITALS:\n" + hospitalList + "\n" +
                 "DOCTORS:\n" + doctorList + "\n\n" +
                 "### CLINICAL CONTEXT:\n" +
                 "DATE: " + currentDate + " | TIME: " + currentTime + "\n" +
                 "PROFILE: " + clinicalHistory.toString() + "\n" +
-                "ID: " + currentPatientId + " | NAME: " + currentPatientName + "\n" +
                 "LOCATION: " + (location != null ? location : "Unknown") + "\n\n" +
                 "### INTERACTION LOGS:\n" + (historyContext.length() > 0 ? historyContext.toString() : "Initial consultation.") + "\n\n" +
+                "MANDATORY: DO NOT return any text outside the JSON object. NO markdown formatting.\n" +
                 "### PATIENT QUERY:\n" + query;
 
-        String neuralResponse = null;
+        String rawResponse = null;
         try {
             List<Map<String, Object>> parts = new ArrayList<>();
             Map<String, Object> textPart = new HashMap<>();
@@ -157,7 +151,6 @@ public class AiService {
                 String[] partsArray = imageData.split(",");
                 String mimeType = partsArray[0].split(":")[1].split(";")[0];
                 String base64Data = partsArray[1];
-
                 Map<String, Object> imagePart = new HashMap<>();
                 Map<String, String> inlineData = new HashMap<>();
                 inlineData.put("mime_type", mimeType);
@@ -166,22 +159,30 @@ public class AiService {
                 parts.add(imagePart);
             }
 
-            neuralResponse = geminiAiService.getCompletion(parts);
-            
-            // AUTOMATIC FAILOVER: If Gemini fails, use Groq Llama-3.3-70b
-            if (neuralResponse == null || neuralResponse.contains("error") || neuralResponse.contains("403") || neuralResponse.contains("404")) {
-                neuralResponse = groqAiService.getCompletion(prompt);
+            rawResponse = geminiAiService.getCompletion(parts);
+            if (rawResponse == null || rawResponse.contains("error")) {
+                rawResponse = groqAiService.getCompletion(prompt);
             }
 
-            if (neuralResponse != null && !neuralResponse.contains("error")) {
-                if (userEmail != null) sessionSummaries.put(userEmail, neuralResponse.length() > 200 ? neuralResponse.substring(0, 200) + "..." : neuralResponse);
-                return neuralResponse;
+            // CLEANUP: Ensure only JSON is parsed
+            if (rawResponse != null) {
+                int start = rawResponse.indexOf("{");
+                int end = rawResponse.lastIndexOf("}");
+                if (start != -1 && end != -1) {
+                    rawResponse = rawResponse.substring(start, end + 1);
+                }
+                
+                ClinicalAiResponse structuredResponse = objectMapper.readValue(rawResponse, ClinicalAiResponse.class);
+                structuredResponse.setIntent(intent);
+                structuredResponse = safetyValidator.validate(structuredResponse);
+                
+                return objectMapper.writeValueAsString(structuredResponse);
             }
             
-            return "I apologize, but I encountered a clinical reasoning interruption while analyzing the image. Please try providing more details in text or re-uploading a clearer image.";
+            return "{\"error\": \"Clinical reasoning interrupted\"}";
         } catch (Exception e) { 
             e.printStackTrace(); 
-            return "System Error: Unable to reach the clinical reasoning brain. Please check your connection.";
+            return "{\"error\": \"System failure in reasoning engine\"}";
         }
     }
 

@@ -44,20 +44,23 @@ const AiConcierge = () => {
     const recognitionRef = useRef(null);
 
     const loadingMessages = [
-        "Analyzing symptoms...",
-        "Reviewing clinical history...",
-        "Identifying risk factors...",
-        "Correlating vital telemetry...",
-        "Synthesizing recommendations..."
+        "Analyzing clinical signals...",
+        "Identifying diagnostic red flags...",
+        "Evaluating institutional risk factors...",
+        "Generating evidence-based recommendations...",
+        "Finalizing clinical triage report..."
     ];
 
     useEffect(() => {
+        let interval;
         if (isLoading) {
-            const interval = setInterval(() => {
+            interval = setInterval(() => {
                 setLoadingStep(prev => (prev + 1) % loadingMessages.length);
-            }, 1500);
-            return () => clearInterval(interval);
+            }, 2500);
+        } else {
+            setLoadingStep(0);
         }
+        return () => clearInterval(interval);
     }, [isLoading]);
 
     useEffect(() => {
@@ -140,106 +143,39 @@ const AiConcierge = () => {
     };
 
     const parseAiResponse = (text) => {
-        const sections = {
-            assessment: '',
-            possibleConditions: '',
-            riskIndicators: '',
-            severity: 'LOW',
-            specialist: '',
-            action: '',
-            questions: [],
-            warning: '',
-            service: '',
-            other: ''
-        };
+        try {
+            // Backend now sends structured JSON
+            const data = JSON.parse(text);
+            
+            // Extract mapUrl from clinicalAssessment or explanation if present
+            const mapMatch = (data.clinicalAssessment + " " + data.explanation).match(/https:\/\/(www\.google\.com\/maps|maps\.app\.goo\.gl)[^ \n)\]]*/);
+            const mapUrl = mapMatch ? mapMatch[0].replace(/\.$/, '') : null;
 
-        const lines = text.split('\n');
-        let currentSection = 'other';
-
-        lines.forEach(l => {
-            const lowerL = l.toLowerCase();
-            if (lowerL.includes('clinical assessment')) {
-                currentSection = 'assessment';
-            } else if (lowerL.includes('possible causes') || lowerL.includes('possible conditions')) {
-                currentSection = 'possibleConditions';
-            } else if (lowerL.includes('risk indicators')) {
-                currentSection = 'riskIndicators';
-            } else if (lowerL.includes('triage level')) {
-                currentSection = 'severity';
-                const content = l.replace(/triage level:?/i, '').replace(/[\[\]:]/g, '').trim();
-                if (content) sections.severity = content;
-            } else if (lowerL.includes('recommended specialist')) {
-                currentSection = 'specialist';
-                sections.specialist += l.replace(/recommended specialist:?/i, '').trim() + ' ';
-            } else if (lowerL.includes('suggested next steps') || lowerL.includes('recommended action')) {
-                currentSection = 'action';
-                sections.action += l.replace(/(suggested next steps|recommended action):?/i, '').trim() + ' ';
-            } else if (lowerL.includes('follow-up questions')) {
-                currentSection = 'questions';
-            } else if (lowerL.includes('emergency warning')) {
-                currentSection = 'warning';
-                sections.warning += l.replace(/emergency warning:?/i, '').trim() + ' ';
-            } else {
-                if (currentSection === 'questions' && l.match(/^[-*\d.]\s*/)) {
-                    sections.questions.push(l.replace(/^[-*\d.]\s*/, ''));
-                } else if (currentSection === 'assessment') {
-                    sections.assessment += l + ' ';
-                } else if (currentSection === 'possibleConditions') {
-                    sections.possibleConditions += l + ' ';
-                } else if (currentSection === 'riskIndicators') {
-                    sections.riskIndicators += l + ' ';
-                } else if (currentSection === 'specialist') {
-                    sections.specialist += l + ' ';
-                } else if (currentSection === 'action') {
-                    sections.action += l + ' ';
-                } else if (currentSection === 'warning') {
-                    sections.warning += l + ' ';
-                } else if (currentSection === 'severity') {
-                    sections.severity = l.toUpperCase().trim();
-                } else {
-                    sections.other += l + ' ';
-                }
-            }
-        });
-
-        // 1. Extract mapUrl FIRST from raw text
-        const mapMatch = text.match(/https:\/\/(www\.google\.com\/maps|maps\.app\.goo\.gl)[^ \n)\]]*/);
-        const mapUrl = mapMatch ? mapMatch[0].replace(/\.$/, '') : null;
-
-        // 2. Aggressive strip logic
-        const stripMap = (t) => t
-            .replace(/(maps|google\s+maps|navigation|location|facility|hospital|at|seek):\s*https:\/\/(www\.google\.com\/maps|maps\.app\.goo\.gl)[^ \n)\]]*/gi, '')
-            .replace(/https:\/\/(www\.google\.com\/maps|maps\.app\.goo\.gl)[^ \n)\]]*/g, '')
-            .replace(/(immediately\s+)?call\s+(your\s+)?local\s+emergency\s+services\s+(number\s+)?(such\s+as\s+)?108\s+or\s+112\.?/gi, '')
-            .replace(/If\s+you\s+are\s+in\s+the\s+Bengaluru\s+area.*?hospitals?\./gi, '')
-            .replace(/Maps:\s*$/i, '')
-            .trim();
-        
-        sections.assessment = stripMap(sections.assessment);
-        sections.possibleConditions = stripMap(sections.possibleConditions);
-        sections.riskIndicators = stripMap(sections.riskIndicators);
-        sections.specialist = stripMap(sections.specialist.trim());
-        sections.action = stripMap(sections.action.trim());
-        sections.warning = stripMap(sections.warning.trim());
-        sections.other = stripMap(sections.other);
-        sections.questions = sections.questions.map(q => stripMap(q));
-
-        const fullTextLower = text.toLowerCase();
-        if (fullTextLower.includes('ambulance')) sections.service = 'Ambulance Services';
-        else if (fullTextLower.includes('oxygen')) sections.service = 'Oxygen Supply';
-        else if (fullTextLower.includes('casualty') || fullTextLower.includes('trauma')) sections.service = 'Emergency & Trauma Care';
-        else if (fullTextLower.includes('emergency care')) sections.service = 'Emergency & Trauma Care';
-        else if (fullTextLower.includes('icu') || fullTextLower.includes('intensive care')) sections.service = 'ICU (Intensive Care Unit)';
-
-        // Frontend safety override for emergency triage
-        if (fullTextLower.includes('ambulance') || fullTextLower.includes('emergency') || fullTextLower.includes('chest pain') || fullTextLower.includes('unconscious')) {
-            sections.severity = 'CRITICAL';
-            if (!sections.service) sections.service = 'Emergency & Trauma Care';
+            // Map keys to frontend expectation
+            return {
+                assessment: data.clinicalAssessment || '',
+                possibleConditions: (data.possibleConditions || []).join(', '),
+                riskIndicators: (data.riskIndicators || []).join(', '),
+                severity: data.triageLevel || 'LOW',
+                specialist: data.recommendedSpecialist || '',
+                action: (data.suggestedNextSteps || []).join('. '),
+                questions: data.followUpQuestions || [],
+                warning: data.emergencyWarning || '',
+                service: data.requiresAmbulance ? 'Ambulance Services' : '',
+                mapUrl,
+                confidence: data.confidenceScore || 0,
+                explanation: data.explanation || '',
+                abnormalFindings: data.abnormalFindings || []
+            };
+        } catch (e) {
+            console.error("Clinical JSON parsing failure, falling back to legacy structure", e);
+            return {
+                assessment: text,
+                severity: 'LOW',
+                questions: [],
+                mapUrl: null
+            };
         }
-
-        if (!sections.assessment.trim() && sections.other.trim()) sections.assessment = sections.other;
-        
-        return { ...sections, mapUrl };
     };
 
     const getSeverityStyles = (severity) => {
@@ -404,91 +340,167 @@ const AiConcierge = () => {
                                                 <div className="p-4 bg-amber-50/50 rounded-2xl space-y-2 border border-amber-100/50">
                                                     <span className="text-[8px] font-black text-amber-500 uppercase tracking-tighter">RISK INDICATORS</span>
                                                     <p className="text-xs font-medium text-slate-600 leading-relaxed">{s.riskIndicators}</p>
+                            {messages.map((msg, i) => (
+                                    <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} mb-8 group`}>
+                                        <div className={`max-w-[85%] rounded-[24px] ${
+                                            msg.role === 'user' 
+                                            ? 'bg-indigo-600 text-white p-4 shadow-lg shadow-indigo-100 rounded-tr-none' 
+                                            : 'bg-white border border-slate-100 shadow-sm p-6 rounded-tl-none'
+                                        }`}>
+                                            {msg.role === 'user' ? (
+                                                <p className="text-sm font-medium leading-relaxed">{msg.content}</p>
+                                            ) : (
+                                                <div className="space-y-6">
+                                                    {(() => {
+                                                        const s = parseAiResponse(msg.content);
+                                                        const severity = getSeverityStyles(s.severity);
+                                                        return (
+                                                            <>
+                                                                {/* Enterprise Header */}
+                                                                <div className="flex items-center justify-between gap-4 pb-4 border-b border-slate-50">
+                                                                    <div className={`px-3 py-1.5 rounded-full ${severity.bg} ${severity.text} ${severity.border} border text-[10px] font-black uppercase tracking-wider flex items-center gap-2`}>
+                                                                        {severity.icon} {severity.label} TRIAGE
+                                                                    </div>
+                                                                    {s.confidence > 0 && (
+                                                                        <div className="flex items-center gap-2">
+                                                                            <div className="h-1.5 w-16 bg-slate-100 rounded-full overflow-hidden">
+                                                                                <div className="h-full bg-indigo-500 transition-all" style={{ width: `${s.confidence * 100}%` }} />
+                                                                            </div>
+                                                                            <span className="text-[9px] font-bold text-slate-400">{(s.confidence * 100).toFixed(0)}% Certainty</span>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                {/* Clinical Assessment */}
+                                                                <div className="space-y-2">
+                                                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                                        <Activity size={12} className="text-indigo-500" /> Clinical Assessment
+                                                                    </h4>
+                                                                    <p className="text-sm font-semibold text-slate-700 leading-relaxed italic border-l-2 border-indigo-100 pl-4">
+                                                                        {s.assessment}
+                                                                    </p>
+                                                                </div>
+
+                                                                {/* Reasoning Card */}
+                                                                {s.explanation && (
+                                                                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
+                                                                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Medical Reasoning</h4>
+                                                                        <p className="text-xs text-slate-600 leading-relaxed">{s.explanation}</p>
+                                                                    </div>
+                                                                )}
+
+                                                                {/* Risk & Conditions */}
+                                                                <div className="grid grid-cols-2 gap-4">
+                                                                    {s.possibleConditions && (
+                                                                        <div className="p-4 bg-indigo-50/30 rounded-2xl border border-indigo-100/50">
+                                                                            <h4 className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-2">Possible Conditions</h4>
+                                                                            <p className="text-xs font-bold text-indigo-700">{s.possibleConditions}</p>
+                                                                        </div>
+                                                                    )}
+                                                                    {s.riskIndicators && (
+                                                                        <div className="p-4 bg-rose-50/30 rounded-2xl border border-rose-100/50">
+                                                                            <h4 className="text-[9px] font-black text-rose-400 uppercase tracking-widest mb-2">Risk Indicators</h4>
+                                                                            <p className="text-xs font-bold text-rose-700">{s.riskIndicators}</p>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                {/* Abnormal Findings */}
+                                                                {s.abnormalFindings && s.abnormalFindings.length > 0 && (
+                                                                    <div className="space-y-2">
+                                                                        <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-widest">Abnormal Findings Detected</h4>
+                                                                        <div className="flex flex-wrap gap-2">
+                                                                            {s.abnormalFindings.map((f, i) => (
+                                                                                <span key={i} className="px-2 py-1 bg-rose-50 text-rose-600 rounded-lg text-[10px] font-bold border border-rose-100">{f}</span>
+                                                                            ))}
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+
+                                                                {/* Follow-up Questions */}
+                                                                {s.questions.length > 0 && (
+                                                                    <div className="space-y-3 pt-2">
+                                                                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Clinical Refinement Questions</h4>
+                                                                        <div className="space-y-2">
+                                                                            {s.questions.map((q, idx) => (
+                                                                                <button 
+                                                                                    key={idx}
+                                                                                    onClick={() => {
+                                                                                        setInput(q);
+                                                                                        handleSend(q);
+                                                                                    }}
+                                                                                    className="w-full text-left p-3 text-xs font-medium text-slate-600 bg-slate-50 hover:bg-indigo-50 border border-slate-100 hover:border-indigo-200 rounded-xl transition-all flex items-center justify-between group/q"
+                                                                                >
+                                                                                    {q} <ChevronRight size={14} className="opacity-0 group-hover/q:opacity-100 transition-all text-indigo-500" />
+                                                                                </button>
+                                                                            ))}
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+
+                                                                {/* Emergency Alert */}
+                                                                {s.warning && (
+                                                                    <div className="p-4 bg-red-600 text-white rounded-2xl flex items-start gap-3 animate-pulse shadow-xl shadow-red-200">
+                                                                        <AlertCircle size={20} className="shrink-0" />
+                                                                        <p className="text-[11px] font-black leading-tight uppercase tracking-wide">{s.warning}</p>
+                                                                    </div>
+                                                                )}
+
+                                                                {/* Mapping & Booking Nodes */}
+                                                                <div className="space-y-3 pt-4 border-t border-slate-50">
+                                                                    {s.mapUrl && (
+                                                                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between gap-4">
+                                                                            <div className="flex items-center gap-3 overflow-hidden">
+                                                                                <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
+                                                                                    <MapPin size={16} className="text-indigo-600" />
+                                                                                </div>
+                                                                                <div className="overflow-hidden">
+                                                                                    <div className="text-[10px] font-black text-slate-400 uppercase truncate">Clinical Navigation Node</div>
+                                                                                    <div className="text-[8px] text-slate-500 truncate">{s.mapUrl}</div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <a href={s.mapUrl} target="_blank" className="px-3 py-2 bg-white text-indigo-600 text-[9px] font-black uppercase rounded-lg border border-indigo-100 shadow-sm hover:bg-indigo-50 transition-all shrink-0">Launch</a>
+                                                                        </div>
+                                                                    )}
+
+                                                                    <div className="flex gap-2">
+                                                                        {(s.severity === 'CRITICAL' || s.severity === 'HIGH' || s.service === 'Ambulance Services') && (
+                                                                            <button 
+                                                                                onClick={() => {
+                                                                                    setIsOpen(false);
+                                                                                    navigate('/dashboard/booking?mode=service&service=Ambulance Services');
+                                                                                }}
+                                                                                className="flex-1 py-4 bg-red-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl shadow-red-100 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                                                            >
+                                                                                <Activity size={16} /> Urgent Ambulance
+                                                                            </button>
+                                                                        )}
+                                                                        <button 
+                                                                            onClick={() => {
+                                                                                setIsOpen(false);
+                                                                                let url = '/dashboard/booking';
+                                                                                if (s.service) {
+                                                                                    url = `/dashboard/booking?mode=service&service=${encodeURIComponent(s.service)}`;
+                                                                                } else if (s.specialist) {
+                                                                                    url = `/dashboard/booking?mode=service&service=${encodeURIComponent(s.specialist)}`;
+                                                                                }
+                                                                                navigate(url);
+                                                                                toast.success(`Navigating to ${s.service || s.specialist || 'Clinical'} Node`);
+                                                                            }}
+                                                                            className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl shadow-slate-200 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                                                        >
+                                                                            Secure Clinical Booking <ChevronRight size={14} />
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        );
+                                                    })()}
                                                 </div>
                                             )}
-
-                                            {s.warning && (
-                                                <div className="p-4 bg-red-50 rounded-2xl space-y-2 border border-red-100">
-                                                    <span className="text-[8px] font-black text-red-500 uppercase tracking-tighter flex items-center gap-1"><AlertCircle size={10} /> EMERGENCY WARNING</span>
-                                                    <p className="text-xs font-bold text-red-700 leading-relaxed">{s.warning}</p>
-                                                </div>
-                                            )}
-
-                                            {s.questions && s.questions.length > 0 && (
-                                                <div className="p-4 bg-white rounded-2xl space-y-2 border border-slate-200 shadow-sm">
-                                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">FOLLOW-UP QUESTIONS</span>
-                                                    <ul className="space-y-2">
-                                                        {s.questions.map((q, idx) => (
-                                                            <li key={idx} className="text-xs font-medium text-slate-700 flex items-start gap-2">
-                                                                <span className="text-indigo-400 mt-0.5">•</span>
-                                                                <span>{q}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            )}
-
-                                            {s.mapUrl && (
-                                                <div className="rounded-2xl overflow-hidden border border-slate-100 shadow-sm">
-                                                    <div className="h-24 bg-slate-100 flex items-center justify-center relative overflow-hidden bg-[url('https://www.google.com/maps/vt/pb=!1m4!1m3!1i12!2i2361!3i1589!2m3!1e0!2sm!3i420120488!3m8!2sen!3sus!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0!5m1!1e0!23i4111425')] bg-cover">
-                                                        <div className="relative z-10 w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white shadow-xl">
-                                                            <MapPin size={16} />
-                                                        </div>
-                                                    </div>
-                                                    <div className="p-3 bg-white flex items-center justify-between">
-                                                        <span className="text-[10px] font-bold text-slate-800">Institutional Node</span>
-                                                        <a href={s.mapUrl} target="_blank" className="text-[9px] font-black uppercase text-indigo-600 hover:underline">Launch Navigation</a>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {(s.severity === 'CRITICAL' || s.severity === 'HIGH' || s.severity === 'EMERGENCY') && (
-                                                <div className="flex gap-2">
-                                                    <button 
-                                                        onClick={() => {
-                                                            setIsOpen(false);
-                                                            navigate('/dashboard/booking?mode=service&service=Ambulance Services');
-                                                        }}
-                                                        className="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-red-200"
-                                                    >
-                                                        <HeartPulse size={14} /> Ambulance
-                                                    </button>
-                                                    <button 
-                                                        onClick={() => {
-                                                            setIsOpen(false);
-                                                            if (s.mapUrl) {
-                                                                window.open(s.mapUrl, '_blank');
-                                                            } else {
-                                                                navigate('/dashboard/booking?mode=service&service=Emergency & Trauma Care');
-                                                            }
-                                                        }}
-                                                        className="flex-1 py-3 bg-slate-900 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2"
-                                                    >
-                                                        <MapPin size={14} /> Nearest Hospital
-                                                    </button>
-                                                </div>
-                                            )}
-
-                                            <button 
-                                                onClick={() => {
-                                                    setIsOpen(false);
-                                                    let url = '/dashboard/booking';
-                                                    if (s.service) {
-                                                        url = `/dashboard/booking?mode=service&service=${s.service}`;
-                                                    } else if (s.specialist && s.specialist.length > 3 && !s.specialist.toLowerCase().includes('determined') && !s.specialist.toLowerCase().includes('n/a') && !s.specialist.toLowerCase().includes('none')) {
-                                                        url = `/dashboard/booking?doctor=${encodeURIComponent(s.specialist)}`;
-                                                    }
-                                                    navigate(url);
-                                                    toast.success(`Navigating to ${s.service || 'Clinical'} Booking Node`);
-                                                }}
-                                                className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-3 shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all"
-                                            >
-                                                Secure Clinical Booking <ChevronRight size={16} />
-                                            </button>
                                         </div>
                                     </div>
-                                );
-                            })}
+                            ))}
 
                             {isLoading && (
                                 <div className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm max-w-[280px] animate-pulse">
