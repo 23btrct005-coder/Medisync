@@ -17,8 +17,20 @@ public class DiagnosticController {
     @GetMapping("/fix-sequences")
     public String fixSequences() {
         try {
-            jdbcTemplate.execute("SELECT setval('chat_messages_id_seq', (SELECT MAX(id) FROM chat_messages))");
-            return "SUCCESS: Chat sequences synchronized.";
+            String[] tables = {"chat_messages", "notifications", "users", "patients", "doctors", "appointments", "medical_records", "prescriptions", "lab_reports"};
+            for (String table : tables) {
+                try {
+                    String seq = jdbcTemplate.queryForObject(
+                        "SELECT pg_get_serial_sequence('" + table + "', 'id')", String.class
+                    );
+                    if (seq != null) {
+                        jdbcTemplate.execute("SELECT setval('" + seq + "', (SELECT COALESCE(MAX(id), 0) + 1 FROM " + table + "), false)");
+                    }
+                } catch (Exception e) {
+                    // Skip tables that don't exist or don't have 'id' sequence
+                }
+            }
+            return "SUCCESS: All clinical sequences synchronized.";
         } catch (Exception e) {
             return "FAILURE: " + e.getMessage();
         }
@@ -46,6 +58,16 @@ public class DiagnosticController {
             );
         } catch (Exception e) {
             return java.util.List.of(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+    @GetMapping("/inspect-sequence-name")
+    public String inspectSequenceName() {
+        try {
+            return jdbcTemplate.queryForObject(
+                "SELECT pg_get_serial_sequence('chat_messages', 'id')", String.class
+            );
+        } catch (Exception e) {
+            return "ERROR: " + e.getMessage();
         }
     }
 }
