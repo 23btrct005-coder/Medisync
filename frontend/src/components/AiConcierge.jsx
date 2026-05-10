@@ -226,9 +226,12 @@ const AiConcierge = () => {
 
         const fullTextLower = text.toLowerCase();
         if (fullTextLower.includes('ambulance')) sections.service = 'Ambulance';
-        else if (fullTextLower.includes('oxygen')) sections.service = 'Oxygen';
-        else if (fullTextLower.includes('casualty')) sections.service = 'Casualty';
-        else if (fullTextLower.includes('emergency care')) sections.service = 'Emergency';
+        else if (fullTextLower.includes('blood bank') || fullTextLower.includes('blood donor')) sections.service = 'Blood Bank';
+        else if (fullTextLower.includes('pharmacy') || fullTextLower.includes('medicine')) sections.service = '24/7 Pharmacy';
+        else if (fullTextLower.includes('icu') || fullTextLower.includes('intensive care')) sections.service = 'ICU (Intensive Care Unit)';
+        else if (fullTextLower.includes('oxygen')) sections.service = 'Oxygen & Ventilator Support';
+        else if (fullTextLower.includes('casualty')) sections.service = 'Casualty Department';
+        else if (fullTextLower.includes('emergency care')) sections.service = 'Emergency & Trauma Care';
 
         // Frontend safety override for emergency triage
         if (fullTextLower.includes('ambulance') || fullTextLower.includes('emergency') || fullTextLower.includes('chest pain')) {
