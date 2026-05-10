@@ -96,14 +96,20 @@ const Booking = () => {
   useEffect(() => {
     if (modeParam === 'service') {
         setBookingMode('service');
+        const hospitalParam = searchParams.get('hospital');
         if (serviceParam) {
-            setSelectedService(serviceParam);
+            const cleanParam = serviceParam.trim();
+            const matchedService = PREDEFINED_INSTITUTIONAL_SERVICES.find(s => s.toLowerCase() === cleanParam.toLowerCase());
+            setSelectedService(matchedService || cleanParam);
         } else {
             setSelectedService(null);
         }
         setBookingStep('list');
+        if (hospitalParam) {
+            setSearchTerm(hospitalParam);
+        }
     }
-  }, [modeParam, serviceParam]);
+  }, [modeParam, serviceParam, searchParams]);
 
   useEffect(() => {
     if (selectedDoctor && bookingDate) {

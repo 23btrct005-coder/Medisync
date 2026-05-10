@@ -230,6 +230,12 @@ const AiConcierge = () => {
         else if (fullTextLower.includes('casualty') || fullTextLower.includes('trauma')) sections.service = 'Emergency & Trauma Care';
         else if (fullTextLower.includes('emergency care')) sections.service = 'Emergency & Trauma Care';
         else if (fullTextLower.includes('icu') || fullTextLower.includes('intensive care')) sections.service = 'ICU (Intensive Care Unit)';
+        else if (fullTextLower.includes('mri scan') || fullTextLower.includes('mri')) sections.service = 'MRI Scan';
+        else if (fullTextLower.includes('ct scan')) sections.service = 'Emergency CT Scan';
+        else if (fullTextLower.includes('blood bank') || fullTextLower.includes('blood donation')) sections.service = 'Blood Bank';
+        else if (fullTextLower.includes('x-ray')) sections.service = 'X-Ray';
+        else if (fullTextLower.includes('ultrasound') || fullTextLower.includes('sonography')) sections.service = 'Ultrasound / सोनोग्राफी';
+        else if (fullTextLower.includes('pharmacy') || fullTextLower.includes('medicine')) sections.service = '24/7 Pharmacy';
 
         // Frontend safety override for emergency triage
         if (fullTextLower.includes('ambulance') || fullTextLower.includes('emergency') || fullTextLower.includes('chest pain') || fullTextLower.includes('unconscious')) {
@@ -365,9 +371,22 @@ const AiConcierge = () => {
                                 return (
                                     <div key={i} className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
                                         <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <Stethoscope size={16} className="text-indigo-600" />
-                                                <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Clinical Assessment</span>
+                                            <div className="flex items-center justify-between gap-2 mb-1">
+                                                <div className="flex items-center gap-2">
+                                                    <Stethoscope size={16} className="text-indigo-600" />
+                                                    <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Clinical Assessment</span>
+                                                </div>
+                                                {s.service && (
+                                                    <button 
+                                                        onClick={() => {
+                                                            setIsOpen(false);
+                                                            navigate(`/dashboard/booking?mode=service&service=${encodeURIComponent(s.service)}`);
+                                                        }}
+                                                        className="px-3 py-1.5 bg-indigo-600 text-white text-[9px] font-black uppercase rounded-lg shadow-lg shadow-indigo-100 hover:scale-105 active:scale-95 transition-all"
+                                                    >
+                                                        Book {s.service}
+                                                    </button>
+                                                )}
                                             </div>
                                             <p className="text-sm text-slate-700 leading-relaxed font-medium">
                                                 {s.assessment || s.other}
