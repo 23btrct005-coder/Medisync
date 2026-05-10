@@ -128,18 +128,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             ))
           ) : (
             <>
-              {/* AI Concierge (Priority #1) */}
-              <button
-                onClick={() => setAiOpen(true)}
-                className={`flex items-center w-full px-4 py-3 rounded-xl transition-all duration-200 text-slate-600 hover:bg-primary-50 hover:text-primary-700 font-medium group`}
-              >
-                <div className="mr-3 text-primary-500 group-hover:scale-110 transition-transform">
-                  <TrendingUp size={20} className="rotate-45" /> 
-                </div>
-                <span className="text-sm font-bold text-slate-900">AI Concierge</span>
-                <div className="ml-auto bg-primary-100 text-primary-700 text-[10px] px-1.5 py-0.5 rounded-full font-black uppercase tracking-tighter">Priority</div>
-              </button>
-
               {/* Main Section */}
               {mainItems.map((item) => (
                 <NavItem key={item.name} item={item} end={item.path === '/dashboard'} />
