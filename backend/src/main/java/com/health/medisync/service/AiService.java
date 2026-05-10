@@ -20,6 +20,7 @@ public class AiService {
     private final DoctorService doctorService;
     private final GeminiAiService geminiAiService;
     private final GroqAiService groqAiService;
+    private final OpenAiService openAiService;
     private final UserRepository userRepository;
     private final PatientRepository patientRepository;
     private final ReportRepository reportRepository;
@@ -38,6 +39,7 @@ public class AiService {
                      ReportRepository reportRepository,
                      GeminiAiService geminiAiService,
                      GroqAiService groqAiService,
+                     OpenAiService openAiService,
                      TelemetryRepository telemetryRepository) {
         this.doctorRepository = doctorRepository;
         this.hospitalRepository = hospitalRepository;
@@ -50,6 +52,7 @@ public class AiService {
         this.reportRepository = reportRepository;
         this.geminiAiService = geminiAiService;
         this.groqAiService = groqAiService;
+        this.openAiService = openAiService;
         this.telemetryRepository = telemetryRepository;
     }
 
@@ -157,9 +160,15 @@ public class AiService {
 
             neuralResponse = geminiAiService.getCompletion(parts);
             
-            // AUTOMATIC FAILOVER: If Gemini fails, use Groq Llama-3.3-70b
+            // AUTOMATIC FAILOVER 1: OpenAI GPT-4o
             if (neuralResponse == null || neuralResponse.contains("error") || neuralResponse.contains("403") || neuralResponse.contains("404")) {
-                System.err.println("Gemini Node Interrupted. Failing over to Groq...");
+                System.err.println("Gemini Node Interrupted. Failing over to OpenAI GPT-4o...");
+                neuralResponse = openAiService.getCompletion(prompt);
+            }
+
+            // AUTOMATIC FAILOVER 2: Groq Llama-3.3-70b
+            if (neuralResponse == null || neuralResponse.contains("error")) {
+                System.err.println("OpenAI Node Interrupted. Failing over to Groq...");
                 neuralResponse = groqAiService.getCompletion(prompt);
             }
 
