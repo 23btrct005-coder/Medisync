@@ -186,14 +186,14 @@ public class AiService {
             action = "Seek clinical evaluation within the next 24 hours.";
             service = "General Clinical";
             conditions = "Potential Acute Liver Failure / Jaundice protocol.";
-        } else if (q.contains("lump") || (q.contains("weight loss") && q.contains("cough")) || q.contains("cancer") || q.contains("tumor")) {
+        } else if (safeContains(q, "weight loss") || safeContains(q, "lump") || safeContains(q, "tumor") || safeContains(q, "cancer") || safeContains(q, "lymph") || safeContains(q, "night sweats") || safeContains(q, "moles changing") || safeContains(q, "hard lump")) {
             assessment = safetyPrefix + "Persistent systemic symptoms or localized growths identified. Specialized oncology/pulmonology screening recommended.";
             severity = "HIGH";
             specialist = "Oncologist / Pulmonologist";
             action = "Book an urgent diagnostic consultation via the specialist portal.";
             service = "General Clinical";
             conditions = "High-risk systemic/oncology screening protocol.";
-        } else if (safeContains(q, "ketones") || safeContains(q, "glucose") || safeContains(q, "sugar") || safeContains(q, "insulin") || safeContains(q, "diabetes")) {
+        } else if (safeContains(q, "ketones") || safeContains(q, "glucose") || safeContains(q, "sugar") || safeContains(q, "insulin") || safeContains(q, "diabetes") || safeContains(q, "desert") || safeContains(q, "shaky") || safeContains(q, "sweet breath")) {
             assessment = safetyPrefix + "Metabolic or glycemic specialty signals identified.";
             severity = "HIGH";
             specialist = "Endocrinologist / Diabetologist";
@@ -205,13 +205,13 @@ public class AiService {
             specialist = "Urologist";
             action = "Book a consultation with a Urologist via the specialist node.";
             service = "General Clinical";
-        } else if (safeContains(q, "jaundice") || (safeContains(q, "yellow") && safeContains(q, "eye")) || safeContains(q, "liver") || safeContains(q, "pale stool")) {
+        } else if (safeContains(q, "jaundice") || (safeContains(q, "yellow") && safeContains(q, "eye")) || safeContains(q, "liver") || safeContains(q, "pale stool") || safeContains(q, "balloon")) {
             assessment = safetyPrefix + "Hepatobiliary dysfunction signals detected.";
             severity = "HIGH";
             specialist = "Hepatologist / Gastroenterologist";
             action = "Seek evaluation within 24 hours.";
             service = "General Clinical";
-        } else if (safeContains(q, "ear") || safeContains(q, "hearing") || safeContains(q, "tonsil") || safeContains(q, "throat") || safeContains(q, "voice")) {
+        } else if (safeContains(q, "ear") || safeContains(q, "hearing") || safeContains(q, "tonsil") || safeContains(q, "throat") || safeContains(q, "voice") || safeContains(q, "raw") || safeContains(q, "raw red")) {
             assessment = safetyPrefix + "ENT (Otolaryngology) symptoms detected.";
             severity = "MODERATE";
             specialist = "Otolaryngologist (ENT Specialist)";
@@ -258,14 +258,14 @@ public class AiService {
             action = "Contact your primary OB-GYN or proceed to Labor & Delivery triage.";
             service = "Emergency & Trauma Care";
             warning = "OBSTETRIC ALERT: SEEK IMMEDIATE EVALUATION.";
-        } else if (safeContains(q, "weak") || safeContains(q, "droop") || safeContains(q, "slur") || (safeContains(q, "lift") && safeContains(q, "arm")) || safeContains(q, "stroke") || safeContains(q, "vision loss") || safeContains(q, "seizure")) {
+        } else if (safeContains(q, "weak") || safeContains(q, "droop") || safeContains(q, "slur") || (safeContains(q, "lift") && safeContains(q, "arm")) || safeContains(q, "stroke") || safeContains(q, "vision loss") || safeContains(q, "seizure") || safeContains(q, "jibberish") || safeContains(q, "lopsided") || safeContains(q, "spinning")) {
             assessment = safetyPrefix + "Acute neurological deficit or seizure identified. Immediate clinical intervention is required.";
             severity = "CRITICAL";
             specialist = "Neurologist / Stroke Specialist";
             action = "Navigate IMMEDIATELY to the nearest Comprehensive Stroke Center or Emergency node.";
             service = "Emergency & Trauma Care";
             warning = "NEUROLOGICAL EMERGENCY: SEEK IMMEDIATE CARE.";
-        } else if (safeContains(q, "self-harm") || safeContains(q, "suicid") || safeContains(q, "dark thoughts") || safeContains(q, "overwhelmed") || safeContains(q, "crisis") || safeContains(q, "panic attack") || safeContains(q, "hallucination") || safeContains(q, "manic")) {
+        } else if (safeContains(q, "self-harm") || safeContains(q, "suicid") || safeContains(q, "dark thoughts") || safeContains(q, "overwhelmed") || safeContains(q, "crisis") || safeContains(q, "panic attack") || safeContains(q, "hallucination") || safeContains(q, "manic") || safeContains(q, "end it") || safeContains(q, "hopeless")) {
             assessment = safetyPrefix + "I've prioritized your report of severe psychological or psychiatric distress.";
             severity = "CRITICAL";
             specialist = "Psychiatrist / Crisis Counselor";
@@ -305,7 +305,7 @@ public class AiService {
             specialist = "MediSync Support / Records Department";
             action = "Navigate to /dashboard/reports.";
             service = "General Clinical";
-        } else if ((safeContains(q, "how") || safeContains(q, "where") || safeContains(q, "find") || safeContains(q, "help") || safeContains(q, "schedule") || safeContains(q, "contact") || safeContains(q, "locate")) && (safeContains(q, "book") || safeContains(q, "appointment") || safeContains(q, "hospital") || safeContains(q, "doctor") || safeContains(q, "office") || safeContains(q, "specialist") || safeContains(q, "clinic"))) {
+        } else if ((safeContains(q, "how") || safeContains(q, "where") || safeContains(q, "find") || safeContains(q, "help") || safeContains(q, "schedule") || safeContains(q, "contact") || safeContains(q, "locate") || safeContains(q, "checkup") || safeContains(q, "specialist") || safeContains(q, "appointment")) && (safeContains(q, "book") || safeContains(q, "appointment") || safeContains(q, "hospital") || safeContains(q, "doctor") || safeContains(q, "office") || safeContains(q, "specialist") || safeContains(q, "clinic"))) {
             assessment = "MediSync Navigator offers a streamlined portal for all scheduling and facility navigation.";
             severity = "LOW";
             specialist = "MediSync Navigator";
@@ -317,13 +317,13 @@ public class AiService {
             specialist = "Endocrinologist / Diabetologist";
             action = "Seek evaluation at Urgent Care or Emergency.";
             service = "Emergency & Trauma Care";
-        } else if (safeContains(q, "heart") || safeContains(q, "chest") || safeContains(q, "attack") || (safeContains(q, "breathing") && safeContains(q, "pain"))) {
-            assessment = safetyPrefix + "Potential acute cardiovascular or respiratory signal identified.";
+        } else if (safeContains(q, "chest") || safeContains(q, "heart") || safeContains(q, "palpitation") || safeContains(q, "cardiac") || safeContains(q, "pressure") || safeContains(q, "vice") || safeContains(q, "drum") || safeContains(q, "skipping")) {
+            assessment = safetyPrefix + "Potential acute cardiovascular signal identified. Clinical prioritization required.";
             severity = "CRITICAL";
             specialist = "Cardiologist / Emergency Specialist";
-            action = "Locate and navigate to Emergency & Trauma immediately.";
+            action = "Navigate IMMEDIATELY to the nearest Emergency & Trauma Care node.";
             service = "Emergency & Trauma Care";
-            warning = "LIFE-SAFETY SIGNAL DETECTED: SEEK EMERGENCY CARE.";
+            warning = "CARDIAC ALERT: SEEK EMERGENCY EVALUATION.";
         } else if (safeContains(q, "scan") || safeContains(q, "mri") || safeContains(q, "ct") || safeContains(q, "xray")) {
             assessment = "Diagnostic imaging request identified.";
             severity = "HIGH";
