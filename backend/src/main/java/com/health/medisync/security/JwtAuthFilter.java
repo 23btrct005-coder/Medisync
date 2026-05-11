@@ -85,6 +85,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     } else {
                         System.err.println("DEBUG: AUTH_FILTER -> JWT validation failed for token starting with: " + (jwt.length() > 10 ? jwt.substring(0, 10) : jwt));
                         PinpointDiagnosticController.setLastError("AUTH_ERROR: JWT validation failed.");
+                        
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        response.setContentType("application/json");
+                        response.getWriter().write("{\"message\": \"Clinical session expired or invalid. Access denied.\"}");
+                        return;
                     }
                 }
             }

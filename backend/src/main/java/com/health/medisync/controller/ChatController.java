@@ -38,6 +38,7 @@ public class ChatController {
                 return ResponseEntity.badRequest().body(java.util.Map.of("message", "Invalid receiver identifier"));
             }
             Long rid = Long.valueOf(receiverId.split("\\.")[0]);
+            if (userDetails == null) return ResponseEntity.status(401).build();
             User user = userRepository.findByUsername(userDetails.getUsername())
                     .orElseThrow(() -> new RuntimeException("User not found"));
             return ResponseEntity.ok(chatService.getConversation(user.getId(), rid));
@@ -50,6 +51,7 @@ public class ChatController {
     public ResponseEntity<ChatMessageDTO> sendMessage(
             @RequestBody ChatMessage message, 
             @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) return ResponseEntity.status(401).build();
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         message.setSenderId(user.getId());
@@ -65,6 +67,7 @@ public class ChatController {
                 return ResponseEntity.badRequest().body(java.util.Map.of("message", "Invalid sender identifier"));
             }
             Long sid = Long.valueOf(senderId.split("\\.")[0]);
+            if (userDetails == null) return ResponseEntity.status(401).build();
             User user = userRepository.findByUsername(userDetails.getUsername())
                     .orElseThrow(() -> new RuntimeException("User not found"));
             chatService.markAsRead(user.getId(), sid);
@@ -76,6 +79,7 @@ public class ChatController {
 
     @GetMapping("/unread-counts")
     public ResponseEntity<java.util.Map<Long, Long>> getUnreadCounts(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) return ResponseEntity.status(401).build();
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return ResponseEntity.ok(chatService.getUnreadCounts(user.getId()));
@@ -83,6 +87,7 @@ public class ChatController {
 
     @GetMapping("/unread-count")
     public ResponseEntity<Long> getTotalUnreadCount(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) return ResponseEntity.status(401).build();
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         java.util.Map<Long, Long> counts = chatService.getUnreadCounts(user.getId());

@@ -49,10 +49,31 @@ public class SecurityConfig {
                 .permissionsPolicy(permissions -> permissions.policy("geolocation=(self), camera=(self), microphone=(self)"))
             )
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/ws/**", "/api/hospital/**", "/api/appointments/**", "/api/chat/**", "/api/ai/**", "/api/diag/**").permitAll()
-                // Broadly permit all non-API routes so the frontend can handle routing
+                .requestMatchers("/api/auth/**", "/ws/**", "/api/diag/**").permitAll()
+                .requestMatchers("/api/chat/**", "/api/patient/**", "/api/hospital/profile/**").authenticated()
+                .requestMatchers("/api/hospital/**", "/api/appointments/**", "/api/ai/**").permitAll()
                 .requestMatchers(request -> !request.getServletPath().startsWith("/api")).permitAll()
                 .anyRequest().authenticated()
+            )
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"message\": \"Clinical authentication required. Redirecting to login.\"}");
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    // If the user has NO authentication or is anonymous, return 401 instead of 403
+                    // This ensures the frontend redirects to login instead of showing an "Unauthorized" error
+                    org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+                    if (auth == null || !auth.isAuthenticated() || auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken) {
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        response.getWriter().write("{\"message\": \"Session expired. Please log in again.\"}");
+                    } else {
+                        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                        response.getWriter().write("{\"message\": \"Access denied: Insufficient clinical permissions.\"}");
+                    }
+                    response.setContentType("application/json");
+                })
             );
         
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

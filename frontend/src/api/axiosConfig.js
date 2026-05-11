@@ -55,17 +55,15 @@ api.interceptors.response.use(
     const status = error.response?.status;
     const message = error.response?.data?.message || 'Accessing clinical node failed';
 
-    if (status === 401) {
+    if (status === 401 || status === 403) {
        // Session expired or invalid
        localStorage.removeItem('token');
        localStorage.removeItem('userRole');
        localStorage.removeItem('userEmail');
        if (!window.location.pathname.includes('/login')) {
-          toast.error('Clinical session expired. Please re-authenticate.');
+          toast.error('Clinical session invalid or expired. Please re-authenticate.');
           window.location.href = '/login';
        }
-    } else if (status === 403) {
-       toast.error('Unauthorized clinical access attempt.');
     } else if (status >= 500) {
        const errorMessage = error.response?.data?.message || 'A critical server exception occurred. Clinical sync paused.';
        toast.error(errorMessage);
