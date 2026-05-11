@@ -43,12 +43,18 @@ public class AiService {
         );
         String doctors = doctorSb.toString();
 
-        // Multi-Agent Orchestration Loop
+        // 1. Run local expert first to handle known signals
+        String expertResponse = executeLocalExpertAgent(query, imageData != null, history);
+        if (expertResponse != null && !expertResponse.contains("Recommended Specialist: General Physician")) {
+            return expertResponse;
+        }
+
+        // 2. Multi-Agent Orchestration Loop
         String response = executeNeuralOrchestration(query, imageData, history, location, hospitals, doctors, profile);
         
         if (response == null || isError(response)) {
             System.out.println("ORCHESTRATOR_FAILOVER: Engaging Local Expert Agent.");
-            return executeLocalExpertAgent(query, imageData != null, history);
+            return expertResponse;
         }
         return response;
     }
