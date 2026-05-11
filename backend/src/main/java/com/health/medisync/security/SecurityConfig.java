@@ -1,4 +1,5 @@
 package com.health.medisync.security;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
