@@ -147,7 +147,16 @@ public class AiService {
             conditions = "Acute pediatric respiratory distress protocol initiated.";
             instructions = "Keep the child upright and calm. Do not attempt to look down their throat.";
             warning = "PEDIATRIC EMERGENCY: SEEK IMMEDIATE EVALUATION.";
-        } else if (q.contains("weak") || q.contains("speech") || q.contains("droop") || q.contains("numb") || q.contains("vision") || q.contains("stroke")) {
+        } else if (q.contains("diabetes") || q.contains("thirsty") || q.contains("blurry") || q.contains("sugar") || q.contains("insulin") || q.contains("glucose")) {
+            assessment = safetyPrefix + "Your symptoms suggest a potential glycemic crisis (Hyperglycemia). Rapid stabilization is required to prevent systemic complications.";
+            severity = "HIGH";
+            specialist = "Endocrinologist / Diabetologist";
+            action = "Seek evaluation at an Urgent Care or Emergency node for blood sugar stabilization.";
+            service = "Emergency & Trauma Care";
+            conditions = "Potential diabetic urgency/Hyperglycemic state identified.";
+            instructions = "Monitor your blood glucose levels if you have a meter available.";
+            warning = "GLYCEMIC ALERT: EVALUATION RECOMMENDED.";
+        } else if (q.contains("weak") || q.contains("speech") || q.contains("droop") || q.contains("numb") || q.contains("vision loss") || q.contains("double vision") || q.contains("stroke")) {
             assessment = safetyPrefix + "I've detected acute neurological signals consistent with a potential stroke protocol. Immediate intervention is required.";
             severity = "CRITICAL";
             specialist = "Neurologist / Stroke Specialist";
@@ -165,15 +174,6 @@ public class AiService {
             conditions = "Potential obstetric emergency or high-risk maternal health signal.";
             instructions = "Monitor for any increase in bleeding or abdominal pain.";
             warning = "OBSTETRIC ALERT: SEEK IMMEDIATE EVALUATION.";
-        } else if (q.contains("diabetes") || q.contains("thirsty") || (q.contains("vision") && q.contains("blur")) || q.contains("sugar") || q.contains("insulin")) {
-            assessment = safetyPrefix + "Your symptoms suggest a potential glycemic crisis (Hyperglycemia). Rapid stabilization is required to prevent systemic complications.";
-            severity = "HIGH";
-            specialist = "Endocrinologist / Diabetologist";
-            action = "Seek evaluation at an Urgent Care or Emergency node for blood sugar stabilization.";
-            service = "Emergency & Trauma Care";
-            conditions = "Potential diabetic urgency/Hyperglycemic state identified.";
-            instructions = "Monitor your blood glucose levels if you have a meter available.";
-            warning = "GLYCEMIC ALERT: EVALUATION RECOMMENDED.";
         } else if (q.contains("dark thoughts") || q.contains("overwhelmed") || q.contains("suicide") || q.contains("self harm")) {
             assessment = safetyPrefix + "I've prioritized your report of severe psychological distress. MediSync offers immediate crisis support.";
             severity = "CRITICAL";
