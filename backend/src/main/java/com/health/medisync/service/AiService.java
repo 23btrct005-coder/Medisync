@@ -193,26 +193,37 @@ public class AiService {
             action = "Book an urgent diagnostic consultation via the specialist portal.";
             service = "General Clinical";
             conditions = "High-risk systemic/oncology screening protocol.";
+        } else if (safeContains(q, "ketones") || safeContains(q, "glucose") || safeContains(q, "sugar") || safeContains(q, "insulin") || safeContains(q, "diabetes")) {
+            assessment = safetyPrefix + "Metabolic or glycemic specialty signals identified.";
+            severity = "HIGH";
+            specialist = "Endocrinologist / Diabetologist";
+            action = "Book an urgent consultation with a Diabetologist.";
+            service = "General Clinical";
         } else if (q.contains("urine") || q.contains("pee") || q.contains("bladder") || (q.contains("blood") && q.contains("piss"))) {
             assessment = safetyPrefix + "Urological symptoms detected. Potential infection or structural issue identified.";
             severity = "HIGH";
             specialist = "Urologist";
             action = "Book a consultation with a Urologist via the specialist node.";
             service = "General Clinical";
-            conditions = "Urological specialty inquiry.";
+        } else if (safeContains(q, "jaundice") || (safeContains(q, "yellow") && safeContains(q, "eye")) || safeContains(q, "liver") || safeContains(q, "pale stool")) {
+            assessment = safetyPrefix + "Hepatobiliary dysfunction signals detected.";
+            severity = "HIGH";
+            specialist = "Hepatologist / Gastroenterologist";
+            action = "Seek evaluation within 24 hours.";
+            service = "General Clinical";
         } else if (safeContains(q, "ear") || safeContains(q, "hearing") || safeContains(q, "tonsil") || safeContains(q, "throat") || safeContains(q, "voice")) {
             assessment = safetyPrefix + "ENT (Otolaryngology) symptoms detected.";
             severity = "MODERATE";
             specialist = "Otolaryngologist (ENT Specialist)";
             action = "Book an appointment with an ENT specialist.";
             service = "General Clinical";
-        } else if (safeContains(q, "eye") && (safeContains(q, "vision") || safeContains(q, "red") || safeContains(q, "blur"))) {
+        } else if (safeContains(q, "eye") && (safeContains(q, "vision") || safeContains(q, "red") || safeContains(q, "blur") || safeContains(q, "pressure"))) {
             assessment = safetyPrefix + "Ophthalmological symptoms require specialized assessment.";
             severity = "HIGH";
             specialist = "Ophthalmologist";
             action = "Seek evaluation within 24 hours.";
             service = "General Clinical";
-        } else if (safeContains(q, "heel") || safeContains(q, "shoulder") || safeContains(q, "joint") || safeContains(q, "toe") || safeContains(q, "ortho")) {
+        } else if (safeContains(q, "heel") || safeContains(q, "shoulder") || safeContains(q, "joint") || safeContains(q, "toe") || safeContains(q, "ortho") || safeContains(q, "knee") || safeContains(q, "bone") || safeContains(q, "swelling")) {
             assessment = safetyPrefix + "Musculoskeletal or orthopedic signals identified.";
             severity = "MODERATE";
             specialist = "Orthopedic Surgeon / Physiotherapist";
