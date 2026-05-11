@@ -268,13 +268,16 @@ public class AiService {
             specialist = "General Physician";
         }
 
+        String followUp = hasImage ? "Does the localized area feel hot to the touch?" : "When did these symptoms first manifest?";
+        String finalWarning = warning.isEmpty() ? "Tip: Access your records in 'Reports'." : warning;
+
         return "1. Copilot Assessment: " + assessment + "\n" +
                "2. Possible Conditions / Features: " + conditions + "\n" +
                "3. Risk Indicators / Instructions: " + instructions + "\n" +
                "4. Triage Level: " + severity + "\n" +
                "5. Recommended Specialist: " + specialist + "\n" +
                "6. Suggested Next Steps: " + action + "\n" +
-               "7. Follow-up Questions: " + (hasImage ? "Does the localized area feel hot to the touch?" : "When did these symptoms first manifest?") + "\n" +
-               "8. Emergency Warning: " + (warning.isEmpty() ? "Tip: Access your records in 'Reports'." : warning);
+               "7. Follow-up Questions: " + followUp + "\n" +
+               "8. Emergency Warning: " + finalWarning;
     }
 }
