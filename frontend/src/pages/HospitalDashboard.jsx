@@ -19,14 +19,6 @@ const HospitalDashboard = () => {
     const [auditLogs, setAuditLogs] = useState([]);
     const [aiInsights, setAiInsights] = useState([]);
     const [loadFluctuations, setLoadFluctuations] = useState({ Cardiology: 92.1, Neurology: 67.9, Pediatrics: 92.1 });
-    
-    // Cloud Telemetry Editing States
-    const [isEditingCloud, setIsEditingCloud] = useState(false);
-    const [cloudForm, setCloudForm] = useState({
-        consultationTimings: '',
-        emergencyStatus: '',
-        serviceCapacity: {}
-    });
 
     const fetchInstitutionalData = async (silent = false) => {
         if (!silent) setLoading(true);
@@ -39,37 +31,10 @@ const HospitalDashboard = () => {
             setStats(statsRes.data);
             setAuditLogs(auditRes.data);
             setAiInsights(aiRes.data);
-            
-            // Sync cloud form
-            setCloudForm({
-                consultationTimings: statsRes.data.consultationTimings || '09:00 AM - 09:00 PM',
-                emergencyStatus: statsRes.data.emergencyStatus || 'OPTIMAL',
-                serviceCapacity: typeof statsRes.data.serviceCapacity === 'string' 
-                    ? JSON.parse(statsRes.data.serviceCapacity) 
-                    : (statsRes.data.serviceCapacity || {})
-            });
         } catch (err) {
             console.error("Institutional sync failed", err);
         } finally {
             if (!silent) setLoading(false);
-        }
-    };
-
-    const handleSaveCloudData = async () => {
-        try {
-            const formData = new FormData();
-            formData.append('data', JSON.stringify({
-                consultationTimings: cloudForm.consultationTimings,
-                emergencyServicesAvailable: cloudForm.emergencyStatus === 'OPTIMAL' || cloudForm.emergencyStatus === '24/7 ACTIVE',
-                serviceCapacity: cloudForm.serviceCapacity
-            }));
-            
-            await api.post('/hospital/update-profile', formData);
-            toast.success("Institutional telemetry synchronized successfully");
-            setIsEditingCloud(false);
-            fetchInstitutionalData(true);
-        } catch (err) {
-            toast.error("Telemetry synchronization failed");
         }
     };
 
@@ -279,15 +244,7 @@ const HospitalDashboard = () => {
                         <div>
                             <div className="flex items-center gap-3">
                                 <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight italic">Cloud <span className="text-blue-600">Window</span></h2>
-                                <button 
-                                    onClick={() => isEditingCloud ? handleSaveCloudData() : setIsEditingCloud(true)}
-                                    className={`px-3 py-1 rounded-full text-[9px] font-black uppercase transition-all flex items-center gap-2 ${
-                                        isEditingCloud ? 'bg-emerald-100 text-emerald-600 animate-pulse' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
-                                    }`}
-                                >
-                                    {isEditingCloud ? <Check size={10} /> : <Settings size={10} />}
-                                    {isEditingCloud ? 'Save Live Sync' : 'Configure Window'}
-                                </button>
+                                <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-[9px] font-black uppercase animate-pulse">Live Telemetry</span>
                             </div>
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">Real-time Institutional Operational Capacity</p>
                         </div>
@@ -296,80 +253,35 @@ const HospitalDashboard = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 lg:flex-1 lg:ml-20">
                         <div className="space-y-2">
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Consultation Hours</p>
-                            {isEditingCloud ? (
-                                <input 
-                                    type="text"
-                                    value={cloudForm.consultationTimings}
-                                    onChange={(e) => setCloudForm({...cloudForm, consultationTimings: e.target.value})}
-                                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm font-black w-full outline-none focus:ring-2 ring-blue-500/20"
-                                    placeholder="e.g. 09:00 AM - 05:00 PM"
-                                />
-                            ) : (
-                                <p className="text-xl font-black text-slate-800 uppercase italic flex items-center gap-3">
-                                    <Calendar size={20} className="text-blue-600" />
-                                    {stats?.consultationTimings || '09:00 AM - 09:00 PM'}
-                                </p>
-                            )}
+                            <p className="text-xl font-black text-slate-800 uppercase italic flex items-center gap-3">
+                                <Calendar size={20} className="text-blue-600" />
+                                {stats?.consultationTimings || '09:00 AM - 09:00 PM'}
+                            </p>
                         </div>
 
                         <div className="space-y-2">
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Machine / System Throughput</p>
                             <div className="flex flex-wrap gap-3">
-                                {isEditingCloud ? (
-                                    <div className="flex flex-col gap-2 w-full">
-                                        <p className="text-[8px] text-slate-400 font-bold italic uppercase tracking-tighter">* Edit in institutional settings for full configuration</p>
-                                        <div className="flex gap-2">
-                                            {Object.entries(cloudForm.serviceCapacity).map(([service, count], idx) => (
-                                                <div key={idx} className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg flex items-center gap-2">
-                                                    <span className="text-[9px] font-black uppercase text-slate-500">{service}</span>
-                                                    <input 
-                                                        type="number"
-                                                        value={count}
-                                                        onChange={(e) => {
-                                                            const newCap = {...cloudForm.serviceCapacity, [service]: parseInt(e.target.value)};
-                                                            setCloudForm({...cloudForm, serviceCapacity: newCap});
-                                                        }}
-                                                        className="w-8 bg-transparent text-[10px] font-black text-blue-600 outline-none"
-                                                    />
-                                                </div>
-                                            ))}
+                                {stats?.serviceCapacity ? (
+                                    Object.entries(typeof stats.serviceCapacity === 'string' ? JSON.parse(stats.serviceCapacity) : stats.serviceCapacity).map(([service, count], idx) => (
+                                        <div key={idx} className="px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl flex items-center gap-2 group/tag hover:bg-blue-600 hover:text-white transition-all">
+                                            <span className="text-[9px] font-black uppercase tracking-tighter text-slate-500 group-hover/tag:text-white">{service}</span>
+                                            <div className="w-[1px] h-3 bg-slate-200 group-hover/tag:bg-white/20" />
+                                            <span className="text-xs font-black text-blue-600 group-hover/tag:text-white">{count}x</span>
                                         </div>
-                                    </div>
+                                    ))
                                 ) : (
-                                    stats?.serviceCapacity ? (
-                                        Object.entries(typeof stats.serviceCapacity === 'string' ? JSON.parse(stats.serviceCapacity) : stats.serviceCapacity).map(([service, count], idx) => (
-                                            <div key={idx} className="px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl flex items-center gap-2 group/tag hover:bg-blue-600 hover:text-white transition-all">
-                                                <span className="text-[9px] font-black uppercase tracking-tighter text-slate-500 group-hover/tag:text-white">{service}</span>
-                                                <div className="w-[1px] h-3 bg-slate-200 group-hover/tag:bg-white/20" />
-                                                <span className="text-xs font-black text-blue-600 group-hover/tag:text-white">{count}x</span>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <p className="text-xs font-bold text-slate-400 italic">No resource telemetry captured</p>
-                                    )
+                                    <p className="text-xs font-bold text-slate-400 italic">No resource telemetry captured</p>
                                 )}
                             </div>
                         </div>
 
                         <div className="space-y-2">
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Operational Status</p>
-                            {isEditingCloud ? (
-                                <select 
-                                    value={cloudForm.emergencyStatus}
-                                    onChange={(e) => setCloudForm({...cloudForm, emergencyStatus: e.target.value})}
-                                    className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm font-black w-full outline-none focus:ring-2 ring-blue-500/20"
-                                >
-                                    <option value="OPTIMAL">OPTIMAL</option>
-                                    <option value="24/7 ACTIVE">24/7 ACTIVE</option>
-                                    <option value="MAINTENANCE">MAINTENANCE</option>
-                                    <option value="OVERLOADED">OVERLOADED</option>
-                                </select>
-                            ) : (
-                                <p className="text-xl font-black text-emerald-600 uppercase italic flex items-center gap-3">
-                                    <Activity size={20} className="animate-pulse" />
-                                    {stats?.emergencyStatus || 'OPTIMAL'}
-                                </p>
-                            )}
+                            <p className="text-xl font-black text-emerald-600 uppercase italic flex items-center gap-3">
+                                <Activity size={20} className="animate-pulse" />
+                                {stats?.emergencyStatus || 'OPTIMAL'}
+                            </p>
                         </div>
                     </div>
                 </div>

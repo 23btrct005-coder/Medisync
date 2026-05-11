@@ -18,7 +18,13 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
     const [isReceiverOnline, setIsReceiverOnline] = useState(false);
     const [receiverPhoto, setReceiverPhoto] = useState(null);
     const [lastSeen, setLastSeen] = useState(null);
+    const [currentTime, setCurrentTime] = useState(new Date());
     const { lastMessage, markChatAsRead } = useNotifications();
+
+    useEffect(() => {
+        const timeInterval = setInterval(() => setCurrentTime(new Date()), 30000); // Force re-render every 30s
+        return () => clearInterval(timeInterval);
+    }, []);
     const stompClient = useRef(null);
     const scrollRef = useRef(null);
 
@@ -61,8 +67,7 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
     const formatLastSeen = (timestamp) => {
         if (!timestamp) return 'Offline';
         const date = new Date(timestamp);
-        const now = new Date();
-        const diffMs = now - date;
+        const diffMs = currentTime - date;
         const diffMins = Math.floor(diffMs / 60000);
         
         if (diffMins < 1) return 'Just now';
