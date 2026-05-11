@@ -16,17 +16,32 @@ public class ClinicalRegistry {
     ));
 
     public static boolean isNeurological(String q) {
-        String lower = q.toLowerCase();
-        return NEURO_FOCUS.stream().anyMatch(lower::contains);
+        String lower = q.toLowerCase().replaceAll("[^a-z0-9 ]", " ");
+        String[] words = lower.split("\\s+");
+        Set<String> queryWords = new HashSet<>(Arrays.asList(words));
+        return NEURO_FOCUS.stream().anyMatch(f -> {
+            if (f.contains(" ")) return lower.contains(f);
+            return queryWords.contains(f);
+        });
     }
 
     public static boolean isOncological(String q) {
-        String lower = q.toLowerCase();
-        return ONCO_FOCUS.stream().anyMatch(lower::contains);
+        String lower = q.toLowerCase().replaceAll("[^a-z0-9 ]", " ");
+        String[] words = lower.split("\\s+");
+        Set<String> queryWords = new HashSet<>(Arrays.asList(words));
+        return ONCO_FOCUS.stream().anyMatch(f -> {
+            if (f.contains(" ")) return lower.contains(f);
+            return queryWords.contains(f);
+        });
     }
 
     public static boolean isMetabolic(String q) {
-        String lower = q.toLowerCase();
-        return METABOLIC_FOCUS.stream().anyMatch(lower::contains);
+        String lower = q.toLowerCase().replaceAll("[^a-z0-9 ]", " ");
+        String[] words = lower.split("\\s+");
+        Set<String> queryWords = new HashSet<>(Arrays.asList(words));
+        return METABOLIC_FOCUS.stream().anyMatch(f -> {
+            if (f.contains(" ")) return lower.contains(f);
+            return queryWords.contains(f);
+        });
     }
 }
