@@ -1128,7 +1128,9 @@ const Register = () => {
                                 <label className={labelClass}>Clinical & Diagnostic Services</label>
                                 <p className="text-[9px] text-slate-400 mb-4 uppercase font-bold tracking-widest">Select facilities available for patients</p>
                                 <div className="space-y-6">
-                                    {INSTITUTIONAL_SERVICE_CATALOG.map(category => (
+                                    {INSTITUTIONAL_SERVICE_CATALOG
+                                        .filter(category => role !== 'ROLE_DOCTOR' || category.category !== 'Diagnostic Services')
+                                        .map(category => (
                                         <div key={category.category} className="space-y-3">
                                             <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
                                                 <category.icon size={12} className={category.color} />
