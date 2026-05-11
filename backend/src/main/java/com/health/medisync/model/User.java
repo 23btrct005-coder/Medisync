@@ -27,6 +27,10 @@ public class User implements UserDetails {
     private String role = "ROLE_PATIENT";
     private boolean enabled = false;
     private boolean emailVerified = false;
+    private java.time.LocalDateTime lastActive;
+
+    public java.time.LocalDateTime getLastActive() { return lastActive; }
+    public void setLastActive(java.time.LocalDateTime lastActive) { this.lastActive = lastActive; }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

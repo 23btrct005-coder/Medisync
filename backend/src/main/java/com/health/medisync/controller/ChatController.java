@@ -20,12 +20,18 @@ public class ChatController {
 
     private final ChatService chatService;
     private final UserRepository userRepository;
+    private final com.health.medisync.repository.DoctorRepository doctorRepository;
+    private final com.health.medisync.repository.PatientRepository patientRepository;
     private final com.health.medisync.service.PresenceService presenceService;
 
     public ChatController(ChatService chatService, UserRepository userRepository, 
+                          com.health.medisync.repository.DoctorRepository doctorRepository,
+                          com.health.medisync.repository.PatientRepository patientRepository,
                           com.health.medisync.service.PresenceService presenceService) {
         this.chatService = chatService;
         this.userRepository = userRepository;
+        this.doctorRepository = doctorRepository;
+        this.patientRepository = patientRepository;
         this.presenceService = presenceService;
     }
 
@@ -103,7 +109,25 @@ public class ChatController {
             }
             Long uid = Long.valueOf(userId.split("\\.")[0]);
             boolean online = presenceService.isUserOnline(uid);
-            return ResponseEntity.ok(java.util.Map.of("online", online));
+            
+            User user = userRepository.findById(uid).orElse(null);
+            String picture = null;
+            java.time.LocalDateTime lastSeen = null;
+            
+            if (user != null) {
+                lastSeen = user.getLastActive();
+                if ("ROLE_DOCTOR".equals(user.getRole())) {
+                    picture = doctorRepository.findByUserId(uid).map(d -> d.getProfilePictureUrl()).orElse(null);
+                } else if ("ROLE_PATIENT".equals(user.getRole())) {
+                    picture = patientRepository.findByUserId(uid).map(p -> p.getProfilePictureUrl()).orElse(null);
+                }
+            }
+            
+            return ResponseEntity.ok(java.util.Map.of(
+                "online", online,
+                "lastSeen", lastSeen != null ? lastSeen.toString() : "",
+                "picture", picture != null ? picture : ""
+            ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
         }

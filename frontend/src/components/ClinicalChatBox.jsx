@@ -15,6 +15,8 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
     const [loading, setLoading] = useState(true);
     const [connected, setConnected] = useState(false);
     const [isReceiverOnline, setIsReceiverOnline] = useState(false);
+    const [receiverPhoto, setReceiverPhoto] = useState(null);
+    const [lastSeen, setLastSeen] = useState(null);
     const stompClient = useRef(null);
     const scrollRef = useRef(null);
 
@@ -54,11 +56,26 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
         }
     };
 
+    const formatLastSeen = (timestamp) => {
+        if (!timestamp) return 'Offline';
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        
+        if (diffMins < 1) return 'Just now';
+        if (diffMins < 60) return `${diffMins}m ago`;
+        if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`;
+        return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    };
+
     const checkReceiverStatus = async () => {
         if (!receiverId || String(receiverId) === 'undefined') return;
         try {
             const res = await api.get(`/chat/status/${receiverId}`);
             setIsReceiverOnline(res.data.online);
+            setReceiverPhoto(res.data.picture);
+            setLastSeen(res.data.lastSeen);
         } catch (err) {
             console.error("Failed to fetch receiver status", err);
         }
@@ -83,6 +100,7 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
                 if (String(newMessage.senderId) === String(receiverId)) {
                     setMessages(prev => [...prev, newMessage]);
                     api.post(`/chat/mark-read/${receiverId}`);
+                    setIsReceiverOnline(true);
                 }
             });
         }, (err) => {
@@ -118,14 +136,18 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
                 <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10 overflow-hidden">
-                        <User size={24} className="text-white/60" />
+                        {receiverPhoto ? (
+                            <img src={receiverPhoto} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                            <User size={24} className="text-white/60" />
+                        )}
                     </div>
                     <div>
                         <h4 className="text-[11px] font-black uppercase tracking-[0.1em] leading-none text-white">{receiverName}</h4>
                         <div className="flex items-center gap-1.5 mt-1.5">
                             <div className={`w-1.5 h-1.5 rounded-full ${isReceiverOnline ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'bg-slate-600'}`} />
                             <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-                                {isReceiverOnline ? 'Clinical Node Online' : 'Offline / Encrypted'}
+                                {isReceiverOnline ? 'Clinical Node Online' : `Last Seen: ${formatLastSeen(lastSeen)}`}
                             </span>
                         </div>
                     </div>
