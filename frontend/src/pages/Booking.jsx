@@ -4,12 +4,26 @@ import {
   Search, Filter, Calendar, Clock, ChevronRight,
   User, Star, MapPin, Video, CheckCircle2, AlertCircle,
   ArrowLeft, CreditCard, Loader2, Sparkles, RefreshCw, QrCode, X, Activity,
-  Navigation, Droplets, Ambulance, Siren, ShieldCheck, Zap
+  Navigation, Droplets, Ambulance, Siren, ShieldCheck, Zap,
+  Heart, Brain, Baby, Bone, Eye, Stethoscope, Microscope, Droplet
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
 import ClinicMap from '../components/ClinicMap';
+
+const PHYSICIAN_DEPARTMENTS = [
+  { name: 'Cardiology', icon: Heart, color: 'text-red-500', bg: 'bg-red-50' },
+  { name: 'Neurology', icon: Brain, color: 'text-purple-500', bg: 'bg-purple-50' },
+  { name: 'Orthopedics', icon: Bone, color: 'text-orange-500', bg: 'bg-orange-50' },
+  { name: 'Pediatrics', icon: Baby, color: 'text-blue-500', bg: 'bg-blue-50' },
+  { name: 'Oncology', icon: Microscope, color: 'text-rose-500', bg: 'bg-rose-50' },
+  { name: 'Gynecology', icon: User, color: 'text-pink-500', bg: 'bg-pink-50' },
+  { name: 'Dermatology', icon: Droplet, color: 'text-cyan-500', bg: 'bg-cyan-50' },
+  { name: 'Gastroenterology', icon: Activity, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+  { name: 'Ophthalmology', icon: Eye, color: 'text-sky-500', bg: 'bg-sky-50' },
+  { name: 'General Medicine', icon: Stethoscope, color: 'text-indigo-500', bg: 'bg-indigo-50' }
+];
 
 const Booking = () => {
   const navigate = useNavigate();
@@ -504,6 +518,15 @@ const Booking = () => {
                         className="w-full pl-11 pr-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-primary/30 focus:bg-white outline-none transition-all font-medium text-slate-700 placeholder:text-slate-400 text-sm"
                       />
                     </div>
+                    {filterSpecialty !== 'All' && (
+                        <button
+                            onClick={() => { setFilterSpecialty('All'); setSearchTerm(''); }}
+                            className="flex items-center justify-center h-[52px] px-6 rounded-2xl bg-slate-100 text-slate-500 font-black uppercase tracking-widest text-[10px] hover:bg-slate-200 transition-all"
+                        >
+                            <ArrowLeft size={16} className="mr-2" />
+                            Back
+                        </button>
+                    )}
                     <button
                       onClick={() => setShowFilters(!showFilters)}
                       className={`flex items-center justify-center h-[52px] px-4 md:px-6 rounded-2xl border-2 font-black uppercase tracking-widest text-[10px] sm:text-xs transition-all ${showFilters || filterSpecialty !== 'All'
@@ -543,41 +566,84 @@ const Booking = () => {
                   </AnimatePresence>
                 </div>
 
-                {/* Doctor Grid */}
-                {loading ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {[1, 2, 3, 4, 5, 6].map(i => <div key={i} className="h-48 bg-slate-100 rounded-[2.5rem] animate-pulse" />)}
-                  </div>
-                ) : filteredDoctors.length === 0 ? (
-                  <div className="text-center py-24 glass-panel border-dashed border-slate-200">
-                    <User size={64} className="mx-auto text-slate-200 mb-4" />
-                    <h3 className="text-xl font-bold text-slate-800">No Physicians Found</h3>
-                    <p className="text-slate-500 font-medium mt-1 mb-8">Try adjusting your filters or search keywords.</p>
-
-                    <div className="flex flex-col items-center gap-4 bg-slate-50 p-6 rounded-3xl border border-slate-100 max-w-sm mx-auto">
-                      <div className="p-2 bg-primary/10 text-primary rounded-xl"><Sparkles size={20} /></div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Clinical Sync Utility</p>
-                      <p className="text-xs text-slate-500 text-center leading-relaxed">Incoming doctors may require administrative verification. Synchronize to enable instant access.</p>
-                      <button
-                        onClick={handleSync}
-                        disabled={isSyncing}
-                        className="w-full btn-premium bg-slate-900 text-white py-4 text-xs flex items-center justify-center gap-2"
-                      >
-                        {isSyncing ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
-                        {isSyncing ? 'Synchronizing...' : 'Verify & Sync Directory'}
-                      </button>
+                {/* Department Selection vs Doctor Grid */}
+                {filterSpecialty === 'All' && !searchTerm ? (
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em]">Clinical Departments</h3>
+                            <button 
+                                onClick={() => setSearchTerm(' ')}
+                                className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline"
+                            >
+                                View All Physicians
+                            </button>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                            {PHYSICIAN_DEPARTMENTS.map((dept) => (
+                                <button
+                                    key={dept.name}
+                                    onClick={() => setFilterSpecialty(dept.name)}
+                                    className="p-6 rounded-[2rem] bg-white border-2 border-slate-50 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 transition-all group text-center"
+                                >
+                                    <div className={`w-14 h-14 ${dept.bg} ${dept.color} rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}>
+                                        <dept.icon size={28} />
+                                    </div>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-600 group-hover:text-primary transition-colors">
+                                        {dept.name}
+                                    </span>
+                                </button>
+                            ))}
+                            <button
+                                onClick={() => setSearchTerm(' ')}
+                                className="p-6 rounded-[2rem] bg-slate-50 border-2 border-dashed border-slate-200 hover:bg-slate-100 transition-all group text-center flex flex-col items-center justify-center"
+                            >
+                                <div className="w-14 h-14 bg-white text-slate-400 rounded-2xl flex items-center justify-center mb-4">
+                                    <ChevronRight size={28} />
+                                </div>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                    Browse All
+                                </span>
+                            </button>
+                        </div>
                     </div>
-                  </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {filteredDoctors.map(doctor => (
-                      <DoctorCard
-                        key={doctor.id}
-                        doctor={doctor}
-                        onSelect={() => { setSelectedDoctor(doctor); setBookingStep('slots'); }}
-                      />
-                    ))}
-                  </div>
+                    <>
+                    {loading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {[1, 2, 3, 4, 5, 6].map(i => <div key={i} className="h-48 bg-slate-100 rounded-[2.5rem] animate-pulse" />)}
+                    </div>
+                    ) : filteredDoctors.length === 0 ? (
+                    <div className="text-center py-24 glass-panel border-dashed border-slate-200">
+                        <User size={64} className="mx-auto text-slate-200 mb-4" />
+                        <h3 className="text-xl font-bold text-slate-800">No Physicians Found</h3>
+                        <p className="text-slate-500 font-medium mt-1 mb-8">Try adjusting your filters or search keywords.</p>
+
+                        <div className="flex flex-col items-center gap-4 bg-slate-50 p-6 rounded-3xl border border-slate-100 max-w-sm mx-auto">
+                        <div className="p-2 bg-primary/10 text-primary rounded-xl"><Sparkles size={20} /></div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Clinical Sync Utility</p>
+                        <p className="text-xs text-slate-500 text-center leading-relaxed">Incoming doctors may require administrative verification. Synchronize to enable instant access.</p>
+                        <button
+                            onClick={handleSync}
+                            disabled={isSyncing}
+                            className="w-full btn-premium bg-slate-900 text-white py-4 text-xs flex items-center justify-center gap-2"
+                        >
+                            {isSyncing ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
+                            {isSyncing ? 'Synchronizing...' : 'Verify & Sync Directory'}
+                        </button>
+                        </div>
+                    </div>
+                    ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {filteredDoctors.map(doctor => (
+                        <DoctorCard
+                            key={doctor.id}
+                            doctor={doctor}
+                            onSelect={() => { setSelectedDoctor(doctor); setBookingStep('slots'); }}
+                        />
+                        ))}
+                    </div>
+                    )}
+                    </>
                 )}
                 </>
             ) : (
