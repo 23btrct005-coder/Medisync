@@ -204,7 +204,7 @@ const HospitalProfile = () => {
         setSaving(true);
         try {
             // Validation: Every service must have both fee and duration
-            const services = formData.services.split(', ').filter(s => s);
+            const services = formData.services.split(',').map(s => s.trim()).filter(s => s);
             for (const service of services) {
                 const is247 = SERVICES_24_7.some(s => s.toLowerCase() === service.toLowerCase());
                 if (!formData.serviceFees[service]) {
@@ -504,13 +504,13 @@ const HospitalProfile = () => {
                                             </div>
                                             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                                                 {category.services.map(service => {
-                                                    const isSelected = formData.services.split(', ').includes(service.name);
+                                                    const isSelected = (formData.services || "").split(',').map(s => s.trim()).includes(service.name);
                                                     return (
                                                         <button
                                                             key={service.name}
                                                             type="button"
                                                             onClick={() => {
-                                                                const currentServices = formData.services ? formData.services.split(', ').filter(s => s) : [];
+                                                                const currentServices = formData.services ? formData.services.split(',').map(s => s.trim()).filter(s => s) : [];
                                                                 const newServices = isSelected 
                                                                     ? currentServices.filter(s => s !== service.name)
                                                                     : [...currentServices, service.name];
@@ -547,7 +547,7 @@ const HospitalProfile = () => {
                                                     e.preventDefault();
                                                     const val = e.target.value.trim();
                                                     if (val && !formData.services.includes(val)) {
-                                                        const current = formData.services ? formData.services.split(', ').filter(s => s) : [];
+                                                        const current = formData.services ? formData.services.split(',').map(s => s.trim()).filter(s => s) : [];
                                                         setFormData({...formData, services: [...current, val].join(', ')});
                                                         e.target.value = '';
                                                     }
@@ -560,7 +560,7 @@ const HospitalProfile = () => {
                                                 const input = document.getElementById('otherServiceInput');
                                                 const val = input.value.trim();
                                                 if (val && !formData.services.includes(val)) {
-                                                    const current = formData.services ? formData.services.split(', ').filter(s => s) : [];
+                                                    const current = formData.services ? formData.services.split(',').map(s => s.trim()).filter(s => s) : [];
                                                     setFormData({...formData, services: [...current, val].join(', ')});
                                                     input.value = '';
                                                 }
@@ -573,13 +573,13 @@ const HospitalProfile = () => {
                                     
                                     {/* Selected Custom Services Chips */}
                                     <div className="flex flex-wrap gap-2 mt-3">
-                                        {formData.services.split(', ').filter(s => s && !PREDEFINED_SERVICES.includes(s)).map(customService => (
+                                        {formData.services.split(',').map(s => s.trim()).filter(s => s && !PREDEFINED_SERVICES.includes(s)).map(customService => (
                                             <span key={customService} className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-[9px] font-black uppercase tracking-widest border border-slate-200">
                                                 {customService}
                                                 <button 
                                                     type="button" 
                                                     onClick={() => {
-                                                        const current = formData.services.split(', ').filter(s => s !== customService);
+                                                        const current = formData.services.split(',').map(s => s.trim()).filter(s => s !== customService);
                                                         setFormData({...formData, services: current.join(', ')});
                                                     }}
                                                     className="hover:text-red-500 transition-colors"
@@ -954,7 +954,7 @@ const HospitalProfile = () => {
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {formData.services.split(', ').filter(s => s).map((service, idx) => (
+                                    {formData.services.split(',').map(s => s.trim()).filter(s => s).map((service, idx) => (
                                         <div key={idx} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm group hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 transition-all animate-in fade-in zoom-in-95 duration-500" style={{ animationDelay: `${idx * 50}ms` }}>
                                             <div className="flex items-center justify-between mb-6">
                                                 <div className="flex items-center gap-3">
@@ -1043,7 +1043,7 @@ const HospitalProfile = () => {
                                         </div>
                                     ))}
 
-                                    {formData.services.split(', ').filter(s => s).length === 0 && (
+                                    {formData.services.split(',').map(s => s.trim()).filter(s => s).length === 0 && (
                                         <div className="md:col-span-2 text-center py-20 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
                                             <Activity size={48} className="mx-auto text-slate-200 mb-4" />
                                             <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">No Services Enabled</p>
