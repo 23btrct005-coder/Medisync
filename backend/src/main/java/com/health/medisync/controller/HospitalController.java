@@ -237,9 +237,9 @@ public class HospitalController {
 
     @PostMapping(value = "/update-profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateProfile(
-            @RequestPart("data") String dataJson,
-            @RequestPart(value = "logo", required = false) MultipartFile logo,
-            @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture,
+            @RequestParam("data") String dataJson,
+            @RequestParam(value = "logo", required = false) MultipartFile logo,
+            @RequestParam(value = "profilePicture", required = false) MultipartFile profilePicture,
             @AuthenticationPrincipal UserDetails userDetails) {
         try {
             User user = userRepository.findByUsername(userDetails.getUsername())
