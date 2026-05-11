@@ -20,7 +20,12 @@ const SERVICES_24_7 = [
     'Stroke Care', 
     'Cardiac Emergency', 
     'ICU Admission',
-    'Blood Bank'
+    'Blood Bank',
+    'Emergency (ER)',
+    'ICU',
+    'NICU',
+    'PICU',
+    'Trauma Center'
 ];
 
 const HospitalProfile = () => {
@@ -981,7 +986,12 @@ const HospitalProfile = () => {
                                                     </div>
                                                 </div>
 
-                                                {!SERVICES_24_7.includes(service) && (
+                                                {SERVICES_24_7.some(s => service.toLowerCase().includes(s.toLowerCase())) ? (
+                                                    <div className="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100 flex items-center justify-center gap-3 w-full">
+                                                        <Activity className="text-emerald-600" size={16} />
+                                                        <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Available 24/7 • No Slots Required</span>
+                                                    </div>
+                                                ) : (
                                                     <div className="grid grid-cols-2 gap-4">
                                                         <div className="space-y-1.5">
                                                             <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
