@@ -26,6 +26,7 @@ public class AiService {
     }
 
     public String generateResponse(String email, String query, String imageData, String location, String history) {
+        System.out.println("ORCHESTRATOR_ACTIVE: Processing query for [" + email + "]");
         String profile = patientRepository.findByUserUsernameIgnoreCase(email).map(p -> 
             "Name: " + p.getName() + ", Age: " + p.getAge() + ", Allergies: " + p.getAllergies() + ", Medical Info: " + p.getMedicalInfo()
         ).orElse("Unknown Patient");
@@ -46,20 +47,26 @@ public class AiService {
         String response = executeNeuralOrchestration(query, imageData, history, location, hospitals, doctors, profile);
         
         if (response == null || isError(response)) {
+            System.out.println("ORCHESTRATOR_FAILOVER: Engaging Local Expert Agent.");
             return executeLocalExpertAgent(query, imageData != null, history);
         }
         return response;
     }
 
     private boolean isError(String res) {
-        return res.toLowerCase().contains("error") || res.toLowerCase().contains("failed") || res.length() < 20;
+        if (res == null || res.length() < 30) return true;
+        String lower = res.toLowerCase();
+        // Only trigger error if it looks like a JSON error or a system failure message
+        return (lower.contains("\"error\"") && lower.contains("{")) || 
+               (lower.contains("failed") && lower.contains("api")) ||
+               lower.contains("api key not configured");
     }
 
     private String executeNeuralOrchestration(String query, String imageData, String history, String location, String hospitals, String doctors, String profile) {
         String prompt = "### MEDISYNC MULTI-AGENT ORCHESTRATOR — ELITE CLINICAL MODE\n\n" +
                 "OBJECTIVE: You are the Lead Orchestrator for the MediSync Copilot. You are a Board-Certified Emergency Physician and Institutional Expert.\n\n" +
                 "### EMERGENCY VS. REGISTRY DISCERNMENT:\n" +
-                "- SYMPTOMS (Chest pain, Heart attack, trauma): IMMEDIATELY prioritize CRITICAL triage and map to Emergency/Cardiology.\n" +
+                "- SYMPTOMS (Chest pain, Heart attack, trauma, Stroke, Pregnancy bleeding): IMMEDIATELY prioritize CRITICAL triage and map to Emergency/Cardiology/OBGYN.\n" +
                 "- INQUIRIES (Heart specialist, Best doctor, How to book): Prioritize LOW triage and map to specific specialist booking without emergency escalation.\n\n" +
                 "### COMMUNICATION PROTOCOLS:\n" +
                 "- Tone: Elite, calm, professional. Use high-fidelity clinical terms only for actual clinical situations.\n" +
@@ -84,18 +91,20 @@ public class AiService {
 
         String response = null;
         try {
-            // Primary Agent: Gemini 1.5 Flash (Visual-Aware)
+            System.out.println("AI_NODE_TRY: Primary Agent (Gemini 1.5 Flash)");
             response = geminiAiService.getCompletion(prompt, imageData);
             if (response != null && !isError(response)) return response;
 
-            // Secondary Agent: GPT-4o (Reasoning-Aware)
+            System.out.println("AI_NODE_TRY: Secondary Agent (GPT-4o)");
             response = openAiService.getCompletion(prompt);
+            if (response != null && !isError(response)) return response;
+
+            System.out.println("AI_NODE_TRY: Tertiary Agent (Groq)");
+            response = groqAiService.getCompletion(prompt);
         } catch (Exception e) {
+            System.err.println("ORCHESTRATION_EXCEPTION: " + e.getMessage());
             response = null;
         }
-
-        // Tertiary Agent: Groq (Performance-Aware)
-        if (response == null || isError(response)) response = groqAiService.getCompletion(prompt);
 
         return response;
     }
@@ -118,7 +127,42 @@ public class AiService {
             safetyPrefix = "IMPORTANT: I have noted your previously mentioned allergy from our clinical history. ";
         }
 
-        if (q.contains("dark thoughts") || q.contains("overwhelmed") || q.contains("suicide") || q.contains("self harm") || (q.contains("not slept") && q.contains("3 days"))) {
+        if (q.contains("weak") || q.contains("speech") || q.contains("droop") || q.contains("numb") || q.contains("vision") || q.contains("stroke") || q.contains("paraly")) {
+            assessment = safetyPrefix + "I've detected acute neurological signals (weakness/speech difficulty) consistent with a potential stroke protocol. Immediate intervention is required.";
+            severity = "CRITICAL";
+            specialist = "Neurologist / Stroke Specialist";
+            action = "Navigate IMMEDIATELY to the nearest Comprehensive Stroke Center or Emergency Trauma node. Do not delay.";
+            service = "Emergency & Trauma Care";
+            conditions = "Acute neurological deficit or cerebrovascular signal identified.";
+            instructions = "Note the exact time symptoms started and inform the emergency team immediately.";
+            warning = "NEUROLOGICAL EMERGENCY DETECTED: SEEK IMMEDIATE CARE.";
+        } else if (q.contains("pregnant") || q.contains("weeks") || q.contains("spotting") || q.contains("contraction") || q.contains("fetus") || q.contains("maternal")) {
+            assessment = safetyPrefix + "Your report of potential complications during pregnancy (e.g., spotting/spotting) requires an immediate obstetric evaluation to ensure maternal and fetal safety.";
+            severity = "CRITICAL";
+            specialist = "Obstetrician / Gynecologist";
+            action = "Contact your primary OB-GYN immediately or proceed to the nearest Labor & Delivery triage node.";
+            service = "Emergency & Trauma Care";
+            conditions = "Potential obstetric emergency or high-risk maternal health signal.";
+            instructions = "Monitor for any increase in bleeding, abdominal pain, or decreased fetal movement.";
+            warning = "OBSTETRIC ALERT: SEEK IMMEDIATE EVALUATION.";
+        } else if (q.contains("surgery") || q.contains("stitches") || q.contains("operation") || q.contains("removal") || q.contains("exercis") || q.contains("appendix") || q.contains("post-op")) {
+            assessment = safetyPrefix + "I've noted your post-surgical inquiry. Recovery from procedures like an appendectomy requires strict adherence to physical activity restrictions and wound care protocols.";
+            severity = "MODERATE";
+            specialist = "General Surgeon";
+            action = "Book a post-operative follow-up with your surgeon to assess wound healing and clear you for exercise.";
+            service = "General Clinical";
+            conditions = "Post-surgical recovery and wound management protocol.";
+            instructions = "Do not lift heavy weights or engage in strenuous exercise until cleared by your surgeon. Monitor for signs of infection.";
+        } else if (q.contains("dard") || q.contains("ulti") || q.contains("pareshan") || q.contains("chinta")) {
+            // Basic Hindi Emergency Detection (Pain/Vomiting/Worry)
+            assessment = safetyPrefix + "I have detected clinical distress in your Hindi query regarding pain or vomiting. Professional evaluation is required.";
+            severity = "HIGH";
+            specialist = "General Physician / Gastroenterologist";
+            action = "Please consult a physician immediately to evaluate the etiology of your symptoms.";
+            service = "General Clinical";
+            conditions = "Symptomatic distress identified via multilingual analysis.";
+            instructions = "Stay hydrated and note the duration of your symptoms.";
+        } else if (q.contains("dark thoughts") || q.contains("overwhelmed") || q.contains("suicide") || q.contains("self harm") || (q.contains("not slept") && q.contains("3 days"))) {
             assessment = safetyPrefix + "I've prioritized your report of severe psychological distress. MediSync offers immediate crisis support and psychiatric evaluation nodes.";
             severity = "CRITICAL";
             specialist = "Psychiatrist / Crisis Counselor";
