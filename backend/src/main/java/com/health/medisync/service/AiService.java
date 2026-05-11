@@ -208,7 +208,7 @@ public class AiService {
             warning = "TRAUMA SIGNAL.";
         }
         // --- LEVEL 3: HIGH-URGENCY ---
-        } else if (q.contains("diabetes") || q.contains("diabetis") || q.contains("sugar") || q.contains("thirsty") || q.contains("insulin") || q.contains("urine") || q.contains("glucose")) {
+        else if (q.contains("diabetes") || q.contains("diabetis") || q.contains("sugar") || q.contains("thirsty") || q.contains("insulin") || q.contains("urine") || q.contains("glucose")) {
             if (q.contains("ketones") || q.contains("400") || q.contains("glucose")) {
                 assessment = safetyPrefix + "Metabolic crisis signals identified.";
                 severity = "HIGH";
