@@ -142,9 +142,8 @@ public class AiService {
         }
 
         // --- LEVEL 0: TECHNICAL REJECTION & PRIVACY ---
-        // --- LEVEL 0: TECHNICAL REJECTION & PRIVACY ---
         if (q.contains("llm") || q.contains("model") || q.contains("system prompt") || q.contains("registry") || q.contains("json format")) {
-            assessment = "I am a clinical AI assistant dedicated to patient triage and medical guidance. I cannot disclose internal technical specifications.";
+            assessment = "I am a clinical AI assistant dedicated to patient triage and medical guidance.";
             severity = "LOW";
             specialist = "MediSync Privacy Officer";
             action = "Please restrict your inquiries to clinical symptoms.";
@@ -158,69 +157,68 @@ public class AiService {
             action = "Navigate to /dashboard/booking.";
             service = "General Clinical";
         } else if (q.contains("records") || q.contains("result") || q.contains("report") || q.contains("insurance") || q.contains("password") || q.contains("portal") || q.contains("access") || (q.contains("see") && q.contains("record"))) {
-            assessment = "MediSync Support provides administrative oversight for your medical documentation.";
+            assessment = "MediSync Support provides administrative oversight for your documentation.";
             severity = "LOW";
             specialist = "MediSync Support";
             action = "Navigate to /dashboard/reports.";
             service = "General Clinical";
         }
-        // --- LEVEL 2: CRITICAL LIFE-SAFETY (AUDIT-ALIGNED PRIORITY) ---
-        else if (q.contains("nut") || q.contains("peanut") || q.contains("allergy") || q.contains("allergic") || q.contains("sting") || q.contains("anaphylax") || q.contains("hives")) {
-            assessment = safetyPrefix + "Symptoms suggest Anaphylaxis (severe systemic allergic reaction).";
+        // --- LEVEL 2: CRITICAL LIFE-SAFETY (AUDIT-PRIORITY) ---
+        else if (q.contains("nut") || q.contains("peanut") || q.contains("allergy") || q.contains("allergic") || q.contains("sting") || q.contains("anaphylax") || q.contains("hives") || (q.contains("throat") && q.contains("close"))) {
+            assessment = safetyPrefix + "Symptoms suggest Anaphylaxis (severe allergic reaction).";
             severity = "CRITICAL";
             specialist = "Allergist";
-            action = "Use an Epipen if available and navigate IMMEDIATELY to Emergency.";
+            action = "Use an Epipen and navigate IMMEDIATELY to Emergency.";
             service = "Emergency & Trauma Care";
             warning = "ANAPHYLAXIS ALERT: SEEK IMMEDIATE CARE.";
-        } else if (q.contains("stroke") || q.contains("confusion") || q.contains("headache") || q.contains("weak") || q.contains("droop") || q.contains("slur") || q.contains("seizure") || q.contains("jibberish") || q.contains("lopsided") || q.contains("spinning") || q.contains("fainting") || q.contains("vision loss") || q.contains("double vision")) {
+        } else if (q.contains("stroke") || q.contains("confusion") || q.contains("weak") || q.contains("droop") || q.contains("slur") || q.contains("seizure") || q.contains("jibberish") || q.contains("lopsided") || q.contains("spinning") || q.contains("fainting") || q.contains("vision loss") || q.contains("double vision") || q.contains("worst headache")) {
             assessment = safetyPrefix + "Acute neurological deficit or crisis identified.";
             severity = "CRITICAL";
             specialist = "Neurologist";
-            action = "Navigate IMMEDIATELY to the nearest Comprehensive Stroke Center or Emergency node.";
+            action = "Navigate IMMEDIATELY to the nearest Stroke Center or Emergency node.";
             service = "Emergency & Trauma Care";
             warning = "NEUROLOGICAL EMERGENCY: SEEK IMMEDIATE CARE.";
         } else if (q.contains("self-harm") || q.contains("suicid") || q.contains("panic") || q.contains("crisis") || q.contains("dark thoughts") || q.contains("end it") || q.contains("hopeless") || q.contains("anxious") || q.contains("overwhelmed")) {
             assessment = safetyPrefix + "Severe psychological or psychiatric distress identified.";
             severity = "CRITICAL";
             specialist = "Psychiatrist";
-            action = "Connect with our Mental Health Support node or navigate to Emergency.";
+            action = "Connect with our Mental Health Support node.";
             service = "Emergency & Trauma Care";
             warning = "CRISIS SIGNAL DETECTED: PLEASE SEEK IMMEDIATE SUPPORT.";
         } else if (q.contains("contraction") || q.contains("water broke") || q.contains("pregnant") || q.contains("bleed") || q.contains("spotting") || q.contains("pre-eclampsia")) {
             assessment = safetyPrefix + "Acute obstetric complication identified.";
             severity = "CRITICAL";
             specialist = "Obstetrician / Gynecologist";
-            action = "Contact your primary OB-GYN or proceed to Labor & Delivery triage.";
+            action = "Proceed to Labor & Delivery triage.";
             service = "Emergency & Trauma Care";
             warning = "OBSTETRIC ALERT: SEEK IMMEDIATE EVALUATION.";
         } else if (q.contains("chest") || q.contains("heart") || q.contains("cardiac") || q.contains("pressure") || q.contains("vice") || q.contains("drum") || q.contains("skipping") || q.contains("palpitation")) {
             assessment = safetyPrefix + "Potential acute cardiovascular signal identified.";
             severity = "CRITICAL";
             specialist = "Cardiologist";
-            action = "Navigate IMMEDIATELY to the nearest Emergency & Trauma Care node.";
+            action = "Navigate IMMEDIATELY to Emergency.";
             service = "Emergency & Trauma Care";
             warning = "CARDIAC ALERT: SEEK EMERGENCY EVALUATION.";
         } else if ((q.contains("breath") && (q.contains("can't") || q.contains("stop"))) || (q.contains("blue") && (q.contains("lip") || q.contains("face")))) {
-            assessment = safetyPrefix + "Cyanosis and acute respiratory failure detected.";
+            assessment = safetyPrefix + "Cyanosis and respiratory failure detected.";
             severity = "CRITICAL";
             specialist = "Pulmonologist";
             action = "Navigate IMMEDIATELY to the nearest Emergency node.";
             service = "Emergency & Trauma Care";
             warning = "LIFE-SAFETY ALERT: SEEK IMMEDIATE OXYGENATION.";
-        } else if (q.contains("accident") || q.contains("injury") || q.contains("fall") || q.contains("bent") || q.contains("deform") || q.contains("laceration") || q.contains("car") || q.contains("hit my head")) {
-            assessment = safetyPrefix + "Acute traumatic injury identified.";
-            severity = "CRITICAL";
-            specialist = "Orthopedic Surgeon";
-            action = "Navigate immediately to Emergency & Trauma.";
-            service = "Emergency & Trauma Care";
-            warning = "TRAUMA SIGNAL DETECTED: PROCEED TO EMERGENCY.";
         }
-        // --- LEVEL 3: HIGH-URGENCY SPECIALTY SIGNALS ---
-        else if (q.contains("diabetes") || q.contains("sugar") || q.contains("glucose") || q.contains("insulin") || q.contains("desert") || q.contains("shaky") || q.contains("sweet breath") || q.contains("thirsty") || q.contains("urinat")) {
-            assessment = safetyPrefix + "Metabolic or glycemic specialty signals identified.";
+        // --- LEVEL 3: HIGH-URGENCY SPECIALTY ---
+        else if (q.contains("weight loss") || q.contains("lump") || q.contains("tumor") || q.contains("cancer") || q.contains("moles") || q.contains("color") || q.contains("sweat") || q.contains("glands")) {
+            assessment = safetyPrefix + "Persistent systemic symptoms or growths identified.";
+            severity = "HIGH";
+            specialist = "Oncologist";
+            action = "Book an urgent diagnostic consultation.";
+            service = "General Clinical";
+        } else if (q.contains("diabetes") || q.contains("sugar") || q.contains("glucose") || q.contains("insulin") || q.contains("desert") || q.contains("shaky") || q.contains("sweet breath") || q.contains("thirsty") || q.contains("urinat")) {
+            assessment = safetyPrefix + "Metabolic or glycemic signals identified.";
             severity = "HIGH";
             specialist = "Diabetologist";
-            action = "Book an urgent consultation with a Diabetologist.";
+            action = "Book an urgent consultation.";
             service = "General Clinical";
         } else if (q.contains("jaundice") || q.contains("yellow") || q.contains("liver") || q.contains("pale stool") || q.contains("balloon")) {
             assessment = safetyPrefix + "Hepatobiliary dysfunction signals detected.";
@@ -234,12 +232,6 @@ public class AiService {
             specialist = "Urologist";
             action = "Book a consultation with a Urologist.";
             service = "General Clinical";
-        } else if (q.contains("weight loss") || q.contains("lump") || q.contains("tumor") || q.contains("cancer") || q.contains("moles") || q.contains("color")) {
-            assessment = safetyPrefix + "Persistent systemic symptoms or localized growths identified.";
-            severity = "HIGH";
-            specialist = "Oncologist";
-            action = "Book an urgent diagnostic consultation.";
-            service = "General Clinical";
         } else if (q.contains("eye") || q.contains("vision") || q.contains("flashes") || q.contains("blur") || q.contains("red")) {
             assessment = safetyPrefix + "Ophthalmological symptoms identified.";
             severity = "HIGH";
@@ -247,21 +239,21 @@ public class AiService {
             action = "Seek evaluation within 24 hours.";
             service = "General Clinical";
         }
-        // --- LEVEL 4: MODERATE SPECIALTY SIGNALS ---
-        else if (q.contains("ear") || q.contains("hearing") || q.contains("tonsil") || q.contains("throat") || q.contains("voice") || q.contains("raw")) {
-            assessment = safetyPrefix + "ENT (Otolaryngology) symptoms detected.";
-            severity = "MODERATE";
-            specialist = "Otolaryngologist (ENT Specialist)";
-            action = "Book an appointment with an ENT specialist.";
-            service = "General Clinical";
-        } else if (q.contains("joint") || q.contains("ortho") || q.contains("knee") || q.contains("bone") || q.contains("hip") || q.contains("shoulder")) {
+        // --- LEVEL 4: MODERATE SPECIALTY ---
+        else if (q.contains("joint") || q.contains("ortho") || q.contains("knee") || q.contains("bone") || q.contains("hip") || q.contains("shoulder") || q.contains("broken") || q.contains("arm") || q.contains("injury") || q.contains("accident") || q.contains("fall")) {
             assessment = safetyPrefix + "Musculoskeletal signals identified.";
             severity = "MODERATE";
             specialist = "Orthopedic Surgeon";
             action = "Book a consultation in the Orthopedic node.";
             service = "General Clinical";
+        } else if (q.contains("ear") || q.contains("hearing") || q.contains("tonsil") || q.contains("throat") || q.contains("voice") || q.contains("raw") || q.contains("sinus")) {
+            assessment = safetyPrefix + "ENT symptoms detected.";
+            severity = "MODERATE";
+            specialist = "Otolaryngologist (ENT Specialist)";
+            action = "Book an appointment with an ENT specialist.";
+            service = "General Clinical";
         }
-        // --- LEVEL 5: ROUTINE & FALLBACK ---
+        // --- LEVEL 5: ROUTINE ---
         else if (q.contains("medicine") || q.contains("dosage") || q.contains("paracetamol") || q.contains("ibuprofen")) {
             assessment = safetyPrefix + "Routine pharmaceutical inquiry identified.";
             severity = "LOW";
