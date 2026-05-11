@@ -51,8 +51,8 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**", "/ws/**", "/api/diag/**").permitAll()
-                .requestMatchers("/api/chat/**", "/api/patient/**", "/api/hospital/profile/**").authenticated()
-                .requestMatchers("/api/hospital/**", "/api/appointments/**", "/api/ai/**").permitAll()
+                .requestMatchers("/api/hospital/profile/**").permitAll()
+                .requestMatchers("/api/hospital/**", "/api/appointments/**", "/api/ai/**").authenticated()
                 .requestMatchers(request -> !request.getServletPath().startsWith("/api")).permitAll()
                 .anyRequest().authenticated()
             )
