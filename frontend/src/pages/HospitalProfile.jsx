@@ -21,11 +21,7 @@ const SERVICES_24_7 = [
     'Cardiac Emergency', 
     'ICU Admission',
     'Blood Bank',
-    'Emergency (ER)',
-    'ICU',
-    'NICU',
-    'PICU',
-    'Trauma Center'
+    'Neonatal Care'
 ];
 
 const HospitalProfile = () => {
@@ -208,8 +204,13 @@ const HospitalProfile = () => {
             const services = formData.services.split(', ').filter(s => s);
             for (const service of services) {
                 const is247 = SERVICES_24_7.includes(service);
-                if (!formData.serviceFees[service] || (!is247 && !formData.serviceDurations[service])) {
-                    toast.error(`Required: Please provide ${!is247 ? 'both Fee and Duration' : 'Fee'} for "${service}"`);
+                if (!formData.serviceFees[service]) {
+                    toast.error(`Required: Please provide a Fee for "${service}"`);
+                    setSaving(false);
+                    return;
+                }
+                if (!is247 && (!formData.serviceDurations[service] || !formData.serviceCapacity[service])) {
+                    toast.error(`Required: Please provide both Time Slot and Capacity for "${service}"`);
                     setSaving(false);
                     return;
                 }
@@ -986,12 +987,7 @@ const HospitalProfile = () => {
                                                     </div>
                                                 </div>
 
-                                                {SERVICES_24_7.some(s => service.toLowerCase().includes(s.toLowerCase())) ? (
-                                                    <div className="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100 flex items-center justify-center gap-3 w-full">
-                                                        <Activity className="text-emerald-600" size={16} />
-                                                        <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Available 24/7 • No Slots Required</span>
-                                                    </div>
-                                                ) : (
+                                                {!SERVICES_24_7.includes(service) && (
                                                     <div className="grid grid-cols-2 gap-4">
                                                         <div className="space-y-1.5">
                                                             <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
