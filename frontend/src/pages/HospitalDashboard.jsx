@@ -19,6 +19,10 @@ const HospitalDashboard = () => {
     const [auditLogs, setAuditLogs] = useState([]);
     const [aiInsights, setAiInsights] = useState([]);
     const [loadFluctuations, setLoadFluctuations] = useState({ Cardiology: 92.1, Neurology: 67.9, Pediatrics: 92.1 });
+    const [showTimeModal, setShowTimeModal] = useState(false);
+    const [tempStartTime, setTempStartTime] = useState('09:00');
+    const [tempEndTime, setTempEndTime] = useState('17:00');
+    const [savingTime, setSavingTime] = useState(false);
 
     const fetchInstitutionalData = async (silent = false) => {
         if (!silent) setLoading(true);
@@ -73,6 +77,26 @@ const HospitalDashboard = () => {
     const sortedTrends = Object.entries(topSpecialties)
         .sort(([,a], [,b]) => b - a)
         .slice(0, 5);
+
+    const handleUpdateTime = async () => {
+        setSavingTime(true);
+        try {
+            const data = new FormData();
+            data.append('data', JSON.stringify({
+                consultationTimings: `${tempStartTime} - ${tempEndTime}`
+            }));
+            await api.post('/hospital/update-profile', data, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            toast.success("Institutional cloud window synchronized");
+            setShowTimeModal(false);
+            fetchInstitutionalData(true);
+        } catch (err) {
+            toast.error("Failed to update cloud window");
+        } finally {
+            setSavingTime(false);
+        }
+    };
 
     if (loading) return (
         <div className="h-screen flex items-center justify-center bg-slate-50">
@@ -251,11 +275,24 @@ const HospitalDashboard = () => {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 lg:flex-1 lg:ml-20">
-                        <div className="space-y-2">
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Consultation Hours</p>
+                        <div className="space-y-2 group/item relative">
+                            <div className="flex items-center justify-between">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Consultation Hours</p>
+                                <button 
+                                    onClick={() => {
+                                        const [start, end] = (stats?.consultationTimings || '09:00 - 17:00').split(' - ');
+                                        setTempStartTime(start || '09:00');
+                                        setTempEndTime(end || '17:00');
+                                        setShowTimeModal(true);
+                                    }}
+                                    className="p-1.5 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-lg transition-all opacity-0 group-hover/item:opacity-100"
+                                >
+                                    <Settings size={14} />
+                                </button>
+                            </div>
                             <p className="text-xl font-black text-slate-800 uppercase italic flex items-center gap-3">
                                 <Calendar size={20} className="text-blue-600" />
-                                {stats?.consultationTimings || '09:00 AM - 09:00 PM'}
+                                {stats?.consultationTimings || '09:00 - 17:00'}
                             </p>
                         </div>
 
@@ -286,6 +323,60 @@ const HospitalDashboard = () => {
                     </div>
                 </div>
             </div>
+
+            {/* ── Time Configuration Modal ── */}
+            {showTimeModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-300">
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
+                                    <Clock size={24} />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight italic">Adjust <span className="text-blue-600">Window</span></h3>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Consultation Hours</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setShowTimeModal(false)} className="p-2 hover:bg-slate-50 text-slate-400 rounded-xl transition-all">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2 text-left">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Opening</label>
+                                    <input 
+                                        type="time" 
+                                        value={tempStartTime}
+                                        onChange={(e) => setTempStartTime(e.target.value)}
+                                        className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 ring-blue-100 outline-none transition-all"
+                                    />
+                                </div>
+                                <div className="space-y-2 text-left">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Closing</label>
+                                    <input 
+                                        type="time" 
+                                        value={tempEndTime}
+                                        onChange={(e) => setTempEndTime(e.target.value)}
+                                        className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 ring-blue-100 outline-none transition-all"
+                                    />
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={handleUpdateTime}
+                                disabled={savingTime}
+                                className="w-full py-5 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl hover:bg-blue-600 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                            >
+                                {savingTime ? <Activity size={16} className="animate-spin" /> : <Check size={16} />}
+                                {savingTime ? 'Synchronizing...' : 'Update Cloud Window'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

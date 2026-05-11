@@ -263,17 +263,18 @@ public class HospitalController {
             if (data.get("alternatePhone") != null) hospital.setAlternatePhone(String.valueOf(data.get("alternatePhone")));
             if (data.get("emergencyPhone") != null) hospital.setOfficialEmergencyContact(String.valueOf(data.get("emergencyPhone")));
 
-            if (data.get("gstNumber") != null) hospital.setGstNumber(String.valueOf(data.get("gstNumber")));
-            if (data.get("panNumber") != null) hospital.setPanNumber(String.valueOf(data.get("panNumber")));
-            if (data.get("nabhId")    != null) hospital.setNabhId(String.valueOf(data.get("nabhId")));
-            if (data.get("isoId")     != null) hospital.setIsoId(String.valueOf(data.get("isoId")));
+            if (data.containsKey("gstNumber")) hospital.setGstNumber(String.valueOf(data.get("gstNumber")));
+            if (data.containsKey("panNumber")) hospital.setPanNumber(String.valueOf(data.get("panNumber")));
+            if (data.containsKey("nabhId"))    hospital.setNabhId(String.valueOf(data.get("nabhId")));
+            if (data.containsKey("isoId"))     hospital.setIsoId(String.valueOf(data.get("isoId")));
             
-            hospital.setTotalBeds(safeInt(data.get("totalBeds")));
-            hospital.setIcuBeds(safeInt(data.get("icuBeds")));
-            hospital.setOperationTheatersCount(safeInt(data.get("operationTheatersCount")));
-            hospital.setAmbulanceCount(safeInt(data.get("ambulanceCount")));
-            hospital.setNurseCount(safeInt(data.get("nurseCount")));
-            hospital.setGeneralStaffCount(safeInt(data.get("generalStaffCount")));
+            if (data.containsKey("totalBeds")) hospital.setTotalBeds(safeInt(data.get("totalBeds")));
+            if (data.containsKey("icuBeds")) hospital.setIcuBeds(safeInt(data.get("icuBeds")));
+            if (data.containsKey("operationTheatersCount")) hospital.setOperationTheatersCount(safeInt(data.get("operationTheatersCount")));
+            if (data.containsKey("ambulanceCount")) hospital.setAmbulanceCount(safeInt(data.get("ambulanceCount")));
+            if (data.containsKey("nurseCount")) hospital.setNurseCount(safeInt(data.get("nurseCount")));
+            if (data.containsKey("generalStaffCount")) hospital.setGeneralStaffCount(safeInt(data.get("generalStaffCount")));
+            
             if (data.get("emergencyServicesAvailable") != null) 
                 hospital.setEmergencyServicesAvailable(Boolean.parseBoolean(data.get("emergencyServicesAvailable").toString()));
 
