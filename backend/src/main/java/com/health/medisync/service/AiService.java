@@ -133,8 +133,20 @@ public class AiService {
             action = "Secure a consultation for metabolic management.";
             service = "General Clinical";
         }
-        // --- LEVEL 3: SYMPTOM-BASED HIGH-URGENCY ---
-        else if (matchesWord(q, "blood in urine") || matchesWord(q, "kidney") || matchesWord(q, "pee") || matchesWord(q, "bladder") || matchesWord(q, "urination")) {
+        // --- LEVEL 3: INSTITUTIONAL SERVICES & SPECIALIZED TRIAGE ---
+        else if (matchesWord(q, "mri") || matchesWord(q, "ct scan") || matchesWord(q, "xray") || matchesWord(q, "ultrasound") || matchesWord(q, "radiology")) {
+            assessment = safetyPrefix + "Diagnostic imaging protocol identified.";
+            severity = "MODERATE";
+            specialist = "Radiologist";
+            action = "Navigate to /dashboard/booking?mode=service&category=Diagnostic%20Services.";
+            service = "Diagnostic Services";
+        } else if (matchesWord(q, "surgery") || matchesWord(q, "operation") || matchesWord(q, "surgical") || matchesWord(q, "pre-op")) {
+            assessment = safetyPrefix + "Surgical intervention requirement identified.";
+            severity = "HIGH";
+            specialist = "Surgeon";
+            action = "Navigate to /dashboard/booking?mode=service&category=Surgery%20Booking.";
+            service = "Surgery Booking";
+        } else if (matchesWord(q, "blood in urine") || matchesWord(q, "kidney") || matchesWord(q, "pee") || matchesWord(q, "bladder") || matchesWord(q, "urination")) {
             assessment = safetyPrefix + "Urological specialty symptoms detected.";
             severity = "HIGH";
             specialist = "Urologist";

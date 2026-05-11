@@ -131,6 +131,20 @@ const HospitalAppointments = () => {
                     </div>
                 </div>
                 
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                {[
+                    { label: 'Emergency', count: appointments.filter(a => a.serviceName?.includes('Emergency') || a.serviceName?.includes('Trauma') || a.serviceName?.includes('Ambulance')).length, color: 'text-red-500', bg: 'bg-red-50' },
+                    { label: 'Diagnostics', count: appointments.filter(a => a.serviceName?.includes('Scan') || a.serviceName?.includes('Test') || a.serviceName?.includes('X-Ray')).length, color: 'text-blue-500', bg: 'bg-blue-50' },
+                    { label: 'Specialized', count: appointments.filter(a => a.doctor?.specialization && a.doctor.specialization !== 'General Medicine').length, color: 'text-purple-500', bg: 'bg-purple-50' },
+                    { label: 'General', count: appointments.filter(a => !a.serviceName && (!a.doctor?.specialization || a.doctor.specialization === 'General Medicine')).length, color: 'text-slate-500', bg: 'bg-slate-50' }
+                ].map((stat, i) => (
+                    <div key={i} className={`p-6 rounded-[2rem] ${stat.bg} border border-slate-100 flex flex-col gap-1`}>
+                        <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${stat.color}`}>{stat.label} Traffic</span>
+                        <span className="text-3xl font-black text-slate-900">{stat.count}</span>
+                    </div>
+                ))}
+            </div>
+
             <FilterBar 
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
