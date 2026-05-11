@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { createPortal } from 'react-dom';
+import { useNotifications } from '../context/NotificationContext';
 
 const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
     const { user } = useAuth();
