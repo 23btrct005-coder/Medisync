@@ -98,7 +98,7 @@ public class AiService {
             action = "Proceed to Labor & Delivery triage.";
             service = "Emergency & Trauma Care";
             warning = "OBSTETRIC ALERT.";
-        } else if (matchesWord(q, "chest") || matchesWord(q, "heart attack") || matchesWord(q, "pounding heart") || matchesWord(q, "crushing") || matchesWord(q, "shortness of breath") || matchesWord(q, "breathing difficulty") || matchesWord(q, "asthma") || matchesWord(q, "oxygen")) {
+        } else if (matchesWord(q, "chest") || matchesWord(q, "heart attack") || matchesWord(q, "atrial fibrillation") || matchesWord(q, "statin") || matchesWord(q, "statins") || matchesWord(q, "cardiology") || matchesWord(q, "pounding heart") || matchesWord(q, "crushing") || matchesWord(q, "shortness of breath") || matchesWord(q, "breathing difficulty") || matchesWord(q, "asthma") || matchesWord(q, "oxygen")) {
             assessment = safetyPrefix + "Acute cardiovascular or respiratory signal identified.";
             severity = "CRITICAL";
             specialist = "Cardiologist";
@@ -157,6 +157,12 @@ public class AiService {
             severity = "HIGH";
             specialist = "Gastroenterologist";
             action = "Book a consultation with a Gastroenterologist.";
+            service = "General Clinical";
+        } else if (matchesWord(q, "lupus") || matchesWord(q, "butterfly rash") || matchesWord(q, "rheumatology") || matchesWord(q, "joint pain") || matchesWord(q, "arthritis")) {
+            assessment = safetyPrefix + "Rheumatological or systemic autoimmune signals detected.";
+            severity = "HIGH";
+            specialist = "Rheumatologist";
+            action = "Book a consultation with a Rheumatologist.";
             service = "General Clinical";
         } else if (matchesWord(q, "skin") || matchesWord(q, "rash") || matchesWord(q, "itching") || matchesWord(q, "mole") || matchesWord(q, "dermatology")) {
             assessment = safetyPrefix + "Dermatological signals identified.";
