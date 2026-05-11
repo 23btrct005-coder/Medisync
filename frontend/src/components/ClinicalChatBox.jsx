@@ -112,7 +112,7 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
     };
 
     return createPortal(
-        <div className="fixed inset-0 w-full h-[100dvh] md:bottom-6 md:right-6 md:w-96 md:h-[600px] bg-white md:rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.3)] md:border border-slate-200/60 flex flex-col overflow-hidden z-[99999] animate-in slide-in-from-bottom-full md:slide-in-from-bottom-8 duration-500 text-left">
+        <div className="fixed inset-0 w-full h-[100dvh] md:inset-auto md:bottom-6 md:right-6 md:w-96 md:h-[600px] bg-white md:rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.3)] md:border border-slate-200/60 flex flex-col overflow-hidden z-[99999] animate-in slide-in-from-bottom-full md:slide-in-from-bottom-8 duration-500 text-left">
             {/* Header - High Fidelity Mobile Style */}
             <div className="pt-[env(safe-area-inset-top,32px)] pb-6 px-6 bg-slate-900 text-white flex items-center justify-between shrink-0 shadow-2xl relative z-20">
                 <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
