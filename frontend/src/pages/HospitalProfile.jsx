@@ -44,6 +44,13 @@ const normalizeObjectKeys = (obj) => {
     return normalized;
 };
 
+const getClinicalValue = (obj, targetKey) => {
+    if (!obj || !targetKey) return null;
+    const normalizedTarget = targetKey.trim().toLowerCase();
+    const key = Object.keys(obj).find(k => k.trim().toLowerCase() === normalizedTarget);
+    return key ? obj[key] : null;
+};
+
 const HospitalProfile = () => {
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -228,12 +235,16 @@ const HospitalProfile = () => {
 
             for (const service of services) {
                 const is247 = SERVICES_24_7.some(s => s.toLowerCase() === service.toLowerCase());
-                if (!normalizedFees[service]) {
+                const fee = getClinicalValue(formData.serviceFees, service);
+                const duration = getClinicalValue(formData.serviceDurations, service);
+                const capacity = getClinicalValue(formData.serviceCapacity, service);
+
+                if (!fee) {
                     toast.error(`Required: Please provide a Fee for "${service}"`);
                     setSaving(false);
                     return;
                 }
-                if (!is247 && (!normalizedDurations[service] || !normalizedCapacity[service])) {
+                if (!is247 && (!duration || !capacity)) {
                     toast.error(`Required: Please provide both Time Slot and Capacity for "${service}"`);
                     setSaving(false);
                     return;
@@ -1002,7 +1013,7 @@ const HospitalProfile = () => {
                                                             type="number"
                                                             min="0"
                                                             required
-                                                            value={formData.serviceFees[service] || ''}
+                                                            value={getClinicalValue(formData.serviceFees, service) || ''}
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
                                                                 if (val < 0) return;
@@ -1026,7 +1037,7 @@ const HospitalProfile = () => {
                                                                     type="number"
                                                                     min="0"
                                                                     required
-                                                                    value={formData.serviceDurations[service] || ''}
+                                                                    value={getClinicalValue(formData.serviceDurations, service) || ''}
                                                                     onChange={(e) => {
                                                                         const val = e.target.value;
                                                                         if (val < 0) return;
@@ -1049,7 +1060,7 @@ const HospitalProfile = () => {
                                                                     type="number"
                                                                     min="1"
                                                                     required
-                                                                    value={formData.serviceCapacity?.[service] || '1'}
+                                                                    value={getClinicalValue(formData.serviceCapacity, service) || ''}
                                                                     onChange={(e) => {
                                                                         const val = e.target.value;
                                                                         if (val < 1) return;
