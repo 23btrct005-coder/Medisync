@@ -31,8 +31,9 @@ public class AiToolController {
                 LocalDate date = LocalDate.parse(params.get("date").toString());
                 String slot = (String) params.get("slot");
                 ConsultationType type = ConsultationType.valueOf((String) params.get("type"));
+                String modality = params.containsKey("consultationModality") ? (String) params.get("consultationModality") : "General Consultation";
 
-                Map<String, Object> response = appointmentService.initiateBooking(authentication.getName(), doctorId, date, slot, type);
+                Map<String, Object> response = appointmentService.initiateBooking(authentication.getName(), doctorId, date, slot, type, modality);
                 return ResponseEntity.ok(Map.of("status", "SUCCESS", "data", response));
             }
 
