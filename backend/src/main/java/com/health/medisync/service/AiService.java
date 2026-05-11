@@ -128,7 +128,33 @@ public class AiService {
         }
 
         // --- CRITICAL EMERGENCY NODES (PRIORITY 1) ---
-        if (q.contains("sting") || q.contains("hives") || (q.contains("throat") && q.contains("tight")) || q.contains("anaphylax")) {
+        if (q.contains("neck") && (q.contains("stiff") || q.contains("pain")) && (q.contains("light") || q.contains("fever"))) {
+            assessment = safetyPrefix + "Your symptoms (stiff neck/light sensitivity/fever) are consistent with an acute meningeal irritation protocol. This requires immediate clinical evaluation to rule out meningitis.";
+            severity = "CRITICAL";
+            specialist = "Neurologist / Infectious Disease Specialist";
+            action = "Navigate IMMEDIATELY to the nearest Emergency department for a lumbar puncture and stabilization.";
+            service = "Emergency & Trauma Care";
+            conditions = "Potential acute meningitis or central nervous system infection.";
+            instructions = "Avoid bright lights and keep your neck as comfortable as possible while in transit.";
+            warning = "NEUROLOGICAL ALERT: SEEK IMMEDIATE EVALUATION.";
+        } else if ((q.contains("sun") || q.contains("heat") || q.contains("outside")) && (q.contains("confused") || q.contains("hot") || q.contains("dry") || q.contains("no sweat"))) {
+            assessment = safetyPrefix + "Your report of confusion and hot/dry skin after heat exposure suggests a potential Heat Stroke, which is a critical medical emergency.";
+            severity = "CRITICAL";
+            specialist = "Emergency Physician";
+            action = "Navigate IMMEDIATELY to the nearest Emergency node. Move to a cool area and apply cool water to the skin immediately.";
+            service = "Emergency & Trauma Care";
+            conditions = "Potential Heat Stroke / Severe Hyperthermia protocol.";
+            instructions = "Do not wait for symptoms to worsen. Stay hydrated if conscious.";
+            warning = "HEAT EMERGENCY DETECTED: SEEK IMMEDIATE CARE.";
+        } else if ((q.contains("how") || q.contains("where") || q.contains("help") || q.contains("find")) && (q.contains("book") || q.contains("appointment") || q.contains("slot"))) {
+            assessment = "I can certainly help you with the booking process. MediSync offers a streamlined 'Book Appointment' portal accessible directly from your sidebar.";
+            severity = "LOW";
+            specialist = "MediSync Navigator";
+            action = "Navigate to '/dashboard/booking' to select your department, specialist, and preferred time slot.";
+            service = "General Clinical";
+            conditions = "Portal navigation and booking assistance identified.";
+            instructions = "If you encounter any technical issues, reach out to the institutional helpdesk.";
+        } else if (q.contains("sting") || q.contains("hives") || (q.contains("throat") && q.contains("tight")) || q.contains("anaphylax")) {
             assessment = safetyPrefix + "Your symptoms suggest a potential acute systemic allergic reaction (Anaphylaxis). This is a life-threatening medical emergency.";
             severity = "CRITICAL";
             specialist = "Allergist / Emergency Specialist";
