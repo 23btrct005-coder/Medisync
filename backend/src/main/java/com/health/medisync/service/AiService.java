@@ -199,8 +199,8 @@ public class AiService {
             specialist = "Endocrinologist / Diabetologist";
             action = "Book an urgent consultation with a Diabetologist.";
             service = "General Clinical";
-        } else if (q.contains("urine") || q.contains("pee") || q.contains("bladder") || q.contains("kidney") || (q.contains("blood") && q.contains("piss"))) {
-            assessment = safetyPrefix + "Urological symptoms detected. Potential infection or structural issue identified.";
+        } else if (q.contains("urine") || q.contains("pee") || q.contains("bladder") || q.contains("kidney") || q.contains("prostate") || (q.contains("blood") && q.contains("piss"))) {
+            assessment = safetyPrefix + "Urological specialty symptoms detected.";
             severity = "HIGH";
             specialist = "Urologist";
             action = "Book a consultation with a Urologist via the specialist node.";
@@ -251,22 +251,22 @@ public class AiService {
             action = "Navigate IMMEDIATELY to the nearest Emergency node.";
             service = "Emergency & Trauma Care";
             warning = "HEAT EMERGENCY DETECTED: SEEK IMMEDIATE CARE.";
-        } else if ((q.contains("pregnant") || q.contains("pregnancy")) && (q.contains("weeks") || q.contains("spotting") || q.contains("contraction") || q.contains("headache"))) {
-            assessment = safetyPrefix + "Obstetric complications reported during pregnancy. Immediate evaluation required.";
+        } else if (safeContains(q, "contraction") || safeContains(q, "water broke") || safeContains(q, "pre-eclampsia") || (safeContains(q, "pregnant") && safeContains(q, "bleed"))) {
+            assessment = safetyPrefix + "Acute obstetric complication identified. Immediate clinical intervention is required.";
             severity = "CRITICAL";
             specialist = "Obstetrician / Gynecologist";
             action = "Contact your primary OB-GYN or proceed to Labor & Delivery triage.";
             service = "Emergency & Trauma Care";
             warning = "OBSTETRIC ALERT: SEEK IMMEDIATE EVALUATION.";
-        } else if (safeContains(q, "weak") || safeContains(q, "droop") || safeContains(q, "slur") || (safeContains(q, "lift") && safeContains(q, "arm")) || safeContains(q, "stroke") || safeContains(q, "vision loss")) {
-            assessment = safetyPrefix + "Acute neurological deficit (Stroke Protocol) identified. Every second counts for neurological preservation.";
+        } else if (safeContains(q, "weak") || safeContains(q, "droop") || safeContains(q, "slur") || (safeContains(q, "lift") && safeContains(q, "arm")) || safeContains(q, "stroke") || safeContains(q, "vision loss") || safeContains(q, "seizure")) {
+            assessment = safetyPrefix + "Acute neurological deficit or seizure identified. Immediate clinical intervention is required.";
             severity = "CRITICAL";
             specialist = "Neurologist / Stroke Specialist";
-            action = "Navigate IMMEDIATELY to the nearest Comprehensive Stroke Center.";
+            action = "Navigate IMMEDIATELY to the nearest Comprehensive Stroke Center or Emergency node.";
             service = "Emergency & Trauma Care";
             warning = "NEUROLOGICAL EMERGENCY: SEEK IMMEDIATE CARE.";
-        } else if (safeContains(q, "self-harm") || safeContains(q, "suicid") || safeContains(q, "suicide") || safeContains(q, "dark thoughts") || safeContains(q, "overwhelmed") || safeContains(q, "crisis")) {
-            assessment = safetyPrefix + "I've prioritized your report of severe psychological distress. MediSync offers immediate crisis support.";
+        } else if (safeContains(q, "self-harm") || safeContains(q, "suicid") || safeContains(q, "dark thoughts") || safeContains(q, "overwhelmed") || safeContains(q, "crisis") || safeContains(q, "panic attack") || safeContains(q, "hallucination") || safeContains(q, "manic")) {
+            assessment = safetyPrefix + "I've prioritized your report of severe psychological or psychiatric distress.";
             severity = "CRITICAL";
             specialist = "Psychiatrist / Crisis Counselor";
             action = "Connect immediately with our Mental Health Support node or navigate to Emergency.";
@@ -299,13 +299,13 @@ public class AiService {
             specialist = "General Surgeon / Gastroenterologist";
             action = "Seek evaluation at an Emergency or Urgent Care node within 4 hours.";
             service = "General Clinical";
-        } else if (safeContains(q, "report") || safeContains(q, "result") || safeContains(q, "lab") || safeContains(q, "blood test")) {
-            assessment = "Access your results in the 'Reports' section of your dashboard.";
+        } else if (safeContains(q, "records") || safeContains(q, "result") || safeContains(q, "report") || safeContains(q, "insurance") || safeContains(q, "password") || safeContains(q, "portal") || safeContains(q, "access") || safeContains(q, "update") || safeContains(q, "email")) {
+            assessment = "MediSync Support provides administrative oversight for your medical documentation and access credentials.";
             severity = "LOW";
             specialist = "MediSync Support / Records Department";
             action = "Navigate to /dashboard/reports.";
             service = "General Clinical";
-        } else if ((safeContains(q, "how") || safeContains(q, "where") || safeContains(q, "find") || safeContains(q, "help") || safeContains(q, "schedule")) && (safeContains(q, "book") || safeContains(q, "appointment") || safeContains(q, "hospital") || safeContains(q, "doctor"))) {
+        } else if ((safeContains(q, "how") || safeContains(q, "where") || safeContains(q, "find") || safeContains(q, "help") || safeContains(q, "schedule") || safeContains(q, "contact") || safeContains(q, "locate")) && (safeContains(q, "book") || safeContains(q, "appointment") || safeContains(q, "hospital") || safeContains(q, "doctor") || safeContains(q, "office") || safeContains(q, "specialist") || safeContains(q, "clinic"))) {
             assessment = "MediSync Navigator offers a streamlined portal for all scheduling and facility navigation.";
             severity = "LOW";
             specialist = "MediSync Navigator";
