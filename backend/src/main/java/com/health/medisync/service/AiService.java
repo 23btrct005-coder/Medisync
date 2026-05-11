@@ -200,27 +200,30 @@ public class AiService {
             action = "Book a consultation with a Urologist via the specialist node.";
             service = "General Clinical";
             conditions = "Urological specialty inquiry.";
-        } else if (q.contains("ear") || q.contains("hearing") || q.contains("tonsil") || q.contains("sore throat") || (q.contains("throat") && q.contains("patch"))) {
-            assessment = safetyPrefix + "Otolaryngological (ENT) symptoms detected. Specialized evaluation recommended.";
+        } else if (safeContains(q, "ear") || safeContains(q, "hearing") || safeContains(q, "tonsil") || safeContains(q, "throat") || safeContains(q, "voice")) {
+            assessment = safetyPrefix + "ENT (Otolaryngology) symptoms detected.";
             severity = "MODERATE";
             specialist = "Otolaryngologist (ENT Specialist)";
-            action = "Book an appointment with an ENT specialist for detailed imaging/scoping.";
+            action = "Book an appointment with an ENT specialist.";
             service = "General Clinical";
-            conditions = "ENT specialty inquiry.";
-        } else if (q.contains("eye") && (q.contains("vision") || q.contains("red") || q.contains("blur"))) {
-            assessment = safetyPrefix + "Ophthalmological symptoms detected. Vision changes require specialized assessment.";
+        } else if (safeContains(q, "eye") && (safeContains(q, "vision") || safeContains(q, "red") || safeContains(q, "blur"))) {
+            assessment = safetyPrefix + "Ophthalmological symptoms require specialized assessment.";
             severity = "HIGH";
             specialist = "Ophthalmologist";
-            action = "Seek evaluation from an Ophthalmologist within 24 hours.";
+            action = "Seek evaluation within 24 hours.";
             service = "General Clinical";
-            conditions = "Ophthalmic specialty inquiry.";
-        } else if (q.contains("foot") || q.contains("heel") || q.contains("toe") || q.contains("podiatry")) {
-            assessment = safetyPrefix + "Podiatric symptoms detected. Lower limb specialist evaluation recommended.";
+        } else if (safeContains(q, "heel") || safeContains(q, "shoulder") || safeContains(q, "joint") || safeContains(q, "toe") || safeContains(q, "ortho")) {
+            assessment = safetyPrefix + "Musculoskeletal or orthopedic signals identified.";
             severity = "MODERATE";
-            specialist = "Podiatrist / Orthopedic Surgeon";
-            action = "Book a consultation with a Podiatrist via the specialist portal.";
+            specialist = "Orthopedic Surgeon / Physiotherapist";
+            action = "Book a consultation in the Orthopedic node.";
             service = "General Clinical";
-            conditions = "Podiatry specialty inquiry.";
+        } else if (safeContains(q, "snoring") || safeContains(q, "sleep") || safeContains(q, "apnea")) {
+            assessment = safetyPrefix + "Signals consistent with Sleep-disordered breathing detected.";
+            severity = "MODERATE";
+            specialist = "Sleep Specialist / Pulmonologist";
+            action = "Secure a sleep study or pulmonary consultation.";
+            service = "General Clinical";
         }
         // --- LEVEL 3: HARDENED EXISTING NODES ---
         else if (q.contains("neck") && (q.contains("stiff") || q.contains("pain")) && (q.contains("light") || q.contains("fever"))) {
@@ -316,7 +319,7 @@ public class AiService {
             specialist = "Radiologist";
             action = "Secure a slot in the Diagnostic Imaging section.";
             service = "MRI Scan";
-        } else if (safeContains(q, "paracetamol") || safeContains(q, "ibuprofen") || safeContains(q, "medicine") || safeContains(q, "dosage") || safeContains(q, "ear") || safeContains(q, "throat")) {
+        } else if (safeContains(q, "paracetamol") || safeContains(q, "ibuprofen") || safeContains(q, "medicine") || safeContains(q, "dosage")) {
             assessment = safetyPrefix + "Routine pharmaceutical or symptomatic inquiry identified.";
             severity = "LOW";
             specialist = "General Practitioner / Pharmacist";
