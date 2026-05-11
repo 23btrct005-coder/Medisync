@@ -208,7 +208,7 @@ public class AiService {
             warning = "TRAUMA SIGNAL.";
         }
         // --- LEVEL 3: HIGH-URGENCY ---
-        else if (q.contains("sugar") || q.contains("thirsty") || q.contains("insulin") || q.contains("urine") || q.contains("glucose")) {
+        } else if (q.contains("diabetes") || q.contains("diabetis") || q.contains("sugar") || q.contains("thirsty") || q.contains("insulin") || q.contains("urine") || q.contains("glucose")) {
             if (q.contains("ketones") || q.contains("400") || q.contains("glucose")) {
                 assessment = safetyPrefix + "Metabolic crisis signals identified.";
                 severity = "HIGH";
@@ -254,7 +254,7 @@ public class AiService {
             specialist = "Otolaryngologist (ENT Specialist)";
             action = "Book an appointment with an ENT specialist.";
             service = "General Clinical";
-        } else if (q.contains("joint") || q.contains("knee") || q.contains("shoulder") || q.contains("broken bone") || q.contains("hip")) {
+        } else if (q.contains("joint") || q.contains("knee") || q.contains("shoulder") || q.contains("broken") || q.contains("arm") || q.contains("hip")) {
             assessment = safetyPrefix + "Musculoskeletal signals identified.";
             severity = "MODERATE";
             specialist = "Orthopedic Surgeon";
