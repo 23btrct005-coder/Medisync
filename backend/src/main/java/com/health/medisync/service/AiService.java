@@ -151,16 +151,16 @@ public class AiService {
             conditions = "Non-clinical technical inquiry identified.";
         }
         // --- LEVEL 1: ADMINISTRATIVE ROUTING ---
-        else if ((safeContains(q, "how") || safeContains(q, "where") || safeContains(q, "find") || safeContains(q, "help") || safeContains(q, "schedule") || safeContains(q, "contact") || safeContains(q, "locate") || safeContains(q, "checkup") || safeContains(q, "specialist") || safeContains(q, "appointment")) && (safeContains(q, "book") || safeContains(q, "appointment") || safeContains(q, "hospital") || safeContains(q, "doctor") || safeContains(q, "office") || safeContains(q, "specialist") || safeContains(q, "clinic"))) {
+        else if ((safeContains(q, "how") || safeContains(q, "where") || safeContains(q, "find") || safeContains(q, "help") || safeContains(q, "schedule") || safeContains(q, "contact") || safeContains(q, "locate") || safeContains(q, "checkup") || safeContains(q, "specialist") || safeContains(q, "appointment") || safeContains(q, "book")) && (safeContains(q, "book") || safeContains(q, "appointment") || safeContains(q, "hospital") || safeContains(q, "doctor") || safeContains(q, "office") || safeContains(q, "specialist") || safeContains(q, "clinic") || safeContains(q, "checkup"))) {
             assessment = "MediSync Navigator offers a streamlined portal for all scheduling and facility navigation.";
             severity = "LOW";
             specialist = "MediSync Navigator";
             action = "Navigate to /dashboard/booking.";
             service = "General Clinical";
-        } else if (safeContains(q, "records") || safeContains(q, "result") || safeContains(q, "report") || safeContains(q, "insurance") || safeContains(q, "password") || safeContains(q, "portal") || safeContains(q, "access") || safeContains(q, "update") || safeContains(q, "email")) {
+        } else if (safeContains(q, "records") || safeContains(q, "result") || safeContains(q, "report") || safeContains(q, "insurance") || safeContains(q, "password") || safeContains(q, "portal") || safeContains(q, "access") || safeContains(q, "update") || safeContains(q, "email") || (safeContains(q, "see") && safeContains(q, "record"))) {
             assessment = "MediSync Support provides administrative oversight for your medical documentation and access credentials.";
             severity = "LOW";
-            specialist = "MediSync Support / Records Department";
+            specialist = "MediSync Support";
             action = "Navigate to /dashboard/reports.";
             service = "General Clinical";
         }
@@ -172,20 +172,27 @@ public class AiService {
             action = "Navigate IMMEDIATELY to the nearest Emergency & Trauma Care node.";
             service = "Emergency & Trauma Care";
             warning = "CARDIAC ALERT: SEEK EMERGENCY EVALUATION.";
-        } else if (safeContains(q, "weak") || safeContains(q, "droop") || safeContains(q, "slur") || (safeContains(q, "lift") && safeContains(q, "arm")) || safeContains(q, "stroke") || safeContains(q, "vision loss") || safeContains(q, "seizure") || safeContains(q, "jibberish") || safeContains(q, "lopsided") || safeContains(q, "spinning") || safeContains(q, "confusion") || safeContains(q, "fainting")) {
-            assessment = safetyPrefix + "Acute neurological deficit or seizure identified. Immediate clinical intervention is required.";
-            severity = "CRITICAL";
-            specialist = "Neurologist / Stroke Specialist";
-            action = "Navigate IMMEDIATELY to the nearest Comprehensive Stroke Center or Emergency node.";
-            service = "Emergency & Trauma Care";
-            warning = "NEUROLOGICAL EMERGENCY: SEEK IMMEDIATE CARE.";
-        } else if (safeContains(q, "self-harm") || safeContains(q, "suicid") || safeContains(q, "dark thoughts") || safeContains(q, "overwhelmed") || safeContains(q, "crisis") || safeContains(q, "panic") || safeContains(q, "hallucination") || safeContains(q, "manic") || safeContains(q, "end it") || safeContains(q, "hopeless")) {
+        } else if (safeContains(q, "self-harm") || safeContains(q, "suicid") || safeContains(q, "dark thoughts") || safeContains(q, "overwhelmed") || safeContains(q, "crisis") || safeContains(q, "panic") || safeContains(q, "hallucination") || safeContains(q, "manic") || safeContains(q, "end it") || safeContains(q, "hopeless") || safeContains(q, "anxious")) {
             assessment = safetyPrefix + "I've prioritized your report of severe psychological or psychiatric distress.";
             severity = "CRITICAL";
-            specialist = "Psychiatrist / Crisis Counselor";
+            specialist = "Psychiatrist";
             action = "Connect immediately with our Mental Health Support node or navigate to Emergency.";
             service = "Emergency & Trauma Care";
             warning = "CRISIS SIGNAL DETECTED: PLEASE SEEK IMMEDIATE SUPPORT.";
+        } else if (safeContains(q, "peanut") || safeContains(q, "nut") || safeContains(q, "anaphylax") || safeContains(q, "hives") || (safeContains(q, "throat") && (safeContains(q, "close") || safeContains(q, "tight"))) || safeContains(q, "allergy") || safeContains(q, "allergic") || safeContains(q, "sting")) {
+            assessment = safetyPrefix + "Symptoms suggest Anaphylaxis (severe systemic allergic reaction). This is a critical medical emergency.";
+            severity = "CRITICAL";
+            specialist = "Allergist";
+            action = "Use an Epipen if available and navigate IMMEDIATELY to the nearest Emergency node.";
+            service = "Emergency & Trauma Care";
+            warning = "ANAPHYLAXIS ALERT: SEEK IMMEDIATE CARE.";
+        } else if (safeContains(q, "weak") || safeContains(q, "droop") || safeContains(q, "slur") || (safeContains(q, "lift") && safeContains(q, "arm")) || safeContains(q, "stroke") || safeContains(q, "vision loss") || safeContains(q, "seizure") || safeContains(q, "jibberish") || safeContains(q, "lopsided") || safeContains(q, "spinning") || safeContains(q, "confusion") || safeContains(q, "fainting") || safeContains(q, "worst headache") || safeContains(q, "double vision")) {
+            assessment = safetyPrefix + "Acute neurological deficit or seizure identified. Immediate clinical intervention is required.";
+            severity = "CRITICAL";
+            specialist = "Neurologist";
+            action = "Navigate IMMEDIATELY to the nearest Comprehensive Stroke Center or Emergency node.";
+            service = "Emergency & Trauma Care";
+            warning = "NEUROLOGICAL EMERGENCY: SEEK IMMEDIATE CARE.";
         } else if (safeContains(q, "contraction") || safeContains(q, "water broke") || safeContains(q, "pre-eclampsia") || (safeContains(q, "pregnant") && (safeContains(q, "bleed") || safeContains(q, "spotting")))) {
             assessment = safetyPrefix + "Acute obstetric complication identified. Immediate clinical intervention is required.";
             severity = "CRITICAL";
@@ -200,13 +207,6 @@ public class AiService {
             action = "Navigate IMMEDIATELY to the nearest Emergency node. Do not delay.";
             service = "Emergency & Trauma Care";
             warning = "LIFE-SAFETY ALERT: SEEK IMMEDIATE OXYGENATION.";
-        } else if (safeContains(q, "peanut") || safeContains(q, "anaphylax") || safeContains(q, "hives") || (safeContains(q, "throat") && (safeContains(q, "close") || safeContains(q, "tight")))) {
-            assessment = safetyPrefix + "Symptoms suggest Anaphylaxis (severe systemic allergic reaction). This is a critical medical emergency.";
-            severity = "CRITICAL";
-            specialist = "Allergist / Emergency Specialist";
-            action = "Use an Epipen if available and navigate IMMEDIATELY to the nearest Emergency node.";
-            service = "Emergency & Trauma Care";
-            warning = "ANAPHYLAXIS ALERT: SEEK IMMEDIATE CARE.";
         } else if (safeContains(q, "accident") || safeContains(q, "injury") || safeContains(q, "fall") || safeContains(q, "bent") || safeContains(q, "deform") || safeContains(q, "ladder") || safeContains(q, "laceration") || safeContains(q, "car") || safeContains(q, "hit my head")) {
             assessment = safetyPrefix + "Acute traumatic injury involving potential structural compromise identified.";
             severity = "CRITICAL";
@@ -241,10 +241,10 @@ public class AiService {
             specialist = "Hepatologist / Gastroenterologist";
             action = "Seek evaluation within 24 hours.";
             service = "General Clinical";
-        } else if (safeContains(q, "weight loss") || safeContains(q, "lump") || safeContains(q, "tumor") || safeContains(q, "cancer") || safeContains(q, "lymph") || safeContains(q, "night sweats") || safeContains(q, "moles changing") || safeContains(q, "hard lump")) {
+        } else if (safeContains(q, "weight loss") || safeContains(q, "lump") || safeContains(q, "tumor") || safeContains(q, "cancer") || safeContains(q, "lymph") || safeContains(q, "night sweats") || safeContains(q, "moles") || safeContains(q, "hard lump") || safeContains(q, "color")) {
             assessment = safetyPrefix + "Persistent systemic symptoms or localized growths identified. Specialized oncology screening recommended.";
             severity = "HIGH";
-            specialist = "Oncologist / Pulmonologist";
+            specialist = "Oncologist";
             action = "Book an urgent diagnostic consultation via the specialist portal.";
             service = "General Clinical";
         } else if ((safeContains(q, "eye") && (safeContains(q, "vision") || safeContains(q, "red") || safeContains(q, "blur") || safeContains(q, "pressure"))) || safeContains(q, "flashes") || safeContains(q, "double vision")) {
