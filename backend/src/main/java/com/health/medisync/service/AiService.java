@@ -78,10 +78,10 @@ public class AiService {
                 "2. Possible Conditions / Features: [Differential diagnosis OR portal features]\n" +
                 "3. Risk Indicators / Instructions: [Clinical red flags OR operational steps]\n" +
                 "4. Triage Level: [LOW | MODERATE | HIGH | CRITICAL]\n" +
-                "5. Recommended specialist / Node: [Specific department AND specialist type]\n" +
+                "5. Recommended Specialist: [Specific department AND specialist type]\n" +
                 "6. Suggested Next Steps: [Actionable advice with MediSync routes]\n" +
                 "7. Follow-up Questions: [Refining the assessment]\n" +
-                "8. Emergency Warning / Portal Tip: [Safety info OR institutional pro-tip]\n\n" +
+                "8. Emergency Warning: [Safety info OR institutional pro-tip]\n\n" +
                 "### CONTEXT:\n" +
                 "REGISTRY:\n" + hospitals + "\n" + doctors + "\n" +
                 "PATIENT PROFILE: " + profile + "\n" +
@@ -266,9 +266,9 @@ public class AiService {
                "2. Possible Conditions / Features: " + conditions + "\n" +
                "3. Risk Indicators / Instructions: " + instructions + "\n" +
                "4. Triage Level: " + severity + "\n" +
-               "5. Recommended specialist / Node: " + specialist + "\n" +
+               "5. Recommended Specialist: " + specialist + "\n" +
                "6. Suggested Next Steps: " + action + "\n" +
                "7. Follow-up Questions: " + (hasImage ? "Does the localized area feel hot to the touch?" : "When did these symptoms first manifest?") + "\n" +
-               "8. Emergency Warning / Portal Tip: " + (warning.isEmpty() ? "Tip: Access your records in 'Reports'." : warning);
+               "8. Emergency Warning: " + (warning.isEmpty() ? "Tip: Access your records in 'Reports'." : warning);
     }
 }
