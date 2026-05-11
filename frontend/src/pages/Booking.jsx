@@ -146,14 +146,8 @@ const Booking = () => {
   const [bookingMode, setBookingMode] = useState('doctor'); // 'doctor' or 'service'
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedService, setSelectedService] = useState(null);
-  const [consultationModality, setConsultationModality] = useState('General Consultation');
   const [serviceHospitals, setServiceHospitals] = useState([]);
   const [loadingHospitals, setLoadingHospitals] = useState(false);
-
-  const CONSULTATION_MODALITIES = [
-    "General Consultation", "Specialist Consultation", "Follow-up Consultation",
-    "Second Opinion", "Video Consultation", "Emergency Consultation"
-  ];
 
   // ── Ambulance GPS State ──
   const [userLocation, setUserLocation] = useState(null); // { lat, lng }
@@ -372,7 +366,7 @@ const Booking = () => {
             date: bookingDate,
             slot: selectedSlot,
             type: consultationType,
-            consultationModality: consultationModality
+            consultationModality: 'General Consultation'
           });
           processOrder(order);
         } catch (err) {
@@ -1105,28 +1099,6 @@ const Booking = () => {
 
                 {/* Time Slots */}
                 <section className="space-y-6">
-                  {bookingMode === 'doctor' && (
-                    <div className="space-y-4">
-                      <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                        <User size={18} className="text-primary" /> 
-                        Consultation Type
-                      </h3>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        {CONSULTATION_MODALITIES.map(mod => (
-                          <button
-                            key={mod}
-                            onClick={() => setConsultationModality(mod)}
-                            className={`p-4 rounded-2xl border-2 text-[10px] font-black uppercase tracking-widest transition-all ${consultationModality === mod 
-                              ? 'bg-primary/10 border-primary text-primary shadow-sm' 
-                              : 'bg-white border-slate-100 text-slate-400 hover:border-slate-200'}`}
-                          >
-                            {mod}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
                   <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
                     <Clock size={18} className={(selectedCategory?.category === 'Emergency Services' || INSTITUTIONAL_SERVICE_CATALOG.find(c => c.category === 'Emergency Services')?.services.some(s => s.name === selectedService)) ? 'text-red-500 animate-pulse' : 'text-emerald-500'} /> 
                     {(selectedCategory?.category === 'Emergency Services' || INSTITUTIONAL_SERVICE_CATALOG.find(c => c.category === 'Emergency Services')?.services.some(s => s.name === selectedService)) ? 'Emergency Availability' : 'Available Cloud Windows'}
