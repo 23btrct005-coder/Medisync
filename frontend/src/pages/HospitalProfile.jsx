@@ -27,6 +27,23 @@ const SERVICES_24_7 = [
     'Blood Test'
 ];
 
+const normalizeObjectKeys = (obj) => {
+    if (!obj) return {};
+    let target = obj;
+    if (typeof obj === 'string') {
+        try {
+            target = JSON.parse(obj);
+        } catch (e) {
+            return {};
+        }
+    }
+    const normalized = {};
+    Object.keys(target).forEach(key => {
+        normalized[key.trim()] = target[key];
+    });
+    return normalized;
+};
+
 const HospitalProfile = () => {
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -171,9 +188,9 @@ const HospitalProfile = () => {
                 consultationTimings: h.consultationTimings || '09:00 - 17:00',
                 startTime: h.consultationTimings ? h.consultationTimings.split(' - ')[0] : '09:00',
                 endTime: h.consultationTimings ? h.consultationTimings.split(' - ')[1] : '17:00',
-                serviceFees: h.serviceFees ? (typeof h.serviceFees === 'string' ? JSON.parse(h.serviceFees) : h.serviceFees) : {},
-                serviceDurations: h.serviceDurations ? (typeof h.serviceDurations === 'string' ? JSON.parse(h.serviceDurations) : h.serviceDurations) : {},
-                serviceCapacity: h.serviceCapacity ? (typeof h.serviceCapacity === 'string' ? JSON.parse(h.serviceCapacity) : h.serviceCapacity) : {},
+                serviceFees: normalizeObjectKeys(h.serviceFees),
+                serviceDurations: normalizeObjectKeys(h.serviceDurations),
+                serviceCapacity: normalizeObjectKeys(h.serviceCapacity),
                 bloodStock: h.bloodStock ? (typeof h.bloodStock === 'string' ? JSON.parse(h.bloodStock) : h.bloodStock) : {
                     'A+': 0, 'A-': 0, 'B+': 0, 'B-': 0, 
                     'AB+': 0, 'AB-': 0, 'O+': 0, 'O-': 0
@@ -205,14 +222,18 @@ const HospitalProfile = () => {
         try {
             // Validation: Every service must have both fee and duration
             const services = formData.services.split(',').map(s => s.trim()).filter(s => s);
+            const normalizedFees = normalizeObjectKeys(formData.serviceFees);
+            const normalizedDurations = normalizeObjectKeys(formData.serviceDurations);
+            const normalizedCapacity = normalizeObjectKeys(formData.serviceCapacity);
+
             for (const service of services) {
                 const is247 = SERVICES_24_7.some(s => s.toLowerCase() === service.toLowerCase());
-                if (!formData.serviceFees[service]) {
+                if (!normalizedFees[service]) {
                     toast.error(`Required: Please provide a Fee for "${service}"`);
                     setSaving(false);
                     return;
                 }
-                if (!is247 && (!formData.serviceDurations[service] || !formData.serviceCapacity[service])) {
+                if (!is247 && (!normalizedDurations[service] || !normalizedCapacity[service])) {
                     toast.error(`Required: Please provide both Time Slot and Capacity for "${service}"`);
                     setSaving(false);
                     return;
@@ -222,6 +243,10 @@ const HospitalProfile = () => {
             const data = new FormData();
             const submissionData = {
                 ...formData,
+                services: services.join(', '),
+                serviceFees: normalizedFees,
+                serviceDurations: normalizedDurations,
+                serviceCapacity: normalizedCapacity,
                 consultationTimings: `${formData.startTime} - ${formData.endTime}`
             };
             data.append('data', JSON.stringify(submissionData));
