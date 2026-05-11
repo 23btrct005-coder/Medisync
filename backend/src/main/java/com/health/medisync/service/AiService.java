@@ -201,15 +201,23 @@ public class AiService {
             conditions = "Potential hypertensive urgency.";
             instructions = "Rest quietly and avoid physical exertion.";
             warning = "HYPERTENSIVE CRISIS POTENTIAL: IMMEDIATE OVERSIGHT REQUIRED.";
-        } else if (q.contains("accident") || q.contains("injury") || q.contains("hit") || q.contains("trauma")) {
-            assessment = safetyPrefix + "I've prioritized your report of a traumatic injury.";
+        } else if (q.contains("accident") || q.contains("injury") || q.contains("hit") || q.contains("trauma") || q.contains("fall") || q.contains("bent") || q.contains("angle") || q.contains("deform") || q.contains("move") || q.contains("ladder") || q.contains("toes")) {
+            assessment = safetyPrefix + "I've prioritized your report of a traumatic injury involving potential structural deformity or localized compromise.";
             severity = "CRITICAL";
-            specialist = "Emergency Physician";
-            action = "Navigate immediately to the nearest Emergency & Trauma node.";
+            specialist = "Emergency Physician / Orthopedic Surgeon";
+            action = "Navigate immediately to the nearest Emergency & Trauma node for stabilization and imaging.";
             service = "Emergency & Trauma Care";
-            conditions = "Potential internal trauma protocol.";
-            instructions = "Do not move if you suspect a spinal or severe neck injury.";
+            conditions = "Potential fracture, dislocation, or acute traumatic injury protocol.";
+            instructions = "Do not attempt to straighten the limb. Keep it immobilized until professional evaluation.";
             warning = "TRAUMA SIGNAL DETECTED: PROCEED TO EMERGENCY.";
+        } else if (q.contains("report") || q.contains("result") || q.contains("history") || q.contains("blood test") || q.contains("lab") || q.contains("see my")) {
+            assessment = "You can access your medical reports, lab results, and clinical history in the 'Reports' section of your dashboard.";
+            severity = "LOW";
+            specialist = "MediSync Support / Records Department";
+            action = "Navigate to /dashboard/reports to view and download your clinical data.";
+            service = "General Clinical";
+            conditions = "Administrative / Records inquiry identified.";
+            instructions = "Ensure you are logged in to access your private clinical records.";
         } else if (q.contains("swelling") && q.contains("red") && q.contains("hot") && q.contains("fever")) {
             assessment = safetyPrefix + "Description suggests a potential acute skin infection (Cellulitis).";
             severity = "HIGH";
