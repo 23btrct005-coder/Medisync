@@ -5,7 +5,8 @@ import {
   User, Star, MapPin, Video, CheckCircle2, AlertCircle,
   ArrowLeft, CreditCard, Loader2, Sparkles, RefreshCw, QrCode, X, Activity,
   Navigation, Droplets, Ambulance, Siren, ShieldCheck, Zap,
-  Heart, Brain, Baby, Bone, Eye, Stethoscope, Microscope, Droplet
+  Heart, Brain, Baby, Bone, Eye, Stethoscope, Microscope, Droplet,
+  HeartPulse, Home, Monitor, Phone, Scissors, FlaskRound, FlaskConical, Thermometer
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api/axiosConfig';
@@ -22,7 +23,98 @@ const PHYSICIAN_DEPARTMENTS = [
   { name: 'Dermatology', icon: Droplet, color: 'text-cyan-500', bg: 'bg-cyan-50' },
   { name: 'Gastroenterology', icon: Activity, color: 'text-emerald-500', bg: 'bg-emerald-50' },
   { name: 'Ophthalmology', icon: Eye, color: 'text-sky-500', bg: 'bg-sky-50' },
+  { name: 'ENT', icon: Siren, color: 'text-indigo-400', bg: 'bg-indigo-50' },
+  { name: 'Psychiatry', icon: Brain, color: 'text-violet-500', bg: 'bg-violet-50' },
   { name: 'General Medicine', icon: Stethoscope, color: 'text-indigo-500', bg: 'bg-indigo-50' }
+];
+
+const INSTITUTIONAL_SERVICE_CATALOG = [
+  {
+    category: 'Emergency Services',
+    icon: Siren,
+    color: 'text-red-600',
+    bg: 'bg-red-50',
+    description: 'Critical life-safety protocols and rapid response.',
+    services: [
+        { name: "Ambulance Booking", icon: Ambulance },
+        { name: "Emergency Room", icon: Siren },
+        { name: "Trauma Care", icon: HeartPulse },
+        { name: "Stroke Care", icon: Brain },
+        { name: "Cardiac Emergency", icon: Heart },
+        { name: "ICU Admission", icon: ShieldCheck }
+    ]
+  },
+  {
+    category: 'Diagnostic Services',
+    icon: Microscope,
+    color: 'text-blue-600',
+    bg: 'bg-blue-50',
+    description: 'Advanced imaging and clinical laboratory diagnostics.',
+    services: [
+        { name: "MRI Scan", icon: Activity },
+        { name: "CT Scan", icon: Activity },
+        { name: "X-Ray", icon: Activity },
+        { name: "Ultrasound", icon: Activity },
+        { name: "PET Scan", icon: Activity },
+        { name: "Blood Test (CBC)", icon: FlaskConical },
+        { name: "Thyroid Profile", icon: FlaskRound },
+        { name: "Liver Function Test", icon: Activity },
+        { name: "ECG / Echo", icon: HeartPulse }
+    ]
+  },
+  {
+    category: 'Surgery Booking',
+    icon: Scissors,
+    color: 'text-slate-700',
+    bg: 'bg-slate-50',
+    description: 'Expert surgical interventions across all specialties.',
+    services: [
+        { name: "General Surgery", icon: Scissors },
+        { name: "Orthopedic Surgery", icon: Bone },
+        { name: "Neurosurgery", icon: Brain },
+        { name: "Cardiac Surgery", icon: Heart },
+        { name: "Urology Surgery", icon: Droplets }
+    ]
+  },
+  {
+    category: 'Women & Child Care',
+    icon: Baby,
+    color: 'text-pink-600',
+    bg: 'bg-pink-50',
+    description: 'Specialized maternity and pediatric protocols.',
+    services: [
+        { name: "Pregnancy Checkup", icon: User },
+        { name: "Fertility Consultation", icon: Droplets },
+        { name: "Pediatric Consultation", icon: Baby },
+        { name: "Neonatal Care", icon: ShieldCheck }
+    ]
+  },
+  {
+    category: 'Preventive Care',
+    icon: ShieldCheck,
+    color: 'text-emerald-600',
+    bg: 'bg-emerald-50',
+    description: 'Proactive health screening and wellness packages.',
+    services: [
+        { name: "Full Body Checkup", icon: Activity },
+        { name: "Diabetes Screening", icon: Droplet },
+        { name: "Heart Screening", icon: Heart },
+        { name: "Cancer Screening", icon: Microscope }
+    ]
+  },
+  {
+    category: 'Home & Remote Services',
+    icon: Home,
+    color: 'text-indigo-600',
+    bg: 'bg-indigo-50',
+    description: 'Modern enterprise healthcare at your doorstep.',
+    services: [
+        { name: "Home Blood Collection", icon: FlaskConical },
+        { name: "Home Nursing", icon: User },
+        { name: "Telemedicine", icon: Monitor },
+        { name: "Physiotherapy at Home", icon: Activity }
+    ]
+  }
 ];
 
 const Booking = () => {
@@ -52,9 +144,16 @@ const Booking = () => {
   const [consultationType, setConsultationType] = useState('OFFLINE');
 
   const [bookingMode, setBookingMode] = useState('doctor'); // 'doctor' or 'service'
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedService, setSelectedService] = useState(null);
+  const [consultationModality, setConsultationModality] = useState('General Consultation');
   const [serviceHospitals, setServiceHospitals] = useState([]);
   const [loadingHospitals, setLoadingHospitals] = useState(false);
+
+  const CONSULTATION_MODALITIES = [
+    "General Consultation", "Specialist Consultation", "Follow-up Consultation",
+    "Second Opinion", "Video Consultation", "Emergency Consultation"
+  ];
 
   // ── Ambulance GPS State ──
   const [userLocation, setUserLocation] = useState(null); // { lat, lng }
@@ -67,22 +166,8 @@ const Booking = () => {
 
   const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
-  const SERVICES_24_7 = [
-    "Emergency & Trauma Care", "Ambulance Services", "ICU (Intensive Care Unit)", 
-    "NICU (Neonatal ICU)", "Operation Theatre (Emergency)", "Casualty Department", 
-    "24/7 Pharmacy", "Blood Bank", "Emergency CT Scan", "Emergency Lab Tests",
-    "Oxygen & Ventilator Support", "Emergency Dialysis"
-  ];
+  const ALL_INSTITUTIONAL_SERVICES = INSTITUTIONAL_SERVICE_CATALOG.flatMap(c => c.services.map(s => s.name));
 
-  const SERVICES_TIME_BASED = [
-    "OPD (Outpatient)", "X-Ray", "MRI Scan", "Ultrasound / सोनोग्राफी", 
-    "ECG & TMT", "Physiotherapy", "Dental Services", "General Surgery (Planned)",
-    "Orthopedic Consultation", "Pediatric Consultation", "Gynecology & Obstetrics",
-    "ENT (Ear, Nose, Throat)", "Ophthalmology (Eye)", "Dermatology (Skin)",
-    "Advanced Laboratory Tests", "Health Checkup Packages"
-  ];
-
-  const PREDEFINED_INSTITUTIONAL_SERVICES = [...SERVICES_24_7, ...SERVICES_TIME_BASED];
 
   const [searchParams] = useSearchParams();
   const doctorNameParam = searchParams.get('doctor');
@@ -113,7 +198,7 @@ const Booking = () => {
         const hospitalParam = searchParams.get('hospital');
         if (serviceParam) {
             const cleanParam = serviceParam.trim();
-            const matchedService = PREDEFINED_INSTITUTIONAL_SERVICES.find(s => s.toLowerCase() === cleanParam.toLowerCase());
+            const matchedService = ALL_INSTITUTIONAL_SERVICES.find(s => s.toLowerCase() === cleanParam.toLowerCase());
             setSelectedService(matchedService || cleanParam);
         } else {
             setSelectedService(null);
@@ -182,7 +267,7 @@ const Booking = () => {
 
   // ── Handle Service Card Click ──
   const handleServiceSelect = (service) => {
-    if (service === 'Ambulance Services') {
+    if (service === 'Ambulance Services' || service === 'Ambulance Booking') {
         setShowAmbulanceOverlay(true);
         setLocating(true);
         if (!navigator.geolocation) {
@@ -286,7 +371,8 @@ const Booking = () => {
             doctorId: selectedDoctor.id,
             date: bookingDate,
             slot: selectedSlot,
-            type: consultationType
+            type: consultationType,
+            consultationModality: consultationModality
           });
           processOrder(order);
         } catch (err) {
@@ -648,24 +734,57 @@ const Booking = () => {
                 </>
             ) : (
                 <div className="space-y-10">
-                    {/* Service Selection Step */}
-                    {!selectedService && (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-                        {PREDEFINED_INSTITUTIONAL_SERVICES.map(service => (
-                            <button
-                                key={service}
-                                onClick={() => handleServiceSelect(service)}
-                                className={`p-4 rounded-3xl border-2 text-center transition-all relative ${selectedService === service 
-                                    ? 'bg-primary-50 border-primary-500 text-primary-700 shadow-lg shadow-primary-500/10' 
-                                    : 'bg-white border-slate-100 text-slate-500 hover:border-primary-200'}`}
-                            >
-                                {SERVICES_24_7.includes(service) && (
-                                    <div className="absolute -top-2 -right-2 px-2 py-1 bg-primary-600 text-white text-[7px] font-black rounded-full uppercase tracking-widest shadow-sm z-10">24/7</div>
-                                )}
-                                <Activity size={24} className={`mx-auto mb-3 ${selectedService === service ? 'text-primary-600' : 'text-slate-300'}`} />
-                                <span className="text-[10px] font-black uppercase tracking-widest">{service}</span>
-                            </button>
-                        ))}
+                    {/* Category Selection Step */}
+                    {!selectedCategory && !selectedService && (
+                        <div className="space-y-6">
+                            <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em]">Institutional Service Catalog</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {INSTITUTIONAL_SERVICE_CATALOG.map(cat => (
+                                    <button
+                                        key={cat.category}
+                                        onClick={() => setSelectedCategory(cat)}
+                                        className="glass-panel p-8 bg-white border-2 border-slate-50 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 transition-all group text-left relative overflow-hidden"
+                                    >
+                                        <div className={`w-16 h-16 ${cat.bg} ${cat.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+                                            <cat.icon size={32} />
+                                        </div>
+                                        <h4 className="text-xl font-black text-slate-900 mb-2">{cat.category}</h4>
+                                        <p className="text-xs text-slate-400 font-medium leading-relaxed">{cat.description}</p>
+                                        <ChevronRight className="absolute right-8 bottom-8 text-slate-200 group-hover:text-primary group-hover:translate-x-2 transition-all" />
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Sub-Service Selection Step */}
+                    {selectedCategory && !selectedService && (
+                        <div className="space-y-8 animate-in slide-in-from-right duration-500">
+                            <div className="flex items-center gap-4">
+                                <button 
+                                    onClick={() => setSelectedCategory(null)}
+                                    className="p-3 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-2xl transition-all active:scale-90"
+                                >
+                                    <ArrowLeft size={20} />
+                                </button>
+                                <div>
+                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">{selectedCategory.category}</h3>
+                                    <p className="text-[10px] font-black text-primary-600 uppercase tracking-widest mt-0.5">Select a specific protocol</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                                {selectedCategory.services.map(service => (
+                                    <button
+                                        key={service.name}
+                                        onClick={() => handleServiceSelect(service.name)}
+                                        className="p-4 rounded-3xl border-2 bg-white border-slate-100 text-slate-500 hover:border-primary-200 hover:shadow-lg transition-all text-center group"
+                                    >
+                                        <service.icon size={24} className="mx-auto mb-3 text-slate-300 group-hover:text-primary transition-colors" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest">{service.name}</span>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     )}
 
@@ -985,13 +1104,35 @@ const Booking = () => {
                 </section>
 
                 {/* Time Slots */}
-                <section className="space-y-4">
+                <section className="space-y-6">
+                  {bookingMode === 'doctor' && (
+                    <div className="space-y-4">
+                      <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                        <User size={18} className="text-primary" /> 
+                        Consultation Type
+                      </h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {CONSULTATION_MODALITIES.map(mod => (
+                          <button
+                            key={mod}
+                            onClick={() => setConsultationModality(mod)}
+                            className={`p-4 rounded-2xl border-2 text-[10px] font-black uppercase tracking-widest transition-all ${consultationModality === mod 
+                              ? 'bg-primary/10 border-primary text-primary shadow-sm' 
+                              : 'bg-white border-slate-100 text-slate-400 hover:border-slate-200'}`}
+                          >
+                            {mod}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                    <Clock size={18} className={SERVICES_24_7.includes(selectedService) ? 'text-red-500 animate-pulse' : 'text-emerald-500'} /> 
-                    {SERVICES_24_7.includes(selectedService) ? 'Emergency Availability' : 'Available Cloud Windows'}
+                    <Clock size={18} className={(selectedCategory?.category === 'Emergency Services' || INSTITUTIONAL_SERVICE_CATALOG.find(c => c.category === 'Emergency Services')?.services.some(s => s.name === selectedService)) ? 'text-red-500 animate-pulse' : 'text-emerald-500'} /> 
+                    {(selectedCategory?.category === 'Emergency Services' || INSTITUTIONAL_SERVICE_CATALOG.find(c => c.category === 'Emergency Services')?.services.some(s => s.name === selectedService)) ? 'Emergency Availability' : 'Available Cloud Windows'}
                   </h3>
                   
-                  {SERVICES_24_7.includes(selectedService) ? (
+                  {(selectedCategory?.category === 'Emergency Services' || INSTITUTIONAL_SERVICE_CATALOG.find(c => c.category === 'Emergency Services')?.services.some(s => s.name === selectedService)) ? (
                     <div className="relative group overflow-hidden">
                         {/* Background Pulsing Aura */}
                         <div className="absolute inset-0 bg-gradient-to-tr from-rose-500/10 via-transparent to-primary-500/10 animate-pulse duration-[4000ms]" />

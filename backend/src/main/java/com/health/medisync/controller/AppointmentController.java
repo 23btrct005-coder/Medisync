@@ -71,6 +71,7 @@ public class AppointmentController {
             Object dateObj = request.get("date");
             Object slotObj = request.get("slot");
             Object typeObj = request.get("type");
+            Object modalityObj = request.get("consultationModality");
 
             Long doctorId;
             try {
@@ -99,10 +100,11 @@ public class AppointmentController {
                 throw new RuntimeException("PARSE_ERROR: invalid type [" + typeObj + "]: " + e.getMessage());
             }
 
+            String modality = (modalityObj != null) ? modalityObj.toString() : "General Consultation";
             String slot = slotObj.toString();
             if (slot.trim().isEmpty()) throw new RuntimeException("FIELD_EMPTY: slot");
 
-            Map<String, Object> response = appointmentService.initiateBooking(authentication.getName(), doctorId, date, slot, type);
+            Map<String, Object> response = appointmentService.initiateBooking(authentication.getName(), doctorId, date, slot, type, modality);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             String errorMessage = (e.getMessage() != null) ? e.getMessage() : e.toString();

@@ -48,6 +48,8 @@ public class Appointment {
     private String patientUpiId;
     private String transactionId;
     
+    private String consultationModality; // e.g., "Second Opinion", "Video Consultation"
+    
     @Column(columnDefinition = "TEXT")
     private String aiClinicalBrief; // Summary from AI Concierge
 
@@ -116,6 +118,9 @@ public class Appointment {
 
     public String getAiClinicalBrief() { return aiClinicalBrief; }
     public void setAiClinicalBrief(String aiClinicalBrief) { this.aiClinicalBrief = aiClinicalBrief; }
+
+    public String getConsultationModality() { return consultationModality; }
+    public void setConsultationModality(String consultationModality) { this.consultationModality = consultationModality; }
 
     public String getTransactionId() { return transactionId; }
     public void setTransactionId(String transactionId) { this.transactionId = transactionId; }

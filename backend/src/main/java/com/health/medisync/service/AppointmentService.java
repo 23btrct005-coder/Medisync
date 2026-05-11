@@ -130,9 +130,15 @@ public class AppointmentService {
     }
 
     @Transactional
-    public Map<String, Object> initiateBooking(String rawEmail, Long doctorId, LocalDate date, String slot, ConsultationType type) throws Exception {
+    public Map<String, Object> initiateBooking(String rawEmail, Long doctorId, LocalDate date, String slot, ConsultationType type, String modality) throws Exception {
         final String patientEmail = (rawEmail != null) ? rawEmail.trim().toLowerCase() : null;
-        System.out.println("DEBUG: Initiating booking for " + patientEmail + ", Doctor: " + doctorId + ", Type: " + type);
+        
+        // Auto-select ONLINE if Video Consultation is picked
+        if ("Video Consultation".equalsIgnoreCase(modality)) {
+            type = ConsultationType.ONLINE;
+        }
+
+        System.out.println("DEBUG: Initiating booking for " + patientEmail + ", Doctor: " + doctorId + ", Type: " + type + ", Modality: " + modality);
 
         Patient patient = patientRepository.findByUserUsernameIgnoreCase(patientEmail)
             .orElseGet(() -> {
@@ -271,6 +277,7 @@ public class AppointmentService {
         appointment.setAppointmentDate(date);
         appointment.setTimeSlot(slot);
         appointment.setConsultationType(type);
+        appointment.setConsultationModality(modality);
         appointment.setAmount(fee);
         appointment.setRazorpayOrderId(orderId);
         // PAYMENT SECURITY SHIELD: Don't auto-confirm if UPI is preferred
