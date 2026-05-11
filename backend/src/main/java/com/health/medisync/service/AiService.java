@@ -198,26 +198,18 @@ public class AiService {
             warning = "TRAUMA SIGNAL.";
         }
         // --- LEVEL 3: HIGH-URGENCY ---
-        else if (q.contains("diabetes") || q.contains("diabetis") || q.contains("sugar") || q.contains("thirsty") || q.contains("insulin") || q.contains("urine") || q.contains("glucose")) {
-            if (q.contains("ketones") || q.contains("400") || q.contains("glucose")) {
-                assessment = safetyPrefix + "Metabolic crisis signals identified.";
-                severity = "HIGH";
-                specialist = "Diabetologist";
-                action = "Seek urgent Diabetologist consultation.";
-                service = "General Clinical";
-            } else if (q.contains("blood in urine") || q.contains("kidney") || q.contains("pee") || q.contains("bladder") || q.contains("urination")) {
-                assessment = safetyPrefix + "Urological specialty symptoms detected.";
-                severity = "HIGH";
-                specialist = "Urologist";
-                action = "Book a consultation with a Urologist.";
-                service = "General Clinical";
-            } else {
-                assessment = safetyPrefix + "Metabolic signals detected.";
-                severity = "HIGH";
-                specialist = "Diabetologist";
-                action = "Seek urgent consultation.";
-                service = "General Clinical";
-            }
+        else if (q.contains("diabetes") || q.contains("diabetis") || q.contains("sugar") || q.contains("thirsty") || q.contains("insulin") || q.contains("urine") || q.contains("glucose") || q.contains("ketones") || q.contains("400")) {
+            assessment = safetyPrefix + "Metabolic crisis or glycemic signals identified.";
+            severity = "HIGH";
+            specialist = "Diabetologist";
+            action = "Seek urgent Diabetologist consultation.";
+            service = "General Clinical";
+        } else if (q.contains("blood in urine") || q.contains("kidney") || q.contains("pee") || q.contains("bladder") || q.contains("urination")) {
+            assessment = safetyPrefix + "Urological specialty symptoms detected.";
+            severity = "HIGH";
+            specialist = "Urologist";
+            action = "Book a consultation with a Urologist.";
+            service = "General Clinical";
         } else if (q.contains("yellow") || q.contains("jaundice") || q.contains("liver") || q.contains("hepatitis") || q.contains("pale stool")) {
             assessment = safetyPrefix + "Hepatobiliary dysfunction signals detected.";
             severity = "HIGH";
