@@ -13,6 +13,15 @@ import {
 } from '../utils/clinicalRegistry';
 
 const PREDEFINED_SERVICES = ALL_INSTITUTIONAL_SERVICES;
+const SERVICES_24_7 = [
+    'Ambulance Booking', 
+    'Emergency Room', 
+    'Trauma Care', 
+    'Stroke Care', 
+    'Cardiac Emergency', 
+    'ICU Admission',
+    'Blood Bank'
+];
 
 const HospitalProfile = () => {
     const [profile, setProfile] = useState(null);
