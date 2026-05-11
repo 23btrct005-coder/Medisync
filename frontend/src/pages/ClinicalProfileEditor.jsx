@@ -11,24 +11,19 @@ import {
 } from 'lucide-react';
 
 const COMMON_LANGUAGES = ["English", "Hindi", "Kannada", "Tamil", "Telugu", "Malayalam", "Marathi", "Bengali", "Gujarati", "Punjabi", "Spanish", "French", "German"];
+import { 
+  PHYSICIAN_DEPARTMENTS, 
+  INSTITUTIONAL_SERVICE_CATALOG,
+  ALL_INSTITUTIONAL_SERVICES
+} from '../utils/clinicalRegistry';
+
 const PREDEFINED_DOCTOR_SERVICES = [
     "General Consultation",
     "Specialist Consultation",
-    "Emergency Care",
-    "Home Visit",
-    "Telemedicine",
-    "Vaccination",
-    "Diagnostic Review",
-    "Minor Procedures",
+    "Follow-up Consultation",
     "Second Opinion",
-    "Health Screening"
-];
-
-const PREDEFINED_INSTITUTIONAL_SERVICES = [
-    "24/7 Emergency", "MRI Scan", "CT Scan", "X-Ray", "Blood Bank", 
-    "ICU (Intensive Care Unit)", "NICU", "Dialysis", "Physiotherapy", 
-    "Pathology Lab", "In-house Pharmacy", "Ambulance", "Operation Theater",
-    "Telemedicine", "Vaccination Center", "Home Care Services"
+    "Video Consultation",
+    "Emergency Consultation"
 ];
 import ClinicMap from '../components/ClinicMap';
 

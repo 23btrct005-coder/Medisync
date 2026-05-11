@@ -12,32 +12,11 @@ import DocumentUpload from '../components/DocumentUpload';
 import LegalFooter from '../components/LegalFooter';
 import { useIsMobile } from '../hooks/useIsMobile';
 
-const HospitalDepartments = [
-  "Cardiology", "Neurology", "Pediatrics", "Orthopedics", "Oncology", 
-  "Gynecology", "Dermatology", "Urology", "Ophthalmology", "ENT", 
-  "Psychiatry", "Emergency Medicine", "Radiology", "General Surgery",
-  "Dental Surgery", "Nephrology", "Pulmonology", "Gastroenterology"
-];
-
-const PREDEFINED_HOSPITAL_SERVICES = [
-    "Emergency & Trauma Care", "MRI Scan", "CT Scan", "X-Ray", "Blood Bank", 
-    "ICU (Intensive Care Unit)", "NICU (Neonatal ICU)", "Dialysis", "Physiotherapy", 
-    "Pathology Lab", "In-house Pharmacy", "Ambulance Services", "Operation Theater",
-    "Telemedicine", "Vaccination Center", "Home Care Services"
-];
-
-const PREDEFINED_DOCTOR_SERVICES = [
-    "General Consultation",
-    "Specialist Consultation",
-    "Emergency Care",
-    "Home Visit",
-    "Telemedicine",
-    "Vaccination",
-    "Diagnostic Review",
-    "Minor Procedures",
-    "Second Opinion",
-    "Health Screening"
-];
+import { 
+  PHYSICIAN_DEPARTMENTS, 
+  INSTITUTIONAL_SERVICE_CATALOG,
+  ALL_INSTITUTIONAL_SERVICES
+} from '../utils/clinicalRegistry';
 
 const StepIndicator = ({ currentStep, totalSteps, isMobile }) => {
   const progress = (currentStep / totalSteps) * 100;
@@ -775,7 +754,7 @@ const Register = () => {
                         <h3 className={sectionHeadClass}><GraduationCap size={16} /> 3. Qualifications</h3>
                         <div className="grid grid-cols-2 gap-6">
                           <select name="medicalDegree" required value={formData.medicalDegree} onChange={handleChange} className={inputClass}><option value="">Degree</option><option value="MBBS">MBBS</option><option value="MD">MD</option><option value="MS">MS</option></select>
-                          <select name="specialization" required value={formData.specialization} onChange={handleChange} className={inputClass}><option value="">Specialization</option>{HospitalDepartments.map(d => <option key={d} value={d}>{d}</option>)}</select>
+                          <select name="specialization" required value={formData.specialization} onChange={handleChange} className={inputClass}><option value="">Specialization</option>{PHYSICIAN_DEPARTMENTS.map(d => <option key={d.name} value={d.name}>{d.name}</option>)}</select>
                         </div>
                       </div>
 
@@ -1116,17 +1095,17 @@ const Register = () => {
                                 <label className={labelClass}>Medical Departments <span className="text-red-500">*</span></label>
                                 <p className="text-[9px] text-slate-400 mb-4 uppercase font-bold tracking-widest">Select all active departments in your facility</p>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                    {HospitalDepartments.map(dept => {
-                                        const isSelected = formData.departments.split(', ').includes(dept);
+                                    {PHYSICIAN_DEPARTMENTS.map(dept => {
+                                        const isSelected = formData.departments.split(', ').includes(dept.name);
                                         return (
                                             <button
-                                                key={dept}
+                                                key={dept.name}
                                                 type="button"
                                                 onClick={() => {
                                                     const current = formData.departments ? formData.departments.split(', ').filter(s => s) : [];
                                                     const updated = isSelected 
-                                                        ? current.filter(s => s !== dept)
-                                                        : [...current, dept];
+                                                        ? current.filter(s => s !== dept.name)
+                                                        : [...current, dept.name];
                                                     setFormData({...formData, departments: updated.join(', ')});
                                                 }}
                                                 className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-[9px] font-bold uppercase tracking-wider transition-all text-left ${
@@ -1138,7 +1117,7 @@ const Register = () => {
                                                 <div className={`w-3 h-3 rounded border flex items-center justify-center ${isSelected ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-200'}`}>
                                                     {isSelected && <Check size={8} />}
                                                 </div>
-                                                {dept}
+                                                {dept.name}
                                             </button>
                                         );
                                     })}
@@ -1148,33 +1127,43 @@ const Register = () => {
                             <div className="pt-6 border-t border-slate-100">
                                 <label className={labelClass}>Clinical & Diagnostic Services</label>
                                 <p className="text-[9px] text-slate-400 mb-4 uppercase font-bold tracking-widest">Select facilities available for patients</p>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                    {PREDEFINED_HOSPITAL_SERVICES.map(service => {
-                                        const isSelected = formData.services.split(', ').includes(service);
-                                        return (
-                                            <button
-                                                key={service}
-                                                type="button"
-                                                onClick={() => {
-                                                    const current = formData.services ? formData.services.split(', ').filter(s => s) : [];
-                                                    const updated = isSelected 
-                                                        ? current.filter(s => s !== service)
-                                                        : [...current, service];
-                                                    setFormData({...formData, services: updated.join(', ')});
-                                                }}
-                                                className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-[9px] font-bold uppercase tracking-wider transition-all text-left ${
-                                                    isSelected 
-                                                    ? 'bg-emerald-50 border-emerald-200 text-emerald-600' 
-                                                    : 'bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100'
-                                                }`}
-                                            >
-                                                <div className={`w-3 h-3 rounded border flex items-center justify-center ${isSelected ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-slate-200'}`}>
-                                                    {isSelected && <Check size={8} />}
-                                                </div>
-                                                {service}
-                                            </button>
-                                        );
-                                    })}
+                                <div className="space-y-6">
+                                    {INSTITUTIONAL_SERVICE_CATALOG.map(category => (
+                                        <div key={category.category} className="space-y-3">
+                                            <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                                                <category.icon size={12} className={category.color} />
+                                                {category.category}
+                                            </h4>
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                {category.services.map(service => {
+                                                    const isSelected = formData.services.split(', ').includes(service.name);
+                                                    return (
+                                                        <button
+                                                            key={service.name}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const current = formData.services ? formData.services.split(', ').filter(s => s) : [];
+                                                                const updated = isSelected 
+                                                                    ? current.filter(s => s !== service.name)
+                                                                    : [...current, service.name];
+                                                                setFormData({...formData, services: updated.join(', ')});
+                                                            }}
+                                                            className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-[9px] font-bold uppercase tracking-wider transition-all text-left ${
+                                                                isSelected 
+                                                                ? 'bg-emerald-50 border-emerald-200 text-emerald-600' 
+                                                                : 'bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100'
+                                                            }`}
+                                                        >
+                                                            <div className={`w-3 h-3 rounded border flex items-center justify-center ${isSelected ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-slate-200'}`}>
+                                                                {isSelected && <Check size={8} />}
+                                                            </div>
+                                                            {service.name}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>

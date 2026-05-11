@@ -6,29 +6,13 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Plus, X } from 'lucide-react';
 
-const SERVICES_24_7 = [
-    "Emergency & Trauma Care", "Ambulance Services", "ICU (Intensive Care Unit)", 
-    "NICU (Neonatal ICU)", "Operation Theatre (Emergency)", "Casualty Department", 
-    "24/7 Pharmacy", "Blood Bank", "Emergency CT Scan", "Emergency Lab Tests",
-    "Oxygen & Ventilator Support", "Emergency Dialysis"
-];
+import { 
+  PHYSICIAN_DEPARTMENTS, 
+  INSTITUTIONAL_SERVICE_CATALOG,
+  ALL_INSTITUTIONAL_SERVICES
+} from '../utils/clinicalRegistry';
 
-const SERVICES_TIME_BASED = [
-    "OPD (Outpatient)", "X-Ray", "MRI Scan", "Ultrasound / सोनोग्राफी", 
-    "ECG & TMT", "Physiotherapy", "Dental Services", "General Surgery (Planned)",
-    "Orthopedic Consultation", "Pediatric Consultation", "Gynecology & Obstetrics",
-    "ENT (Ear, Nose, Throat)", "Ophthalmology (Eye)", "Dermatology (Skin)",
-    "Advanced Laboratory Tests", "Health Checkup Packages"
-];
-
-const PREDEFINED_SERVICES = [...SERVICES_24_7, ...SERVICES_TIME_BASED];
-
-const HOSPITAL_DEPARTMENTS = [
-    "Cardiology", "Neurology", "Oncology", "Gastroenterology", "Urology", 
-    "Plastic Surgery", "Pediatrics", "Orthopedics", "Gynecology", "Dermatology",
-    "Ophthalmology", "ENT", "Psychiatry", "Emergency Medicine", "Radiology", 
-    "General Surgery", "Nephrology", "Pulmonology"
-];
+const PREDEFINED_SERVICES = ALL_INSTITUTIONAL_SERVICES;
 
 const HospitalProfile = () => {
     const [profile, setProfile] = useState(null);
@@ -456,17 +440,17 @@ const HospitalProfile = () => {
                                 </div>
                                 
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                    {HOSPITAL_DEPARTMENTS.map(dept => {
-                                        const isSelected = formData.departments.split(', ').includes(dept);
+                                    {PHYSICIAN_DEPARTMENTS.map(dept => {
+                                        const isSelected = formData.departments.split(', ').includes(dept.name);
                                         return (
                                             <button
-                                                key={dept}
+                                                key={dept.name}
                                                 type="button"
                                                 onClick={() => {
                                                     const current = formData.departments ? formData.departments.split(', ').filter(s => s) : [];
                                                     const updated = isSelected 
-                                                        ? current.filter(s => s !== dept)
-                                                        : [...current, dept];
+                                                        ? current.filter(s => s !== dept.name)
+                                                        : [...current, dept.name];
                                                     setFormData({...formData, departments: updated.join(', ')});
                                                 }}
                                                 className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-[9px] font-black uppercase tracking-wider transition-all text-left ${
@@ -478,7 +462,7 @@ const HospitalProfile = () => {
                                                 <div className={`w-3 h-3 rounded border flex items-center justify-center transition-all ${isSelected ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-200'}`}>
                                                     {isSelected && <CheckCircle size={8} />}
                                                 </div>
-                                                {dept}
+                                                {dept.name}
                                             </button>
                                         );
                                     })}
@@ -493,77 +477,42 @@ const HospitalProfile = () => {
                                 </div>
                                 
                                 <div className="space-y-8">
-                                    {/* 24/7 Category */}
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-2 ml-1">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                            <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">24/7 Emergency Nodes</span>
+                                    {INSTITUTIONAL_SERVICE_CATALOG.map(category => (
+                                        <div key={category.category} className="space-y-4">
+                                            <div className="flex items-center gap-2 ml-1">
+                                                <category.icon size={14} className={category.color} />
+                                                <span className={`text-[9px] font-black uppercase tracking-widest ${category.color}`}>{category.category}</span>
+                                            </div>
+                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                                {category.services.map(service => {
+                                                    const isSelected = formData.services.split(', ').includes(service.name);
+                                                    return (
+                                                        <button
+                                                            key={service.name}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const currentServices = formData.services ? formData.services.split(', ').filter(s => s) : [];
+                                                                const newServices = isSelected 
+                                                                    ? currentServices.filter(s => s !== service.name)
+                                                                    : [...currentServices, service.name];
+                                                                setFormData({...formData, services: newServices.join(', ')});
+                                                            }}
+                                                            className={`flex items-center gap-3 px-4 py-3 rounded-2xl border text-[10px] font-bold uppercase tracking-wider transition-all text-left ${
+                                                                isSelected 
+                                                                ? 'bg-primary/5 border-primary text-primary shadow-sm' 
+                                                                : 'bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100'
+                                                            }`}
+                                                        >
+                                                            <div className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${isSelected ? 'bg-primary border-primary text-white' : 'bg-white border-slate-200'}`}>
+                                                                {isSelected && <CheckCircle size={10} />}
+                                                            </div>
+                                                            {service.name}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
                                         </div>
-                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                            {SERVICES_24_7.map(service => {
-                                                const isSelected = formData.services.split(', ').includes(service);
-                                                return (
-                                                    <button
-                                                        key={service}
-                                                        type="button"
-                                                        onClick={() => {
-                                                            const currentServices = formData.services ? formData.services.split(', ').filter(s => s) : [];
-                                                            const newServices = isSelected 
-                                                                ? currentServices.filter(s => s !== service)
-                                                                : [...currentServices, service];
-                                                            setFormData({...formData, services: newServices.join(', ')});
-                                                        }}
-                                                        className={`flex items-center gap-3 px-4 py-3 rounded-2xl border text-[10px] font-bold uppercase tracking-wider transition-all text-left ${
-                                                            isSelected 
-                                                            ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm' 
-                                                            : 'bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100'
-                                                        }`}
-                                                    >
-                                                        <div className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${isSelected ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-200'}`}>
-                                                            {isSelected && <CheckCircle size={10} />}
-                                                        </div>
-                                                        {service}
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-
-                                    {/* Time-Based Category */}
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-2 ml-1">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
-                                            <span className="text-[9px] font-black text-primary uppercase tracking-widest">Scheduled Clinical Services</span>
-                                        </div>
-                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                            {SERVICES_TIME_BASED.map(service => {
-                                                const isSelected = formData.services.split(', ').includes(service);
-                                                return (
-                                                    <button
-                                                        key={service}
-                                                        type="button"
-                                                        onClick={() => {
-                                                            const currentServices = formData.services ? formData.services.split(', ').filter(s => s) : [];
-                                                            const newServices = isSelected 
-                                                                ? currentServices.filter(s => s !== service)
-                                                                : [...currentServices, service];
-                                                            setFormData({...formData, services: newServices.join(', ')});
-                                                        }}
-                                                        className={`flex items-center gap-3 px-4 py-3 rounded-2xl border text-[10px] font-bold uppercase tracking-wider transition-all text-left ${
-                                                            isSelected 
-                                                            ? 'bg-primary/10 border-primary text-primary shadow-sm' 
-                                                            : 'bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100'
-                                                        }`}
-                                                    >
-                                                        <div className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${isSelected ? 'bg-primary border-primary text-white' : 'bg-white border-slate-200'}`}>
-                                                            {isSelected && <CheckCircle size={10} />}
-                                                        </div>
-                                                        {service}
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
+                                    ))}
                                 </div>
 
                                 <div className="space-y-3">
