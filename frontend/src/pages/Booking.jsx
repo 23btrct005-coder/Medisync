@@ -12,8 +12,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
 import ClinicMap from '../components/ClinicMap';
-
-import ClinicMap from '../components/ClinicMap';
 import { 
   PHYSICIAN_DEPARTMENTS, 
   INSTITUTIONAL_SERVICE_CATALOG, 
