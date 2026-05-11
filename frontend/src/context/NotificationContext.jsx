@@ -137,12 +137,24 @@ export const NotificationProvider = ({ children }) => {
     }
   };
 
+  const markChatAsRead = useCallback(async (senderId) => {
+    if (!user) return;
+    try {
+      await api.post(`/chat/mark-read/${senderId}`);
+      // Refresh unread count globally
+      fetchUnreadChatCount();
+    } catch (e) {
+      console.error("Failed to mark chat as read", e);
+    }
+  }, [user, fetchUnreadChatCount]);
+
   const [isAiOpen, setAiOpen] = useState(false);
 
   return (
     <NotificationContext.Provider value={{ 
       notifications, unreadCount, markAsRead, fetchNotifications, 
       unreadChatCount, setUnreadChatCount, fetchUnreadChatCount, lastMessage,
+      markChatAsRead,
       isAiOpen, setAiOpen
     }}>
       {children}

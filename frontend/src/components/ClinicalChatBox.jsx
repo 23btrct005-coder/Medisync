@@ -17,6 +17,7 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
     const [isReceiverOnline, setIsReceiverOnline] = useState(false);
     const [receiverPhoto, setReceiverPhoto] = useState(null);
     const [lastSeen, setLastSeen] = useState(null);
+    const { lastMessage, markChatAsRead } = useNotifications();
     const stompClient = useRef(null);
     const scrollRef = useRef(null);
 
@@ -49,8 +50,8 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
             const res = await api.get(`/chat/conversation/${receiverId}`);
             setMessages(res.data);
             setLoading(false);
-            // Mark as read
-            await api.post(`/chat/mark-read/${receiverId}`);
+            // Mark as read globally
+            markChatAsRead(receiverId);
         } catch (err) {
             console.error("Chat history fetch failed", err);
         }
@@ -99,7 +100,7 @@ const ClinicalChatBox = ({ receiverId, receiverName, onClose }) => {
                 const newMessage = JSON.parse(msg.body);
                 if (String(newMessage.senderId) === String(receiverId)) {
                     setMessages(prev => [...prev, newMessage]);
-                    api.post(`/chat/mark-read/${receiverId}`);
+                    markChatAsRead(receiverId);
                     setIsReceiverOnline(true);
                 }
             });

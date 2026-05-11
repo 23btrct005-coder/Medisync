@@ -16,7 +16,7 @@ const ClinicalMessages = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [activeChat, setActiveChat] = useState(null);
     const [activeTab, setActiveTab] = useState(isAdmin ? 'staff' : (isPatient ? 'physicians' : 'patients'));
-    const { lastMessage } = useNotifications();
+    const { lastMessage, markChatAsRead, fetchUnreadChatCount } = useNotifications();
     const [unreadCounts, setUnreadCounts] = useState({});
 
     useEffect(() => {
@@ -162,6 +162,7 @@ const ClinicalMessages = () => {
                             onClick={() => {
                                 setActiveChat({ id: contact.id, name: contact.name, userId: contact.userId });
                                 setUnreadCounts(prev => ({ ...prev, [contact.userId]: 0 }));
+                                markChatAsRead(contact.userId);
                             }}
                             className="bg-white p-4 rounded-[2rem] border border-slate-100 hover:border-primary/30 transition-all cursor-pointer group shadow-sm flex items-center justify-between"
                         >
