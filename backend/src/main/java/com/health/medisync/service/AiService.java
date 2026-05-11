@@ -32,7 +32,7 @@ public class AiService {
     }
 
     private String executeLocalExpertAgent(String query, boolean hasImage, String history) {
-        String q = query.toLowerCase();
+        String q = query.toLowerCase().replaceAll("[^a-z0-9 ]", " ");
         String assessment = "I am your MediSync Copilot. Based on the clinical signals in your query, I have analyzed your situation against our institutional safety registry. ";
         String severity = "MODERATE";
         String specialist = "General Physician";
@@ -44,25 +44,25 @@ public class AiService {
 
         String safetyPrefix = "";
         String fullContext = (history + " " + q).toLowerCase();
-        if (fullContext.contains("allergy") || fullContext.contains("allergic") || fullContext.contains("penicillin")) {
+        if (matchesWord(fullContext, "allergy") || matchesWord(fullContext, "allergic") || matchesWord(fullContext, "penicillin")) {
             safetyPrefix = "IMPORTANT: I have noted your previously mentioned allergy from our clinical history. ";
         }
 
         // --- Triage Logic Chain ---
-        if (q.contains("llm") || q.contains("model") || q.contains("system prompt") || q.contains("registry") || q.contains("json format")) {
+        if (matchesWord(q, "llm") || matchesWord(q, "model") || matchesWord(q, "system prompt") || matchesWord(q, "registry") || matchesWord(q, "json format")) {
             assessment = "Technical inquiry identified. Please restrict your query to clinical symptoms.";
             severity = "LOW";
             specialist = "MediSync Privacy Officer";
             action = "Return to clinical symptoms.";
             service = "System Security";
         }
-        else if (q.contains("book") || q.contains("find") || q.contains("nearest") || q.contains("where is") || q.contains("schedule")) {
+        else if (matchesWord(q, "book") || matchesWord(q, "find") || matchesWord(q, "nearest") || matchesWord(q, "where is") || matchesWord(q, "schedule")) {
             assessment = "MediSync Navigator offers a streamlined portal for all scheduling.";
             severity = "LOW";
             specialist = "MediSync Navigator";
             action = "Navigate to /dashboard/booking.";
             service = "General Clinical";
-        } else if (q.contains("records") || q.contains("result") || q.contains("download") || q.contains("insurance") || q.contains("password")) {
+        } else if (matchesWord(q, "records") || matchesWord(q, "result") || matchesWord(q, "download") || matchesWord(q, "insurance") || matchesWord(q, "password")) {
             assessment = "MediSync Support provides administrative oversight for your records.";
             severity = "LOW";
             specialist = "MediSync Support";
@@ -70,42 +70,42 @@ public class AiService {
             service = "General Clinical";
         }
         // --- LEVEL 1: EMERGENCY RED-FLAGS (Highest Priority) ---
-        else if (q.contains("throat closing") || q.contains("peanut") || q.contains("swollen tongue") || q.contains("hives") || q.contains("anaphylaxis")) {
+        else if (matchesWord(q, "throat closing") || matchesWord(q, "peanut") || matchesWord(q, "swollen tongue") || matchesWord(q, "hives") || matchesWord(q, "anaphylaxis")) {
             assessment = safetyPrefix + "Symptoms suggest Anaphylaxis (severe allergic reaction).";
             severity = "CRITICAL";
             specialist = "Allergist";
             action = "Use an Epipen and seek EMERGENCY care.";
             service = "Emergency & Trauma Care";
             warning = "ANAPHYLAXIS ALERT.";
-        } else if (q.contains("drooping") || q.contains("weakness") || q.contains("slurred") || q.contains("confusion") || q.contains("vision loss") || q.contains("stiff neck") || q.contains("seizure") || q.contains("unconscious") || q.contains("memory loss") || q.contains("balance")) {
+        } else if (matchesWord(q, "drooping") || matchesWord(q, "weakness") || matchesWord(q, "slurred") || matchesWord(q, "confusion") || matchesWord(q, "vision loss") || matchesWord(q, "stiff neck") || matchesWord(q, "seizure") || matchesWord(q, "unconscious") || matchesWord(q, "memory loss") || matchesWord(q, "balance")) {
             assessment = safetyPrefix + "Acute neurological deficit identified.";
             severity = "CRITICAL";
             specialist = "Neurologist";
             action = "Seek IMMEDIATE Stroke Center or Emergency care.";
             service = "Emergency & Trauma Care";
             warning = "NEUROLOGICAL EMERGENCY.";
-        } else if (q.contains("self-harm") || q.contains("dark thoughts") || q.contains("suicidal") || q.contains("mental crisis") || q.contains("panic attack")) {
+        } else if (matchesWord(q, "self-harm") || matchesWord(q, "dark thoughts") || matchesWord(q, "suicidal") || matchesWord(q, "mental crisis") || matchesWord(q, "panic attack")) {
             assessment = safetyPrefix + "Severe psychiatric distress identified.";
             severity = "CRITICAL";
             specialist = "Psychiatrist";
             action = "Seek immediate Mental Health Support.";
             service = "Emergency & Trauma Care";
             warning = "CRISIS SIGNAL.";
-        } else if (q.contains("pregnant") || q.contains("contraction") || q.contains("water broke") || q.contains("pre-eclampsia") || q.contains("bleeding")) {
+        } else if (matchesWord(q, "pregnant") || matchesWord(q, "contraction") || matchesWord(q, "water broke") || matchesWord(q, "pre-eclampsia") || matchesWord(q, "bleeding")) {
             assessment = safetyPrefix + "Acute obstetric complication identified.";
             severity = "CRITICAL";
             specialist = "Obstetrician / Gynecologist";
             action = "Proceed to Labor & Delivery triage.";
             service = "Emergency & Trauma Care";
             warning = "OBSTETRIC ALERT.";
-        } else if (q.contains("chest") || q.contains("heart attack") || q.contains("pounding heart") || q.contains("crushing") || q.contains("shortness of breath") || q.contains("breathing difficulty") || q.contains("asthma") || q.contains("oxygen")) {
+        } else if (matchesWord(q, "chest") || matchesWord(q, "heart attack") || matchesWord(q, "pounding heart") || matchesWord(q, "crushing") || matchesWord(q, "shortness of breath") || matchesWord(q, "breathing difficulty") || matchesWord(q, "asthma") || matchesWord(q, "oxygen")) {
             assessment = safetyPrefix + "Acute cardiovascular or respiratory signal identified.";
             severity = "CRITICAL";
             specialist = "Cardiologist";
             action = "Navigate IMMEDIATELY to Emergency.";
             service = "Emergency & Trauma Care";
             warning = "LIFE-SAFETY ALERT.";
-        } else if (q.contains("fall") || q.contains("bent arm") || q.contains("car accident") || q.contains("laceration") || q.contains("accident") || q.contains("internal bleeding") || q.contains("fainted")) {
+        } else if (matchesWord(q, "fall") || matchesWord(q, "bent arm") || matchesWord(q, "car accident") || matchesWord(q, "laceration") || matchesWord(q, "accident") || matchesWord(q, "internal bleeding") || matchesWord(q, "fainted")) {
             assessment = safetyPrefix + "Acute traumatic injury identified.";
             severity = "CRITICAL";
             specialist = "Emergency Physician / Orthopedic Surgeon";
@@ -134,62 +134,62 @@ public class AiService {
             service = "General Clinical";
         }
         // --- LEVEL 3: SYMPTOM-BASED HIGH-URGENCY ---
-        else if (q.contains("blood in urine") || q.contains("kidney") || q.contains("pee") || q.contains("bladder") || q.contains("urination")) {
+        else if (matchesWord(q, "blood in urine") || matchesWord(q, "kidney") || matchesWord(q, "pee") || matchesWord(q, "bladder") || matchesWord(q, "urination")) {
             assessment = safetyPrefix + "Urological specialty symptoms detected.";
             severity = "HIGH";
             specialist = "Urologist";
             action = "Book a consultation with a Urologist.";
             service = "General Clinical";
-        } else if (q.contains("diabetes") || q.contains("diabetis") || q.contains("sugar") || q.contains("thirsty") || q.contains("insulin") || q.contains("urine") || q.contains("glucose") || q.contains("ketones") || q.contains("400")) {
+        } else if (matchesWord(q, "diabetes") || matchesWord(q, "diabetis") || matchesWord(q, "sugar") || matchesWord(q, "thirsty") || matchesWord(q, "insulin") || matchesWord(q, "urine") || matchesWord(q, "glucose") || matchesWord(q, "ketones") || matchesWord(q, "400")) {
             assessment = safetyPrefix + "Metabolic crisis or glycemic signals identified.";
             severity = "HIGH";
             specialist = "Diabetologist";
             action = "Seek urgent Diabetologist consultation.";
             service = "General Clinical";
-        } else if (q.contains("yellow") || q.contains("jaundice") || q.contains("liver") || q.contains("hepatitis") || q.contains("pale stool")) {
+        } else if (matchesWord(q, "yellow") || matchesWord(q, "jaundice") || matchesWord(q, "liver") || matchesWord(q, "hepatitis") || matchesWord(q, "pale stool")) {
             assessment = safetyPrefix + "Hepatobiliary dysfunction signals detected.";
             severity = "HIGH";
             specialist = "Hepatologist";
             action = "Seek evaluation within 24 hours.";
             service = "General Clinical";
-        } else if (q.contains("stomach") || q.contains("abdominal") || q.contains("vomiting") || q.contains("digestion") || q.contains("gut")) {
+        } else if (matchesWord(q, "stomach") || matchesWord(q, "abdominal") || matchesWord(q, "vomiting") || matchesWord(q, "digestion") || matchesWord(q, "gut")) {
             assessment = safetyPrefix + "Gastrointestinal symptoms identified.";
             severity = "HIGH";
             specialist = "Gastroenterologist";
             action = "Book a consultation with a Gastroenterologist.";
             service = "General Clinical";
-        } else if (q.contains("skin") || q.contains("rash") || q.contains("itching") || q.contains("mole") || q.contains("dermatology")) {
+        } else if (matchesWord(q, "skin") || matchesWord(q, "rash") || matchesWord(q, "itching") || matchesWord(q, "mole") || matchesWord(q, "dermatology")) {
             assessment = safetyPrefix + "Dermatological signals identified.";
             severity = "HIGH";
             specialist = "Dermatologist";
             action = "Book a consultation with a Dermatologist.";
             service = "General Clinical";
-        } else if (q.contains("child") || q.contains("pediatric") || q.contains("infant") || q.contains("baby")) {
+        } else if (matchesWord(q, "child") || matchesWord(q, "pediatric") || matchesWord(q, "infant") || matchesWord(q, "baby")) {
             assessment = safetyPrefix + "Pediatric clinical signals identified.";
             severity = "HIGH";
             specialist = "Pediatrician";
             action = "Seek evaluation at a Pediatric node.";
             service = "General Clinical";
-        } else if (q.contains("weight loss") || q.contains("lump") || q.contains("tumor") || q.contains("cancer") || q.contains("lymph")) {
+        } else if (matchesWord(q, "weight loss") || matchesWord(q, "lump") || matchesWord(q, "tumor") || matchesWord(q, "cancer") || matchesWord(q, "lymph")) {
             assessment = safetyPrefix + "Persistent systemic symptoms identified.";
             severity = "HIGH";
             specialist = "Oncologist";
             action = "Book a diagnostic consultation.";
             service = "General Clinical";
-        } else if (q.contains("vision") || q.contains("eye") || q.contains("flashes")) {
+        } else if (matchesWord(q, "vision") || matchesWord(q, "eye") || matchesWord(q, "flashes")) {
             assessment = safetyPrefix + "Ophthalmological symptoms identified.";
             severity = "HIGH";
             specialist = "Ophthalmologist";
             action = "Seek evaluation within 24 hours.";
             service = "General Clinical";
         }
-        else if (q.contains("ear") || q.contains("hearing") || q.contains("sore throat") || q.contains("sinus") || q.contains("tonsil")) {
+        else if (matchesWord(q, "ear") || matchesWord(q, "hearing") || matchesWord(q, "sore throat") || matchesWord(q, "sinus") || matchesWord(q, "tonsil")) {
             assessment = safetyPrefix + "ENT symptoms detected.";
             severity = "MODERATE";
             specialist = "Otolaryngologist (ENT Specialist)";
             action = "Book an appointment with an ENT specialist.";
             service = "General Clinical";
-        } else if (q.contains("joint") || q.contains("knee") || q.contains("shoulder") || q.contains("broken") || q.contains("arm") || q.contains("hip")) {
+        } else if (matchesWord(q, "joint") || matchesWord(q, "knee") || matchesWord(q, "shoulder") || matchesWord(q, "broken") || matchesWord(q, "arm") || matchesWord(q, "hip")) {
             assessment = safetyPrefix + "Musculoskeletal signals identified.";
             severity = "MODERATE";
             specialist = "Orthopedic Surgeon";
@@ -213,6 +213,12 @@ public class AiService {
                "6. Suggested Next Steps: " + action + "\n" +
                "7. Follow-up Questions: " + followUp + "\n" +
                "8. Emergency Warning: " + finalWarning;
+    }
+
+    private boolean matchesWord(String text, String target) {
+        if (text == null || target == null) return false;
+        // Use word boundary matching to prevent substring collisions (e.g., 'research' matching 'ear')
+        return text.matches(".*\\b" + target.toLowerCase() + "\\b.*");
     }
 
     private boolean isError(String res) {
