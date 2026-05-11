@@ -154,6 +154,33 @@ public class AiService {
             service = "General Clinical";
             conditions = "Portal navigation and booking assistance identified.";
             instructions = "If you encounter any technical issues, reach out to the institutional helpdesk.";
+        } else if (q.contains("tearing") && q.contains("back") && (q.contains("stomach") || q.contains("belly") || q.contains("abdomen"))) {
+            assessment = safetyPrefix + "Your report of 'tearing' back pain radiating to the abdomen is a critical signal for a potential Abdominal Aortic Aneurysm (AAA). This is a major surgical emergency.";
+            severity = "CRITICAL";
+            specialist = "Vascular Surgeon / Emergency Specialist";
+            action = "Navigate IMMEDIATELY to the nearest Emergency & Trauma node. Do not attempt to move or drive yourself.";
+            service = "Emergency & Trauma Care";
+            conditions = "Potential acute vascular dissection or aneurysm rupture protocol.";
+            instructions = "Lay flat and avoid any physical exertion while waiting for emergency transport.";
+            warning = "VASCULAR EMERGENCY DETECTED: SEEK IMMEDIATE CARE.";
+        } else if ((q.contains("shiver") || q.contains("shak")) && (q.contains("confused") || q.contains("ooz") || q.contains("pus")) && (q.contains("surgery") || q.contains("post-op") || q.contains("removed"))) {
+            assessment = safetyPrefix + "Your symptoms (shivering/confusion/wound changes) after surgery suggest a potential systemic infection or Sepsis. This requires immediate stabilization.";
+            severity = "CRITICAL";
+            specialist = "Infectious Disease Specialist / General Surgeon";
+            action = "Navigate IMMEDIATELY to the nearest Emergency node. Sepsis is a time-critical medical emergency.";
+            service = "Emergency & Trauma Care";
+            conditions = "Potential Post-Operative Sepsis or Systemic Inflammatory Response Syndrome (SIRS).";
+            instructions = "Note your body temperature and the appearance of your surgical wound for the medical team.";
+            warning = "SEPSIS ALERT: SEEK IMMEDIATE EVALUATION.";
+        } else if (q.contains("dard") || q.contains("saans") || q.contains("takleef") || q.contains("madad") || q.contains("bachao")) {
+            assessment = safetyPrefix + "I have detected emergency distress signals in your multilingual query (Pain/Breathing Difficulty). High-priority clinical evaluation is required.";
+            severity = "CRITICAL";
+            specialist = "Emergency Physician";
+            action = "Navigate IMMEDIATELY to the nearest MediSync Emergency & Trauma node or call for an Ambulance.";
+            service = "Emergency & Trauma Care";
+            conditions = "Acute distress signal identified via multilingual clinical analysis.";
+            instructions = "Keep calm and stay in a safe position until help arrives.";
+            warning = "MULTILINGUAL EMERGENCY SIGNAL: SEEK IMMEDIATE CARE.";
         } else if (q.contains("sting") || q.contains("hives") || (q.contains("throat") && q.contains("tight")) || q.contains("anaphylax")) {
             assessment = safetyPrefix + "Your symptoms suggest a potential acute systemic allergic reaction (Anaphylaxis). This is a life-threatening medical emergency.";
             severity = "CRITICAL";
