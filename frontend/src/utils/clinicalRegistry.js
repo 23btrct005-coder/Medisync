@@ -16,7 +16,8 @@ export const PHYSICIAN_DEPARTMENTS = [
   { name: 'Ophthalmology', icon: Eye, color: 'text-sky-500', bg: 'bg-sky-50' },
   { name: 'ENT', icon: Siren, color: 'text-indigo-400', bg: 'bg-indigo-50' },
   { name: 'Psychiatry', icon: Brain, color: 'text-violet-500', bg: 'bg-violet-50' },
-  { name: 'General Medicine', icon: Stethoscope, color: 'text-indigo-500', bg: 'bg-indigo-50' }
+  { name: 'General Medicine', icon: Stethoscope, color: 'text-indigo-500', bg: 'bg-indigo-50' },
+  { name: 'Radiology', icon: Microscope, color: 'text-slate-500', bg: 'bg-slate-50' }
 ];
 
 export const INSTITUTIONAL_SERVICE_CATALOG = [

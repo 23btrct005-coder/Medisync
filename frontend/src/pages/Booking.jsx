@@ -412,12 +412,18 @@ const Booking = () => {
     const matchesSearch = d.name.toLowerCase().includes(searchLow) ||
       d.specialization?.toLowerCase().includes(searchLow) ||
       d.hospital?.toLowerCase().includes(searchLow) ||
-      d.medicalDegree?.toLowerCase().includes(searchLow);
-    const matchesFilter = filterSpecialty === 'All' || d.specialization === filterSpecialty;
+      d.medicalDegree?.toLowerCase().includes(searchLow) ||
+      d.services?.toLowerCase().includes(searchLow);
+
+    const matchesFilter = filterSpecialty === 'All' || 
+      d.specialization?.toLowerCase().trim() === filterSpecialty.toLowerCase().trim() ||
+      d.specialization?.toLowerCase().includes(filterSpecialty.toLowerCase().trim()) ||
+      (d.services?.toLowerCase().includes(filterSpecialty.toLowerCase().trim()));
     
     // Price enforcement: must have at least one fee configured
     const hasPrice = (d.onlineConsultationFee && d.onlineConsultationFee > 0) || 
-                    (d.offlineConsultationFee && d.offlineConsultationFee > 0);
+                    (d.offlineConsultationFee && d.offlineConsultationFee > 0) ||
+                    (d.serviceFees && d.serviceFees !== '{}');
                     
     return matchesSearch && matchesFilter && hasPrice;
   });

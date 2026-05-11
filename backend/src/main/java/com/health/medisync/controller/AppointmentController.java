@@ -169,30 +169,42 @@ public class AppointmentController {
 
             // Doctors/Clinics
             appointmentService.getAllApprovedDoctors().stream()
-                .filter(d -> d.getServices() != null && d.getServices().toLowerCase().contains(service.toLowerCase()))
+                .filter(d -> {
+                    String s = service.toLowerCase();
+                    boolean matchesService = d.getServices() != null && d.getServices().toLowerCase().contains(s);
+                    boolean matchesSpecialization = d.getSpecialization() != null && d.getSpecialization().toLowerCase().contains(s);
+                    return matchesService || matchesSpecialization;
+                })
                 .filter(d -> {
                     try {
                         // Price enforcement for clinics
-                        if (d.getServiceFees() == null || d.getServiceFees().isEmpty()) return false;
-                        Map<String, Object> fees = mapper.readValue(d.getServiceFees(), Map.class);
-                        String matchedKey = fees.keySet().stream()
-                            .filter(k -> k.toLowerCase().contains(service.toLowerCase()) || service.toLowerCase().contains(k.toLowerCase()))
-                            .findFirst()
-                            .orElse(null);
+                        // 1. Check if specific service fee exists
+                        if (d.getServiceFees() != null && !d.getServiceFees().isEmpty()) {
+                            Map<String, Object> fees = mapper.readValue(d.getServiceFees(), Map.class);
+                            String matchedKey = fees.keySet().stream()
+                                .filter(k -> k.toLowerCase().contains(service.toLowerCase()) || service.toLowerCase().contains(k.toLowerCase()))
+                                .findFirst()
+                                .orElse(null);
+                            
+                            if (matchedKey != null) {
+                                Object price = fees.get(matchedKey);
+                                if (price != null && Double.parseDouble(price.toString()) > 0) return true;
+                            }
+                        }
                         
-                        if (matchedKey == null) return false;
-                        Object price = fees.get(matchedKey);
-                        if (price == null) return false;
-                        double fee = Double.parseDouble(price.toString());
-                        return fee > 0;
+                        // 2. Fallback to consultation fees if the "service" is actually a department/consultation
+                        if (d.getOnlineConsultationFee() != null && d.getOnlineConsultationFee() > 0) return true;
+                        if (d.getOfflineConsultationFee() != null && d.getOfflineConsultationFee() > 0) return true;
+                        
+                        return false;
                     } catch (Exception e) { return false; }
                 })
                 .forEach(d -> {
                     Map<String, Object> map = new java.util.HashMap<>();
                     map.put("id", "doc_" + d.getId());
-                    map.put("name", d.getName() + (d.getName().toLowerCase().contains("clinic") ? "" : "'s clinic"));
+                    map.put("name", d.getName() + (d.getName().toLowerCase().contains("clinic") || d.getName().toLowerCase().contains("hospital") ? "" : "'s clinic"));
                     map.put("logoUrl", d.getProfilePictureUrl());
-                    map.put("hospitalType", "Independent Clinic");
+                    map.put("hospitalType", d.isInstitutional() ? "Institutional Node" : "Independent Clinic");
                     map.put("city", d.getClinicCity());
                     map.put("state", d.getClinicState());
                     map.put("serviceFees", d.getServiceFees());
