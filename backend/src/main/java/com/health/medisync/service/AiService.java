@@ -199,7 +199,7 @@ public class AiService {
             specialist = "Endocrinologist / Diabetologist";
             action = "Book an urgent consultation with a Diabetologist.";
             service = "General Clinical";
-        } else if (q.contains("urine") || q.contains("pee") || q.contains("bladder") || (q.contains("blood") && q.contains("piss"))) {
+        } else if (q.contains("urine") || q.contains("pee") || q.contains("bladder") || q.contains("kidney") || (q.contains("blood") && q.contains("piss"))) {
             assessment = safetyPrefix + "Urological symptoms detected. Potential infection or structural issue identified.";
             severity = "HIGH";
             specialist = "Urologist";
@@ -217,7 +217,7 @@ public class AiService {
             specialist = "Otolaryngologist (ENT Specialist)";
             action = "Book an appointment with an ENT specialist.";
             service = "General Clinical";
-        } else if (safeContains(q, "eye") && (safeContains(q, "vision") || safeContains(q, "red") || safeContains(q, "blur") || safeContains(q, "pressure") || safeContains(q, "flashes"))) {
+        } else if ((safeContains(q, "eye") && (safeContains(q, "vision") || safeContains(q, "red") || safeContains(q, "blur") || safeContains(q, "pressure"))) || safeContains(q, "flashes") || safeContains(q, "double vision")) {
             assessment = safetyPrefix + "Ophthalmological symptoms require specialized assessment.";
             severity = "HIGH";
             specialist = "Ophthalmologist";
@@ -245,7 +245,7 @@ public class AiService {
             service = "Emergency & Trauma Care";
             warning = "NEUROLOGICAL ALERT: SEEK IMMEDIATE EVALUATION.";
         } else if ((q.contains("sun") || q.contains("heat") || q.contains("outside")) && (q.contains("confused") || q.contains("hot") || q.contains("dry"))) {
-            assessment = safetyPrefix + "Signals consistent with potential Heat Stroke detected.";
+            assessment = safetyPrefix + "Signals consistent with Heat Stroke detected.";
             severity = "CRITICAL";
             specialist = "Emergency Physician";
             action = "Navigate IMMEDIATELY to the nearest Emergency node.";
@@ -286,7 +286,7 @@ public class AiService {
             action = "Navigate IMMEDIATELY to the nearest Emergency node.";
             service = "Emergency & Trauma Care";
             warning = "SEPSIS ALERT: SEEK IMMEDIATE EVALUATION.";
-        } else if (safeContains(q, "accident") || safeContains(q, "injury") || safeContains(q, "fall") || safeContains(q, "bent") || safeContains(q, "deform") || safeContains(q, "ladder") || safeContains(q, "toes") || safeContains(q, "hit my head")) {
+        } else if (safeContains(q, "accident") || safeContains(q, "injury") || safeContains(q, "fall") || safeContains(q, "bent") || safeContains(q, "deform") || safeContains(q, "ladder") || safeContains(q, "laceration") || safeContains(q, "car") || safeContains(q, "hit my head")) {
             assessment = safetyPrefix + "Acute traumatic injury involving potential structural compromise identified.";
             severity = "CRITICAL";
             specialist = "Emergency Physician / Orthopedic Surgeon";
@@ -311,7 +311,7 @@ public class AiService {
             specialist = "MediSync Navigator";
             action = "Navigate to /dashboard/booking.";
             service = "General Clinical";
-        } else if (safeContains(q, "diabetes") || safeContains(q, "sugar") || safeContains(q, "glucose") || safeContains(q, "insulin") || (safeContains(q, "thirsty") && safeContains(q, "urinat"))) {
+        } else if (safeContains(q, "diabetes") || safeContains(q, "sugar") || safeContains(q, "glucose") || safeContains(q, "insulin") || safeContains(q, "thirsty") || safeContains(q, "urinat")) {
             assessment = safetyPrefix + "Potential glycemic crisis detected.";
             severity = "HIGH";
             specialist = "Endocrinologist / Diabetologist";
