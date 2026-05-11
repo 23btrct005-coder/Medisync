@@ -15,6 +15,7 @@ import {
 const PREDEFINED_SERVICES = ALL_INSTITUTIONAL_SERVICES;
 const SERVICES_24_7 = [
     'Ambulance Booking', 
+    'Ambulance Services',
     'Emergency Room', 
     'Trauma Care', 
     'Stroke Care', 
@@ -203,7 +204,7 @@ const HospitalProfile = () => {
             // Validation: Every service must have both fee and duration
             const services = formData.services.split(', ').filter(s => s);
             for (const service of services) {
-                const is247 = SERVICES_24_7.includes(service);
+                const is247 = SERVICES_24_7.some(s => s.toLowerCase() === service.toLowerCase());
                 if (!formData.serviceFees[service]) {
                     toast.error(`Required: Please provide a Fee for "${service}"`);
                     setSaving(false);
@@ -987,7 +988,7 @@ const HospitalProfile = () => {
                                                     </div>
                                                 </div>
 
-                                                {!SERVICES_24_7.includes(service) && (
+                                                {!SERVICES_24_7.some(s => s.toLowerCase() === service.toLowerCase()) && (
                                                     <div className="grid grid-cols-2 gap-4">
                                                         <div className="space-y-1.5">
                                                             <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
