@@ -75,7 +75,7 @@ public class AiService {
             action = "Use an Epipen and seek EMERGENCY care.";
             service = "Emergency & Trauma Care";
             warning = "ANAPHYLAXIS ALERT.";
-        } else if (q.contains("drooping") || q.contains("weakness") || q.contains("slurred") || q.contains("confusion") || q.contains("vision loss") || q.contains("stiff neck")) {
+        } else if (q.contains("drooping") || q.contains("weakness") || q.contains("slurred") || q.contains("confusion") || q.contains("vision loss") || q.contains("stiff neck") || q.contains("seizure") || q.contains("unconscious") || q.contains("memory loss") || q.contains("balance")) {
             assessment = safetyPrefix + "Acute neurological deficit identified.";
             severity = "CRITICAL";
             specialist = "Neurologist";
@@ -89,21 +89,21 @@ public class AiService {
             action = "Seek immediate Mental Health Support.";
             service = "Emergency & Trauma Care";
             warning = "CRISIS SIGNAL.";
-        } else if (q.contains("pregnant") || q.contains("contraction") || q.contains("water broke") || q.contains("pre-eclampsia")) {
+        } else if (q.contains("pregnant") || q.contains("contraction") || q.contains("water broke") || q.contains("pre-eclampsia") || q.contains("bleeding")) {
             assessment = safetyPrefix + "Acute obstetric complication identified.";
             severity = "CRITICAL";
             specialist = "Obstetrician / Gynecologist";
             action = "Proceed to Labor & Delivery triage.";
             service = "Emergency & Trauma Care";
             warning = "OBSTETRIC ALERT.";
-        } else if (q.contains("chest") || q.contains("heart attack") || q.contains("pounding heart")) {
-            assessment = safetyPrefix + "Acute cardiovascular signal identified.";
+        } else if (q.contains("chest") || q.contains("heart attack") || q.contains("pounding heart") || q.contains("crushing") || q.contains("shortness of breath") || q.contains("breathing difficulty") || q.contains("asthma") || q.contains("oxygen")) {
+            assessment = safetyPrefix + "Acute cardiovascular or respiratory signal identified.";
             severity = "CRITICAL";
             specialist = "Cardiologist";
             action = "Navigate IMMEDIATELY to Emergency.";
             service = "Emergency & Trauma Care";
-            warning = "CARDIAC ALERT.";
-        } else if (q.contains("fall") || q.contains("bent arm") || q.contains("car accident") || q.contains("laceration")) {
+            warning = "LIFE-SAFETY ALERT.";
+        } else if (q.contains("fall") || q.contains("bent arm") || q.contains("car accident") || q.contains("laceration") || q.contains("accident") || q.contains("internal bleeding") || q.contains("fainted")) {
             assessment = safetyPrefix + "Acute traumatic injury identified.";
             severity = "CRITICAL";
             specialist = "Emergency Physician / Orthopedic Surgeon";
@@ -128,6 +128,24 @@ public class AiService {
             severity = "HIGH";
             specialist = "Hepatologist";
             action = "Seek evaluation within 24 hours.";
+            service = "General Clinical";
+        } else if (q.contains("stomach") || q.contains("abdominal") || q.contains("vomiting") || q.contains("digestion") || q.contains("gut")) {
+            assessment = safetyPrefix + "Gastrointestinal symptoms identified.";
+            severity = "HIGH";
+            specialist = "Gastroenterologist";
+            action = "Book a consultation with a Gastroenterologist.";
+            service = "General Clinical";
+        } else if (q.contains("skin") || q.contains("rash") || q.contains("itching") || q.contains("mole") || q.contains("dermatology")) {
+            assessment = safetyPrefix + "Dermatological signals identified.";
+            severity = "HIGH";
+            specialist = "Dermatologist";
+            action = "Book a consultation with a Dermatologist.";
+            service = "General Clinical";
+        } else if (q.contains("child") || q.contains("pediatric") || q.contains("infant") || q.contains("baby")) {
+            assessment = safetyPrefix + "Pediatric clinical signals identified.";
+            severity = "HIGH";
+            specialist = "Pediatrician";
+            action = "Seek evaluation at a Pediatric node.";
             service = "General Clinical";
         } else if (q.contains("weight loss") || q.contains("lump") || q.contains("tumor") || q.contains("cancer") || q.contains("lymph")) {
             assessment = safetyPrefix + "Persistent systemic symptoms identified.";
