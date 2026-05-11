@@ -217,13 +217,13 @@ public class AiService {
             specialist = "Otolaryngologist (ENT Specialist)";
             action = "Book an appointment with an ENT specialist.";
             service = "General Clinical";
-        } else if (safeContains(q, "eye") && (safeContains(q, "vision") || safeContains(q, "red") || safeContains(q, "blur") || safeContains(q, "pressure"))) {
+        } else if (safeContains(q, "eye") && (safeContains(q, "vision") || safeContains(q, "red") || safeContains(q, "blur") || safeContains(q, "pressure") || safeContains(q, "flashes"))) {
             assessment = safetyPrefix + "Ophthalmological symptoms require specialized assessment.";
             severity = "HIGH";
             specialist = "Ophthalmologist";
             action = "Seek evaluation within 24 hours.";
             service = "General Clinical";
-        } else if (safeContains(q, "heel") || safeContains(q, "shoulder") || safeContains(q, "joint") || safeContains(q, "toe") || safeContains(q, "ortho") || safeContains(q, "knee") || safeContains(q, "bone") || safeContains(q, "swelling")) {
+        } else if (safeContains(q, "heel") || safeContains(q, "shoulder") || safeContains(q, "joint") || safeContains(q, "toe") || safeContains(q, "ortho") || safeContains(q, "knee") || safeContains(q, "bone") || safeContains(q, "swelling") || safeContains(q, "hip")) {
             assessment = safetyPrefix + "Musculoskeletal or orthopedic signals identified.";
             severity = "MODERATE";
             specialist = "Orthopedic Surgeon / Physiotherapist";
@@ -258,14 +258,14 @@ public class AiService {
             action = "Contact your primary OB-GYN or proceed to Labor & Delivery triage.";
             service = "Emergency & Trauma Care";
             warning = "OBSTETRIC ALERT: SEEK IMMEDIATE EVALUATION.";
-        } else if (safeContains(q, "weak") || safeContains(q, "droop") || safeContains(q, "slur") || (safeContains(q, "lift") && safeContains(q, "arm")) || safeContains(q, "stroke")) {
+        } else if (safeContains(q, "weak") || safeContains(q, "droop") || safeContains(q, "slur") || (safeContains(q, "lift") && safeContains(q, "arm")) || safeContains(q, "stroke") || safeContains(q, "vision loss")) {
             assessment = safetyPrefix + "Acute neurological deficit (Stroke Protocol) identified. Every second counts for neurological preservation.";
             severity = "CRITICAL";
             specialist = "Neurologist / Stroke Specialist";
             action = "Navigate IMMEDIATELY to the nearest Comprehensive Stroke Center.";
             service = "Emergency & Trauma Care";
             warning = "NEUROLOGICAL EMERGENCY: SEEK IMMEDIATE CARE.";
-        } else if (safeContains(q, "self-harm") || safeContains(q, "suicide") || safeContains(q, "dark thoughts") || safeContains(q, "overwhelmed")) {
+        } else if (safeContains(q, "self-harm") || safeContains(q, "suicid") || safeContains(q, "suicide") || safeContains(q, "dark thoughts") || safeContains(q, "overwhelmed") || safeContains(q, "crisis")) {
             assessment = safetyPrefix + "I've prioritized your report of severe psychological distress. MediSync offers immediate crisis support.";
             severity = "CRITICAL";
             specialist = "Psychiatrist / Crisis Counselor";
@@ -305,8 +305,8 @@ public class AiService {
             specialist = "MediSync Support / Records Department";
             action = "Navigate to /dashboard/reports.";
             service = "General Clinical";
-        } else if ((safeContains(q, "how") || safeContains(q, "where") || safeContains(q, "find") || safeContains(q, "help")) && (safeContains(q, "book") || safeContains(q, "appointment") || safeContains(q, "hospital"))) {
-            assessment = "Use the 'Book Appointment' portal in your sidebar for scheduling and facility navigation.";
+        } else if ((safeContains(q, "how") || safeContains(q, "where") || safeContains(q, "find") || safeContains(q, "help") || safeContains(q, "schedule")) && (safeContains(q, "book") || safeContains(q, "appointment") || safeContains(q, "hospital") || safeContains(q, "doctor"))) {
+            assessment = "MediSync Navigator offers a streamlined portal for all scheduling and facility navigation.";
             severity = "LOW";
             specialist = "MediSync Navigator";
             action = "Navigate to /dashboard/booking.";
