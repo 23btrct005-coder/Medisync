@@ -22,7 +22,9 @@ const SERVICES_24_7 = [
     'Cardiac Emergency', 
     'ICU Admission',
     'Blood Bank',
-    'Neonatal Care'
+    'Neonatal Care',
+    'Blood Test (CBC)',
+    'Blood Test'
 ];
 
 const HospitalProfile = () => {
@@ -201,11 +203,17 @@ const HospitalProfile = () => {
         e.preventDefault();
         setSaving(true);
         try {
-            // Validation: Every service must have a fee
+            // Validation: Every service must have both fee and duration
             const services = formData.services.split(', ').filter(s => s);
             for (const service of services) {
+                const is247 = SERVICES_24_7.some(s => s.toLowerCase() === service.toLowerCase());
                 if (!formData.serviceFees[service]) {
                     toast.error(`Required: Please provide a Fee for "${service}"`);
+                    setSaving(false);
+                    return;
+                }
+                if (!is247 && (!formData.serviceDurations[service] || !formData.serviceCapacity[service])) {
+                    toast.error(`Required: Please provide both Time Slot and Capacity for "${service}"`);
                     setSaving(false);
                     return;
                 }
@@ -981,6 +989,56 @@ const HospitalProfile = () => {
                                                         />
                                                     </div>
                                                 </div>
+
+                                                {!SERVICES_24_7.some(s => s.toLowerCase() === service.toLowerCase()) && (
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div className="space-y-1.5">
+                                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                                <Clock size={10} /> Time Slot
+                                                            </label>
+                                                            <div className="relative">
+                                                                <input 
+                                                                    type="number"
+                                                                    min="0"
+                                                                    required
+                                                                    value={formData.serviceDurations[service] || ''}
+                                                                    onChange={(e) => {
+                                                                        const val = e.target.value;
+                                                                        if (val < 0) return;
+                                                                        const newDurations = { ...formData.serviceDurations, [service]: val };
+                                                                        setFormData({ ...formData, serviceDurations: newDurations });
+                                                                    }}
+                                                                    placeholder="Mins"
+                                                                    className="w-full px-4 py-4 bg-slate-50 border border-transparent rounded-2xl text-sm font-black text-slate-800 focus:bg-white focus:border-primary/20 focus:ring-4 ring-primary/5 transition-all outline-none"
+                                                                />
+                                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-[10px] pointer-events-none">MIN</div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="space-y-1.5">
+                                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                                                <Monitor size={10} /> Capacity
+                                                            </label>
+                                                            <div className="relative">
+                                                                <input 
+                                                                    type="number"
+                                                                    min="1"
+                                                                    required
+                                                                    value={formData.serviceCapacity?.[service] || '1'}
+                                                                    onChange={(e) => {
+                                                                        const val = e.target.value;
+                                                                        if (val < 1) return;
+                                                                        const newCapacity = { ...formData.serviceCapacity, [service]: val };
+                                                                        setFormData({ ...formData, serviceCapacity: newCapacity });
+                                                                    }}
+                                                                    placeholder="Systems"
+                                                                    className="w-full px-4 py-4 bg-slate-50 border border-transparent rounded-2xl text-sm font-black text-slate-800 focus:bg-white focus:border-primary/20 focus:ring-4 ring-primary/5 transition-all outline-none"
+                                                                />
+                                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-[10px] pointer-events-none">SYS</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     ))}
