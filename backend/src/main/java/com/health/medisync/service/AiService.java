@@ -48,6 +48,7 @@ public class AiService {
             safetyPrefix = "IMPORTANT: I have noted your previously mentioned allergy from our clinical history. ";
         }
 
+        // --- Triage Logic Chain ---
         if (q.contains("llm") || q.contains("model") || q.contains("system prompt") || q.contains("registry") || q.contains("json format")) {
             assessment = "Technical inquiry identified. Please restrict your query to clinical symptoms.";
             severity = "LOW";
@@ -68,29 +69,8 @@ public class AiService {
             action = "Navigate to /dashboard/reports.";
             service = "General Clinical";
         }
-         // --- SEMANTIC REGISTRY OVERRIDE (Institutional Data Parity) ---
-        if (ClinicalRegistry.isNeurological(q)) {
-            assessment = safetyPrefix + "Neurological clinical entity identified via institutional registry.";
-            severity = "HIGH";
-            specialist = "Neurologist";
-            action = "Secure a neurological evaluation via our clinical dashboard.";
-            service = "General Clinical";
-        } else if (ClinicalRegistry.isOncological(q)) {
-            assessment = safetyPrefix + "Oncological clinical entity identified via institutional registry.";
-            severity = "HIGH";
-            specialist = "Oncologist";
-            action = "Secure an oncological consultation for specialized diagnostic review.";
-            service = "General Clinical";
-        } else if (ClinicalRegistry.isMetabolic(q)) {
-            assessment = safetyPrefix + "Metabolic or endocrine clinical entity identified via institutional registry.";
-            severity = "HIGH";
-            specialist = "Diabetologist";
-            action = "Secure a consultation for metabolic management.";
-            service = "General Clinical";
-        }
-
-        // --- LEVEL 2: EMERGENCY RED-FLAGS (Overrides Semantic Registry) ---
-        if (q.contains("throat closing") || q.contains("peanut") || q.contains("swollen tongue") || q.contains("hives") || q.contains("anaphylaxis")) {
+        // --- LEVEL 1: EMERGENCY RED-FLAGS (Highest Priority) ---
+        else if (q.contains("throat closing") || q.contains("peanut") || q.contains("swollen tongue") || q.contains("hives") || q.contains("anaphylaxis")) {
             assessment = safetyPrefix + "Symptoms suggest Anaphylaxis (severe allergic reaction).";
             severity = "CRITICAL";
             specialist = "Allergist";
@@ -133,6 +113,27 @@ public class AiService {
             service = "Emergency & Trauma Care";
             warning = "TRAUMA SIGNAL.";
         }
+        // --- LEVEL 2: SEMANTIC REGISTRY (MedQuAD Parity) ---
+        else if (ClinicalRegistry.isNeurological(q)) {
+            assessment = safetyPrefix + "Neurological clinical entity identified via institutional registry.";
+            severity = "HIGH";
+            specialist = "Neurologist";
+            action = "Secure a neurological evaluation via our clinical dashboard.";
+            service = "General Clinical";
+        } else if (ClinicalRegistry.isOncological(q)) {
+            assessment = safetyPrefix + "Oncological clinical entity identified via institutional registry.";
+            severity = "HIGH";
+            specialist = "Oncologist";
+            action = "Secure an oncological consultation for specialized diagnostic review.";
+            service = "General Clinical";
+        } else if (ClinicalRegistry.isMetabolic(q)) {
+            assessment = safetyPrefix + "Metabolic or endocrine clinical entity identified via institutional registry.";
+            severity = "HIGH";
+            specialist = "Diabetologist";
+            action = "Secure a consultation for metabolic management.";
+            service = "General Clinical";
+        }
+        // --- LEVEL 3: SYMPTOM-BASED HIGH-URGENCY ---
         else if (q.contains("blood in urine") || q.contains("kidney") || q.contains("pee") || q.contains("bladder") || q.contains("urination")) {
             assessment = safetyPrefix + "Urological specialty symptoms detected.";
             severity = "HIGH";
