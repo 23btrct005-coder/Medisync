@@ -120,143 +120,129 @@ public class AiService {
         String instructions = "Please monitor for any changes in symptom intensity or the development of new indicators.";
         String warning = "";
 
-        // Memory-Aware Safety: Check history for critical alerts (e.g., Allergies)
+        // Memory-Aware Safety: Check history for critical alerts
         String safetyPrefix = "";
         String fullContext = (history + " " + q).toLowerCase();
         if (fullContext.contains("allergy") || fullContext.contains("allergic") || fullContext.contains("penicillin")) {
             safetyPrefix = "IMPORTANT: I have noted your previously mentioned allergy from our clinical history. ";
         }
 
-        if (q.contains("weak") || q.contains("speech") || q.contains("droop") || q.contains("numb") || q.contains("vision") || q.contains("stroke") || q.contains("paraly")) {
-            assessment = safetyPrefix + "I've detected acute neurological signals (weakness/speech difficulty) consistent with a potential stroke protocol. Immediate intervention is required.";
+        // --- CRITICAL EMERGENCY NODES (PRIORITY 1) ---
+        if (q.contains("sting") || q.contains("hives") || (q.contains("throat") && q.contains("tight")) || q.contains("anaphylax")) {
+            assessment = safetyPrefix + "Your symptoms suggest a potential acute systemic allergic reaction (Anaphylaxis). This is a life-threatening medical emergency.";
+            severity = "CRITICAL";
+            specialist = "Allergist / Emergency Specialist";
+            action = "Navigate IMMEDIATELY to the nearest Emergency department or call Ambulance services.";
+            service = "Emergency & Trauma Care";
+            conditions = "Potential anaphylactic shock or severe systemic allergic response.";
+            instructions = "If you have an Epipen, use it immediately as directed while waiting for help.";
+            warning = "ANAPHYLAXIS ALERT: SEEK IMMEDIATE CARE.";
+        } else if ((q.contains("child") || q.contains("year old") || q.contains("baby") || q.contains("son") || q.contains("daughter")) && 
+                  (q.contains("breath") || q.contains("whistling") || q.contains("ribs") || q.contains("sucking") || q.contains("stridor"))) {
+            assessment = safetyPrefix + "I've detected signals of pediatric respiratory distress (retractions/stridor). This requires immediate clinical evaluation to ensure airway stability.";
+            severity = "CRITICAL";
+            specialist = "Pediatric Emergency Specialist";
+            action = "Navigate IMMEDIATELY to the nearest Pediatric Emergency node. Do not delay.";
+            service = "Emergency & Trauma Care";
+            conditions = "Acute pediatric respiratory distress protocol initiated.";
+            instructions = "Keep the child upright and calm. Do not attempt to look down their throat.";
+            warning = "PEDIATRIC EMERGENCY: SEEK IMMEDIATE EVALUATION.";
+        } else if (q.contains("weak") || q.contains("speech") || q.contains("droop") || q.contains("numb") || q.contains("vision") || q.contains("stroke")) {
+            assessment = safetyPrefix + "I've detected acute neurological signals consistent with a potential stroke protocol. Immediate intervention is required.";
             severity = "CRITICAL";
             specialist = "Neurologist / Stroke Specialist";
-            action = "Navigate IMMEDIATELY to the nearest Comprehensive Stroke Center or Emergency Trauma node. Do not delay.";
+            action = "Navigate IMMEDIATELY to the nearest Comprehensive Stroke Center or Emergency Trauma node.";
             service = "Emergency & Trauma Care";
             conditions = "Acute neurological deficit or cerebrovascular signal identified.";
-            instructions = "Note the exact time symptoms started and inform the emergency team immediately.";
+            instructions = "Note the exact time symptoms started for the emergency team.";
             warning = "NEUROLOGICAL EMERGENCY DETECTED: SEEK IMMEDIATE CARE.";
-        } else if (q.contains("pregnant") || q.contains("weeks") || q.contains("spotting") || q.contains("contraction") || q.contains("fetus") || q.contains("maternal")) {
-            assessment = safetyPrefix + "Your report of potential complications during pregnancy (e.g., spotting/spotting) requires an immediate obstetric evaluation to ensure maternal and fetal safety.";
+        } else if (q.contains("pregnant") || q.contains("weeks") || q.contains("spotting") || q.contains("contraction")) {
+            assessment = safetyPrefix + "Your report of potential complications during pregnancy requires an immediate obstetric evaluation.";
             severity = "CRITICAL";
             specialist = "Obstetrician / Gynecologist";
-            action = "Contact your primary OB-GYN immediately or proceed to the nearest Labor & Delivery triage node.";
+            action = "Contact your primary OB-GYN immediately or proceed to Labor & Delivery triage.";
             service = "Emergency & Trauma Care";
             conditions = "Potential obstetric emergency or high-risk maternal health signal.";
-            instructions = "Monitor for any increase in bleeding, abdominal pain, or decreased fetal movement.";
+            instructions = "Monitor for any increase in bleeding or abdominal pain.";
             warning = "OBSTETRIC ALERT: SEEK IMMEDIATE EVALUATION.";
-        } else if (q.contains("surgery") || q.contains("stitches") || q.contains("operation") || q.contains("removal") || q.contains("exercis") || q.contains("appendix") || q.contains("post-op")) {
-            assessment = safetyPrefix + "I've noted your post-surgical inquiry. Recovery from procedures like an appendectomy requires strict adherence to physical activity restrictions and wound care protocols.";
-            severity = "MODERATE";
-            specialist = "General Surgeon";
-            action = "Book a post-operative follow-up with your surgeon to assess wound healing and clear you for exercise.";
-            service = "General Clinical";
-            conditions = "Post-surgical recovery and wound management protocol.";
-            instructions = "Do not lift heavy weights or engage in strenuous exercise until cleared by your surgeon. Monitor for signs of infection.";
-        } else if (q.contains("dard") || q.contains("ulti") || q.contains("pareshan") || q.contains("chinta")) {
-            // Basic Hindi Emergency Detection (Pain/Vomiting/Worry)
-            assessment = safetyPrefix + "I have detected clinical distress in your Hindi query regarding pain or vomiting. Professional evaluation is required.";
+        } else if (q.contains("diabetes") || q.contains("thirsty") || (q.contains("vision") && q.contains("blur")) || q.contains("sugar") || q.contains("insulin")) {
+            assessment = safetyPrefix + "Your symptoms suggest a potential glycemic crisis (Hyperglycemia). Rapid stabilization is required to prevent systemic complications.";
             severity = "HIGH";
-            specialist = "General Physician / Gastroenterologist";
-            action = "Please consult a physician immediately to evaluate the etiology of your symptoms.";
-            service = "General Clinical";
-            conditions = "Symptomatic distress identified via multilingual analysis.";
-            instructions = "Stay hydrated and note the duration of your symptoms.";
-        } else if (q.contains("dark thoughts") || q.contains("overwhelmed") || q.contains("suicide") || q.contains("self harm") || (q.contains("not slept") && q.contains("3 days"))) {
-            assessment = safetyPrefix + "I've prioritized your report of severe psychological distress. MediSync offers immediate crisis support and psychiatric evaluation nodes.";
+            specialist = "Endocrinologist / Diabetologist";
+            action = "Seek evaluation at an Urgent Care or Emergency node for blood sugar stabilization.";
+            service = "Emergency & Trauma Care";
+            conditions = "Potential diabetic urgency/Hyperglycemic state identified.";
+            instructions = "Monitor your blood glucose levels if you have a meter available.";
+            warning = "GLYCEMIC ALERT: EVALUATION RECOMMENDED.";
+        } else if (q.contains("dark thoughts") || q.contains("overwhelmed") || q.contains("suicide") || q.contains("self harm")) {
+            assessment = safetyPrefix + "I've prioritized your report of severe psychological distress. MediSync offers immediate crisis support.";
             severity = "CRITICAL";
             specialist = "Psychiatrist / Crisis Counselor";
-            action = "Connect immediately with our Mental Health Support node or visit the nearest Emergency department for a safety assessment.";
+            action = "Connect immediately with our Mental Health Support node.";
             service = "Emergency & Trauma Care";
-            conditions = "Severe psychological distress or acute sleep deprivation protocol.";
-            instructions = "Please do not remain alone. Reach out to a trusted contact or our support node immediately.";
+            conditions = "Severe psychological distress protocol.";
+            instructions = "Please do not remain alone. Reach out to a support contact immediately.";
             warning = "CRISIS SIGNAL DETECTED: PLEASE SEEK IMMEDIATE SUPPORT.";
-        } else if (q.contains("swelling") && q.contains("red") && q.contains("hot") && (q.contains("fever") || q.contains("spreading"))) {
-            assessment = safetyPrefix + "Your description of a 'red, hot, and spreading' swelling suggests a potential acute skin infection (Cellulitis) which requires immediate clinical evaluation to prevent systemic escalation.";
-            severity = "HIGH";
-            specialist = "Infectious Disease Specialist / GP";
-            action = "Seek a clinical evaluation at an Urgent Care or Emergency node within the next few hours.";
-            service = "Emergency & Trauma Care";
-            conditions = "Potential acute localized infection with systemic risk indicators.";
-            instructions = "Do not apply topical creams until evaluated by a clinician.";
-            warning = "INFECTION SIGNAL DETECTED: URGENT EVALUATION RECOMMENDED.";
-        } else if (q.contains("insurance") || q.contains("accept") || q.contains("bill") || q.contains("cost") || q.contains("pay")) {
-            assessment = "I've noted your administrative inquiry regarding insurance or billing. While I am a clinical assistant, MediSync provides a dedicated Billing & Insurance node for these queries.";
-            severity = "LOW";
-            specialist = "Hospital Administrator / Helpdesk";
-            action = "Navigate to the 'Institutional Helpdesk' or 'Billing' section of the portal to verify insurance acceptance.";
-            service = "General Clinical";
-            conditions = "Administrative / Billing inquiry identified.";
-            instructions = "Have your insurance card or policy number ready for the support team.";
-        } else if (q.contains("accident") || q.contains("injury") || q.contains("hit") || q.contains("trauma") || q.contains("fall")) {
-            boolean isHead = q.contains("head") || q.contains("brain") || q.contains("skull");
-            assessment = safetyPrefix + "I've prioritized your report of a traumatic " + (isHead ? "head " : "") + "injury. Accidents involving " + (isHead ? "cranial " : "physical ") + "impact require immediate neurological and physical assessment to rule out internal trauma.";
-            severity = "CRITICAL";
-            specialist = isHead ? "Neurologist / Emergency Trauma Specialist" : "Emergency Physician";
-            action = "Navigate immediately to the nearest Emergency & Trauma node. Do not delay your arrival.";
-            service = "Emergency & Trauma Care";
-            conditions = "Potential internal trauma or acute " + (isHead ? "concussion" : "injury") + " protocol initiated.";
-            instructions = "If you experience dizziness, nausea, or loss of consciousness, seek help immediately.";
-            warning = "TRAUMA SIGNAL DETECTED: PROCEED TO EMERGENCY IMMEDIATELY.";
-        } else if ((q.contains("heart") || q.contains("cardiac") || q.contains("chest") || q.contains("breathing")) && 
-                  (q.contains("pain") || q.contains("sharp") || q.contains("attack") || q.contains("emergency") || q.contains("crisis") || q.contains("shortness"))) {
-            assessment = safetyPrefix + "Potential acute cardiovascular or respiratory signal identified. I have initiated our Emergency Triage protocol to prioritize your immediate safety.";
+        } else if ((q.contains("heart") || q.contains("chest") || q.contains("breathing")) && (q.contains("pain") || q.contains("sharp") || q.contains("attack"))) {
+            assessment = safetyPrefix + "Potential acute cardiovascular or respiratory signal identified.";
             severity = "CRITICAL";
             specialist = "Cardiologist / Emergency Specialist";
-            action = "Locate and navigate to the nearest Emergency & Trauma Care node in the registry immediately. Do not drive yourself.";
+            action = "Locate and navigate to the nearest Emergency & Trauma Care node immediately.";
             service = "Emergency & Trauma Care";
-            conditions = "Acute clinical signals requiring immediate life-safety cardiovascular intervention.";
-            instructions = "If symptoms worsen, contact emergency services (Ambulance) immediately.";
-            warning = "LIFE-SAFETY SIGNAL DETECTED: SEEK EMERGENCY CARE IMMEDIATELY.";
-        } else if (q.contains("heart") || q.contains("cardiac") || q.contains("cardio")) {
-            assessment = safetyPrefix + "I've noted your interest in cardiovascular health services. MediSync provides access to elite cardiologists and diagnostic heart centers.";
+            conditions = "Acute life-safety cardiovascular signal protocol.";
+            instructions = "If symptoms worsen, contact emergency services immediately.";
+            warning = "LIFE-SAFETY SIGNAL DETECTED: SEEK EMERGENCY CARE.";
+        } else if (q.contains("blood pressure") || q.contains(" bp ") || q.contains("hypertension")) {
+            assessment = safetyPrefix + "Your blood pressure telemetry indicates a potentially high-risk cardiovascular state.";
+            severity = "CRITICAL";
+            specialist = "Cardiologist / Emergency Specialist";
+            action = "Secure an immediate evaluation at an Emergency node.";
+            service = "Emergency & Trauma Care";
+            conditions = "Potential hypertensive urgency.";
+            instructions = "Rest quietly and avoid physical exertion.";
+            warning = "HYPERTENSIVE CRISIS POTENTIAL: IMMEDIATE OVERSIGHT REQUIRED.";
+        } else if (q.contains("accident") || q.contains("injury") || q.contains("hit") || q.contains("trauma")) {
+            assessment = safetyPrefix + "I've prioritized your report of a traumatic injury.";
+            severity = "CRITICAL";
+            specialist = "Emergency Physician";
+            action = "Navigate immediately to the nearest Emergency & Trauma node.";
+            service = "Emergency & Trauma Care";
+            conditions = "Potential internal trauma protocol.";
+            instructions = "Do not move if you suspect a spinal or severe neck injury.";
+            warning = "TRAUMA SIGNAL DETECTED: PROCEED TO EMERGENCY.";
+        } else if (q.contains("swelling") && q.contains("red") && q.contains("hot") && q.contains("fever")) {
+            assessment = safetyPrefix + "Description suggests a potential acute skin infection (Cellulitis).";
+            severity = "HIGH";
+            specialist = "Infectious Disease Specialist";
+            action = "Seek evaluation at Urgent Care within the next few hours.";
+            service = "Emergency & Trauma Care";
+            conditions = "Potential acute localized infection.";
+            instructions = "Do not apply topical creams until evaluated.";
+            warning = "INFECTION SIGNAL DETECTED: URGENT EVALUATION RECOMMENDED.";
+        } else if (q.contains("heart") || q.contains("cardiac")) {
+            assessment = safetyPrefix + "I've noted your interest in cardiovascular health services.";
             severity = "LOW";
             specialist = "Cardiologist";
-            action = "You can view available heart specialists and book a routine consultation via the cardiology node.";
+            action = "Book a routine consultation via the cardiology node.";
             service = "General Clinical";
-            conditions = "Cardiovascular specialist inquiry identified.";
-            instructions = "Have your recent vitals or blood reports ready for the consultation.";
-        } else if (q.contains("blood pressure") || q.contains(" bp ") || q.startsWith("bp ") || q.contains("hypertension") || q.contains("pressure is")) {
-            assessment = safetyPrefix + "Your blood pressure telemetry indicates a potentially high-risk cardiovascular state. Managing hypertension is critical to preventing acute vascular events.";
-            severity = "CRITICAL";
-            specialist = "Cardiologist / Emergency Specialist";
-            action = "Secure an immediate evaluation at an Emergency node for hypertensive stabilization.";
-            service = "Emergency & Trauma Care";
-            conditions = "Potential hypertensive urgency requiring pharmacological stabilization.";
-            instructions = "Rest quietly and avoid physical exertion until you are evaluated by a clinician.";
-            warning = "HYPERTENSIVE CRISIS POTENTIAL: IMMEDIATE MEDICAL OVERSIGHT REQUIRED.";
-        } else if (q.contains("skin") || q.contains("rash") || q.contains("itch") || q.contains("hive") || q.contains("allergy") || q.contains("redness") || q.contains("swelling")) {
-            assessment = safetyPrefix + "Your report of skin-related changes, such as a rash or localized irritation, requires a visual dermatological correlation to rule out acute allergic reactions or inflammatory conditions.";
-            severity = "MODERATE";
-            specialist = "Dermatologist";
-            action = "Secure a teledermatology or in-person consultation for a high-resolution skin assessment.";
-            service = "General Clinical";
-            conditions = "Localized dermatological inflammation or allergic response (Urticaria/Dermatitis).";
-            instructions = "Avoid scratching the affected area and monitor for any spreading or systemic symptoms like fever.";
-        } else if (q.contains("report") || q.contains("how can i see") || q.contains("view history")) {
-            assessment = "You can access your entire medical history, including lab results and previous diagnoses, in the 'Reports' section of your dashboard.";
-            severity = "LOW";
-            specialist = "MediSync Support";
-            action = "Navigate to /dashboard/reports to view your digitized clinical history.";
-            service = "General Clinical";
-            conditions = "Portal navigation request identified.";
-            instructions = "Ensure you are logged in to see your private medical records.";
-        } else if (q.contains("paracetamol") || q.contains("ibuprofen") || q.contains("aspirin") || q.contains("medicine") || q.contains("tablet") || q.contains("pill") || q.contains("fever") || q.contains("throat")) {
-            assessment = safetyPrefix + "I've noted your inquiry regarding pharmacological intake or localized discomfort. While common medications are often used for symptomatic relief, they must follow professional dosage guidelines and avoid known allergens.";
-            severity = "LOW";
-            specialist = "General Practitioner / Pharmacist";
-            action = "Verify safe dosage and potential drug-drug interactions with a pharmacist via our booking portal.";
-            service = "Pharmacy (24/7)";
-            conditions = "Routine pharmaceutical or symptomatic inquiry.";
-            instructions = "Always check the expiration date and dosage instructions on the packaging.";
+            conditions = "Cardiovascular specialist inquiry.";
+            instructions = "Have your recent vitals ready.";
         } else if (q.contains("scan") || q.contains("mri") || q.contains("ct") || q.contains("xray")) {
-            assessment = "I've processed your request for diagnostic imaging. Advanced scanning (MRI/CT) is an essential tool for high-precision internal diagnostics.";
+            assessment = "I've processed your request for diagnostic imaging.";
             severity = "HIGH";
             specialist = "Radiologist";
-            action = "Secure a slot in the Diagnostic Imaging section of the portal to coordinate your scan.";
+            action = "Secure a slot in the Diagnostic Imaging section.";
             service = "MRI Scan";
-            conditions = "Diagnostic imaging requested for symptomatic investigation.";
-            instructions = "Ensure you have a referral from your primary physician before your appointment.";
+            conditions = "Diagnostic imaging requested.";
+            instructions = "Ensure you have a physician referral.";
+        } else if (q.contains("paracetamol") || q.contains("ibuprofen") || q.contains("fever") || q.contains("throat") || q.contains("medicine")) {
+            assessment = safetyPrefix + "I've noted your inquiry regarding pharmacological intake or localized discomfort.";
+            severity = "LOW";
+            specialist = "General Practitioner / Pharmacist";
+            action = "Verify safe dosage with a pharmacist via our booking portal.";
+            service = "Pharmacy (24/7)";
+            conditions = "Routine pharmaceutical or symptomatic inquiry.";
+            instructions = "Always check dosage instructions.";
         } else {
             assessment = safetyPrefix + assessment + " I recommend a professional consultation for clinical clarity.";
             severity = "MODERATE";
