@@ -9,9 +9,11 @@ import {
 } from 'lucide-react';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 const HospitalDashboard = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [broadcastMessage, setBroadcastMessage] = useState('');
@@ -129,11 +131,15 @@ const HospitalDashboard = () => {
                     <div className="h-12 w-[1px] bg-slate-200 mx-2 hidden lg:block" />
                     <div className="flex items-center gap-4 p-2 bg-white border border-slate-100 rounded-2xl shadow-sm pr-6">
                         <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 overflow-hidden">
-                             <Building2 size={20} />
+                             {user?.profilePictureUrl ? (
+                                <img src={`${user.profilePictureUrl}?t=${Date.now()}`} alt={user?.name} className="w-full h-full object-cover" />
+                             ) : (
+                                <Building2 size={20} />
+                             )}
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Administrator</p>
-                            <p className="text-xs font-bold text-slate-700 uppercase">Ashok • Institutional</p>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{user?.position || 'Administrator'}</p>
+                            <p className="text-xs font-bold text-slate-700 uppercase">{user?.name || user?.username} • Institutional</p>
                         </div>
                     </div>
                 </div>
@@ -285,9 +291,9 @@ const HospitalDashboard = () => {
                                         setTempEndTime(end || '17:00');
                                         setShowTimeModal(true);
                                     }}
-                                    className="p-1.5 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-lg transition-all opacity-0 group-hover/item:opacity-100"
+                                    className="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all border border-blue-100"
                                 >
-                                    <Settings size={14} />
+                                    Configure
                                 </button>
                             </div>
                             <p className="text-xl font-black text-slate-800 uppercase italic flex items-center gap-3">

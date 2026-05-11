@@ -196,8 +196,24 @@ const HospitalDoctorRoster = () => {
                                                 )}
                                             </div>
                                             <div>
-                                                <p className="font-black text-slate-800 text-sm uppercase italic">{doctor.name}</p>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{doctor.specialization}</p>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="font-black text-slate-800 text-sm uppercase italic">{doctor.name}</p>
+                                                    {doctor.user?.lastActive && (
+                                                        <div className={`w-2 h-2 rounded-full ${
+                                                            new Date() - new Date(doctor.user.lastActive) < 300000 
+                                                            ? 'bg-emerald-500 animate-pulse' 
+                                                            : 'bg-slate-300'
+                                                        }`} 
+                                                        title={new Date() - new Date(doctor.user.lastActive) < 300000 ? 'Online' : `Last seen: ${new Date(doctor.user.lastActive).toLocaleString()}`}
+                                                        />
+                                                    )}
+                                                </div>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                                    {doctor.specialization} 
+                                                    {doctor.user?.lastActive && new Date() - new Date(doctor.user.lastActive) >= 300000 && (
+                                                        <span className="ml-2 lowercase font-medium"> • last seen {Math.floor((new Date() - new Date(doctor.user.lastActive)) / 60000)}m ago</span>
+                                                    )}
+                                                </p>
                                             </div>
                                         </div>
                                     </td>

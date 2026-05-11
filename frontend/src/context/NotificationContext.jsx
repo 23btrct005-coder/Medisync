@@ -12,6 +12,7 @@ export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
+  const [unreadCountsMap, setUnreadCountsMap] = useState({});
   const [lastMessage, setLastMessage] = useState(null);
   const [stompClient, setStompClient] = useState(null);
   const stompClientRef = useRef(null);
@@ -32,7 +33,9 @@ export const NotificationProvider = ({ children }) => {
     if (!user) return;
     try {
       const res = await api.get('/chat/unread-counts');
-      const total = Object.values(res.data).reduce((acc, count) => acc + count, 0);
+      const data = res.data || {};
+      const total = Object.values(data).reduce((acc, count) => acc + count, 0);
+      setUnreadCountsMap(data);
       setUnreadChatCount(total);
     } catch (e) {
       console.error("Failed to fetch unread chat counts");
@@ -140,13 +143,20 @@ export const NotificationProvider = ({ children }) => {
   const markChatAsRead = useCallback(async (senderId) => {
     if (!user) return;
     try {
+      // Optimistic Update
+      const count = unreadCountsMap[senderId] || 0;
+      if (count > 0) {
+          setUnreadChatCount(prev => Math.max(0, prev - count));
+          setUnreadCountsMap(prev => ({ ...prev, [senderId]: 0 }));
+      }
+      
       await api.post(`/chat/mark-read/${senderId}`);
-      // Refresh unread count globally
+      // Refresh to be sure
       fetchUnreadChatCount();
     } catch (e) {
       console.error("Failed to mark chat as read", e);
     }
-  }, [user, fetchUnreadChatCount]);
+  }, [user, fetchUnreadChatCount, unreadCountsMap]);
 
   const [isAiOpen, setAiOpen] = useState(false);
 

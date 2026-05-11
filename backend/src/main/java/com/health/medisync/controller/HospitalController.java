@@ -239,6 +239,7 @@ public class HospitalController {
     public ResponseEntity<?> updateProfile(
             @RequestPart("data") String dataJson,
             @RequestPart(value = "logo", required = false) MultipartFile logo,
+            @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture,
             @AuthenticationPrincipal UserDetails userDetails) {
         try {
             User user = userRepository.findByUsername(userDetails.getUsername())
@@ -307,6 +308,11 @@ public class HospitalController {
             if (logo != null && !logo.isEmpty()) {
                 String logoUrl = supabaseStorageService.uploadFile(logo);
                 if (logoUrl != null) hospital.setLogoUrl(logoUrl);
+            }
+
+            if (profilePicture != null && !profilePicture.isEmpty()) {
+                String photoUrl = supabaseStorageService.uploadFile(profilePicture);
+                if (photoUrl != null) admin.setProfilePictureUrl(photoUrl);
             }
 
             if (data.get("adminName") != null) admin.setName(String.valueOf(data.get("adminName")));

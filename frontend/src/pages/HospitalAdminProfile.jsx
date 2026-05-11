@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { 
   UserCircle, Mail, Phone, Building2, ShieldCheck, 
-  Edit3, Save, X, Activity, CheckCircle, AlertCircle
+  Edit3, Save, X, Activity, CheckCircle, AlertCircle,
+  Camera, Upload
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../api/axiosConfig';
@@ -18,7 +19,7 @@ const InfoRow = ({ icon: Icon, label, value, color = 'text-primary-500' }) => (
 );
 
 const HospitalAdminProfile = () => {
-  const { user, setUser } = useAuth();
+  const { user, setUser, fetchUserProfile } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -28,6 +29,9 @@ const HospitalAdminProfile = () => {
     adminPhone: '',
     email: ''
   });
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const fileInputRef = React.useRef(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -53,32 +57,42 @@ const HospitalAdminProfile = () => {
   const handleSave = async () => {
     try {
       const formDataToSend = new FormData();
-      // Prepare JSON data part - matching HospitalController expectations
       const data = {
         adminName: formData.name,
         position: formData.position,
         adminPhone: formData.adminPhone
       };
       formDataToSend.append('data', JSON.stringify(data));
+      
+      if (selectedFile) {
+        formDataToSend.append('profilePicture', selectedFile);
+      }
 
       await api.post('/hospital/update-profile', formDataToSend, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      // Update local state
-      setProfile({ 
-        ...profile, 
-        name: formData.name, 
-        position: formData.position, 
-        contactNumber: formData.adminPhone 
-      });
-      // Update global auth context if needed
-      setUser({ ...user, name: formData.name, position: formData.position });
+      // Background refresh global state
+      await fetchUserProfile('ROLE_HOSPITAL_ADMIN');
       
       setIsEditing(false);
+      setSelectedFile(null);
+      setPreviewUrl(null);
       toast.success('Identity node updated successfully');
+      
+      // Refresh local profile
+      const response = await api.get('/hospital/profile');
+      setProfile(response.data);
     } catch (err) {
       toast.error('Update synchronization failed');
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
     }
   };
 
@@ -134,23 +148,35 @@ const HospitalAdminProfile = () => {
                 </div>
                 
                 <div className="relative z-10 flex flex-col items-center text-center">
-                    <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-700 p-1 mb-6 shadow-2xl shadow-blue-200">
+                    <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-700 p-1 mb-6 shadow-2xl shadow-blue-200 relative group/pic">
                         <div className="w-full h-full rounded-[1.25rem] bg-white flex items-center justify-center overflow-hidden">
-                            {profile?.profilePictureUrl ? (
+                            {previewUrl || profile?.profilePictureUrl ? (
                                 <img 
-                                    src={profile.profilePictureUrl} 
+                                    src={previewUrl || `${profile.profilePictureUrl}?t=${Date.now()}`} 
                                     alt={profile?.name} 
                                     className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                        e.target.style.display = 'none';
-                                        e.target.nextSibling.style.display = 'block';
-                                    }}
                                 />
-                            ) : null}
-                            <div className={`${profile?.profilePictureUrl ? 'hidden' : 'block'} text-3xl font-black text-blue-600`}>
-                                {initials}
-                            </div>
+                            ) : (
+                                <div className="text-3xl font-black text-blue-600">
+                                    {initials}
+                                </div>
+                            )}
                         </div>
+                        {isEditing && (
+                            <button 
+                                onClick={() => fileInputRef.current.click()}
+                                className="absolute inset-0 bg-black/40 backdrop-blur-sm rounded-[1.25rem] opacity-0 group-hover/pic:opacity-100 transition-all flex items-center justify-center text-white"
+                            >
+                                <Camera size={24} />
+                            </button>
+                        )}
+                        <input 
+                            type="file" 
+                            ref={fileInputRef} 
+                            onChange={handleFileChange} 
+                            className="hidden" 
+                            accept="image/*" 
+                        />
                     </div>
                     <h3 className="text-xl font-black text-slate-900 tracking-tight uppercase">{profile?.name || 'Administrator'}</h3>
                     <p className="text-blue-600 text-[10px] font-black uppercase tracking-[0.2em] mt-2 bg-blue-50 px-3 py-1 rounded-full">{profile?.position || 'Chief Admin'}</p>

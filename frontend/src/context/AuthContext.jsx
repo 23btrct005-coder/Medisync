@@ -10,21 +10,24 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserProfile = async (role) => {
     try {
-      const endpoint = role === 'ROLE_DOCTOR' ? '/doctor/profile' : '/patient/profile';
+      let endpoint;
+      if (role === 'ROLE_DOCTOR') endpoint = '/doctor/profile';
+      else if (role === 'ROLE_HOSPITAL_ADMIN') endpoint = '/hospital/profile';
+      else endpoint = '/patient/profile';
+      
       const response = await api.get(endpoint);
       
       // Update user with full profile data
-      setUser(prev => ({
-        ...prev,
-        ...response.data
-      }));
-      
-      // Persist the full profile
-      localStorage.setItem('user', JSON.stringify({
-        ...user,
-        ...response.data,
-        role: role
-      }));
+      setUser(prev => {
+        const updated = {
+          ...prev,
+          ...response.data,
+          role: role // Explicitly preserve role
+        };
+        // Persist the full profile
+        localStorage.setItem('user', JSON.stringify(updated));
+        return updated;
+      });
     } catch (error) {
       console.error("Error fetching full profile:", error);
     }

@@ -20,7 +20,7 @@ const HospitalProfile = () => {
     const [saving, setSaving] = useState(false);
     const [logo, setLogo] = useState(null);
     const [logoPreview, setLogoPreview] = useState(null);
-    const { logout } = useAuth();
+    const { logout, fetchUserProfile } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -215,6 +215,7 @@ const HospitalProfile = () => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             toast.success("Institutional profile synchronized successfully");
+            await fetchUserProfile('ROLE_HOSPITAL_ADMIN');
             fetchProfile();
         } catch (err) {
             toast.error(err.response?.data?.message || "Sync failed");

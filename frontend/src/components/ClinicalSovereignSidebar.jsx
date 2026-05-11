@@ -11,8 +11,8 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
 
   const isAdmin = user?.role === 'ROLE_HOSPITAL_ADMIN';
   const prefix = isAdmin ? '/hospital-dashboard' : '/doctor-dashboard';
-  const photoUrl = user?.profilePictureUrl || (user?.id ? `${api.defaults.baseURL}/auth/${isAdmin ? 'hospital' : 'doctor'}/photo/${user.id}` : null);
-  const hospitalLogo = user?.hospital?.logoUrl;
+  const photoUrl = user?.profilePictureUrl ? `${user.profilePictureUrl}?t=${Date.now()}` : (user?.id ? `${api.defaults.baseURL}/auth/${isAdmin ? 'hospital' : 'doctor'}/photo/${user.id}?t=${Date.now()}` : null);
+  const hospitalLogo = user?.hospital?.logoUrl ? `${user.hospital.logoUrl}?t=${Date.now()}` : null;
 
   const handleLogout = () => {
     logout();
