@@ -988,22 +988,12 @@ const HospitalProfile = () => {
                                             <div className="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
                                                 <Shield size={16} />
                                             </div>
-                                            <h4 className="text-xs font-black text-slate-700 uppercase tracking-widest">Razorpay Gateway Configuration</h4>
+                                            <h4 className="text-xs font-black text-slate-700 uppercase tracking-widest">Razorpay Institutional Sync</h4>
                                         </div>
                                         <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Live Node</span>
                                     </div>
                                     
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-1.5">
-                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Key ID</label>
-                                            <input type="text" value={formData.razorpayKeyId} onChange={(e) => setFormData({...formData, razorpayKeyId: e.target.value})} className="w-full px-5 py-4 bg-white border border-slate-100 rounded-2xl text-xs font-bold focus:ring-4 ring-primary/5 font-mono transition-all" placeholder="rzp_live_XXXXXXXXXXXXXX" />
-                                            <p className="text-[8px] text-slate-400 italic ml-2">From Razorpay Dashboard {'>'} API Keys</p>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Key Secret</label>
-                                            <input type="password" value={formData.razorpayKeySecret} onChange={(e) => setFormData({...formData, razorpayKeySecret: e.target.value})} className="w-full px-5 py-4 bg-white border border-slate-100 rounded-2xl text-xs font-bold focus:ring-4 ring-primary/5 font-mono transition-all" placeholder="••••••••••••••••" />
-                                            <p className="text-[8px] text-slate-400 italic ml-2">Keep this credential strictly confidential.</p>
-                                        </div>
                                         <div className="md:col-span-2 space-y-1.5 pt-2">
                                             <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Marketplace Account ID (Optional)</label>
                                             <input type="text" value={formData.razorpayAccountId} onChange={(e) => setFormData({...formData, razorpayAccountId: e.target.value})} className="w-full px-5 py-4 bg-white border border-slate-100 rounded-2xl text-xs font-bold focus:ring-4 ring-primary/5 font-mono transition-all" placeholder="acc_XXXXXXXXXXXXXX" />
