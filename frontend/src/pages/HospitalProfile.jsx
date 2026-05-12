@@ -233,11 +233,15 @@ const HospitalProfile = () => {
             const normalizedDurations = normalizeObjectKeys(formData.serviceDurations);
             const normalizedCapacity = normalizeObjectKeys(formData.serviceCapacity);
 
+            console.log("Clinical Validation Sync - Services:", services);
+            console.log("Normalized Durations:", normalizedDurations);
+            console.log("Normalized Capacity:", normalizedCapacity);
+
             for (const service of services) {
                 const is247 = SERVICES_24_7.some(s => s.toLowerCase() === service.toLowerCase());
-                const fee = getClinicalValue(formData.serviceFees, service);
-                const duration = getClinicalValue(formData.serviceDurations, service);
-                const capacity = getClinicalValue(formData.serviceCapacity, service);
+                const fee = getClinicalValue(normalizedFees, service);
+                const duration = getClinicalValue(normalizedDurations, service);
+                const capacity = getClinicalValue(normalizedCapacity, service);
 
                 if (!fee) {
                     toast.error(`Required: Please provide a Fee for "${service}"`);
@@ -245,6 +249,7 @@ const HospitalProfile = () => {
                     return;
                 }
                 if (!is247 && (!duration || !capacity)) {
+                    console.error(`Validation Failed for ${service}: Duration=${duration}, Capacity=${capacity}`);
                     toast.error(`Required: Please provide both Time Slot and Capacity for "${service}"`);
                     setSaving(false);
                     return;
