@@ -207,7 +207,9 @@ public class AppointmentService {
         String paymentLink = null;
 
         if (doctor != null) {
-            if (doctor.getRazorpayKeyId() != null && !doctor.getRazorpayKeyId().isEmpty()) {
+            // Only use doctor-specific keys if NOT in Marketplace/Route mode
+            if (doctor.getRazorpayKeyId() != null && !doctor.getRazorpayKeyId().isEmpty() && 
+               (doctor.getRazorpayAccountId() == null || doctor.getRazorpayAccountId().isEmpty())) {
                 effectiveKeyId = doctor.getRazorpayKeyId();
                 effectiveKeySecret = doctor.getRazorpayKeySecret();
             }
@@ -479,7 +481,9 @@ public class AppointmentService {
         String paymentLink = null;
 
         if (hospital != null) {
-            if (hospital.getRazorpayKeyId() != null && !hospital.getRazorpayKeyId().isEmpty()) {
+            // Only use hospital-specific keys if NOT in Marketplace/Route mode
+            if (hospital.getRazorpayKeyId() != null && !hospital.getRazorpayKeyId().isEmpty() &&
+               (hospital.getRazorpayAccountId() == null || hospital.getRazorpayAccountId().isEmpty())) {
                 effectiveKeyId = hospital.getRazorpayKeyId();
                 effectiveKeySecret = hospital.getRazorpayKeySecret();
             }
@@ -487,7 +491,8 @@ public class AppointmentService {
             if (hospital.getUpiId() != null) upiId = hospital.getUpiId();
             if (hospital.getPaymentLink() != null) paymentLink = hospital.getPaymentLink();
         } else if (doctor != null) {
-            if (doctor.getRazorpayKeyId() != null && !doctor.getRazorpayKeyId().isEmpty()) {
+            if (doctor.getRazorpayKeyId() != null && !doctor.getRazorpayKeyId().isEmpty() &&
+               (doctor.getRazorpayAccountId() == null || doctor.getRazorpayAccountId().isEmpty())) {
                 effectiveKeyId = doctor.getRazorpayKeyId();
                 effectiveKeySecret = doctor.getRazorpayKeySecret();
             }
@@ -582,10 +587,17 @@ public class AppointmentService {
             .orElseThrow(() -> new RuntimeException("Appointment not found for order: " + orderId));
 
         String effectiveSecret = razorpayKeySecret;
-        if (appointment.getHospital() != null && appointment.getHospital().getRazorpayKeySecret() != null && !appointment.getHospital().getRazorpayKeySecret().isEmpty()) {
-            effectiveSecret = appointment.getHospital().getRazorpayKeySecret();
-        } else if (appointment.getDoctor() != null && appointment.getDoctor().getRazorpayKeySecret() != null && !appointment.getDoctor().getRazorpayKeySecret().isEmpty()) {
-            effectiveSecret = appointment.getDoctor().getRazorpayKeySecret();
+        if (appointment.getHospital() != null) {
+            // Only use custom secret if NOT in marketplace mode
+            if (appointment.getHospital().getRazorpayKeySecret() != null && !appointment.getHospital().getRazorpayKeySecret().isEmpty() &&
+               (appointment.getHospital().getRazorpayAccountId() == null || appointment.getHospital().getRazorpayAccountId().isEmpty())) {
+                effectiveSecret = appointment.getHospital().getRazorpayKeySecret();
+            }
+        } else if (appointment.getDoctor() != null) {
+            if (appointment.getDoctor().getRazorpayKeySecret() != null && !appointment.getDoctor().getRazorpayKeySecret().isEmpty() &&
+               (appointment.getDoctor().getRazorpayAccountId() == null || appointment.getDoctor().getRazorpayAccountId().isEmpty())) {
+                effectiveSecret = appointment.getDoctor().getRazorpayKeySecret();
+            }
         }
 
         // 2. Verify Signature

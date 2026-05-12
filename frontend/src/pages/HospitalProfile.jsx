@@ -290,6 +290,8 @@ const HospitalProfile = () => {
             const submissionData = {
                 ...formData,
                 paymentLink: normalizedPaymentLink,
+                razorpayKeyId: '', // Explicitly clear as we now use Marketplace only
+                razorpayKeySecret: '',
                 services: services.join(', '),
                 serviceFees: normalizedFees,
                 serviceDurations: normalizedDurations,
