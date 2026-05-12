@@ -45,7 +45,8 @@ public class AppointmentService {
         "24/7 Pharmacy", "Blood Bank", "Emergency CT Scan", "Emergency Lab Tests",
         "Oxygen & Ventilator Support", "Emergency Dialysis",
         "Emergency Room", "ICU Admission", "Trauma Care", "Ambulance Response",
-        "Ambulance Booking", "Stroke Care", "Cardiac Emergency", "Emergency Resource Deployment"
+        "Ambulance Booking", "Stroke Care", "Cardiac Emergency", "Emergency Resource Deployment",
+        "Neonatal Care", "Cardiac Surgery", "Neurosurgery"
     );
 
     public AppointmentService(AppointmentRepository appointmentRepository, 

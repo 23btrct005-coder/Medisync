@@ -203,12 +203,49 @@ const AiConcierge = () => {
         const fullTextLower = text.toLowerCase();
         const isCritical = sections.severity === 'CRITICAL' || sections.severity === 'HIGH';
 
-        if (isCritical && fullTextLower.includes('ambulance')) sections.service = 'Ambulance Booking';
-        else if (isCritical && fullTextLower.includes('oxygen')) sections.service = 'Oxygen & Ventilator Support';
-        else if (fullTextLower.includes('casualty') || fullTextLower.includes('trauma')) sections.service = 'Emergency & Trauma Care';
-        else if (fullTextLower.includes('mri scan') || fullTextLower.includes('mri')) sections.service = 'MRI Scan';
-        else if (fullTextLower.includes('pharmacy') || fullTextLower.includes('medicine')) sections.service = '24/7 Pharmacy';
-        else if (fullTextLower.includes('skin') || fullTextLower.includes('rash') || fullTextLower.includes('dermatolog')) sections.service = 'General Medicine';
+        // High-Precision Clinical Mapping (Synchronized with Institutional Catalog)
+        if (isCritical) {
+            if (fullTextLower.includes('ambulance')) sections.service = 'Ambulance Booking';
+            else if (fullTextLower.includes('icu') || fullTextLower.includes('intensive care')) sections.service = 'ICU Admission';
+            else if (fullTextLower.includes('stroke')) sections.service = 'Stroke Care';
+            else if (fullTextLower.includes('cardiac emergency') || (fullTextLower.includes('heart') && fullTextLower.includes('emergency'))) sections.service = 'Cardiac Emergency';
+            else if (fullTextLower.includes('trauma') || fullTextLower.includes('casualty')) sections.service = 'Emergency & Trauma Care';
+            else if (fullTextLower.includes('emergency')) sections.service = 'Emergency Room';
+        }
+
+        // Diagnostics & Scans
+        if (!sections.service) {
+            if (fullTextLower.includes('mri')) sections.service = 'MRI Scan';
+            else if (fullTextLower.includes('ct scan') || fullTextLower.includes('ct ')) sections.service = 'CT Scan';
+            else if (fullTextLower.includes('x-ray') || fullTextLower.includes('xray')) sections.service = 'X-Ray';
+            else if (fullTextLower.includes('ultrasound')) sections.service = 'Ultrasound';
+            else if (fullTextLower.includes('pet scan')) sections.service = 'PET Scan';
+            else if (fullTextLower.includes('blood test') || fullTextLower.includes('cbc')) sections.service = 'Blood Test (CBC)';
+            else if (fullTextLower.includes('thyroid')) sections.service = 'Thyroid Profile';
+            else if (fullTextLower.includes('liver') && fullTextLower.includes('test')) sections.service = 'Liver Function Test';
+            else if (fullTextLower.includes('ecg') || fullTextLower.includes('echo')) sections.service = 'ECG / Echo';
+        }
+
+        // Specialized Care
+        if (!sections.service) {
+            if (fullTextLower.includes('pregnancy') || fullTextLower.includes('maternity')) sections.service = 'Pregnancy Checkup';
+            else if (fullTextLower.includes('fertility')) sections.service = 'Fertility Consultation';
+            else if (fullTextLower.includes('pediatric') || fullTextLower.includes('child')) sections.service = 'Pediatric Consultation';
+            else if (fullTextLower.includes('neonatal') || fullTextLower.includes('nicu')) sections.service = 'Neonatal Care';
+            
+            else if (fullTextLower.includes('general surgery')) sections.service = 'General Surgery';
+            else if (fullTextLower.includes('orthopedic surgery')) sections.service = 'Orthopedic Surgery';
+            else if (fullTextLower.includes('neurosurgery')) sections.service = 'Neurosurgery';
+            
+            else if (fullTextLower.includes('checkup') || fullTextLower.includes('screening')) sections.service = 'Full Body Checkup';
+            else if (fullTextLower.includes('home nursing')) sections.service = 'Home Nursing';
+            else if (fullTextLower.includes('telemedicine')) sections.service = 'Telemedicine';
+        }
+
+        if (!sections.service) {
+            if (fullTextLower.includes('pharmacy') || fullTextLower.includes('medicine')) sections.service = '24/7 Pharmacy';
+            else if (fullTextLower.includes('skin') || fullTextLower.includes('rash') || fullTextLower.includes('dermatolog')) sections.service = 'General Medicine';
+        }
 
         const safetyKeywords = ['ambulance', 'immediate emergency', 'unconscious', 'breathing difficulty', 'heavy bleeding', 'stroke'];
         if (safetyKeywords.some(k => sections.assessment.toLowerCase().includes(k) || sections.warning.toLowerCase().includes(k))) {
