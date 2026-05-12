@@ -226,20 +226,30 @@ const AiConcierge = () => {
             else if (fullTextLower.includes('ecg') || fullTextLower.includes('echo')) sections.service = 'ECG / Echo';
         }
 
-        // Specialized Care
+        // Specialized & Preventive Care (Synchronized with Catalog)
         if (!sections.service) {
+            // Child & Maternity
             if (fullTextLower.includes('pregnancy') || fullTextLower.includes('maternity')) sections.service = 'Pregnancy Checkup';
             else if (fullTextLower.includes('fertility')) sections.service = 'Fertility Consultation';
             else if (fullTextLower.includes('pediatric') || fullTextLower.includes('child')) sections.service = 'Pediatric Consultation';
             else if (fullTextLower.includes('neonatal') || fullTextLower.includes('nicu')) sections.service = 'Neonatal Care';
             
+            // Preventive Screenings
+            else if (fullTextLower.includes('diabetes')) sections.service = 'Diabetes Screening';
+            else if (fullTextLower.includes('heart screening')) sections.service = 'Heart Screening';
+            else if (fullTextLower.includes('cancer')) sections.service = 'Cancer Screening';
+            else if (fullTextLower.includes('full body') || fullTextLower.includes('checkup')) sections.service = 'Full Body Checkup';
+            
+            // Home & Remote
+            else if (fullTextLower.includes('home blood')) sections.service = 'Home Blood Collection';
+            else if (fullTextLower.includes('home nursing')) sections.service = 'Home Nursing';
+            else if (fullTextLower.includes('telemedicine') || fullTextLower.includes('video call')) sections.service = 'Telemedicine';
+            else if (fullTextLower.includes('physiotherapy')) sections.service = 'Physiotherapy at Home';
+            
+            // Surgery
             else if (fullTextLower.includes('general surgery')) sections.service = 'General Surgery';
             else if (fullTextLower.includes('orthopedic surgery')) sections.service = 'Orthopedic Surgery';
             else if (fullTextLower.includes('neurosurgery')) sections.service = 'Neurosurgery';
-            
-            else if (fullTextLower.includes('checkup') || fullTextLower.includes('screening')) sections.service = 'Full Body Checkup';
-            else if (fullTextLower.includes('home nursing')) sections.service = 'Home Nursing';
-            else if (fullTextLower.includes('telemedicine')) sections.service = 'Telemedicine';
         }
 
         if (!sections.service) {
