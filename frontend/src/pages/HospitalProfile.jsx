@@ -282,8 +282,14 @@ const HospitalProfile = () => {
             }
 
             const data = new FormData();
+            let normalizedPaymentLink = formData.paymentLink;
+            if (normalizedPaymentLink && !normalizedPaymentLink.startsWith('http://') && !normalizedPaymentLink.startsWith('https://')) {
+                normalizedPaymentLink = `https://${normalizedPaymentLink.trim()}`;
+            }
+
             const submissionData = {
                 ...formData,
+                paymentLink: normalizedPaymentLink,
                 services: services.join(', '),
                 serviceFees: normalizedFees,
                 serviceDurations: normalizedDurations,

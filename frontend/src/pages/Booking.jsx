@@ -1364,7 +1364,11 @@ const Booking = () => {
                 <div className="space-y-4">
                     <button 
                         onClick={() => {
-                            window.open(linkOrderData.paymentLink, '_blank');
+                            let url = linkOrderData.paymentLink;
+                            if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
+                                url = `https://${url}`;
+                            }
+                            window.open(url, '_blank');
                             toast.info("Please complete the payment in the new window.");
                         }}
                         className="w-full py-5 bg-blue-600 text-white rounded-[2rem] text-sm font-black uppercase tracking-widest transition-all shadow-xl shadow-blue-600/20 active:scale-95 flex items-center justify-center gap-2"
