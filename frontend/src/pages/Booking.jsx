@@ -1139,7 +1139,13 @@ const Booking = () => {
                                 try {
                                     const fees = typeof selectedDoctor.serviceFees === 'string' ? JSON.parse(selectedDoctor.serviceFees) : selectedDoctor.serviceFees;
                                     if (bookingMode === 'service') {
-                                        return fees?.[selectedService] || (selectedService.includes('MRI') ? '2500' : '500');
+                                        if (!fees) return (selectedService?.includes('MRI') ? '2500' : '500');
+                                        // Fuzzy match the fee key (Mirroring card logic)
+                                        const matchedKey = Object.keys(fees).find(k => 
+                                            k.toLowerCase().includes(selectedService.toLowerCase()) || 
+                                            selectedService.toLowerCase().includes(k.toLowerCase())
+                                        );
+                                        return matchedKey ? fees[matchedKey] : (selectedService.includes('MRI') ? '2500' : '500');
                                     }
                                     const coreService = consultationType === 'ONLINE' ? 'Telemedicine' : 'General Consultation';
                                     return fees?.[coreService] || (consultationType === 'ONLINE' ? (selectedDoctor.onlineConsultationFee || 500) : (selectedDoctor.offlineConsultationFee || 800));

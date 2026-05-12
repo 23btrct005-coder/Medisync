@@ -402,10 +402,15 @@ public class AppointmentService {
 
                 if (capVal != null) {
                     capacity = Integer.parseInt(capVal.toString());
+                } else if (serviceName.toLowerCase().contains("ambulance")) {
+                    // Safety Buffer for Emergency Services: Default to 10 if not specified
+                    capacity = 10;
                 }
             } catch (Exception e) {}
         }
-        if (capacity < 1) capacity = 1;
+        if (capacity < 1) {
+            capacity = (serviceName != null && serviceName.toLowerCase().contains("ambulance")) ? 10 : 1;
+        }
 
         if (conflicts.size() >= capacity) {
             throw new RuntimeException("All " + capacity + " systems for " + serviceName + " are currently occupied at this time. Please select a different window.");
