@@ -42,8 +42,10 @@ public class AiToolController {
                 String serviceName = (String) params.get("serviceName");
                 LocalDate date = LocalDate.parse(params.get("date").toString());
                 String slot = (String) params.get("slot");
+                Double latitude = params.get("latitude") != null ? Double.valueOf(params.get("latitude").toString()) : null;
+                Double longitude = params.get("longitude") != null ? Double.valueOf(params.get("longitude").toString()) : null;
 
-                Map<String, Object> response = appointmentService.initiateServiceBooking(authentication.getName(), facilityId, serviceName, date, slot);
+                Map<String, Object> response = appointmentService.initiateServiceBooking(authentication.getName(), facilityId, serviceName, date, slot, latitude, longitude);
                 return ResponseEntity.ok(Map.of("status", "SUCCESS", "data", response));
             }
 
