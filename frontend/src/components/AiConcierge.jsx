@@ -203,12 +203,12 @@ const AiConcierge = () => {
         const fullTextLower = text.toLowerCase();
         const isCritical = sections.severity === 'CRITICAL' || sections.severity === 'HIGH';
 
-        if (isCritical && fullTextLower.includes('ambulance')) sections.service = 'Ambulance Services';
-        else if (isCritical && fullTextLower.includes('oxygen')) sections.service = 'Oxygen Supply';
+        if (isCritical && fullTextLower.includes('ambulance')) sections.service = 'Ambulance Booking';
+        else if (isCritical && fullTextLower.includes('oxygen')) sections.service = 'Oxygen & Ventilator Support';
         else if (fullTextLower.includes('casualty') || fullTextLower.includes('trauma')) sections.service = 'Emergency & Trauma Care';
         else if (fullTextLower.includes('mri scan') || fullTextLower.includes('mri')) sections.service = 'MRI Scan';
-        else if (fullTextLower.includes('pharmacy') || fullTextLower.includes('medicine')) sections.service = 'Pharmacy (24/7)';
-        else if (fullTextLower.includes('skin') || fullTextLower.includes('rash') || fullTextLower.includes('dermatolog')) sections.service = 'General Clinical';
+        else if (fullTextLower.includes('pharmacy') || fullTextLower.includes('medicine')) sections.service = '24/7 Pharmacy';
+        else if (fullTextLower.includes('skin') || fullTextLower.includes('rash') || fullTextLower.includes('dermatolog')) sections.service = 'General Medicine';
 
         const safetyKeywords = ['ambulance', 'immediate emergency', 'unconscious', 'breathing difficulty', 'heavy bleeding', 'stroke'];
         if (safetyKeywords.some(k => sections.assessment.toLowerCase().includes(k) || sections.warning.toLowerCase().includes(k))) {
@@ -343,12 +343,22 @@ const AiConcierge = () => {
                                                     <button onClick={() => { setIsOpen(false); if (s.mapUrl) window.open(s.mapUrl, '_blank'); else navigate(`/dashboard/booking?mode=service&service=Emergency`); }} className="flex-1 py-3 bg-slate-900 text-white rounded-xl font-bold text-[10px] uppercase flex items-center justify-center gap-2"><MapPin size={14} /> Nearest Hospital</button>
                                                 </div>
                                             )}
-                                            <button 
-                                                onClick={() => { setIsOpen(false); navigate(s.physician ? `/dashboard/booking?doctor=${encodeURIComponent(s.physician)}` : s.service ? `/dashboard/booking?mode=service&service=${encodeURIComponent(s.service)}` : '/dashboard/booking'); }}
-                                                className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-3 shadow-xl"
-                                            >
-                                                Secure Clinical Booking <ChevronRight size={16} />
-                                            </button>
+                                            {(user?.role === 'ROLE_PATIENT' || !user?.role) && (
+                                                <button 
+                                                    onClick={() => { 
+                                                        setIsOpen(false); 
+                                                        const targetUrl = s.physician 
+                                                            ? `/dashboard/booking?doctor=${encodeURIComponent(s.physician)}` 
+                                                            : s.service 
+                                                                ? `/dashboard/booking?mode=service&service=${encodeURIComponent(s.service)}` 
+                                                                : '/dashboard/booking';
+                                                        navigate(targetUrl);
+                                                    }}
+                                                    className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-3 shadow-xl"
+                                                >
+                                                    Secure Clinical Booking <ChevronRight size={16} />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 );
