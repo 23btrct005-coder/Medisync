@@ -202,7 +202,7 @@ public class AppointmentService {
         // Payment Configuration Check with Multi-tenant Razorpay Support
         String effectiveKeyId = razorpayKeyId;
         String effectiveKeySecret = razorpayKeySecret;
-        String preferredPaymentMode = globalPreferredMode;
+        String preferredPaymentMode = "RAZORPAY";
         String upiId = null;
         String paymentLink = null;
 
@@ -339,7 +339,7 @@ public class AppointmentService {
         LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(10);
         
         String upiId = null;
-        String preferredPaymentMode = "UPI";
+        String preferredPaymentMode = "RAZORPAY";
 
         if (facilityId.startsWith("hosp_")) {
             Long hId = Long.valueOf(facilityId.substring(5));
@@ -475,8 +475,7 @@ public class AppointmentService {
 
         String effectiveKeyId = razorpayKeyId;
         String effectiveKeySecret = razorpayKeySecret;
-        String preferredPaymentMode = globalPreferredMode;
-        String upiId = null;
+        // preferredPaymentMode already initialized at the start of the method
         String paymentLink = null;
 
         if (hospital != null) {
