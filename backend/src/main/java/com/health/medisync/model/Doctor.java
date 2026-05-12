@@ -96,6 +96,9 @@ public class Doctor {
     private String upiId; // For direct peer-to-peer clinical payments
     private String preferredPaymentMode = "RAZORPAY"; // RAZORPAY, UPI, or BOTH
 
+    private String razorpayKeyId;
+    private String razorpayKeySecret;
+
     @Column(name = "profile_picture_url")
     private String profilePictureUrl;
 
@@ -279,6 +282,12 @@ public class Doctor {
 
     public Boolean getAppointmentsEnabled() { return appointmentsEnabled != null ? appointmentsEnabled : true; }
     public void setAppointmentsEnabled(Boolean appointmentsEnabled) { this.appointmentsEnabled = appointmentsEnabled; }
+
+    public String getRazorpayKeyId() { return razorpayKeyId; }
+    public void setRazorpayKeyId(String razorpayKeyId) { this.razorpayKeyId = razorpayKeyId; }
+
+    public String getRazorpayKeySecret() { return razorpayKeySecret; }
+    public void setRazorpayKeySecret(String razorpayKeySecret) { this.razorpayKeySecret = razorpayKeySecret; }
 
     public String getProfilePictureUrl() { return profilePictureUrl; }
     public void setProfilePictureUrl(String profilePictureUrl) { this.profilePictureUrl = profilePictureUrl; }
