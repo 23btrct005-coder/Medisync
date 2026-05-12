@@ -226,7 +226,6 @@ public class HospitalService {
     public List<Appointment> getHospitalAppointments(Hospital hospital) {
         // Fetch all appointments linked to this hospital directly, plus those via affiliated doctors
         return appointmentRepository.findByHospitalId(hospital.getId()).stream()
-                .filter(a -> a.getStatus() != Appointment.AppointmentStatus.PENDING)
                 .sorted((Appointment a, Appointment b) -> b.getId().compareTo(a.getId())) // Newest first
                 .toList();
     }

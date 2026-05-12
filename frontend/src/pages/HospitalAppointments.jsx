@@ -206,6 +206,7 @@ const HospitalAppointments = () => {
                            <div className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${
                                app.status === 'BOOKED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
                                app.status === 'AWAITING_VERIFICATION' ? 'bg-amber-50 text-amber-600 border-amber-100 animate-pulse' :
+                               app.status === 'PENDING' ? 'bg-amber-50 text-amber-600 border-amber-100' :
                                'bg-slate-50 text-slate-400 border-slate-100'
                            }`}>
                                {app.status.replace(/_/g, ' ')}

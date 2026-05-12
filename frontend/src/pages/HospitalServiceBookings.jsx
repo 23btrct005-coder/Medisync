@@ -223,12 +223,14 @@ const HospitalServiceBookings = () => {
                                         </td>
                                         <td className="px-8 py-6">
                                             <div className="flex items-center gap-3">
-                                                <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                                                    app.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600' :
-                                                    app.status === 'AWAITING_VERIFICATION' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
-                                                    app.status === 'CANCELLED' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'
+                                                <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${
+                                                    app.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                                    app.status === 'BOOKED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                                    app.status === 'AWAITING_VERIFICATION' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                                                    app.status === 'PENDING' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                                                    app.status === 'CANCELLED' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-blue-50 text-blue-600 border-blue-100'
                                                 }`}>
-                                                    {app.status || 'SCHEDULED'}
+                                                    {app.status ? app.status.replace(/_/g, ' ') : 'SCHEDULED'}
                                                 </span>
                                             </div>
                                         </td>
