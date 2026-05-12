@@ -210,6 +210,11 @@ const HospitalProfile = () => {
                     'AB+': 0, 'AB-': 0, 'O+': 0, 'O-': 0
                 }
             });
+            
+            console.log("Normalized Fees:", normalizeObjectKeys(h.serviceFees));
+            console.log("Normalized Durations:", normalizeObjectKeys(h.serviceDurations));
+            console.log("Normalized Capacity:", normalizeObjectKeys(h.serviceCapacity));
+
             if (h.logoUrl) {
                 console.log("DEBUG: Logo detected:", h.logoUrl);
                 setLogoPreview(h.logoUrl);
