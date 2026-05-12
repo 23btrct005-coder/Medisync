@@ -206,6 +206,7 @@ public class HospitalController {
             hMap.put("medicalDirectorEmail", hospital.getMedicalDirectorEmail());
             hMap.put("serviceFees", hospital.getServiceFees());
             hMap.put("serviceDurations", hospital.getServiceDurations());
+            hMap.put("serviceCapacity", hospital.getServiceCapacity());
             hMap.put("services", hospital.getServices());
             hMap.put("departments", hospital.getDepartments());
             hMap.put("bloodStock", hospital.getBloodStock());
