@@ -231,8 +231,10 @@ public class AppointmentController {
             String serviceName = (String) request.get("serviceName");
             LocalDate date = LocalDate.parse(request.get("date").toString());
             String slot = (String) request.get("slot");
+            Double latitude = request.get("latitude") != null ? Double.valueOf(request.get("latitude").toString()) : null;
+            Double longitude = request.get("longitude") != null ? Double.valueOf(request.get("longitude").toString()) : null;
 
-            Map<String, Object> response = appointmentService.initiateServiceBooking(authentication.getName(), facilityId, serviceName, date, slot);
+            Map<String, Object> response = appointmentService.initiateServiceBooking(authentication.getName(), facilityId, serviceName, date, slot, latitude, longitude);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             e.printStackTrace();

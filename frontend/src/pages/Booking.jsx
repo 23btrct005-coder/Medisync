@@ -294,7 +294,9 @@ const Booking = () => {
                 hospitalId: selectedDoctor.id,
                 serviceName: selectedService,
                 date: bookingDate,
-                slot: selectedSlot
+                slot: selectedSlot,
+                latitude: userLocation?.lat,
+                longitude: userLocation?.lng
             });
             // Finalize state before processing to prevent race conditions
             setIsBooking(false); 

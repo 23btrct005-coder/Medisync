@@ -333,7 +333,7 @@ public class AppointmentService {
     }
 
     @Transactional
-    public Map<String, Object> initiateServiceBooking(String rawEmail, String facilityId, String serviceName, LocalDate date, String slot) throws Exception {
+    public Map<String, Object> initiateServiceBooking(String rawEmail, String facilityId, String serviceName, LocalDate date, String slot, Double latitude, Double longitude) throws Exception {
         final String patientEmail = (rawEmail != null) ? rawEmail.trim().toLowerCase() : null;
         Patient patient = patientRepository.findByUserUsernameIgnoreCase(patientEmail)
             .orElseThrow(() -> new RuntimeException("Patient profile not found for: " + patientEmail));
@@ -563,7 +563,10 @@ public class AppointmentService {
         }
         
         // Capture patient location for emergency/ambulance services
-        if (patient.getLatitude() != null && patient.getLongitude() != null) {
+        if (latitude != null && longitude != null) {
+            appointment.setLatitude(latitude);
+            appointment.setLongitude(longitude);
+        } else if (patient.getLatitude() != null && patient.getLongitude() != null) {
             appointment.setLatitude(patient.getLatitude());
             appointment.setLongitude(patient.getLongitude());
         }
