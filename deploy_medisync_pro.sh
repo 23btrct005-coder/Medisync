@@ -26,9 +26,8 @@ else
     git pull origin main
 fi
 
-# 4. Environment Hardening (Now inside project root)
+# 4. Environment Hardening
 echo "⚙️ INJECTING SECURE CLINICAL CONTEXT..."
-if [ ! -f .env ]; then
 cat <<EOF > .env
 PORT=8080
 SPRING_PROFILES_ACTIVE=prod
@@ -43,8 +42,10 @@ SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhY
 SPRING_DATASOURCE_URL="jdbc:postgresql://aws-1-ap-south-1.pooler.supabase.com:5432/postgres?user=postgres.bwjmzottkkxrdztqqeju&password=Medisync2024&ssl=true&sslmode=require&sslfactory=org.postgresql.ssl.NonValidatingFactory"
 SPRING_DATASOURCE_USERNAME=postgres.bwjmzottkkxrdztqqeju
 SPRING_DATASOURCE_PASSWORD=Medisync2024
+RAZORPAY_KEY_ID=rzp_live_SdOTsSUMHGBg00
+RAZORPAY_KEY_SECRET=TZoRKOfeeAOJCBw4l23OBpDZ
 EOF
-fi
+EOF
 
 # 5. Build Process
 echo "🌐 BUILDING FRONTEND ASSETS..."
