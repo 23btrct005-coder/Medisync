@@ -1369,7 +1369,7 @@ const Booking = () => {
                                 url = `https://${url}`;
                             }
                             window.open(url, '_blank');
-                            toast.info("Please complete the payment in the new window.");
+                            toast("Please complete the payment in the new window.", { icon: 'ℹ️' });
                         }}
                         className="w-full py-5 bg-blue-600 text-white rounded-[2rem] text-sm font-black uppercase tracking-widest transition-all shadow-xl shadow-blue-600/20 active:scale-95 flex items-center justify-center gap-2"
                     >
