@@ -99,6 +99,7 @@ public class Hospital {
     private String razorpayAccountId;
     private String razorpayKeyId;
     private String razorpayKeySecret;
+    private String paymentLink; // For static Razorpay/UPI payment pages
     private String preferredPaymentMode; // RAZORPAY, UPI, BOTH
 
     // ── 8. Online Presence & Branding ──
@@ -322,6 +323,9 @@ public class Hospital {
 
     public String getRazorpayKeySecret() { return razorpayKeySecret; }
     public void setRazorpayKeySecret(String razorpayKeySecret) { this.razorpayKeySecret = razorpayKeySecret; }
+
+    public String getPaymentLink() { return paymentLink; }
+    public void setPaymentLink(String paymentLink) { this.paymentLink = paymentLink; }
 
     public String getPreferredPaymentMode() { return preferredPaymentMode; }
     public void setPreferredPaymentMode(String preferredPaymentMode) { this.preferredPaymentMode = preferredPaymentMode; }

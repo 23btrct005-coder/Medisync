@@ -27,6 +27,8 @@ const Booking = () => {
   
   const [showUpiModal, setShowUpiModal] = useState(false);
   const [upiOrderData, setUpiOrderData] = useState(null);
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [linkOrderData, setLinkOrderData] = useState(null);
   const [upiConfirmed, setUpiConfirmed] = useState(false);
 
   const date = new Date();
@@ -312,6 +314,12 @@ const Booking = () => {
       if (order.preferredPaymentMode === 'UPI' && order.upiId) {
         setUpiOrderData(order);
         setShowUpiModal(true);
+        return;
+      }
+
+      if (order.preferredPaymentMode === 'LINK' && order.paymentLink) {
+        setLinkOrderData(order);
+        setShowLinkModal(true);
         return;
       }
 
@@ -1167,8 +1175,6 @@ const Booking = () => {
                     {isBooking ? 'Synchronizing Seat...' : 'Authorize Transaction'}
                   </button>
                 </div>
-              </div>
-            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -1201,7 +1207,9 @@ const Booking = () => {
                 <button onClick={() => setShowUpiModal(false)} className="p-2 hover:bg-slate-50 rounded-xl transition-colors">
                   <X size={20} className="text-slate-400" />
                 </button>
-              </div>              <div className="p-8 pt-4 space-y-6">
+              </div>
+
+              <div className="p-8 pt-4 space-y-6">
                 <div className="bg-slate-50/50 rounded-3xl p-6 border border-slate-100 flex items-center justify-between">
                   <div>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Fee Payable</p>
@@ -1298,6 +1306,83 @@ const Booking = () => {
                     </button>
                     <p className="text-[10px] text-center text-slate-400 font-bold leading-relaxed px-4 uppercase tracking-tighter">
                         Manual verification required before session authorization.
+                    </p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showLinkModal && linkOrderData && (
+          <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setShowLinkModal(false)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative w-full max-w-md bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-slate-100"
+            >
+              <div className="p-8 pb-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
+                    <ExternalLink size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-slate-900 tracking-tight">External Payment Link</h3>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Institutional Redirection</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowLinkModal(false)} className="p-2 hover:bg-slate-50 rounded-xl transition-colors">
+                  <X size={20} className="text-slate-400" />
+                </button>
+              </div>
+
+              <div className="p-8 pt-4 space-y-6">
+                <div className="bg-slate-50/50 rounded-3xl p-6 border border-slate-100 flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Fee Payable</p>
+                    <p className="text-3xl font-black text-slate-900">₹{linkOrderData.amount}</p>
+                  </div>
+                  <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm">
+                    <CreditCard size={32} className="text-slate-200" />
+                  </div>
+                </div>
+
+                <div className="p-6 bg-blue-50 rounded-2xl border border-blue-100">
+                    <p className="text-[11px] font-bold text-blue-700 leading-relaxed">
+                        This institution uses a private payment page for settlements. Please complete the payment on the following screen.
+                    </p>
+                </div>
+
+                <div className="space-y-4">
+                    <button 
+                        onClick={() => {
+                            window.open(linkOrderData.paymentLink, '_blank');
+                            toast.info("Please complete the payment in the new window.");
+                        }}
+                        className="w-full py-5 bg-blue-600 text-white rounded-[2rem] text-sm font-black uppercase tracking-widest transition-all shadow-xl shadow-blue-600/20 active:scale-95 flex items-center justify-center gap-2"
+                    >
+                        Proceed to Secure Payment
+                        <ExternalLink size={16} />
+                    </button>
+
+                    <button 
+                        onClick={() => {
+                            toast.success("Protocol Registered. Awaiting administrative confirmation.");
+                            navigate('/dashboard/sessions', { state: { autoOpenId: linkOrderData.appointmentId } });
+                            setShowLinkModal(false);
+                        }}
+                        className="w-full py-5 bg-slate-900 text-white rounded-[2rem] text-sm font-black uppercase tracking-widest transition-all shadow-xl shadow-slate-900/20 active:scale-95"
+                    >
+                        I have Paid
+                    </button>
+
+                    <p className="text-[10px] text-center text-slate-400 font-bold uppercase tracking-tighter px-4">
+                        Click "I have Paid" after completing the transaction to synchronize your session.
                     </p>
                 </div>
               </div>

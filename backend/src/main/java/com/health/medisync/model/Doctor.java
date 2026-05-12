@@ -98,6 +98,7 @@ public class Doctor {
 
     private String razorpayKeyId;
     private String razorpayKeySecret;
+    private String paymentLink;
 
     @Column(name = "profile_picture_url")
     private String profilePictureUrl;
@@ -288,6 +289,9 @@ public class Doctor {
 
     public String getRazorpayKeySecret() { return razorpayKeySecret; }
     public void setRazorpayKeySecret(String razorpayKeySecret) { this.razorpayKeySecret = razorpayKeySecret; }
+
+    public String getPaymentLink() { return paymentLink; }
+    public void setPaymentLink(String paymentLink) { this.paymentLink = paymentLink; }
 
     public String getProfilePictureUrl() { return profilePictureUrl; }
     public void setProfilePictureUrl(String profilePictureUrl) { this.profilePictureUrl = profilePictureUrl; }

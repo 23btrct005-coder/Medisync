@@ -216,6 +216,7 @@ public class HospitalController {
             hMap.put("razorpayKeySecret", hospital.getRazorpayKeySecret());
             hMap.put("preferredPaymentMode", hospital.getPreferredPaymentMode());
             hMap.put("upiId", hospital.getUpiId());
+            hMap.put("paymentLink", hospital.getPaymentLink());
             hMap.put("bankName", hospital.getBankName());
             hMap.put("bankAccountNumber", hospital.getBankAccountNumber());
             hMap.put("ifscCode", hospital.getIfscCode());
@@ -300,6 +301,7 @@ public class HospitalController {
             if (data.get("razorpayKeyId") != null)     hospital.setRazorpayKeyId(String.valueOf(data.get("razorpayKeyId")));
             if (data.get("razorpayKeySecret") != null) hospital.setRazorpayKeySecret(String.valueOf(data.get("razorpayKeySecret")));
             if (data.get("upiId") != null)             hospital.setUpiId(String.valueOf(data.get("upiId")));
+            if (data.get("paymentLink") != null)       hospital.setPaymentLink(String.valueOf(data.get("paymentLink")));
             if (data.get("preferredPaymentMode") != null) hospital.setPreferredPaymentMode(String.valueOf(data.get("preferredPaymentMode")));
 
             String city  = hospital.getCity()  != null ? hospital.getCity()  : "";

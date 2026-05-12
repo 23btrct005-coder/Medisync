@@ -200,12 +200,21 @@ public class AppointmentService {
         }
         
         // Payment Configuration Check with Multi-tenant Razorpay Support
-        String effectiveKeyId = (doctor != null && doctor.getRazorpayKeyId() != null && !doctor.getRazorpayKeyId().isEmpty()) 
-                                ? doctor.getRazorpayKeyId() 
-                                : razorpayKeyId;
-        String effectiveKeySecret = (doctor != null && doctor.getRazorpayKeySecret() != null && !doctor.getRazorpayKeySecret().isEmpty()) 
-                                ? doctor.getRazorpayKeySecret() 
-                                : razorpayKeySecret;
+        String effectiveKeyId = razorpayKeyId;
+        String effectiveKeySecret = razorpayKeySecret;
+        String preferredPaymentMode = globalPreferredMode;
+        String upiId = null;
+        String paymentLink = null;
+
+        if (doctor != null) {
+            if (doctor.getRazorpayKeyId() != null && !doctor.getRazorpayKeyId().isEmpty()) {
+                effectiveKeyId = doctor.getRazorpayKeyId();
+                effectiveKeySecret = doctor.getRazorpayKeySecret();
+            }
+            if (doctor.getPreferredPaymentMode() != null) preferredPaymentMode = doctor.getPreferredPaymentMode();
+            if (doctor.getUpiId() != null) upiId = doctor.getUpiId();
+            if (doctor.getPaymentLink() != null) paymentLink = doctor.getPaymentLink();
+        }
 
         boolean isDemoMode = (effectiveKeyId == null || effectiveKeyId.trim().isEmpty() || 
                              effectiveKeySecret == null || effectiveKeySecret.trim().isEmpty() ||
@@ -287,8 +296,8 @@ public class AppointmentService {
         appointment.setConsultationModality(modality);
         appointment.setAmount(fee);
         appointment.setRazorpayOrderId(orderId);
-        // PAYMENT SECURITY SHIELD: Don't auto-confirm if UPI is preferred
-        boolean forcePayment = "UPI".equals(doctor.getPreferredPaymentMode());
+        // PAYMENT SECURITY SHIELD: Don't auto-confirm if UPI/LINK is preferred
+        boolean forcePayment = "UPI".equals(preferredPaymentMode) || "LINK".equals(preferredPaymentMode);
 
         if (isDemoMode && !forcePayment) {
             appointment.setStatus(AppointmentStatus.BOOKED);
@@ -311,8 +320,9 @@ public class AppointmentService {
         response.put("amount", fee);
         response.put("razorpayKeyId", effectiveKeyId);
         response.put("isDemo", isDemoMode);
-        response.put("preferredPaymentMode", doctor.getPreferredPaymentMode());
-        response.put("upiId", doctor.getUpiId());
+        response.put("preferredPaymentMode", preferredPaymentMode);
+        response.put("upiId", upiId);
+        response.put("paymentLink", paymentLink);
 
         return response;
     }
@@ -463,12 +473,29 @@ public class AppointmentService {
             throw new RuntimeException("This service (" + serviceName + ") has not been priced by the institution and is currently unavailable for booking.");
         }
 
-        String effectiveKeyId = (hospital != null && hospital.getRazorpayKeyId() != null && !hospital.getRazorpayKeyId().isEmpty()) 
-                                ? hospital.getRazorpayKeyId() 
-                                : ((doctor != null && doctor.getRazorpayKeyId() != null && !doctor.getRazorpayKeyId().isEmpty()) ? doctor.getRazorpayKeyId() : razorpayKeyId);
-        String effectiveKeySecret = (hospital != null && hospital.getRazorpayKeySecret() != null && !hospital.getRazorpayKeySecret().isEmpty()) 
-                                ? hospital.getRazorpayKeySecret() 
-                                : ((doctor != null && doctor.getRazorpayKeySecret() != null && !doctor.getRazorpayKeySecret().isEmpty()) ? doctor.getRazorpayKeySecret() : razorpayKeySecret);
+        String effectiveKeyId = razorpayKeyId;
+        String effectiveKeySecret = razorpayKeySecret;
+        String preferredPaymentMode = globalPreferredMode;
+        String upiId = null;
+        String paymentLink = null;
+
+        if (hospital != null) {
+            if (hospital.getRazorpayKeyId() != null && !hospital.getRazorpayKeyId().isEmpty()) {
+                effectiveKeyId = hospital.getRazorpayKeyId();
+                effectiveKeySecret = hospital.getRazorpayKeySecret();
+            }
+            if (hospital.getPreferredPaymentMode() != null) preferredPaymentMode = hospital.getPreferredPaymentMode();
+            if (hospital.getUpiId() != null) upiId = hospital.getUpiId();
+            if (hospital.getPaymentLink() != null) paymentLink = hospital.getPaymentLink();
+        } else if (doctor != null) {
+            if (doctor.getRazorpayKeyId() != null && !doctor.getRazorpayKeyId().isEmpty()) {
+                effectiveKeyId = doctor.getRazorpayKeyId();
+                effectiveKeySecret = doctor.getRazorpayKeySecret();
+            }
+            if (doctor.getPreferredPaymentMode() != null) preferredPaymentMode = doctor.getPreferredPaymentMode();
+            if (doctor.getUpiId() != null) upiId = doctor.getUpiId();
+            if (doctor.getPaymentLink() != null) paymentLink = doctor.getPaymentLink();
+        }
 
         boolean isDemoMode = (effectiveKeyId == null || effectiveKeyId.isEmpty());
         String orderId = isDemoMode ? "demo_service_" + System.currentTimeMillis() : null;
@@ -544,6 +571,7 @@ public class AppointmentService {
         response.put("isDemo", isDemoMode);
         response.put("preferredPaymentMode", preferredPaymentMode);
         response.put("upiId", upiId);
+        response.put("paymentLink", paymentLink);
 
         return response;
     }

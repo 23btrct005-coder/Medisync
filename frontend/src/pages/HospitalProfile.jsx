@@ -119,6 +119,7 @@ const HospitalProfile = () => {
         razorpayAccountId: '',
         razorpayKeyId: '',
         razorpayKeySecret: '',
+        paymentLink: '',
         upiId: '',
         preferredPaymentMode: 'RAZORPAY',
         services: '',
@@ -195,6 +196,7 @@ const HospitalProfile = () => {
                 razorpayAccountId: h.razorpayAccountId || '',
                 razorpayKeyId: h.razorpayKeyId || '',
                 razorpayKeySecret: h.razorpayKeySecret || '',
+                paymentLink: h.paymentLink || '',
                 upiId: h.upiId || '',
                 preferredPaymentMode: h.preferredPaymentMode || 'RAZORPAY',
                 services: h.services || '',
@@ -1001,6 +1003,11 @@ const HospitalProfile = () => {
                                             <input type="text" value={formData.razorpayAccountId} onChange={(e) => setFormData({...formData, razorpayAccountId: e.target.value})} className="w-full px-5 py-4 bg-white border border-slate-100 rounded-2xl text-xs font-bold focus:ring-4 ring-primary/5 font-mono transition-all" placeholder="acc_XXXXXXXXXXXXXX" />
                                             <p className="text-[8px] text-slate-400 italic ml-2">Only required if using decentralized fund routing (Razorpay Route).</p>
                                         </div>
+                                        <div className="md:col-span-2 space-y-1.5 pt-2">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Direct Payment Page URL (Link Mode)</label>
+                                            <input type="url" value={formData.paymentLink} onChange={(e) => setFormData({...formData, paymentLink: e.target.value})} className="w-full px-5 py-4 bg-white border border-slate-100 rounded-2xl text-xs font-bold focus:ring-4 ring-primary/5 font-mono transition-all" placeholder="https://rzp.io/l/your-link" />
+                                            <p className="text-[8px] text-slate-400 italic ml-2">If using "LINK" mode, patients will be redirected to this page to pay.</p>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -1024,7 +1031,7 @@ const HospitalProfile = () => {
                                 <div className="pt-4">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block mb-4">Primary Authorization Protocol</label>
                                     <div className="flex gap-4">
-                                        {['RAZORPAY', 'UPI', 'BOTH'].map(mode => (
+                                        {['RAZORPAY', 'UPI', 'LINK', 'BOTH'].map(mode => (
                                             <button
                                                 key={mode}
                                                 type="button"
