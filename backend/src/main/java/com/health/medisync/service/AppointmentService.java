@@ -44,7 +44,8 @@ public class AppointmentService {
         "NICU (Neonatal ICU)", "Operation Theatre (Emergency)", "Casualty Department", 
         "24/7 Pharmacy", "Blood Bank", "Emergency CT Scan", "Emergency Lab Tests",
         "Oxygen & Ventilator Support", "Emergency Dialysis",
-        "Emergency Room", "ICU Admission", "Trauma Care", "Ambulance Response"
+        "Emergency Room", "ICU Admission", "Trauma Care", "Ambulance Response",
+        "Ambulance Booking", "Stroke Care", "Cardiac Emergency", "Emergency Resource Deployment"
     );
 
     public AppointmentService(AppointmentRepository appointmentRepository, 
@@ -572,6 +573,7 @@ public class AppointmentService {
         }
 
         Appointment saved = appointmentRepository.save(appointment);
+        broadcastAppointmentUpdate(saved);
 
         Map<String, Object> response = new HashMap<>();
         response.put("appointmentId", saved.getId());
@@ -640,53 +642,16 @@ public class AppointmentService {
         appointment.setCreatedAt(LocalDateTime.now());
         Appointment booked = appointmentRepository.save(appointment);
         broadcastAppointmentUpdate(booked);
-
-        Doctor doctor = booked.getDoctor();
-        Hospital hospital = booked.getHospital();
-        boolean isInstitutional = (doctor != null && doctor.isInstitutional()) || hospital != null;
         
-        boolean isEmergency = booked.getServiceName() != null && SERVICES_24_7.contains(booked.getServiceName());
-        String notificationType = isEmergency ? "EMERGENCY" : "APPOINTMENT";
-        String notificationTitle = isEmergency ? "🚨 EMERGENCY REQUEST (UPI)" : "New Session (Direct UPI)";
-        
-        String doctorName = (doctor != null) ? "Dr. " + doctor.getName() : "Institutional Staff";
-        String description = isEmergency 
-            ? "URGENT: " + booked.getPatient().getName() + " initiated " + booked.getServiceName() + " via UPI. Txn ID: " + transactionId + ". Deploy resources immediately."
-            : booked.getPatient().getName() + " initiated a booking with " + doctorName + " via Direct UPI. Txn ID: " + transactionId + ".";
-
-        if (isInstitutional) {
-            Hospital targetHospital = (hospital != null) ? hospital : doctor.getHospitalEntity();
-            // Notify all admins of this hospital
-            for (HospitalAdmin admin : targetHospital.getAdmins()) {
-                if (admin.isApproved()) {
-                    notificationService.sendNotification(
-                        admin.getUser().getId(),
-                        notificationType,
-                        notificationTitle,
-                        description,
-                        "/hospital/appointments",
-                        "Verify & Deploy"
-                    );
-                }
-            }
-        }
-        
-        // Notify Doctor
-        notificationService.sendNotification(
-            doctor.getUser().getId(),
-            notificationType,
-            notificationTitle,
-            description,
-            "/doctor-dashboard/appointments",
-            "Review Emergency"
-        );
+        boolean isInstitutional = booked.getHospital() != null || (booked.getDoctor() != null && booked.getDoctor().isInstitutional());
+        String providerName = (booked.getDoctor() != null) ? "Dr. " + booked.getDoctor().getName() : booked.getHospital().getName();
 
         // Notify Patient
         notificationService.sendNotification(
             booked.getPatient().getUser().getId(),
             "APPOINTMENT",
             "Session Pending Verification",
-            "Your direct UPI appointment with Dr. " + booked.getDoctor().getName() + " is currently awaiting verification by " + (isInstitutional ? "the Hospital Administration" : "the physician") + ".",
+            "Your direct UPI appointment with " + providerName + " is currently awaiting verification by " + (isInstitutional ? "the Hospital Administration" : "the physician") + ".",
             "/dashboard/sessions",
             "View Details"
         );
