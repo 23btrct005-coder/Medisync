@@ -973,39 +973,51 @@ const HospitalProfile = () => {
                             </div>
 
                             <div className="space-y-8">
-                                {/* Razorpay Direct Section */}
+                                {/* Razorpay Unified Gateway Section */}
                                 <div className="p-8 bg-slate-50/50 rounded-[2.5rem] border border-slate-100">
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <div className="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
-                                            <Shield size={16} />
+                                    <div className="flex items-center justify-between mb-6">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+                                                <Shield size={16} />
+                                            </div>
+                                            <h4 className="text-xs font-black text-slate-700 uppercase tracking-widest">Razorpay Gateway Configuration</h4>
                                         </div>
-                                        <h4 className="text-xs font-black text-slate-700 uppercase tracking-widest">Razorpay Direct Gateway</h4>
+                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Live Node</span>
                                     </div>
+                                    
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-1.5">
-                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Razorpay Key ID</label>
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Key ID</label>
                                             <input type="text" value={formData.razorpayKeyId} onChange={(e) => setFormData({...formData, razorpayKeyId: e.target.value})} className="w-full px-5 py-4 bg-white border border-slate-100 rounded-2xl text-xs font-bold focus:ring-4 ring-primary/5 font-mono transition-all" placeholder="rzp_live_XXXXXXXXXXXXXX" />
-                                            <p className="text-[8px] text-slate-400 italic ml-2">Obtained from Razorpay Dashboard {'>'} Settings {'>'} API Keys</p>
+                                            <p className="text-[8px] text-slate-400 italic ml-2">From Razorpay Dashboard {'>'} API Keys</p>
                                         </div>
                                         <div className="space-y-1.5">
-                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Razorpay Key Secret</label>
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Key Secret</label>
                                             <input type="password" value={formData.razorpayKeySecret} onChange={(e) => setFormData({...formData, razorpayKeySecret: e.target.value})} className="w-full px-5 py-4 bg-white border border-slate-100 rounded-2xl text-xs font-bold focus:ring-4 ring-primary/5 font-mono transition-all" placeholder="••••••••••••••••" />
-                                            <p className="text-[8px] text-slate-400 italic ml-2">Keep this secret. Never share it externally.</p>
+                                            <p className="text-[8px] text-slate-400 italic ml-2">Keep this credential strictly confidential.</p>
+                                        </div>
+                                        <div className="md:col-span-2 space-y-1.5 pt-2">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Marketplace Account ID (Optional)</label>
+                                            <input type="text" value={formData.razorpayAccountId} onChange={(e) => setFormData({...formData, razorpayAccountId: e.target.value})} className="w-full px-5 py-4 bg-white border border-slate-100 rounded-2xl text-xs font-bold focus:ring-4 ring-primary/5 font-mono transition-all" placeholder="acc_XXXXXXXXXXXXXX" />
+                                            <p className="text-[8px] text-slate-400 italic ml-2">Only required if using decentralized fund routing (Razorpay Route).</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Alternate Payouts */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="p-8 bg-emerald-50/30 rounded-[2.5rem] border border-emerald-100/50">
-                                        <label className="text-[9px] font-black text-emerald-700 uppercase tracking-widest ml-1 block mb-3">Institutional UPI ID</label>
-                                        <input type="text" value={formData.upiId} onChange={(e) => setFormData({...formData, upiId: e.target.value})} className="w-full px-5 py-4 bg-white border border-emerald-100/50 rounded-2xl text-xs font-bold focus:ring-4 ring-emerald-500/5 font-mono" placeholder="hospital@upi" />
-                                        <p className="text-[8px] text-emerald-600/60 italic mt-2 ml-2">For direct peer-to-peer clinical settlements.</p>
+                                <div className="p-8 bg-emerald-50/30 rounded-[2.5rem] border border-emerald-100/50">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="w-8 h-8 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600">
+                                            <DollarSign size={16} />
+                                        </div>
+                                        <h4 className="text-xs font-black text-emerald-700 uppercase tracking-widest">Institutional UPI Protocol</h4>
                                     </div>
-                                    <div className="p-8 bg-slate-50/50 rounded-[2.5rem] border border-slate-100">
-                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 block mb-3">Razorpay Account ID (Marketplace)</label>
-                                        <input type="text" value={formData.razorpayAccountId} onChange={(e) => setFormData({...formData, razorpayAccountId: e.target.value})} className="w-full px-5 py-4 bg-white border border-slate-100 rounded-2xl text-xs font-bold focus:ring-4 ring-primary/5 font-mono" placeholder="acc_XXXXXXXXXXXXXX" />
-                                        <p className="text-[8px] text-slate-400 italic mt-2 ml-2">Only required for decentralized fund routing.</p>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="md:col-span-1 space-y-1.5">
+                                            <label className="text-[9px] font-black text-emerald-700 uppercase tracking-widest ml-1 block">UPI ID</label>
+                                            <input type="text" value={formData.upiId} onChange={(e) => setFormData({...formData, upiId: e.target.value})} className="w-full px-5 py-4 bg-white border border-emerald-100/50 rounded-2xl text-xs font-bold focus:ring-4 ring-emerald-500/5 font-mono" placeholder="hospital@upi" />
+                                            <p className="text-[8px] text-emerald-600/60 italic mt-2 ml-2">For direct peer-to-peer clinical settlements.</p>
+                                        </div>
                                     </div>
                                 </div>
 
