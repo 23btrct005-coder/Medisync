@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, User, ChevronRight, Activity, Search, ClipboardCheck, AlertCircle, MapPin, Navigation, Phone, X } from 'lucide-react';
+import { Calendar, Clock, User, ChevronRight, Activity, Search, ClipboardCheck, AlertCircle, MapPin, Navigation, Phone, X, CheckCircle } from 'lucide-react';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
 import ClinicMap from '../components/ClinicMap';
@@ -115,6 +115,19 @@ const HospitalServiceBookings = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedAppt, setSelectedAppt] = useState(null);
+
+    const handleVerifyPayment = async (appointmentId) => {
+        try {
+            await api.post('/appointments/confirm-upi', { appointmentId });
+            toast.success("Transaction verified and service authorized");
+            // Refresh ledger
+            const res = await api.get('/hospital/appointments');
+            const serviceOnly = (res.data || []).filter(app => app.serviceName != null);
+            setAppointments(serviceOnly);
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Verification failed");
+        }
+    };
 
     useEffect(() => {
         const fetchAppointments = async () => {
@@ -235,15 +248,27 @@ const HospitalServiceBookings = () => {
                                             </div>
                                         </td>
                                         <td className="px-8 py-6 text-right">
-                                            <button 
-                                                onClick={() => setSelectedAppt(app)}
-                                                className={`p-2 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 ml-auto ${
-                                                    app.latitude ? 'bg-blue-600 text-white hover:bg-blue-700 hover:scale-105' : 'bg-slate-50 text-slate-400 hover:bg-primary hover:text-white'
-                                                }`}
-                                            >
-                                                {app.latitude && <MapPin size={16} />}
-                                                <ChevronRight size={18} />
-                                            </button>
+                                            <div className="flex items-center justify-end gap-3">
+                                                {(app.status === 'PENDING' || app.status === 'AWAITING_VERIFICATION') && (
+                                                    <button 
+                                                        onClick={() => handleVerifyPayment(app.id)}
+                                                        className="p-2 bg-emerald-100 text-emerald-600 rounded-xl hover:bg-emerald-600 hover:text-white transition-all shadow-sm flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-4"
+                                                        title="Verify & Confirm Payment"
+                                                    >
+                                                        <CheckCircle size={14} />
+                                                        Verify
+                                                    </button>
+                                                )}
+                                                <button 
+                                                    onClick={() => setSelectedAppt(app)}
+                                                    className={`p-2 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 ml-auto ${
+                                                        app.latitude ? 'bg-blue-600 text-white hover:bg-blue-700 hover:scale-105' : 'bg-slate-50 text-slate-400 hover:bg-primary hover:text-white'
+                                                    }`}
+                                                >
+                                                    {app.latitude && <MapPin size={16} />}
+                                                    <ChevronRight size={18} />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -272,4 +297,3 @@ const HospitalServiceBookings = () => {
 };
 
 export default HospitalServiceBookings;
-
