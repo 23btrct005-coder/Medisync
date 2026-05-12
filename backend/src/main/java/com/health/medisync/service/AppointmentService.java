@@ -88,8 +88,11 @@ public class AppointmentService {
             }
 
             // 3. Notify Hospital Admins (WebSocket + DB Persistence)
-            if (appointment.getDoctor() != null && appointment.getDoctor().isInstitutional() && appointment.getDoctor().getHospitalEntity() != null) {
-                Long hospitalId = appointment.getDoctor().getHospitalEntity().getId();
+            Hospital hospital = (appointment.getHospital() != null) ? appointment.getHospital() : 
+                               (appointment.getDoctor() != null ? appointment.getDoctor().getHospitalEntity() : null);
+
+            if (hospital != null) {
+                Long hospitalId = hospital.getId();
                 List<HospitalAdmin> admins = hospitalAdminRepository.findByHospitalIdAndApprovedTrue(hospitalId);
                 
                 boolean isEmergency = appointment.getServiceName() != null && SERVICES_24_7.contains(appointment.getServiceName());
@@ -636,18 +639,22 @@ public class AppointmentService {
         broadcastAppointmentUpdate(booked);
 
         Doctor doctor = booked.getDoctor();
-        boolean isInstitutional = doctor.isInstitutional() && doctor.getHospitalEntity() != null;
+        Hospital hospital = booked.getHospital();
+        boolean isInstitutional = (doctor != null && doctor.isInstitutional()) || hospital != null;
+        
         boolean isEmergency = booked.getServiceName() != null && SERVICES_24_7.contains(booked.getServiceName());
         String notificationType = isEmergency ? "EMERGENCY" : "APPOINTMENT";
         String notificationTitle = isEmergency ? "🚨 EMERGENCY REQUEST (UPI)" : "New Session (Direct UPI)";
+        
+        String doctorName = (doctor != null) ? "Dr. " + doctor.getName() : "Institutional Staff";
         String description = isEmergency 
             ? "URGENT: " + booked.getPatient().getName() + " initiated " + booked.getServiceName() + " via UPI. Txn ID: " + transactionId + ". Deploy resources immediately."
-            : booked.getPatient().getName() + " initiated a booking with Dr. " + doctor.getName() + " via Direct UPI. Txn ID: " + transactionId + ".";
+            : booked.getPatient().getName() + " initiated a booking with " + doctorName + " via Direct UPI. Txn ID: " + transactionId + ".";
 
         if (isInstitutional) {
-            Hospital hospital = doctor.getHospitalEntity();
+            Hospital targetHospital = (hospital != null) ? hospital : doctor.getHospitalEntity();
             // Notify all admins of this hospital
-            for (HospitalAdmin admin : hospital.getAdmins()) {
+            for (HospitalAdmin admin : targetHospital.getAdmins()) {
                 if (admin.isApproved()) {
                     notificationService.sendNotification(
                         admin.getUser().getId(),
@@ -688,15 +695,18 @@ public class AppointmentService {
             .orElseThrow(() -> new RuntimeException("Appointment not found: " + appointmentId));
         
         Doctor doctor = appointment.getDoctor();
-        boolean isInstitutional = doctor.isInstitutional() && doctor.getHospitalEntity() != null;
+        Hospital hospital = appointment.getHospital();
+        boolean isInstitutional = (doctor != null && doctor.isInstitutional()) || hospital != null;
         
         boolean authorized = false;
         if (isInstitutional) {
             // Check if author is an admin of the hospital
-            Hospital hospital = doctor.getHospitalEntity();
-            authorized = hospital.getAdmins().stream()
+            Hospital targetHospital = (hospital != null) ? hospital : doctor.getHospitalEntity();
+            if (targetHospital == null) throw new RuntimeException("Clinical path error: Institutional node not found");
+            
+            authorized = targetHospital.getAdmins().stream()
                 .anyMatch(admin -> admin.getUser().getUsername().equalsIgnoreCase(authorEmail));
-        } else {
+        } else if (doctor != null) {
             // Check if author is the doctor
             authorized = doctor.getUser().getUsername().equalsIgnoreCase(authorEmail);
         }
