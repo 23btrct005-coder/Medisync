@@ -302,22 +302,6 @@ const HospitalDashboard = () => {
                             </p>
                         </div>
 
-                        <div className="space-y-2">
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Machine / System Throughput</p>
-                            <div className="flex flex-wrap gap-3">
-                                {stats?.serviceCapacity ? (
-                                    Object.entries(typeof stats.serviceCapacity === 'string' ? JSON.parse(stats.serviceCapacity) : stats.serviceCapacity).map(([service, count], idx) => (
-                                        <div key={idx} className="px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl flex items-center gap-2 group/tag hover:bg-blue-600 hover:text-white transition-all">
-                                            <span className="text-[9px] font-black uppercase tracking-tighter text-slate-500 group-hover/tag:text-white">{service}</span>
-                                            <div className="w-[1px] h-3 bg-slate-200 group-hover/tag:bg-white/20" />
-                                            <span className="text-xs font-black text-blue-600 group-hover/tag:text-white">{count}x</span>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <p className="text-xs font-bold text-slate-400 italic">No resource telemetry captured</p>
-                                )}
-                            </div>
-                        </div>
 
                         <div className="space-y-2">
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Operational Status</p>
