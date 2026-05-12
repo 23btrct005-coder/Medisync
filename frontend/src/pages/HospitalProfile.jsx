@@ -995,23 +995,22 @@ const HospitalProfile = () => {
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {formData.services.split(',').map(s => s.trim()).filter(s => s).map((service, idx) => {
-                                        return (
-                                            <div key={idx} className="group relative bg-white border border-slate-100 rounded-[2.5rem] p-8 hover:shadow-2xl hover:shadow-primary/5 hover:border-primary/10 transition-all duration-500">
-                                                <div className="flex items-center justify-between mb-8">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-primary/5 group-hover:text-primary transition-colors duration-500">
-                                                            <Activity size={20} />
-                                                        </div>
-                                                        <div>
-                                                            <h4 className="text-[11px] font-black text-slate-700 uppercase tracking-tight leading-none">{service}</h4>
-                                                            <div className="flex items-center gap-2 mt-1.5">
-                                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                                                <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider">Active</span>
-                                                            </div>
+                                    {formData.services.split(',').map(s => s.trim()).filter(s => s).map((service, idx) => (
+                                        <div key={idx} className="group relative bg-white border border-slate-100 rounded-[2.5rem] p-8 hover:shadow-2xl hover:shadow-primary/5 hover:border-primary/10 transition-all duration-500">
+                                            <div className="flex items-center justify-between mb-8">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-primary/5 group-hover:text-primary transition-colors duration-500">
+                                                        <Activity size={20} />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-[11px] font-black text-slate-700 uppercase tracking-tight leading-none">{service}</h4>
+                                                        <div className="flex items-center gap-2 mt-1.5">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                            <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider">Active</span>
                                                         </div>
                                                     </div>
                                                 </div>
+                                            </div>
 
                                             <div className="grid grid-cols-1 gap-4">
                                                 <div className="space-y-1.5">
