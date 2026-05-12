@@ -235,7 +235,17 @@ const HospitalProfile = () => {
         setSaving(true);
         try {
             // Validation: Every service must have both fee and duration
-            const services = formData.services.split(',').map(s => s.trim()).filter(s => s);
+            const allServices = formData.services.split(',').map(s => s.trim()).filter(s => s);
+            // Case-insensitive deduplication
+            const services = [];
+            const seen = new Set();
+            for (const s of allServices) {
+                const lower = s.toLowerCase();
+                if (!seen.has(lower)) {
+                    seen.add(lower);
+                    services.push(s);
+                }
+            }
             
             const normalizedFees = normalizeObjectKeys(formData.serviceFees);
             const normalizedDurations = normalizeObjectKeys(formData.serviceDurations);
@@ -553,15 +563,15 @@ const HospitalProfile = () => {
                                             </div>
                                             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                                                 {category.services.map(service => {
-                                                    const isSelected = (formData.services || "").split(',').map(s => s.trim()).includes(service.name);
+                                                    const currentServices = (formData.services || "").split(',').map(s => s.trim()).filter(s => s);
+                                                    const isSelected = currentServices.some(s => s.toLowerCase() === service.name.toLowerCase());
                                                     return (
                                                         <button
                                                             key={service.name}
                                                             type="button"
                                                             onClick={() => {
-                                                                const currentServices = formData.services ? formData.services.split(',').map(s => s.trim()).filter(s => s) : [];
                                                                 const newServices = isSelected 
-                                                                    ? currentServices.filter(s => s !== service.name)
+                                                                    ? currentServices.filter(s => s.toLowerCase() !== service.name.toLowerCase())
                                                                     : [...currentServices, service.name];
                                                                 setFormData({...formData, services: newServices.join(', ')});
                                                             }}
@@ -595,10 +605,13 @@ const HospitalProfile = () => {
                                                 if (e.key === 'Enter') {
                                                     e.preventDefault();
                                                     const val = e.target.value.trim();
-                                                    if (val && !formData.services.includes(val)) {
+                                                    if (val) {
                                                         const current = formData.services ? formData.services.split(',').map(s => s.trim()).filter(s => s) : [];
-                                                        setFormData({...formData, services: [...current, val].join(', ')});
-                                                        e.target.value = '';
+                                                        const alreadyExists = current.some(s => s.toLowerCase() === val.toLowerCase());
+                                                        if (!alreadyExists) {
+                                                            setFormData({...formData, services: [...current, val].join(', ')});
+                                                            e.target.value = '';
+                                                        }
                                                     }
                                                 }
                                             }}
@@ -608,10 +621,13 @@ const HospitalProfile = () => {
                                             onClick={() => {
                                                 const input = document.getElementById('otherServiceInput');
                                                 const val = input.value.trim();
-                                                if (val && !formData.services.includes(val)) {
+                                                if (val) {
                                                     const current = formData.services ? formData.services.split(',').map(s => s.trim()).filter(s => s) : [];
-                                                    setFormData({...formData, services: [...current, val].join(', ')});
-                                                    input.value = '';
+                                                    const alreadyExists = current.some(s => s.toLowerCase() === val.toLowerCase());
+                                                    if (!alreadyExists) {
+                                                        setFormData({...formData, services: [...current, val].join(', ')});
+                                                        input.value = '';
+                                                    }
                                                 }
                                             }}
                                             className="p-3 bg-slate-900 text-white rounded-2xl hover:scale-105 transition-all"
@@ -1003,8 +1019,13 @@ const HospitalProfile = () => {
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {formData.services.split(',').map(s => s.trim()).filter(s => s).map((service, idx) => (
-                                        <div key={idx} className="group relative bg-white border border-slate-100 rounded-[2.5rem] p-8 hover:shadow-2xl hover:shadow-primary/5 hover:border-primary/10 transition-all duration-500">
+                                    {Array.from(new Set(formData.services.split(',').map(s => s.trim().toLowerCase()).filter(s => s))).map((lowerService, idx) => {
+                                        // Find original casing for display if possible, otherwise use lowercase
+                                        const originalServices = formData.services.split(',').map(s => s.trim()).filter(s => s);
+                                        const service = originalServices.find(s => s.toLowerCase() === lowerService) || lowerService;
+                                        
+                                        return (
+                                            <div key={idx} className="group relative bg-white border border-slate-100 rounded-[2.5rem] p-8 hover:shadow-2xl hover:shadow-primary/5 hover:border-primary/10 transition-all duration-500">
                                             <div className="flex items-center justify-between mb-8">
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-primary/5 group-hover:text-primary transition-colors duration-500">
@@ -1096,7 +1117,7 @@ const HospitalProfile = () => {
                                                 )}
                                             </div>
                                         </div>
-                                    ))}
+                                    ); })}
 
                                     {formData.services.split(',').map(s => s.trim()).filter(s => s).length === 0 && (
                                         <div className="md:col-span-2 text-center py-20 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
