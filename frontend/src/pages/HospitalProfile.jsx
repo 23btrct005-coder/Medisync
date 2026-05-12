@@ -969,13 +969,21 @@ const HospitalProfile = () => {
                                 <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Financial <span className="not-italic text-primary">Settlements</span></h3>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="md:col-span-2 space-y-1">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Razorpay Account ID</label>
-                                    <input type="text" value={formData.razorpayAccountId} onChange={(e) => setFormData({...formData, razorpayAccountId: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 font-mono" placeholder="acc_XXXXXXXXXXXXXX" />
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Razorpay Key ID</label>
+                                    <input type="text" value={formData.razorpayKeyId} onChange={(e) => setFormData({...formData, razorpayKeyId: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 font-mono" placeholder="rzp_live_XXXXXXXXXXXXXX" />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Razorpay Key Secret</label>
+                                    <input type="password" value={formData.razorpayKeySecret} onChange={(e) => setFormData({...formData, razorpayKeySecret: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 font-mono" placeholder="••••••••••••••••" />
                                 </div>
                                 <div className="md:col-span-2 space-y-1">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Institutional UPI ID</label>
-                                    <input type="text" value={formData.upiId} onChange={(e) => setFormData({...formData, upiId: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 font-mono" />
+                                    <input type="text" value={formData.upiId} onChange={(e) => setFormData({...formData, upiId: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 font-mono" placeholder="hospital@upi" />
+                                </div>
+                                <div className="md:col-span-2 space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Razorpay Account ID (For Route/Marketplace)</label>
+                                    <input type="text" value={formData.razorpayAccountId} onChange={(e) => setFormData({...formData, razorpayAccountId: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 font-mono" placeholder="acc_XXXXXXXXXXXXXX" />
                                 </div>
                             </div>
                             <div className="mt-8">
