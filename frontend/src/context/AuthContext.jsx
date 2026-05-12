@@ -109,6 +109,7 @@ export const AuthProvider = ({ children }) => {
       userRole: user?.role || user?.user?.role, 
       login, 
       logout, 
+      fetchUserProfile,
       loading, 
       authenticated: !!user 
     }}>

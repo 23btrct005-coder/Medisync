@@ -35,7 +35,7 @@ public class SupabaseStorageService {
         }
 
         try {
-            String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+            String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename().replaceAll("\\s+", "_");
             String uploadUrl = supabaseUrl + "/storage/v1/object/" + bucketName + "/" + fileName;
             System.out.println("DEBUG: Target upload URL: " + uploadUrl);
 
