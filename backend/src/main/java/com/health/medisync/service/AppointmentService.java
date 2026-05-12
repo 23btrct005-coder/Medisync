@@ -199,12 +199,19 @@ public class AppointmentService {
             throw new RuntimeException("This physician consultation type (" + type + ") has not been priced and is currently unavailable for booking.");
         }
         
-        // Payment Configuration Check with Robust Demo Mode Fallback
-        boolean isDemoMode = (razorpayKeyId == null || razorpayKeyId.trim().isEmpty() || 
-                             razorpayKeySecret == null || razorpayKeySecret.trim().isEmpty() ||
-                             razorpayKeyId.contains("YOUR_") || razorpayKeySecret.contains("YOUR_"));
+        // Payment Configuration Check with Multi-tenant Razorpay Support
+        String effectiveKeyId = (doctor != null && doctor.getRazorpayKeyId() != null && !doctor.getRazorpayKeyId().isEmpty()) 
+                                ? doctor.getRazorpayKeyId() 
+                                : razorpayKeyId;
+        String effectiveKeySecret = (doctor != null && doctor.getRazorpayKeySecret() != null && !doctor.getRazorpayKeySecret().isEmpty()) 
+                                ? doctor.getRazorpayKeySecret() 
+                                : razorpayKeySecret;
+
+        boolean isDemoMode = (effectiveKeyId == null || effectiveKeyId.trim().isEmpty() || 
+                             effectiveKeySecret == null || effectiveKeySecret.trim().isEmpty() ||
+                             effectiveKeyId.contains("YOUR_") || effectiveKeySecret.contains("YOUR_"));
         
-        System.out.println("DEBUG: Payment Mode Check - isDemoMode: " + isDemoMode + " (Key: " + (razorpayKeyId != null ? "PRESENT" : "NULL") + ")");
+        System.out.println("DEBUG: Payment Mode Check - isDemoMode: " + isDemoMode + " (Key: " + (effectiveKeyId != null ? "PRESENT" : "NULL") + ")");
         
         String orderId;
         if (isDemoMode) {
@@ -213,7 +220,7 @@ public class AppointmentService {
         } else {
             try {
                 System.out.println("INFO: Initializing official Razorpay transaction...");
-                RazorpayClient client = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
+                RazorpayClient client = new RazorpayClient(effectiveKeyId, effectiveKeySecret);
                 JSONObject orderRequest = new JSONObject();
                 int amountInPaise = (int)((fee != null ? fee : 1.0) * 100);
                 orderRequest.put("amount", amountInPaise); // amount in paise
@@ -302,7 +309,7 @@ public class AppointmentService {
         response.put("appointmentId", saved.getId());
         response.put("razorpayOrderId", orderId);
         response.put("amount", fee);
-        response.put("razorpayKeyId", razorpayKeyId);
+        response.put("razorpayKeyId", effectiveKeyId);
         response.put("isDemo", isDemoMode);
         response.put("preferredPaymentMode", doctor.getPreferredPaymentMode());
         response.put("upiId", doctor.getUpiId());
@@ -456,12 +463,19 @@ public class AppointmentService {
             throw new RuntimeException("This service (" + serviceName + ") has not been priced by the institution and is currently unavailable for booking.");
         }
 
-        boolean isDemoMode = (razorpayKeyId == null || razorpayKeyId.isEmpty());
+        String effectiveKeyId = (hospital != null && hospital.getRazorpayKeyId() != null && !hospital.getRazorpayKeyId().isEmpty()) 
+                                ? hospital.getRazorpayKeyId() 
+                                : ((doctor != null && doctor.getRazorpayKeyId() != null && !doctor.getRazorpayKeyId().isEmpty()) ? doctor.getRazorpayKeyId() : razorpayKeyId);
+        String effectiveKeySecret = (hospital != null && hospital.getRazorpayKeySecret() != null && !hospital.getRazorpayKeySecret().isEmpty()) 
+                                ? hospital.getRazorpayKeySecret() 
+                                : ((doctor != null && doctor.getRazorpayKeySecret() != null && !doctor.getRazorpayKeySecret().isEmpty()) ? doctor.getRazorpayKeySecret() : razorpayKeySecret);
+
+        boolean isDemoMode = (effectiveKeyId == null || effectiveKeyId.isEmpty());
         String orderId = isDemoMode ? "demo_service_" + System.currentTimeMillis() : null;
 
         if (!isDemoMode) {
             try {
-                RazorpayClient client = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
+                RazorpayClient client = new RazorpayClient(effectiveKeyId, effectiveKeySecret);
                 JSONObject orderRequest = new JSONObject();
                 int amountInPaise = (int)(fee * 100);
                 orderRequest.put("amount", amountInPaise);
@@ -526,7 +540,7 @@ public class AppointmentService {
         response.put("appointmentId", saved.getId());
         response.put("razorpayOrderId", orderId);
         response.put("amount", fee);
-        response.put("razorpayKeyId", razorpayKeyId);
+        response.put("razorpayKeyId", effectiveKeyId);
         response.put("isDemo", isDemoMode);
         response.put("preferredPaymentMode", preferredPaymentMode);
         response.put("upiId", upiId);
@@ -536,19 +550,27 @@ public class AppointmentService {
 
     @Transactional
     public void verifyPayment(String orderId, String paymentId, String signature) throws Exception {
-        // 1. Verify Signature
+        // 1. Find Appointment first to get correct secret
+        Appointment appointment = appointmentRepository.findByRazorpayOrderId(orderId)
+            .orElseThrow(() -> new RuntimeException("Appointment not found for order: " + orderId));
+
+        String effectiveSecret = razorpayKeySecret;
+        if (appointment.getHospital() != null && appointment.getHospital().getRazorpayKeySecret() != null && !appointment.getHospital().getRazorpayKeySecret().isEmpty()) {
+            effectiveSecret = appointment.getHospital().getRazorpayKeySecret();
+        } else if (appointment.getDoctor() != null && appointment.getDoctor().getRazorpayKeySecret() != null && !appointment.getDoctor().getRazorpayKeySecret().isEmpty()) {
+            effectiveSecret = appointment.getDoctor().getRazorpayKeySecret();
+        }
+
+        // 2. Verify Signature
         JSONObject attributes = new JSONObject();
         attributes.put("razorpay_order_id", orderId);
         attributes.put("razorpay_payment_id", paymentId);
         attributes.put("razorpay_signature", signature);
 
-        boolean isValid = Utils.verifyPaymentSignature(attributes, razorpayKeySecret);
+        boolean isValid = Utils.verifyPaymentSignature(attributes, effectiveSecret);
         if (!isValid) throw new RuntimeException("Invalid payment signature");
 
         // 2. Persist Status
-        Appointment appointment = appointmentRepository.findByRazorpayOrderId(orderId)
-            .orElseThrow(() -> new RuntimeException("Appointment not found for order: " + orderId));
-
         appointment.setRazorpayPaymentId(paymentId);
         appointment.setStatus(AppointmentStatus.BOOKED);
         appointment.setCreatedAt(LocalDateTime.now());
