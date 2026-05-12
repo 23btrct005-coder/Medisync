@@ -87,6 +87,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
             "https://medisync-hos.ddns.net",
+            "http://164.52.213.234:8080",
             "https://medisync-vert-five.vercel.app",
             "http://localhost:5173",
             "http://localhost:3000"
