@@ -4,7 +4,7 @@ import {
   Search, Filter, Calendar, Clock, ChevronRight,
   User, Star, MapPin, Video, CheckCircle2, AlertCircle,
   ArrowLeft, CreditCard, Loader2, Sparkles, RefreshCw, QrCode, X, Activity,
-  Navigation, Droplets, Ambulance, Siren, ShieldCheck, Zap,
+  Navigation, Droplets, Ambulance, Siren, ShieldCheck, Zap, ExternalLink,
   Heart, Brain, Baby, Bone, Eye, Stethoscope, Microscope, Droplet,
   HeartPulse, Home, Monitor, Phone, Scissors, FlaskRound, FlaskConical, Thermometer
 } from 'lucide-react';
@@ -1175,9 +1175,12 @@ const Booking = () => {
                     {isBooking ? 'Synchronizing Seat...' : 'Authorize Transaction'}
                   </button>
                 </div>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
+
       <AnimatePresence>
         {showUpiModal && upiOrderData && (
           <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
