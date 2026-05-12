@@ -966,43 +966,67 @@ const HospitalProfile = () => {
                                 <div className="w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center text-primary">
                                     <CreditCard size={24} />
                                 </div>
-                                <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Financial <span className="not-italic text-primary">Settlements</span></h3>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Razorpay Key ID</label>
-                                    <input type="text" value={formData.razorpayKeyId} onChange={(e) => setFormData({...formData, razorpayKeyId: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 font-mono" placeholder="rzp_live_XXXXXXXXXXXXXX" />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Razorpay Key Secret</label>
-                                    <input type="password" value={formData.razorpayKeySecret} onChange={(e) => setFormData({...formData, razorpayKeySecret: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 font-mono" placeholder="••••••••••••••••" />
-                                </div>
-                                <div className="md:col-span-2 space-y-1">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Institutional UPI ID</label>
-                                    <input type="text" value={formData.upiId} onChange={(e) => setFormData({...formData, upiId: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 font-mono" placeholder="hospital@upi" />
-                                </div>
-                                <div className="md:col-span-2 space-y-1">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Razorpay Account ID (For Route/Marketplace)</label>
-                                    <input type="text" value={formData.razorpayAccountId} onChange={(e) => setFormData({...formData, razorpayAccountId: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-2 ring-primary/20 font-mono" placeholder="acc_XXXXXXXXXXXXXX" />
+                                <div className="flex-1">
+                                    <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight italic">Financial <span className="not-italic text-primary">Settlements</span></h3>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Configure Payment Gateways & Payout Channels</p>
                                 </div>
                             </div>
-                            <div className="mt-8">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block mb-4">Preferred Payout Channel</label>
-                                <div className="flex gap-4">
-                                    {['RAZORPAY', 'UPI', 'BOTH'].map(mode => (
-                                        <button
-                                            key={mode}
-                                            type="button"
-                                            onClick={() => setFormData({...formData, preferredPaymentMode: mode})}
-                                            className={`flex-1 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all ${
-                                                formData.preferredPaymentMode === mode
-                                                ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
-                                                : 'bg-slate-50 text-slate-400 border-transparent hover:bg-slate-100'
-                                            }`}
-                                        >
-                                            {mode}
-                                        </button>
-                                    ))}
+
+                            <div className="space-y-8">
+                                {/* Razorpay Direct Section */}
+                                <div className="p-8 bg-slate-50/50 rounded-[2.5rem] border border-slate-100">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+                                            <Shield size={16} />
+                                        </div>
+                                        <h4 className="text-xs font-black text-slate-700 uppercase tracking-widest">Razorpay Direct Gateway</h4>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-1.5">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Razorpay Key ID</label>
+                                            <input type="text" value={formData.razorpayKeyId} onChange={(e) => setFormData({...formData, razorpayKeyId: e.target.value})} className="w-full px-5 py-4 bg-white border border-slate-100 rounded-2xl text-xs font-bold focus:ring-4 ring-primary/5 font-mono transition-all" placeholder="rzp_live_XXXXXXXXXXXXXX" />
+                                            <p className="text-[8px] text-slate-400 italic ml-2">Obtained from Razorpay Dashboard {'>'} Settings {'>'} API Keys</p>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Razorpay Key Secret</label>
+                                            <input type="password" value={formData.razorpayKeySecret} onChange={(e) => setFormData({...formData, razorpayKeySecret: e.target.value})} className="w-full px-5 py-4 bg-white border border-slate-100 rounded-2xl text-xs font-bold focus:ring-4 ring-primary/5 font-mono transition-all" placeholder="••••••••••••••••" />
+                                            <p className="text-[8px] text-slate-400 italic ml-2">Keep this secret. Never share it externally.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Alternate Payouts */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="p-8 bg-emerald-50/30 rounded-[2.5rem] border border-emerald-100/50">
+                                        <label className="text-[9px] font-black text-emerald-700 uppercase tracking-widest ml-1 block mb-3">Institutional UPI ID</label>
+                                        <input type="text" value={formData.upiId} onChange={(e) => setFormData({...formData, upiId: e.target.value})} className="w-full px-5 py-4 bg-white border border-emerald-100/50 rounded-2xl text-xs font-bold focus:ring-4 ring-emerald-500/5 font-mono" placeholder="hospital@upi" />
+                                        <p className="text-[8px] text-emerald-600/60 italic mt-2 ml-2">For direct peer-to-peer clinical settlements.</p>
+                                    </div>
+                                    <div className="p-8 bg-slate-50/50 rounded-[2.5rem] border border-slate-100">
+                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 block mb-3">Razorpay Account ID (Marketplace)</label>
+                                        <input type="text" value={formData.razorpayAccountId} onChange={(e) => setFormData({...formData, razorpayAccountId: e.target.value})} className="w-full px-5 py-4 bg-white border border-slate-100 rounded-2xl text-xs font-bold focus:ring-4 ring-primary/5 font-mono" placeholder="acc_XXXXXXXXXXXXXX" />
+                                        <p className="text-[8px] text-slate-400 italic mt-2 ml-2">Only required for decentralized fund routing.</p>
+                                    </div>
+                                </div>
+
+                                <div className="pt-4">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block mb-4">Primary Authorization Protocol</label>
+                                    <div className="flex gap-4">
+                                        {['RAZORPAY', 'UPI', 'BOTH'].map(mode => (
+                                            <button
+                                                key={mode}
+                                                type="button"
+                                                onClick={() => setFormData({...formData, preferredPaymentMode: mode})}
+                                                className={`flex-1 py-5 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest border transition-all ${
+                                                    formData.preferredPaymentMode === mode
+                                                    ? 'bg-slate-900 text-white border-slate-900 shadow-xl shadow-slate-200'
+                                                    : 'bg-white text-slate-400 border-slate-100 hover:border-slate-200'
+                                                }`}
+                                            >
+                                                {mode}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>
