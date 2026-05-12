@@ -64,8 +64,10 @@ mvn clean package -DskipTests
 # 6. Launch
 echo "🚀 EXECUTING FINAL INSTITUTIONAL LAUNCH..."
 fuser -k 8080/tcp || true
-# Export variables from .env (now in project root) and launch
-export $(grep -v '^#' ../.env | xargs)
+# Set environment variables from .env and launch
+set -a
+[ -f ../.env ] && . ../.env
+set +a
 nohup java -jar target/*.jar > ~/medisync_prod.log 2>&1 &
 
 echo "✅ DEPLOYMENT SUCCESSFUL. ACCESS VIA PORT 8080."

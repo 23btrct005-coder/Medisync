@@ -998,8 +998,22 @@ const HospitalProfile = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="md:col-span-2 space-y-1.5 pt-2">
                                             <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Marketplace Account ID (Optional)</label>
-                                            <input type="text" value={formData.razorpayAccountId} onChange={(e) => setFormData({...formData, razorpayAccountId: e.target.value})} className="w-full px-5 py-4 bg-white border border-slate-100 rounded-2xl text-xs font-bold focus:ring-4 ring-primary/5 font-mono transition-all" placeholder="acc_XXXXXXXXXXXXXX" />
-                                            <p className="text-[8px] text-slate-400 italic ml-2">Only required if using decentralized fund routing (Razorpay Route).</p>
+                                            <input 
+                                                type="text" 
+                                                value={formData.razorpayAccountId} 
+                                                onChange={(e) => setFormData({...formData, razorpayAccountId: e.target.value})}
+                                                className={`w-full px-5 py-3 bg-white border-2 rounded-2xl text-xs font-bold text-slate-800 focus:border-indigo-500 transition-all outline-none ${
+                                                    formData.razorpayAccountId && (!formData.razorpayAccountId.startsWith('acc_') || formData.razorpayAccountId.length !== 18)
+                                                        ? 'border-red-200 bg-red-50/20' 
+                                                        : 'border-slate-100'
+                                                }`}
+                                                placeholder="e.g. acc_XXXXXXXXXXXXXXXX"
+                                            />
+                                            {formData.razorpayAccountId && (!formData.razorpayAccountId.startsWith('acc_') || formData.razorpayAccountId.length !== 18) && (
+                                                <p className="text-[8px] font-black text-red-500 uppercase tracking-widest ml-2 flex items-center gap-1">
+                                                    <AlertCircle size={10} /> Invalid Account ID Format (Should be acc_ followed by 14 characters)
+                                                </p>
+                                            )}
                                         </div>
                                         <div className="md:col-span-2 space-y-1.5 pt-2">
                                             <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Direct Payment Page URL (Link Mode)</label>

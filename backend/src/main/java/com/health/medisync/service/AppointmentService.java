@@ -599,6 +599,10 @@ public class AppointmentService {
                 effectiveSecret = appointment.getDoctor().getRazorpayKeySecret();
             }
         }
+        
+        if (effectiveSecret == null || effectiveSecret.trim().isEmpty()) {
+            throw new RuntimeException("CRITICAL: Clinical gateway secret missing. Payment verification suspended.");
+        }
 
         // 2. Verify Signature
         JSONObject attributes = new JSONObject();
