@@ -14,6 +14,7 @@ export const NotificationProvider = ({ children }) => {
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [unreadCountsMap, setUnreadCountsMap] = useState({});
   const [lastMessage, setLastMessage] = useState(null);
+  const [serverTime, setServerTime] = useState(null);
   const [stompClient, setStompClient] = useState(null);
   const stompClientRef = useRef(null);
 
@@ -110,6 +111,12 @@ export const NotificationProvider = ({ children }) => {
           setLastMessage(newMsg);
       });
 
+      // GLOBAL SYSTEM SYNC: Heartbeat every second
+      client.subscribe('/topic/system-sync', (message) => {
+          const syncData = JSON.parse(message.body);
+          setServerTime(syncData.serverTime);
+      });
+
     }, (error) => {
       if (user) {
         stompClientRef.current = null;
@@ -165,7 +172,8 @@ export const NotificationProvider = ({ children }) => {
       notifications, unreadCount, markAsRead, fetchNotifications, 
       unreadChatCount, setUnreadChatCount, fetchUnreadChatCount, lastMessage,
       markChatAsRead,
-      isAiOpen, setAiOpen
+      isAiOpen, setAiOpen,
+      serverTime
     }}>
       {children}
     </NotificationContext.Provider>
