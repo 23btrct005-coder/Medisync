@@ -253,7 +253,9 @@ const AiConcierge = () => {
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        className="fixed bottom-8 right-8 bg-[#F8FAFC] rounded-[32px] shadow-[0_30px_100px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden pointer-events-auto border border-white/50 z-[3000]"
+                        className={`fixed bg-[#F8FAFC] shadow-[0_30px_100px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden pointer-events-auto border border-white/50 z-[3000] ${
+                            (window.innerWidth < 768) ? 'inset-0' : 'bottom-8 right-8'
+                        }`}
                         initial={{ opacity: 0, y: 50, scale: 0.95 }}
                         animate={{ 
                             opacity: 1, y: 0, scale: 1,
@@ -264,7 +266,7 @@ const AiConcierge = () => {
                         exit={{ opacity: 0, y: 50, scale: 0.95 }}
                     >
                         {/* Header */}
-                        <div className="p-6 bg-white border-b border-slate-100 flex items-center justify-between">
+                        <div className="pt-[env(safe-area-inset-top,24px)] pb-6 px-6 bg-white border-b border-slate-100 flex items-center justify-between">
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-inner">
                                     <ShieldCheck size={24} />
@@ -369,7 +371,7 @@ const AiConcierge = () => {
                         )}
 
                         {/* Input */}
-                        <div className="p-6 bg-white border-t border-slate-100">
+                        <div className="pt-6 pb-[env(safe-area-inset-bottom,24px)] px-6 bg-white border-t border-slate-100">
                             <div className="relative flex flex-col gap-2">
                                 {imagePreview && (
                                     <div className="p-2 bg-indigo-50 rounded-xl flex items-center gap-2 mb-2">
