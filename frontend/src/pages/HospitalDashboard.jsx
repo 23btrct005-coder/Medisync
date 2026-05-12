@@ -280,7 +280,7 @@ const HospitalDashboard = () => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 lg:flex-1 lg:ml-20">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-12 lg:flex-1 lg:ml-24">
                         <div className="space-y-2 group/item relative">
                             <div className="flex items-center justify-between">
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Consultation Hours</p>
