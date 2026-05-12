@@ -32,22 +32,30 @@ const normalizeObjectKeys = (obj) => {
     let target = obj;
     if (typeof obj === 'string') {
         try {
-            target = JSON.parse(obj);
+            // Handle double-stringified JSON if present
+            let parsed = JSON.parse(obj);
+            if (typeof parsed === 'string') parsed = JSON.parse(parsed);
+            target = parsed;
         } catch (e) {
+            console.error("Clinical Parse Error:", e);
             return {};
         }
     }
+    if (typeof target !== 'object' || target === null) return {};
+    
     const normalized = {};
     Object.keys(target).forEach(key => {
-        normalized[key.trim().toLowerCase()] = target[key];
+        const cleanKey = key.trim().toLowerCase().replace(/\s+/g, ' ');
+        normalized[cleanKey] = target[key];
     });
     return normalized;
 };
 
 const getClinicalValue = (obj, targetKey) => {
     if (!obj || !targetKey) return null;
-    const normalizedTarget = targetKey.trim().toLowerCase();
-    return obj[normalizedTarget] || null;
+    const normalizedTarget = targetKey.trim().toLowerCase().replace(/\s+/g, ' ');
+    const val = obj[normalizedTarget];
+    return val !== undefined && val !== null ? val : null;
 };
 
 const HospitalProfile = () => {
@@ -275,7 +283,7 @@ const HospitalProfile = () => {
             });
             toast.success("Institutional profile synchronized successfully");
             await fetchUserProfile('ROLE_HOSPITAL_ADMIN');
-            fetchProfile();
+            await fetchProfile();
         } catch (err) {
             toast.error(err.response?.data?.message || "Sync failed");
         } finally {
@@ -1074,7 +1082,8 @@ const HospitalProfile = () => {
                                                                     onChange={(e) => {
                                                                         const val = e.target.value;
                                                                         if (val < 1) return;
-                                                                        const newCapacity = { ...formData.serviceCapacity, [service.toLowerCase()]: val };
+                                                                        const cleanKey = service.trim().toLowerCase().replace(/\s+/g, ' ');
+                                                                        const newCapacity = { ...formData.serviceCapacity, [cleanKey]: val };
                                                                         setFormData({ ...formData, serviceCapacity: newCapacity });
                                                                     }}
                                                                     placeholder="Unit"
