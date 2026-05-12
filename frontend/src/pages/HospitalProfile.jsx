@@ -39,7 +39,7 @@ const normalizeObjectKeys = (obj) => {
     }
     const normalized = {};
     Object.keys(target).forEach(key => {
-        normalized[key.trim()] = target[key];
+        normalized[key.trim().toLowerCase()] = target[key];
     });
     return normalized;
 };
@@ -47,8 +47,7 @@ const normalizeObjectKeys = (obj) => {
 const getClinicalValue = (obj, targetKey) => {
     if (!obj || !targetKey) return null;
     const normalizedTarget = targetKey.trim().toLowerCase();
-    const key = Object.keys(obj).find(k => k.trim().toLowerCase() === normalizedTarget);
-    return key ? obj[key] : null;
+    return obj[normalizedTarget] || null;
 };
 
 const HospitalProfile = () => {
@@ -228,16 +227,15 @@ const HospitalProfile = () => {
         setSaving(true);
         try {
             // Validation: Every service must have both fee and duration
-            const rawServices = formData.services.split(',').map(s => s.trim()).filter(s => s);
-            const services = rawServices.map(s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase());
+            const services = formData.services.split(',').map(s => s.trim()).filter(s => s);
             
             const normalizedFees = normalizeObjectKeys(formData.serviceFees);
             const normalizedDurations = normalizeObjectKeys(formData.serviceDurations);
             const normalizedCapacity = normalizeObjectKeys(formData.serviceCapacity);
 
             console.log("Clinical Validation Sync - Services:", services);
-            console.log("Normalized Durations:", normalizedDurations);
-            console.log("Normalized Capacity:", normalizedCapacity);
+            console.log("Sync Durations:", normalizedDurations);
+            console.log("Sync Capacity:", normalizedCapacity);
 
             for (const service of services) {
                 const is247 = SERVICES_24_7.some(s => s.toLowerCase() === service.toLowerCase());
@@ -997,17 +995,23 @@ const HospitalProfile = () => {
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {formData.services.split(',').map(s => s.trim()).filter(s => s).map((service, idx) => (
-                                        <div key={idx} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm group hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 transition-all animate-in fade-in zoom-in-95 duration-500" style={{ animationDelay: `${idx * 50}ms` }}>
-                                            <div className="flex items-center justify-between mb-6">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="p-2.5 bg-slate-50 text-slate-400 group-hover:bg-primary/10 group-hover:text-primary rounded-xl transition-colors">
-                                                        <Activity size={18} />
+                                    {formData.services.split(',').map(s => s.trim()).filter(s => s).map((service, idx) => {
+                                        return (
+                                            <div key={idx} className="group relative bg-white border border-slate-100 rounded-[2.5rem] p-8 hover:shadow-2xl hover:shadow-primary/5 hover:border-primary/10 transition-all duration-500">
+                                                <div className="flex items-center justify-between mb-8">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-primary/5 group-hover:text-primary transition-colors duration-500">
+                                                            <Activity size={20} />
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="text-[11px] font-black text-slate-700 uppercase tracking-tight leading-none">{service}</h4>
+                                                            <div className="flex items-center gap-2 mt-1.5">
+                                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                                <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider">Active</span>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <h4 className="text-[11px] font-black text-slate-700 uppercase tracking-tight leading-none">{service}</h4>
                                                 </div>
-                                                <span className="text-[8px] font-black px-2 py-1 bg-emerald-50 text-emerald-600 rounded-lg uppercase tracking-widest">Active</span>
-                                            </div>
 
                                             <div className="grid grid-cols-1 gap-4">
                                                 <div className="space-y-1.5">
@@ -1024,7 +1028,7 @@ const HospitalProfile = () => {
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
                                                                 if (val < 0) return;
-                                                                const newFees = { ...formData.serviceFees, [service]: val };
+                                                                const newFees = { ...formData.serviceFees, [service.toLowerCase()]: val };
                                                                 setFormData({ ...formData, serviceFees: newFees });
                                                             }}
                                                             placeholder="0.00"
@@ -1048,7 +1052,7 @@ const HospitalProfile = () => {
                                                                     onChange={(e) => {
                                                                         const val = e.target.value;
                                                                         if (val < 0) return;
-                                                                        const newDurations = { ...formData.serviceDurations, [service]: val };
+                                                                        const newDurations = { ...formData.serviceDurations, [service.toLowerCase()]: val };
                                                                         setFormData({ ...formData, serviceDurations: newDurations });
                                                                     }}
                                                                     placeholder="Mins"
@@ -1071,7 +1075,7 @@ const HospitalProfile = () => {
                                                                     onChange={(e) => {
                                                                         const val = e.target.value;
                                                                         if (val < 1) return;
-                                                                        const newCapacity = { ...formData.serviceCapacity, [service]: val };
+                                                                        const newCapacity = { ...formData.serviceCapacity, [service.toLowerCase()]: val };
                                                                         setFormData({ ...formData, serviceCapacity: newCapacity });
                                                                     }}
                                                                     placeholder="Unit"
