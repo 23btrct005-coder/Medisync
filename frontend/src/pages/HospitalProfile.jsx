@@ -228,7 +228,9 @@ const HospitalProfile = () => {
         setSaving(true);
         try {
             // Validation: Every service must have both fee and duration
-            const services = formData.services.split(',').map(s => s.trim()).filter(s => s);
+            const rawServices = formData.services.split(',').map(s => s.trim()).filter(s => s);
+            const services = rawServices.map(s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase());
+            
             const normalizedFees = normalizeObjectKeys(formData.serviceFees);
             const normalizedDurations = normalizeObjectKeys(formData.serviceDurations);
             const normalizedCapacity = normalizeObjectKeys(formData.serviceCapacity);
@@ -1072,10 +1074,10 @@ const HospitalProfile = () => {
                                                                         const newCapacity = { ...formData.serviceCapacity, [service]: val };
                                                                         setFormData({ ...formData, serviceCapacity: newCapacity });
                                                                     }}
-                                                                    placeholder="Systems"
-                                                                    className="w-full px-4 py-4 bg-slate-50 border border-transparent rounded-2xl text-sm font-black text-slate-800 focus:bg-white focus:border-primary/20 focus:ring-4 ring-primary/5 transition-all outline-none"
+                                                                    placeholder="Unit"
+                                                                    className="w-full pl-4 pr-12 py-4 bg-slate-50 border border-transparent rounded-2xl text-sm font-black text-slate-800 focus:bg-white focus:border-primary/20 focus:ring-4 ring-primary/5 transition-all outline-none"
                                                                 />
-                                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-[10px] pointer-events-none">SYS</div>
+                                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-[8px] pointer-events-none">SYS</div>
                                                             </div>
                                                         </div>
                                                     </div>
