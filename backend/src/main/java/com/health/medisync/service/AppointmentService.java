@@ -378,8 +378,30 @@ public class AppointmentService {
         if (serviceName != null && capacityJson != null) {
             try {
                 org.json.JSONObject capacities = new org.json.JSONObject(capacityJson);
-                if (capacities.has(serviceName)) {
-                    capacity = capacities.getInt(serviceName);
+                String normalizedTarget = serviceName.trim().toLowerCase().replaceAll("\\s+", " ");
+                
+                // 1. Try Exact Normalized Match
+                Object capVal = null;
+                for (String key : capacities.keySet()) {
+                    if (key.trim().toLowerCase().replaceAll("\\s+", " ").equals(normalizedTarget)) {
+                        capVal = capacities.get(key);
+                        break;
+                    }
+                }
+                
+                // 2. Try Partial Inclusion Match (Fallback)
+                if (capVal == null) {
+                    for (String key : capacities.keySet()) {
+                        String normalizedKey = key.trim().toLowerCase().replaceAll("\\s+", " ");
+                        if (normalizedKey.contains(normalizedTarget) || normalizedTarget.contains(normalizedKey)) {
+                            capVal = capacities.get(key);
+                            break;
+                        }
+                    }
+                }
+
+                if (capVal != null) {
+                    capacity = Integer.parseInt(capVal.toString());
                 }
             } catch (Exception e) {}
         }
@@ -389,18 +411,36 @@ public class AppointmentService {
             throw new RuntimeException("All " + capacity + " systems for " + serviceName + " are currently occupied at this time. Please select a different window.");
         }
 
-        // Diagnostic Service Fee Calculation (NO DEFAULT PRICES)
+        // Diagnostic Service Fee Calculation (FUZZY RESOLUTION)
         Double fee = 0.0;
         try {
-            if (hospital != null && hospital.getServiceFees() != null && !hospital.getServiceFees().isEmpty()) {
-                org.json.JSONObject feesJson = new org.json.JSONObject(hospital.getServiceFees());
-                if (feesJson.has(serviceName)) {
-                    fee = feesJson.getDouble(serviceName);
+            String targetJson = (hospital != null) ? hospital.getServiceFees() : (doctor != null ? doctor.getServiceFees() : null);
+            if (targetJson != null && !targetJson.isEmpty()) {
+                org.json.JSONObject feesJson = new org.json.JSONObject(targetJson);
+                String normalizedTarget = serviceName.trim().toLowerCase().replaceAll("\\s+", " ");
+                
+                // 1. Try Exact Normalized Match
+                Object feeVal = null;
+                for (String key : feesJson.keySet()) {
+                    if (key.trim().toLowerCase().replaceAll("\\s+", " ").equals(normalizedTarget)) {
+                        feeVal = feesJson.get(key);
+                        break;
+                    }
                 }
-            } else if (doctor != null && doctor.getServiceFees() != null && !doctor.getServiceFees().isEmpty()) {
-                org.json.JSONObject feesJson = new org.json.JSONObject(doctor.getServiceFees());
-                if (feesJson.has(serviceName)) {
-                    fee = feesJson.getDouble(serviceName);
+                
+                // 2. Try Partial Inclusion Match (Fallback for e.g. "Ambulance Booking" vs "Ambulance Services")
+                if (feeVal == null) {
+                    for (String key : feesJson.keySet()) {
+                        String normalizedKey = key.trim().toLowerCase().replaceAll("\\s+", " ");
+                        if (normalizedKey.contains(normalizedTarget) || normalizedTarget.contains(normalizedKey)) {
+                            feeVal = feesJson.get(key);
+                            break;
+                        }
+                    }
+                }
+
+                if (feeVal != null) {
+                    fee = Double.valueOf(feeVal.toString());
                 }
             }
         } catch (Exception e) {
