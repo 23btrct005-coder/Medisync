@@ -89,6 +89,7 @@ public class SecurityConfig {
             "https://medisync-hos.ddns.net",
             "http://164.52.213.234:8080",
             "https://medisync-vert-five.vercel.app",
+            "https://medisync-9oqwf03pt-abis-projects-b13b1293.vercel.app",
             "https://*.vercel.app",
             "https://*.onrender.com",
             "http://localhost:5173",
