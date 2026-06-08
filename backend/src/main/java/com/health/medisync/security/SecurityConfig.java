@@ -46,7 +46,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .headers(headers -> headers
                 .frameOptions(frame -> frame.deny())
-                .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://medisync-hos.ddns.net http://164.52.213.234:8080 https://checkout.razorpay.com https://cdn.razorpay.com https://maps.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: https://maps.gstatic.com https://maps.googleapis.com; frame-src 'self' https://medisync-hos.ddns.net http://164.52.213.234:8080 https://api.razorpay.com https://*.google.com; connect-src 'self' https://medisync-hos.ddns.net http://164.52.213.234:8080 https://bwjmzottkkxrdztqqeju.supabase.co https://nominatim.openstreetmap.org ws: wss: https://lumberjack.razorpay.com https://api.razorpay.com https://maps.googleapis.com;"))
+                .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://medisync-hos.ddns.net http://164.52.213.234:8080 https://*.onrender.com https://*.vercel.app https://checkout.razorpay.com https://cdn.razorpay.com https://maps.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: https://maps.gstatic.com https://maps.googleapis.com; frame-src 'self' https://medisync-hos.ddns.net http://164.52.213.234:8080 https://*.onrender.com https://*.vercel.app https://api.razorpay.com https://*.google.com; connect-src 'self' https://medisync-hos.ddns.net http://164.52.213.234:8080 https://*.onrender.com https://*.vercel.app https://bwjmzottkkxrdztqqeju.supabase.co https://nominatim.openstreetmap.org ws: wss: https://lumberjack.razorpay.com https://api.razorpay.com https://maps.googleapis.com;"))
                 .permissionsPolicy(permissions -> permissions.policy("geolocation=(self), camera=(self), microphone=(self)"))
             )
             .authorizeHttpRequests(auth -> auth
@@ -85,10 +85,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(
+        configuration.setAllowedOriginPatterns(Arrays.asList(
             "https://medisync-hos.ddns.net",
             "http://164.52.213.234:8080",
             "https://medisync-vert-five.vercel.app",
+            "https://*.vercel.app",
+            "https://*.onrender.com",
             "http://localhost:5173",
             "http://localhost:3000"
         ));

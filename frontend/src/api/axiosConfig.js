@@ -1,7 +1,7 @@
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-export const rawBaseURL = 'https://medisync-hos.ddns.net';
+export const rawBaseURL = import.meta.env.VITE_API_URL || 'https://medisync-m6lv.onrender.com';
 const apiBaseURL = `${rawBaseURL}/api`;
 
 const api = axios.create({
