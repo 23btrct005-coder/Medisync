@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Activity, Eye, EyeOff } from 'lucide-react';
+import { Activity, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -9,6 +9,8 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [statusMsg, setStatusMsg] = useState('');
+  const statusTimerRef = useRef(null);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -16,6 +18,7 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    setStatusMsg('');
     
     if(!username || !password) {
         setError('Please enter both username and password.');
@@ -23,7 +26,15 @@ const Login = () => {
         return;
     }
 
+    // Show "waking up" message after 5s to avoid users thinking it failed
+    statusTimerRef.current = setTimeout(() => {
+      setStatusMsg('⏳ Server is waking up from sleep — please wait a moment...');
+    }, 5000);
+
     const result = await login(username, password);
+    clearTimeout(statusTimerRef.current);
+    setStatusMsg('');
+    
     if (result.success) {
       if (result.role === 'ROLE_HOSPITAL_ADMIN' || result.role === 'ROLE_DOCTOR') {
         navigate('/hospital-dashboard/staff');
@@ -61,6 +72,12 @@ const Login = () => {
           {error && (
             <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm font-medium border border-red-100 animate-in fade-in slide-in-from-top-2">
               {error}
+            </div>
+          )}
+          {statusMsg && (
+            <div className="bg-amber-50 text-amber-700 p-3 rounded-xl text-sm font-medium border border-amber-100 flex items-center gap-2">
+              <Loader2 size={14} className="animate-spin shrink-0" />
+              {statusMsg}
             </div>
           )}
           
@@ -113,8 +130,9 @@ const Login = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className={`w-full flex justify-center py-4 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-primary-600/20 active:scale-95 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+            className={`w-full flex justify-center items-center gap-2 py-4 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-primary-600/20 active:scale-95 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
           >
+            {isLoading && <Loader2 size={16} className="animate-spin" />}
             {isLoading ? 'Signing in...' : 'Sign in'}
           </button>
           

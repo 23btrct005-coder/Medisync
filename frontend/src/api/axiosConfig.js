@@ -6,6 +6,7 @@ const apiBaseURL = `${rawBaseURL}/api`;
 
 const api = axios.create({
   baseURL: apiBaseURL,
+  timeout: 75000, // 75s — handles Render free tier cold-start (can take up to 50s+)
 });
 
 // Set global axios default as well to catch direct axios calls

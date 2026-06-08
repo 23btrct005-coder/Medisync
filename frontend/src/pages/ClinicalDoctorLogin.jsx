@@ -6,8 +6,10 @@ import {
   Phone, GraduationCap, ShieldCheck, Building2, Clock, AlertCircle,
   ArrowLeft, BadgeCheck, HeartPulse, Bot, Activity, MapPin, ClipboardList,
   Mail as MailIcon, Briefcase, Stethoscope as StethoscopeIcon, User as UserIcon,
-  Navigation, Eye as EyeIcon, EyeOff as EyeOffIcon, ChevronRight, Lock as LockIcon
+  Navigation, Eye as EyeIcon, EyeOff as EyeOffIcon, ChevronRight, Lock as LockIcon,
+  Loader2
 } from 'lucide-react';
+
 import api from '../api/axiosConfig';
 import ProfilePhotoUpload from '../components/ProfilePhotoUpload';
 import DocumentUpload from '../components/DocumentUpload';
@@ -834,18 +836,26 @@ const DoctorLogin = () => {
   const [formData, setFormData] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [statusMsg, setStatusMsg] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const statusTimerRef = React.useRef(null);
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true); setError('');
+    setIsLoading(true); setError(''); setStatusMsg('');
+
+    statusTimerRef.current = setTimeout(() => {
+      setStatusMsg('⏳ Server is waking up from sleep — please wait a moment...');
+    }, 5000);
+
     try {
       const result = await login(formData.username, formData.password);
+      clearTimeout(statusTimerRef.current); setStatusMsg('');
       if (result.success) {
         if (result.role === 'ROLE_ADMIN') {
           navigate('/admin-dashboard');
@@ -865,6 +875,7 @@ const DoctorLogin = () => {
         }
       }
     } catch (err) {
+      clearTimeout(statusTimerRef.current); setStatusMsg('');
       setError(err.response?.data?.message || 'Login failed. Please try again.');
     } finally { setIsLoading(false); }
   };
@@ -889,6 +900,12 @@ const DoctorLogin = () => {
           {error && (
             <div className="bg-red-50 text-red-700 p-4 rounded-xl text-sm border border-red-200 flex items-start gap-2 animate-in fade-in">
               <AlertCircle size={18} className="shrink-0 mt-0.5" /> {error}
+            </div>
+          )}
+          {statusMsg && (
+            <div className="bg-amber-50 text-amber-700 p-3 rounded-xl text-sm font-medium border border-amber-100 flex items-center gap-2">
+              <Loader2 size={14} className="animate-spin shrink-0" />
+              {statusMsg}
             </div>
           )}
 
