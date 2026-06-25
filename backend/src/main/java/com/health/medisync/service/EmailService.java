@@ -1,42 +1,26 @@
 package com.health.medisync.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 
 @Service
 public class EmailService {
 
-    @Value("${brevo.api.key:}")
-    private String apiKey;
+    @Autowired
+    private JavaMailSender mailSender;
 
-    @Value("${brevo.sender.email:}")
+    @Value("${spring.mail.username:}")
     private String senderEmail;
 
-    private final String apiUrl = "https://api.brevo.com/v3/smtp/email";
-    private final RestTemplate restTemplate;
-
-    public EmailService() {
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(5000); // 5 seconds
-        factory.setReadTimeout(5000);    // 5 seconds
-        this.restTemplate = new RestTemplate(factory);
-    }
-
     public String testEmail(String to) {
-        return sendEmailInternal(to, "MediSync - Connection Test", "This is a diagnostic test of the Brevo integration.");
+        return sendEmailInternal(to, "MediSync - Connection Test", "This is a diagnostic test of the Gmail SMTP integration.");
     }
 
     @Async
@@ -62,59 +46,28 @@ public class EmailService {
 
     @Async
     protected String sendEmailInternal(String to, String subject, String body) {
-        if (apiKey == null || apiKey.trim().isEmpty()) {
-            String err = "ERROR: Brevo API Key is missing!";
+        if (senderEmail == null || senderEmail.trim().isEmpty()) {
+            String err = "ERROR: Sender Email is missing!";
             System.err.println(err);
             System.out.println("SECURITY ALERT: Email relay skipped due to missing credentials. Check logs for payload.");
             return err;
         }
 
-        // Sanitize credentials (strip potential quotes from .env parsing)
-        String cleanToken = apiKey.trim().replace("\"", "").replace("'", "");
-        String cleanSender = (senderEmail != null) ? senderEmail.trim().replace("\"", "").replace("'", "") : "";
-        
-        String tokenHead = (cleanToken.length() >= 4) ? cleanToken.substring(0, 4) : "[SHORT]";
-        String tokenTail = (cleanToken.length() >= 4) ? cleanToken.substring(cleanToken.length() - 4) : "";
-        
-        System.out.println("DIAGNOSTIC: Attempting Brevo send to " + to);
-        System.out.println("DIAGNOSTIC: Using API Key: " + tokenHead + "..." + tokenTail);
-        System.out.println("DIAGNOSTIC: Sender Email: " + cleanSender);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(new MediaType("application", "json", java.nio.charset.StandardCharsets.UTF_8));
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        headers.set("api-key", cleanToken);
-        headers.set("User-Agent", "MediSync-Backend/1.0");
-
-        Map<String, Object> payload = new HashMap<>();
-        Map<String, String> sender = new HashMap<>();
-        sender.put("name", "MediSync Portal");
-        sender.put("email", cleanSender);
-        payload.put("sender", sender);
-
-        Map<String, String> recipient = new HashMap<>();
-        recipient.put("email", to);
-        payload.put("to", Collections.singletonList(recipient));
-
-        payload.put("subject", subject);
-        payload.put("htmlContent", "<div style='font-family: sans-serif;'>" + body.replace("\n", "<br>") + "</div>");
-        payload.put("textContent", body);
-
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
-
         try {
-            ResponseEntity<String> response = restTemplate.postForEntity(apiUrl, request, String.class);
-            return "SUCCESS: " + response.getBody();
-        } catch (HttpStatusCodeException e) {
-            String errorBody = e.getResponseBodyAsString();
-            String fullErr = "ERROR: Brevo API " + e.getStatusCode() + " - " + (errorBody.isEmpty() ? "[Empty Body]" : errorBody);
-            if (senderEmail == null || senderEmail.trim().isEmpty()) {
-                fullErr = "ERROR: CONFIG_MISSING - Brevo Sender Email is missing!";
-            }
-            System.err.println(fullErr);
-            return fullErr;
-        } catch (Exception e) {
-            String fullErr = "ERROR: Brevo Connection Failed - " + e.getMessage();
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            
+            helper.setFrom(senderEmail, "MediSync Portal");
+            helper.setTo(to);
+            helper.setSubject(subject);
+            
+            String htmlContent = "<div style='font-family: sans-serif;'>" + body.replace("\n", "<br>") + "</div>";
+            helper.setText(body, true); 
+            
+            mailSender.send(message);
+            return "SUCCESS: Email sent to " + to;
+        } catch (MessagingException | java.io.UnsupportedEncodingException e) {
+            String fullErr = "ERROR: Failed to send email - " + e.getMessage();
             System.err.println(fullErr);
             return fullErr;
         }
