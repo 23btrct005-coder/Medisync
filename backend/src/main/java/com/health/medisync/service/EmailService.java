@@ -17,10 +17,16 @@ public class EmailService {
     private JavaMailSender mailSender;
 
     @Value("${spring.mail.username:}")
-    private String senderEmail;
+    private String smtpSenderEmail;
+
+    @Value("${brevo.api.key:}")
+    private String brevoApiKey;
+
+    @Value("${brevo.sender.email:}")
+    private String brevoSenderEmail;
 
     public String testEmail(String to) {
-        return sendEmailInternal(to, "MediSync - Connection Test", "This is a diagnostic test of the Gmail SMTP integration.");
+        return sendEmailInternal(to, "MediSync - Connection Test", "This is a diagnostic test of the email integration.");
     }
 
     @Async
@@ -46,21 +52,78 @@ public class EmailService {
     }
 
     private String sendEmailInternal(String to, String subject, String htmlBody) {
-        if (senderEmail == null || senderEmail.trim().isEmpty()) {
-            String err = "ERROR: GMAIL_USERNAME is missing! Cannot send email.";
+        if (brevoApiKey != null && !brevoApiKey.trim().isEmpty()) {
+            return sendEmailViaBrevo(to, subject, htmlBody);
+        } else if (smtpSenderEmail != null && !smtpSenderEmail.trim().isEmpty()) {
+            return sendEmailViaSmtp(to, subject, htmlBody);
+        } else {
+            String err = "ERROR: Neither Brevo (BREVO_API_KEY) nor Gmail SMTP (GMAIL_USERNAME) is configured! Cannot send email.";
             System.err.println(err);
             return err;
         }
+    }
 
-        System.out.println("[EMAIL] Attempting to send email to: " + to);
-        System.out.println("[EMAIL] From: " + senderEmail);
-        System.out.println("[EMAIL] Subject: " + subject);
+    private String sendEmailViaBrevo(String to, String subject, String htmlBody) {
+        String cleanToken = brevoApiKey.trim().replace("\"", "").replace("'", "");
+        String cleanSender = (brevoSenderEmail != null) ? brevoSenderEmail.trim().replace("\"", "").replace("'", "") : "";
+        if (cleanSender.isEmpty()) {
+            cleanSender = "no-reply@medisync.hos";
+        }
+
+        System.out.println("[BREVO EMAIL] Attempting to send email to: " + to);
+        System.out.println("[BREVO EMAIL] From: " + cleanSender);
+        System.out.println("[BREVO EMAIL] Subject: " + subject);
+
+        try {
+            java.net.http.HttpClient client = java.net.http.HttpClient.newBuilder()
+                    .connectTimeout(java.time.Duration.ofSeconds(5))
+                    .build();
+
+            String jsonPayload = "{"
+                    + "\"sender\":{\"name\":\"MediSync Portal\",\"email\":\"" + cleanSender + "\"},"
+                    + "\"to\":[{\"email\":\"" + to + "\"}],"
+                    + "\"subject\":\"" + escapeJson(subject) + "\","
+                    + "\"htmlContent\":\"" + escapeJson(htmlBody) + "\""
+                    + "}";
+
+            java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                    .uri(java.net.URI.create("https://api.brevo.com/v3/smtp/email"))
+                    .header("Content-Type", "application/json")
+                    .header("api-key", cleanToken)
+                    .header("Accept", "application/json")
+                    .header("User-Agent", "MediSync-Backend/1.0")
+                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(jsonPayload, java.nio.charset.StandardCharsets.UTF_8))
+                    .timeout(java.time.Duration.ofSeconds(5))
+                    .build();
+
+            java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+            
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                System.out.println("[BREVO EMAIL] SUCCESS: Email delivered to " + to);
+                return "SUCCESS: Email sent to " + to + " via Brevo HTTP API";
+            } else {
+                String fullErr = "ERROR: Brevo API returned status " + response.statusCode() + " - " + response.body();
+                System.err.println(fullErr);
+                return fullErr;
+            }
+        } catch (Exception e) {
+            String fullErr = "ERROR: Brevo HTTP call failed - " + e.getMessage();
+            System.err.println(fullErr);
+            e.printStackTrace();
+            return fullErr;
+        }
+    }
+
+    private String sendEmailViaSmtp(String to, String subject, String htmlBody) {
+        System.out.println("[SMTP EMAIL] Attempting to send email to: " + to);
+        System.out.println("[SMTP EMAIL] From: " + smtpSenderEmail);
+        System.out.println("[SMTP EMAIL] Subject: " + subject);
 
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             
-            helper.setFrom(senderEmail, "MediSync Portal");
+            helper.setFrom(smtpSenderEmail, "MediSync Portal");
             helper.setTo(to);
             helper.setSubject(subject);
             
@@ -68,8 +131,8 @@ public class EmailService {
             helper.setText(fullHtml, true);
             
             mailSender.send(message);
-            System.out.println("[EMAIL] SUCCESS: Email delivered to " + to);
-            return "SUCCESS: Email sent to " + to;
+            System.out.println("[SMTP EMAIL] SUCCESS: Email delivered to " + to);
+            return "SUCCESS: Email sent to " + to + " via SMTP";
         } catch (MessagingException e) {
             String fullErr = "ERROR: Gmail SMTP failed - " + e.getMessage();
             System.err.println(fullErr);
@@ -80,11 +143,40 @@ public class EmailService {
             System.err.println(fullErr);
             return fullErr;
         } catch (Exception e) {
-            String fullErr = "ERROR: Unexpected email failure - " + e.getClass().getName() + ": " + e.getMessage();
+            String fullErr = "ERROR: Unexpected SMTP failure - " + e.getClass().getName() + ": " + e.getMessage();
             System.err.println(fullErr);
             e.printStackTrace();
             return fullErr;
         }
+    }
+
+    private String escapeJson(String input) {
+        if (input == null) return "";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < input.length(); i++) {
+            char ch = input.charAt(i);
+            switch (ch) {
+                case '\\': sb.append("\\\\"); break;
+                case '"': sb.append("\\\""); break;
+                case '\b': sb.append("\\b"); break;
+                case '\f': sb.append("\\f"); break;
+                case '\n': sb.append("\\n"); break;
+                case '\r': sb.append("\\r"); break;
+                case '\t': sb.append("\\t"); break;
+                default:
+                    if (ch >= 0 && ch <= 31) {
+                        String ss = Integer.toHexString(ch);
+                        sb.append("\\u");
+                        for (int k = 0; k < 4 - ss.length(); k++) {
+                            sb.append('0');
+                        }
+                        sb.append(ss.toLowerCase());
+                    } else {
+                        sb.append(ch);
+                    }
+            }
+        }
+        return sb.toString();
     }
 
     public void sendPasswordResetEmail(String to, String token) {
