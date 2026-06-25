@@ -29,29 +29,32 @@ public class EmailService {
         System.out.println("DEVELOPMENT OTP FALLBACK: [" + otp + "] for " + to);
         System.out.println("========================================");
         
-        String body = "Your MediSync Verification Code is: " + otp + "\n\nThis code will expire in 5 minutes.";
+        String body = "Your MediSync Verification Code is: <strong>" + otp + "</strong><br><br>This code will expire in 5 minutes.";
         String result = sendEmailInternal(to, "MediSync - Email Verification", body);
         
         if (result.startsWith("ERROR") || result.startsWith("FAIL")) {
-            System.err.println("CRITICAL: Failed to send OTP email to " + to + ". Check credentials and quota.");
+            System.err.println("CRITICAL: Failed to send OTP email to " + to + ". Result: " + result);
         } else {
-            System.out.println("SUCCESS: OTP email queued for " + to);
+            System.out.println("SUCCESS: OTP email sent to " + to);
         }
     }
 
     @Async
     public void sendEmail(String to, String subject, String body) {
-        sendEmailInternal(to, subject, body);
+        String htmlBody = body.replace("\n", "<br>");
+        sendEmailInternal(to, subject, htmlBody);
     }
 
-    @Async
-    protected String sendEmailInternal(String to, String subject, String body) {
+    private String sendEmailInternal(String to, String subject, String htmlBody) {
         if (senderEmail == null || senderEmail.trim().isEmpty()) {
-            String err = "ERROR: Sender Email is missing!";
+            String err = "ERROR: GMAIL_USERNAME is missing! Cannot send email.";
             System.err.println(err);
-            System.out.println("SECURITY ALERT: Email relay skipped due to missing credentials. Check logs for payload.");
             return err;
         }
+
+        System.out.println("[EMAIL] Attempting to send email to: " + to);
+        System.out.println("[EMAIL] From: " + senderEmail);
+        System.out.println("[EMAIL] Subject: " + subject);
 
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -61,14 +64,25 @@ public class EmailService {
             helper.setTo(to);
             helper.setSubject(subject);
             
-            String htmlContent = "<div style='font-family: sans-serif;'>" + body.replace("\n", "<br>") + "</div>";
-            helper.setText(body, true); 
+            String fullHtml = "<div style='font-family: Arial, sans-serif; padding: 20px;'>" + htmlBody + "</div>";
+            helper.setText(fullHtml, true);
             
             mailSender.send(message);
+            System.out.println("[EMAIL] SUCCESS: Email delivered to " + to);
             return "SUCCESS: Email sent to " + to;
-        } catch (MessagingException | java.io.UnsupportedEncodingException e) {
-            String fullErr = "ERROR: Failed to send email - " + e.getMessage();
+        } catch (MessagingException e) {
+            String fullErr = "ERROR: Gmail SMTP failed - " + e.getMessage();
             System.err.println(fullErr);
+            e.printStackTrace();
+            return fullErr;
+        } catch (java.io.UnsupportedEncodingException e) {
+            String fullErr = "ERROR: Encoding issue - " + e.getMessage();
+            System.err.println(fullErr);
+            return fullErr;
+        } catch (Exception e) {
+            String fullErr = "ERROR: Unexpected email failure - " + e.getClass().getName() + ": " + e.getMessage();
+            System.err.println(fullErr);
+            e.printStackTrace();
             return fullErr;
         }
     }
