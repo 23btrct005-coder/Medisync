@@ -10,6 +10,8 @@ services:
     envVars:
       - key: PORT
         value: 8080
+      - key: SPRING_DATASOURCE_URL
+        sync: false
       - key: SPRING_DATASOURCE_USERNAME
         sync: false
       - key: SPRING_DATASOURCE_PASSWORD
@@ -24,3 +26,13 @@ services:
         value: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
       - key: GROQ_API_KEY
         value: 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
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: SUPABASE_URL
+        value: https://ggcecwmxxuhadtihmjxf.supabase.co
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false

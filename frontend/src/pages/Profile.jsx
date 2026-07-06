@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import QRCode from 'react-qr-code';
@@ -32,12 +32,18 @@ const Section = ({ title, icon: Icon, children }) => (
 );
 
 const Profile = () => {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [showDeleteModal, setShowDeleteModal] = React.useState(false);
   const [deleteStep, setDeleteStep] = React.useState('request'); // request, confirm
   const [otp, setOtp] = React.useState('');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  // Refresh profile on mount so photo and data are always up-to-date
+  useEffect(() => {
+    refreshUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleRequestDeletion = async () => {
     setIsSubmitting(true);
@@ -83,7 +89,9 @@ const Profile = () => {
 
   const initials = user.name?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'P';
   const emergencyUrl = `${window.location.origin}/emergency/${user.id}`;
-  const photoUrl = user.profilePictureUrl || `${api.defaults.baseURL}/auth/patient/photo/${user.id}?t=${Date.now()}`;
+  const photoUrl = user.profilePictureUrl 
+    ? `${user.profilePictureUrl}?t=${Date.now()}` 
+    : (user.id ? `${api.defaults.baseURL}/auth/patient/photo/${user.id}?t=${Date.now()}` : null);
 
   const handleDownloadQR = () => {
     const svg = document.getElementById('patient-qr-svg');

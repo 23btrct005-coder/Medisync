@@ -976,10 +976,9 @@ public class AuthController {
 
     @GetMapping(value = "/patient/photo/{id}")
     public ResponseEntity<?> getPatientPhoto(@PathVariable Long id) {
-        // Smart Resolver: Try findById first, fall back to findByUserId
+        // Resolve patient: try by patient table PK first, then by their linked user_id
         com.health.medisync.model.Patient patient = patientRepository.findById(id)
-            .filter(p -> p.getProfilePictureUrl() != null && !p.getProfilePictureUrl().isEmpty())
-            .orElseGet(() -> patientRepository.findByUserId(id).orElseGet(() -> patientRepository.findById(id).orElse(null)));
+            .orElseGet(() -> patientRepository.findByUserId(id).orElse(null));
 
         if (patient != null && patient.getProfilePictureUrl() != null && !patient.getProfilePictureUrl().isEmpty()) {
             return ResponseEntity.status(org.springframework.http.HttpStatus.FOUND)
@@ -987,7 +986,7 @@ public class AuthController {
                                  .build();
         }
  
-        // Fallback to DiceBear if missing
+        // Fallback to DiceBear avatar if no photo uploaded
         String diceBearUrl = "https://api.dicebear.com/7.x/avataaars/svg?seed=" + 
                            (patient != null && patient.getUser() != null ? patient.getUser().getUsername() : id.toString());
         return ResponseEntity.status(org.springframework.http.HttpStatus.FOUND)

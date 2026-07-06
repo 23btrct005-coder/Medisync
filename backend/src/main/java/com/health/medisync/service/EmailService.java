@@ -19,11 +19,11 @@ public class EmailService {
     @Value("${spring.mail.username:}")
     private String smtpSenderEmail;
 
-    @Value("${brevo.api.key:}")
-    private String brevoApiKey;
+    @Value("${resend.api.key:}")
+    private String resendApiKey;
 
-    @Value("${brevo.sender.email:}")
-    private String brevoSenderEmail;
+    @Value("${resend.sender.email:}")
+    private String resendSenderEmail;
 
     public String testEmail(String to) {
         return sendEmailInternal(to, "MediSync - Connection Test", "This is a diagnostic test of the email integration.");
@@ -52,27 +52,27 @@ public class EmailService {
     }
 
     private String sendEmailInternal(String to, String subject, String htmlBody) {
-        if (brevoApiKey != null && !brevoApiKey.trim().isEmpty()) {
-            return sendEmailViaBrevo(to, subject, htmlBody);
+        if (resendApiKey != null && !resendApiKey.trim().isEmpty()) {
+            return sendEmailViaResend(to, subject, htmlBody);
         } else if (smtpSenderEmail != null && !smtpSenderEmail.trim().isEmpty()) {
             return sendEmailViaSmtp(to, subject, htmlBody);
         } else {
-            String err = "ERROR: Neither Brevo (BREVO_API_KEY) nor Gmail SMTP (GMAIL_USERNAME) is configured! Cannot send email.";
+            String err = "ERROR: Neither Resend (RESEND_API_KEY) nor Gmail SMTP (GMAIL_USERNAME) is configured! Cannot send email.";
             System.err.println(err);
             return err;
         }
     }
 
-    private String sendEmailViaBrevo(String to, String subject, String htmlBody) {
-        String cleanToken = brevoApiKey.trim().replace("\"", "").replace("'", "");
-        String cleanSender = (brevoSenderEmail != null) ? brevoSenderEmail.trim().replace("\"", "").replace("'", "") : "";
+    private String sendEmailViaResend(String to, String subject, String htmlBody) {
+        String cleanToken = resendApiKey.trim().replace("\"", "").replace("'", "");
+        String cleanSender = (resendSenderEmail != null) ? resendSenderEmail.trim().replace("\"", "").replace("'", "") : "";
         if (cleanSender.isEmpty()) {
-            cleanSender = "no-reply@medisync.hos";
+            cleanSender = "onboarding@resend.dev";
         }
 
-        System.out.println("[BREVO EMAIL] Attempting to send email to: " + to);
-        System.out.println("[BREVO EMAIL] From: " + cleanSender);
-        System.out.println("[BREVO EMAIL] Subject: " + subject);
+        System.out.println("[RESEND EMAIL] Attempting to send email to: " + to);
+        System.out.println("[RESEND EMAIL] From: " + cleanSender);
+        System.out.println("[RESEND EMAIL] Subject: " + subject);
 
         try {
             java.net.http.HttpClient client = java.net.http.HttpClient.newBuilder()
@@ -80,16 +80,16 @@ public class EmailService {
                     .build();
 
             String jsonPayload = "{"
-                    + "\"sender\":{\"name\":\"MediSync Portal\",\"email\":\"" + cleanSender + "\"},"
-                    + "\"to\":[{\"email\":\"" + to + "\"}],"
+                    + "\"from\":\"" + cleanSender + "\","
+                    + "\"to\":[\"" + to + "\"],"
                     + "\"subject\":\"" + escapeJson(subject) + "\","
-                    + "\"htmlContent\":\"" + escapeJson(htmlBody) + "\""
+                    + "\"html\":\"" + escapeJson(htmlBody) + "\""
                     + "}";
 
             java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
-                    .uri(java.net.URI.create("https://api.brevo.com/v3/smtp/email"))
+                    .uri(java.net.URI.create("https://api.resend.com/emails"))
                     .header("Content-Type", "application/json")
-                    .header("api-key", cleanToken)
+                    .header("Authorization", "Bearer " + cleanToken)
                     .header("Accept", "application/json")
                     .header("User-Agent", "MediSync-Backend/1.0")
                     .POST(java.net.http.HttpRequest.BodyPublishers.ofString(jsonPayload, java.nio.charset.StandardCharsets.UTF_8))
@@ -99,15 +99,15 @@ public class EmailService {
             java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
             
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                System.out.println("[BREVO EMAIL] SUCCESS: Email delivered to " + to);
-                return "SUCCESS: Email sent to " + to + " via Brevo HTTP API";
+                System.out.println("[RESEND EMAIL] SUCCESS: Email delivered to " + to);
+                return "SUCCESS: Email sent to " + to + " via Resend HTTP API";
             } else {
-                String fullErr = "ERROR: Brevo API returned status " + response.statusCode() + " - " + response.body();
+                String fullErr = "ERROR: Resend API returned status " + response.statusCode() + " - " + response.body();
                 System.err.println(fullErr);
                 return fullErr;
             }
         } catch (Exception e) {
-            String fullErr = "ERROR: Brevo HTTP call failed - " + e.getMessage();
+            String fullErr = "ERROR: Resend HTTP call failed - " + e.getMessage();
             System.err.println(fullErr);
             e.printStackTrace();
             return fullErr;

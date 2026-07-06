@@ -110,6 +110,7 @@ public class PatientService {
         if (profileData.containsKey("alternatePhone")) patient.setAlternatePhone((String) profileData.get("alternatePhone"));
         if (profileData.containsKey("street")) patient.setStreet((String) profileData.get("street"));
         if (profileData.containsKey("city")) patient.setCity((String) profileData.get("city"));
+        if (profileData.containsKey("district")) patient.setDistrict((String) profileData.get("district"));
         if (profileData.containsKey("state")) patient.setState((String) profileData.get("state"));
         if (profileData.containsKey("pinCode")) patient.setPinCode((String) profileData.get("pinCode"));
         if (profileData.containsKey("bloodGroup")) patient.setBloodGroup((String) profileData.get("bloodGroup"));

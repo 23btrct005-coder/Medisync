@@ -33,6 +33,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Refreshes the user profile from the server and updates context + localStorage.
+  // Called after photo upload or profile edits to ensure UI reflects latest data.
+  const refreshUser = async () => {
+    const storedUser = localStorage.getItem('user');
+    if (!storedUser) return;
+    try {
+      const parsed = JSON.parse(storedUser);
+      if (parsed?.role) {
+        await fetchUserProfile(parsed.role);
+      }
+    } catch (e) {
+      console.error('refreshUser failed:', e);
+    }
+  };
+
   const login = async (username, password) => {
     try {
       const response = await api.post('/auth/login', { username, password });
@@ -110,6 +125,7 @@ export const AuthProvider = ({ children }) => {
       login, 
       logout, 
       fetchUserProfile,
+      refreshUser,
       loading, 
       authenticated: !!user 
     }}>
