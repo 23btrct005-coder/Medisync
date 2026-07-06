@@ -97,6 +97,11 @@ public class AuthController {
         return ResponseEntity.ok("OK - Auth Controller is reachable");
     }
 
+    @GetMapping("/last-error")
+    public ResponseEntity<String> getLastError() {
+        return ResponseEntity.ok(com.health.medisync.controller.PinpointDiagnosticController.getLastError());
+    }
+
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody AuthRequest loginRequest) {
         try {
