@@ -46,8 +46,22 @@ public class EmailService {
         System.out.println("DEVELOPMENT OTP FALLBACK: [" + otp + "] for " + to);
         System.out.println("========================================");
         
-        String body = "Your MediSync Verification Code is: " + otp + "\n\nThis code will expire in 5 minutes.";
-        String result = sendEmailInternal(to, "MediSync - Email Verification", body);
+        String htmlBody = "<div style=\"max-width: 600px; margin: 0 auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9fafb; padding: 40px 20px; border-radius: 8px;\">" +
+                          "<div style=\"background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); border-top: 4px solid #0ea5e9;\">" +
+                          "<div style=\"text-align: center; margin-bottom: 25px;\">" +
+                          "<h1 style=\"color: #0f172a; margin: 0; font-size: 24px;\">Medi<span style=\"color: #0ea5e9;\">Sync</span></h1>" +
+                          "</div>" +
+                          "<p style=\"color: #334155; font-size: 16px; line-height: 1.5; margin-bottom: 20px;\">Hello,</p>" +
+                          "<p style=\"color: #334155; font-size: 16px; line-height: 1.5; margin-bottom: 25px;\">You recently requested to sign in to your MediSync portal. Please use the following verification code to complete your secure login:</p>" +
+                          "<div style=\"background-color: #f1f5f9; border-radius: 6px; padding: 15px; text-align: center; margin-bottom: 25px;\">" +
+                          "<span style=\"font-size: 32px; font-weight: bold; color: #0f172a; letter-spacing: 4px;\">" + otp + "</span>" +
+                          "</div>" +
+                          "<p style=\"color: #64748b; font-size: 14px; line-height: 1.5; margin-bottom: 10px;\">This code is valid for <strong>5 minutes</strong>. If you did not request this code, please ignore this email.</p>" +
+                          "<hr style=\"border: none; border-top: 1px solid #e2e8f0; margin: 30px 0 20px;\">" +
+                          "<p style=\"color: #94a3b8; font-size: 12px; text-align: center; margin: 0;\">&copy; " + java.time.Year.now().getValue() + " MediSync Secure Healthcare. All rights reserved.</p>" +
+                          "</div></div>";
+                          
+        String result = sendEmailInternal(to, "MediSync - Secure Verification Code", htmlBody);
         
         if (result.startsWith("ERROR") || result.startsWith("FAIL")) {
             System.err.println("CRITICAL: Failed to send OTP email to " + to + ". Check credentials and quota.");
@@ -82,7 +96,7 @@ public class EmailService {
         System.out.println("DIAGNOSTIC: Sender Email: " + cleanSender);
 
         String escapedSubject = subject.replace("\"", "\\\"");
-        String escapedBody = "<div style='font-family: sans-serif;'>" + body.replace("\n", "<br>").replace("\"", "\\\"") + "</div>";
+        String escapedBody = body.replace("\"", "\\\"");
 
         String jsonPayload = "{"
                 + "\"sender\":{\"name\":\"MediSync Portal\",\"email\":\"" + cleanSender + "\"},"
