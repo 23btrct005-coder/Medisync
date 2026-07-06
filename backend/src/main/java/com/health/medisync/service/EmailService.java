@@ -7,11 +7,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.URI;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,13 +28,12 @@ public class EmailService {
     private String senderEmail;
 
     private final String apiUrl = "https://api.brevo.com/v3/smtp/email";
-    private final RestTemplate restTemplate;
+    private final HttpClient httpClient;
 
     public EmailService() {
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(5000); // 5 seconds
-        factory.setReadTimeout(5000);    // 5 seconds
-        this.restTemplate = new RestTemplate(factory);
+        this.httpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(5))
+                .build();
     }
 
     public String testEmail(String to) {
@@ -80,39 +81,40 @@ public class EmailService {
         System.out.println("DIAGNOSTIC: Using API Key: " + tokenHead + "..." + tokenTail);
         System.out.println("DIAGNOSTIC: Sender Email: " + cleanSender);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(new MediaType("application", "json", java.nio.charset.StandardCharsets.UTF_8));
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        headers.set("api-key", cleanToken);
-        headers.set("User-Agent", "MediSync-Backend/1.0");
+        String escapedSubject = subject.replace("\"", "\\\"");
+        String escapedBody = "<div style='font-family: sans-serif;'>" + body.replace("\n", "<br>").replace("\"", "\\\"") + "</div>";
 
-        Map<String, Object> payload = new HashMap<>();
-        Map<String, String> sender = new HashMap<>();
-        sender.put("name", "MediSync Portal");
-        sender.put("email", cleanSender);
-        payload.put("sender", sender);
-
-        Map<String, String> recipient = new HashMap<>();
-        recipient.put("email", to);
-        payload.put("to", Collections.singletonList(recipient));
-
-        payload.put("subject", subject);
-        payload.put("htmlContent", "<div style='font-family: sans-serif;'>" + body.replace("\n", "<br>") + "</div>");
-        payload.put("textContent", body);
-
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
+        String jsonPayload = "{"
+                + "\"sender\":{\"name\":\"MediSync Portal\",\"email\":\"" + cleanSender + "\"},"
+                + "\"to\":[{\"email\":\"" + to + "\"}],"
+                + "\"subject\":\"" + escapedSubject + "\","
+                + "\"htmlContent\":\"" + escapedBody + "\""
+                + "}";
 
         try {
-            ResponseEntity<String> response = restTemplate.postForEntity(apiUrl, request, String.class);
-            return "SUCCESS: " + response.getBody();
-        } catch (HttpStatusCodeException e) {
-            String errorBody = e.getResponseBodyAsString();
-            String fullErr = "ERROR: Brevo API " + e.getStatusCode() + " - " + (errorBody.isEmpty() ? "[Empty Body]" : errorBody);
-            if (senderEmail == null || senderEmail.trim().isEmpty()) {
-                fullErr = "ERROR: CONFIG_MISSING - Brevo Sender Email is missing!";
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(apiUrl))
+                    .header("accept", "application/json")
+                    .header("api-key", cleanToken)
+                    .header("content-type", "application/json")
+                    .header("User-Agent", "MediSync-Backend/1.0")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonPayload, java.nio.charset.StandardCharsets.UTF_8))
+                    .timeout(Duration.ofSeconds(5))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                return "SUCCESS: " + response.body();
+            } else {
+                String errorBody = response.body();
+                String fullErr = "ERROR: Brevo API " + response.statusCode() + " - " + (errorBody == null || errorBody.isEmpty() ? "[Empty Body]" : errorBody);
+                if (cleanSender.isEmpty()) {
+                    fullErr += " (Warning: Sender Email is missing!)";
+                }
+                System.err.println(fullErr);
+                return fullErr;
             }
-            System.err.println(fullErr);
-            return fullErr;
         } catch (Exception e) {
             String fullErr = "ERROR: Brevo Connection Failed - " + e.getMessage();
             System.err.println(fullErr);
