@@ -24,7 +24,7 @@ public class PinpointDiagnosticController {
     }
 
     @GetMapping("/blackbox")
-    public String getLastError() {
+    public static String getLastError() {
         return lastError;
     }
 
