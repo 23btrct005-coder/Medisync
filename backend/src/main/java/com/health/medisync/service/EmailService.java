@@ -46,20 +46,30 @@ public class EmailService {
         System.out.println("DEVELOPMENT OTP FALLBACK: [" + otp + "] for " + to);
         System.out.println("========================================");
         
-        String htmlBody = "<div style=\"max-width: 600px; margin: 0 auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9fafb; padding: 40px 20px; border-radius: 8px;\">" +
-                          "<div style=\"background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); border-top: 4px solid #0ea5e9;\">" +
-                          "<div style=\"text-align: center; margin-bottom: 25px;\">" +
-                          "<h1 style=\"color: #0f172a; margin: 0; font-size: 24px;\">Medi<span style=\"color: #0ea5e9;\">Sync</span></h1>" +
-                          "</div>" +
-                          "<p style=\"color: #334155; font-size: 16px; line-height: 1.5; margin-bottom: 20px;\">Hello,</p>" +
-                          "<p style=\"color: #334155; font-size: 16px; line-height: 1.5; margin-bottom: 25px;\">You recently requested to sign in to your MediSync portal. Please use the following verification code to complete your secure login:</p>" +
-                          "<div style=\"background-color: #f1f5f9; border-radius: 6px; padding: 15px; text-align: center; margin-bottom: 25px;\">" +
-                          "<span style=\"font-size: 32px; font-weight: bold; color: #0f172a; letter-spacing: 4px;\">" + otp + "</span>" +
-                          "</div>" +
-                          "<p style=\"color: #64748b; font-size: 14px; line-height: 1.5; margin-bottom: 10px;\">This code is valid for <strong>5 minutes</strong>. If you did not request this code, please ignore this email.</p>" +
-                          "<hr style=\"border: none; border-top: 1px solid #e2e8f0; margin: 30px 0 20px;\">" +
-                          "<p style=\"color: #94a3b8; font-size: 12px; text-align: center; margin: 0;\">&copy; " + java.time.Year.now().getValue() + " MediSync Secure Healthcare. All rights reserved.</p>" +
-                          "</div></div>";
+        String htmlBody = """
+            <div style="font-family: 'Google Sans', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; color: #202124;">
+                <div style="padding-bottom: 24px; border-bottom: 1px solid #dadce0; margin-bottom: 32px;">
+                    <h1 style="margin: 0; font-size: 28px; color: #1a73e8; letter-spacing: -0.5px;">MediSync</h1>
+                </div>
+                <h2 style="font-weight: 400; font-size: 20px; margin-bottom: 24px; color: #202124;">Verify your identity</h2>
+                <p style="font-size: 16px; line-height: 1.5; color: #3c4043; margin-bottom: 32px;">
+                    You've requested to sign in to your MediSync account. Use the verification code below to complete the process.
+                </p>
+                <div style="background-color: #f8f9fa; border: 1px solid #dadce0; border-radius: 8px; padding: 24px; text-align: center; margin-bottom: 32px;">
+                    <span style="font-size: 40px; font-weight: 500; color: #1a73e8; letter-spacing: 8px; display: block;">%s</span>
+                </div>
+                <p style="font-size: 14px; color: #5f6368; line-height: 1.5; margin-bottom: 40px;">
+                    This code will expire in 5 minutes.<br>
+                    If you didn't request this code, you can safely ignore this email.
+                </p>
+                <div style="border-top: 1px solid #dadce0; padding-top: 24px; text-align: left;">
+                    <p style="font-size: 12px; color: #70757a; line-height: 1.5; margin: 0;">
+                        This email was sent securely by MediSync.<br>
+                        &copy; %d MediSync Healthcare. All rights reserved.
+                    </p>
+                </div>
+            </div>
+            """.formatted(otp, java.time.Year.now().getValue());
                           
         String result = sendEmailInternal(to, "MediSync - Secure Verification Code", htmlBody);
         
