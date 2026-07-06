@@ -106,7 +106,9 @@ public class EmailService {
         System.out.println("DIAGNOSTIC: Sender Email: " + cleanSender);
 
         String escapedSubject = subject.replace("\"", "\\\"");
-        String escapedBody = body.replace("\"", "\\\"");
+        String escapedBody = body.replace("\"", "\\\"")
+                                 .replace("\n", "\\n")
+                                 .replace("\r", "\\r");
 
         String jsonPayload = "{"
                 + "\"sender\":{\"name\":\"MediSync Portal\",\"email\":\"" + cleanSender + "\"},"
