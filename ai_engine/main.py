@@ -8,7 +8,9 @@ from monai.networks.nets import DenseNet121
 from PIL import Image
 import io
 import torchvision.transforms as transforms
-
+import joblib
+from pydantic import BaseModel
+import os
 app = FastAPI(title="MediSync MONAI AI Engine")
 
 # Architecture: DenseNet-121 (Standard for X-ray classification)
@@ -28,6 +30,47 @@ preprocess = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485], std=[0.229]),
 ])
+
+# Load Chatbot ML Model
+CHATBOT_MODEL_PATH = "chatbot_model.pkl"
+chatbot_model = None
+try:
+    if os.path.exists(CHATBOT_MODEL_PATH):
+        chatbot_model = joblib.load(CHATBOT_MODEL_PATH)
+        print("Successfully loaded MediSync Chatbot ML model.")
+    else:
+        print("Warning: chatbot_model.pkl not found. Run train_chatbot.py first.")
+except Exception as e:
+    print(f"Error loading chatbot model: {e}")
+
+class ChatRequest(BaseModel):
+    query: str
+
+@app.post("/chat")
+async def analyze_chat(request: ChatRequest):
+    if not chatbot_model:
+        return {
+            "diagnosis": "ML model not trained yet. Please run train_chatbot.py",
+            "confidence": 0.0,
+            "status": "error"
+        }
+    
+    try:
+        query = request.query
+        # Predict disease using Scikit-Learn pipeline
+        prediction = chatbot_model.predict([query])[0]
+        # Get probability/confidence
+        probabilities = chatbot_model.predict_proba([query])[0]
+        confidence = float(max(probabilities))
+        
+        return {
+            "diagnosis": f"Predicted Condition: {prediction}",
+            "confidence": confidence,
+            "status": "success",
+            "engine": "Scikit-Learn (TF-IDF + Random Forest)"
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 @app.post("/analyze-xray")
 async def analyze_xray(file: UploadFile = File(...)):

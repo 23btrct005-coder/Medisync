@@ -32,6 +32,30 @@ public class AiService {
     }
 
     private String executeLocalExpertAgent(String query, boolean hasImage, String history) {
+        try {
+            org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+            java.util.Map<String, String> request = new java.util.HashMap<>();
+            request.put("query", query);
+            
+            org.springframework.http.ResponseEntity<java.util.Map> response = restTemplate.postForEntity(
+                "http://localhost:8000/chat", request, java.util.Map.class);
+                
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null && "success".equals(response.getBody().get("status"))) {
+                java.util.Map<String, Object> body = response.getBody();
+                String diagnosis = (String) body.get("diagnosis");
+                Double confidence = ((Number) body.get("confidence")).doubleValue();
+                
+                return "1. Copilot Assessment: Analysis complete via Kaggle Dataset Model.\n" +
+                       "2. " + diagnosis + "\n" +
+                       "3. Confidence Score: " + String.format("%.1f%%", confidence * 100) + "\n" +
+                       "4. Triage Level: " + (confidence > 0.8 ? "HIGH" : "MODERATE") + "\n" +
+                       "5. Engine: " + body.get("engine") + "\n" +
+                       "6. Suggested Next Steps: Please schedule a consultation with the appropriate specialist based on the predicted condition.";
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to reach Python AI Engine: " + e.getMessage());
+        }
+
         String q = query.toLowerCase().replaceAll("[^a-z0-9 ]", " ");
         String assessment = "I am your MediSync Copilot. Based on the clinical signals in your query, I have analyzed your situation against our institutional safety registry. ";
         String severity = "MODERATE";
