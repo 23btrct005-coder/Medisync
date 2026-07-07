@@ -93,7 +93,8 @@ public class AiService {
         String userPrompt = "Patient History: " + history + "\n\nCurrent Query: " + query;
 
         try {
-            String llmResponse = groqAiService.getCompletion(systemPrompt, userPrompt);
+            String combinedPrompt = systemPrompt + "\n\n" + userPrompt;
+            String llmResponse = geminiAiService.getCompletion(combinedPrompt);
             if (llmResponse != null && !llmResponse.contains("\"error\"")) {
                 return llmResponse;
             }
