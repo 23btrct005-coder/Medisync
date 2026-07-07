@@ -287,6 +287,12 @@ const DoctorRegisterForm = ({ onBack }) => {
     fetchHospitals();
   }, []);
 
+  React.useEffect(() => {
+    if (formData.clinicState && geographyData[formData.clinicState]) {
+      setAvailableCities(geographyData[formData.clinicState]);
+    }
+  }, [geographyData, formData.clinicState]);
+
   const inputCls = "block w-full rounded-xl border-slate-200 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm px-4 py-3.5 border transition-all bg-white placeholder:text-slate-300";
   const labelCls = "block text-[10px] font-black text-slate-500 uppercase mb-2 ml-1 tracking-[0.15em]";
   const sectionCls = "flex items-center gap-2 text-xs font-black text-primary-700 uppercase tracking-[0.2em] pb-3 border-b border-slate-100";

@@ -249,6 +249,15 @@ const Register = () => {
     fetchHospitals();
   }, []);
 
+  React.useEffect(() => {
+    if (formData.state && geographyData[formData.state]) {
+      setAvailableCities(geographyData[formData.state]);
+    }
+    if (formData.clinicState && geographyData[formData.clinicState]) {
+      setAvailableCities(geographyData[formData.clinicState]);
+    }
+  }, [geographyData, formData.state, formData.clinicState]);
+
   useEffect(() => {
     if (emailVerified && !formData.username) {
         setFormData(prev => ({ ...prev, username: prev.email }));
