@@ -60,7 +60,8 @@ api.interceptors.response.use(
        localStorage.removeItem('token');
        localStorage.removeItem('userRole');
        localStorage.removeItem('userEmail');
-       if (!window.location.pathname.includes('/login')) {
+       const publicPaths = ['/login', '/register', '/doctor-login', '/forgot-password', '/reset-password', '/'];
+       if (!publicPaths.includes(window.location.pathname) && !window.location.pathname.startsWith('/emergency/')) {
           toast.error('Clinical session invalid or expired. Please re-authenticate.');
           window.location.href = '/login';
        }
