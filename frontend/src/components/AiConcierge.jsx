@@ -296,8 +296,12 @@ const AiConcierge = () => {
         const doctorMatch = text.match(/Dr\.\s+[A-Z][a-z]+/);
         if (doctorMatch) sections.physician = doctorMatch[0];
         if (!sections.assessment.trim() && sections.other.trim()) sections.assessment = sections.other;
-        
-        return { ...sections, mapUrl };
+        return { 
+            ...sections, 
+            specialist: sections.specialist?.trim(),
+            service: sections.service?.trim(),
+            mapUrl 
+        };
     };
 
     const getSeverityStyles = (severity) => {
