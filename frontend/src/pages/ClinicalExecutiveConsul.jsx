@@ -478,7 +478,13 @@ const DoctorDashboard = () => {
                       placeholder="Patient ID (e.g. TN-29-0008)" 
                       autoFocus
                       value={patientShortCode}
-                      onChange={(e) => setPatientShortCode(e.target.value)}
+                      onChange={(e) => {
+                        let val = e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+                        if (val.length > 2) val = val.substring(0, 2) + '-' + val.substring(2);
+                        if (val.length > 5) val = val.substring(0, 5) + '-' + val.substring(5);
+                        if (val.length > 10) val = val.substring(0, 10);
+                        setPatientShortCode(val);
+                      }}
                       className="w-full bg-emerald-50/50 border-2 border-emerald-100 rounded-[2rem] pl-16 pr-6 py-4 text-sm font-black uppercase tracking-widest focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all text-emerald-900 placeholder:text-emerald-900/40"
                     />
                   </div>
