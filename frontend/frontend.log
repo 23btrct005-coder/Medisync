@@ -21,3 +21,5 @@ warn - If this is content and not a class, replace it with `duration-&lsqb;4000m
 7:14:19 PM [vite] hmr update /src/components/AiConcierge.jsx, /src/index.css
 7:25:28 PM [vite] hmr update /src/components/AiConcierge.jsx, /src/index.css
 7:25:35 PM [vite] hmr update /src/components/AiConcierge.jsx, /src/index.css
+7:31:01 PM [vite] hmr update /src/components/HealthSyncScore.jsx, /src/index.css
+7:31:17 PM [vite] hmr update /src/components/HealthSyncScore.jsx, /src/index.css

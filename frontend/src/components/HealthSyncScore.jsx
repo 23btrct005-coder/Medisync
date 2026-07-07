@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { ShieldCheck, Trophy, Target, Zap, HeartPulse } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const HealthSyncScore = ({ user }) => {
   const scoreData = useMemo(() => {
@@ -56,6 +57,16 @@ const HealthSyncScore = ({ user }) => {
   const radius = 45;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (scoreData.score / 100) * circumference;
+  const navigate = useNavigate();
+
+  const getNextTier = (level) => {
+    switch(level) {
+      case 'Bronze': return 'Silver Tier';
+      case 'Silver': return 'Gold Tier';
+      case 'Gold': return 'Diamond Tier';
+      default: return 'Mastery';
+    }
+  };
 
   return (
     <div className={`bg-white rounded-[2rem] shadow-xl p-6 border-2 ${scoreData.borderColor} relative overflow-hidden group transition-all hover:scale-[1.02]`}>
@@ -126,8 +137,11 @@ const HealthSyncScore = ({ user }) => {
       </div>
 
       {scoreData.score < 100 && (
-        <button className="w-full mt-6 py-3 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-colors flex items-center justify-center gap-2 group">
-          Complete Profile for {scoreData.level === 'Diamond' ? 'Mastery' : 'Gold Tier'}
+        <button 
+          onClick={() => navigate('/dashboard/profile/edit')}
+          className="w-full mt-6 py-3 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-colors flex items-center justify-center gap-2 group"
+        >
+          Complete Profile for {getNextTier(scoreData.level)}
           <Zap size={12} className="group-hover:fill-current" />
         </button>
       )}
