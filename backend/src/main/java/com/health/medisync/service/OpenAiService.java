@@ -140,10 +140,18 @@ public class OpenAiService implements AiProvider {
     }
     @Override
     public String getCompletion(String prompt) {
-        return getCompletion(prompt, null, null);
+        return getCompletion("You are a helpful AI medical assistant.", prompt, null, null);
+    }
+
+    public String getCompletion(String systemPrompt, String prompt) {
+        return getCompletion(systemPrompt, prompt, null, null);
     }
 
     public String getCompletion(String prompt, String base64Image, String mimeType) {
+        return getCompletion("You are a helpful AI medical assistant.", prompt, base64Image, mimeType);
+    }
+
+    public String getCompletion(String systemPrompt, String prompt, String base64Image, String mimeType) {
         if (apiKey == null || apiKey.trim().isEmpty()) {
             return "{\"error\": \"OpenAI is disabled. Configure `openai.api.key`.\"}";
         }
@@ -160,6 +168,13 @@ public class OpenAiService implements AiProvider {
             requestBody.put("model", "gpt-4o");
 
             List<Map<String, Object>> messages = new ArrayList<>();
+            
+            // System Message
+            Map<String, Object> systemMessage = new HashMap<>();
+            systemMessage.put("role", "system");
+            systemMessage.put("content", systemPrompt);
+            messages.add(systemMessage);
+
             Map<String, Object> userMessage = new HashMap<>();
             userMessage.put("role", "user");
 
