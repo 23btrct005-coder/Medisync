@@ -7,10 +7,12 @@ const apiBaseURL = `${rawBaseURL}/api`;
 const api = axios.create({
   baseURL: apiBaseURL,
   timeout: 75000, // 75s — handles Render free tier cold-start (can take up to 50s+)
+  withCredentials: true,
 });
 
 // Set global axios default as well to catch direct axios calls
 axios.defaults.baseURL = apiBaseURL;
+axios.defaults.withCredentials = true;
 
 // Loading state bus
 export const loadingState = {
@@ -28,13 +30,10 @@ const updateLoading = (delta) => {
 api.interceptors.request.use(
   (config) => {
     updateLoading(1);
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-      const email = localStorage.getItem('userEmail');
-      if (email) {
-         config.headers['X-Supabase-User'] = email;
-      }
+    // Token is automatically sent via httpOnly cookie now.
+    const email = localStorage.getItem('userEmail');
+    if (email) {
+       config.headers['X-Supabase-User'] = email;
     }
     return config;
   },

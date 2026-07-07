@@ -202,7 +202,18 @@ public class AuthController {
             }
 
             String jwt = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole());
-            return ResponseEntity.ok(new AuthResponse(jwt, user.getRole(), user.isEmailVerified()));
+            
+            org.springframework.http.ResponseCookie cookie = org.springframework.http.ResponseCookie.from("jwt", jwt)
+                    .httpOnly(true)
+                    .secure(true) // Should be true in production with HTTPS
+                    .sameSite("Strict")
+                    .path("/")
+                    .maxAge(86400) // 24 hours
+                    .build();
+
+            return ResponseEntity.ok()
+                    .header(org.springframework.http.HttpHeaders.SET_COOKIE, cookie.toString())
+                    .body(new AuthResponse(jwt, user.getRole(), user.isEmailVerified()));
 
         } catch (org.springframework.security.authentication.DisabledException e) {
             return ResponseEntity.status(403).body(Map.of("message", e.getMessage()));
@@ -223,6 +234,21 @@ public class AuthController {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of("message", "A secure clinical node exception occurred: " + e.getMessage()));
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logoutUser() {
+        org.springframework.http.ResponseCookie cookie = org.springframework.http.ResponseCookie.from("jwt", "")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Strict")
+                .path("/")
+                .maxAge(0) // Expire immediately
+                .build();
+
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(Map.of("message", "Logged out successfully"));
     }
 
     @PostMapping(value = "/register/doctor", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

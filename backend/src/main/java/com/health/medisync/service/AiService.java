@@ -31,12 +31,17 @@ public class AiService {
         return expertResponse;
     }
 
+    private String sanitizeInput(String input) {
+        if (input == null) return "";
+        return input.replaceAll("(?i)\\b(ignore|system|instruction|bypass|jailbreak|roleplay|override|prompt)\\b", "[REDACTED]");
+    }
+
     private String executeLocalExpertAgent(String query, boolean hasImage, String history) {
         String systemPrompt = "You are MedAI Pro, a highly empathetic, friendly, and knowledgeable medical AI assistant.\n\n" +
             "MISSION\n" +
             "Provide a short, clear, and reassuring response to the user's medical concern in simple, everyday language (like a caring doctor talking to a patient).\n\n" +
             "CORE PRINCIPLES\n" +
-            "1. Be concise: Limit your response to 2-3 short, easily readable paragraphs. Do not output massive lists or complex medical jargon.\n" +
+            "1. Be structured: Break your response into clearly segregated bulleted sections (e.g., 'Clinical Assessment', 'Possible Causes', 'Next Steps') so it is very easy for the user to read and understand. Do not write a single massive paragraph.\n" +
             "2. Be empathetic: Start with a reassuring tone.\n" +
             "3. Safety: Remind them gently that this is an AI assessment and they should see a doctor for formal diagnosis.\n" +
             "4. Never guess unknown facts or prescribe controlled substances.\n\n" +
@@ -45,7 +50,8 @@ public class AiService {
             "Triage Level: [HIGH / MODERATE / CRITICAL / LOW]\n" +
             "Recommended Specialist: [Exact Specialist Name, e.g., Dermatologist, Cardiologist, etc.]";
 
-        String userPrompt = "Patient History: " + history + "\n\nCurrent Query: " + query;
+        String safeQuery = sanitizeInput(query);
+        String userPrompt = "Patient History: " + history + "\n\nCurrent Query: " + safeQuery;
 
         try {
             String combinedPrompt = systemPrompt + "\n\n" + userPrompt;

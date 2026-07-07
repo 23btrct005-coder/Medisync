@@ -51,20 +51,15 @@ export const AuthProvider = ({ children }) => {
   const login = async (username, password) => {
     try {
       const response = await api.post('/auth/login', { username, password });
-      const { token, role, emailVerified } = response.data;
+      const { role, emailVerified } = response.data;
       
-      if (!token) throw new Error("No security token received");
-
       const baseUserData = {
         username: username,
         role: role,
         emailVerified: emailVerified
       };
 
-      localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(baseUserData));
-      
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(baseUserData);
       
       // Immediately fetch full profile details
@@ -80,36 +75,32 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (e) {
+      console.error("Logout error", e);
+    }
     localStorage.removeItem('user');
     localStorage.removeItem('ai_chat_history');
-    delete api.defaults.headers.common['Authorization'];
     setUser(null);
   };
 
   useEffect(() => {
     const initializeAuth = async () => {
-      const token = localStorage.getItem('token');
+      // The token is now in a secure httpOnly cookie, so we rely on user data existing in localStorage 
+      // or attempting to fetch it from the backend if a session is alive.
       const savedUser = localStorage.getItem('user');
       
-      if (token) {
-        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        
-        if (savedUser && savedUser !== 'undefined' && savedUser !== 'null') {
-          try {
-            const userData = JSON.parse(savedUser);
-            setUser(userData);
-            // Background refresh
-            fetchUserProfile(userData.role);
-          } catch (e) {
-            console.error("Error parsing saved user", e);
-            localStorage.removeItem('user');
-          }
-        } else {
-          // Token exists but no user data - try to fetch from /auth/me or similar
-          console.warn("Token exists but user data missing. Attempting recovery...");
-          logout();
+      if (savedUser && savedUser !== 'undefined' && savedUser !== 'null') {
+        try {
+          const userData = JSON.parse(savedUser);
+          setUser(userData);
+          // Background refresh
+          fetchUserProfile(userData.role);
+        } catch (e) {
+          console.error("Error parsing saved user", e);
+          localStorage.removeItem('user');
         }
       }
       setLoading(false);
