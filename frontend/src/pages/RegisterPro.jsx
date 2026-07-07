@@ -88,6 +88,17 @@ const RegisterPro = () => {
   });
 
   React.useEffect(() => {
+    const saved = sessionStorage.getItem('registerProFormData');
+    if (saved) {
+      try { setFormData(prev => ({ ...prev, ...JSON.parse(saved) })); } catch (e) {}
+    }
+  }, []);
+
+  React.useEffect(() => {
+    sessionStorage.setItem('registerProFormData', JSON.stringify(formData));
+  }, [formData]);
+
+  React.useEffect(() => {
     const fetchGeo = async () => {
       try {
         const res = await api.get('auth/geography');

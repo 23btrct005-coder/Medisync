@@ -68,6 +68,18 @@ const DoctorRegisterForm = ({ onBack }) => {
     slotDuration: '15',
     maxPatientsPerDay: '30',
   });
+
+  React.useEffect(() => {
+    const saved = sessionStorage.getItem('doctorRegisterFormData');
+    if (saved) {
+      try { setFormData(prev => ({ ...prev, ...JSON.parse(saved) })); } catch (e) {}
+    }
+  }, []);
+
+  React.useEffect(() => {
+    sessionStorage.setItem('doctorRegisterFormData', JSON.stringify(formData));
+  }, [formData]);
+
   const [profilePicture, setProfilePicture] = useState(null);
   const [licenseDocument, setLicenseDocument] = useState(null);
   const [loading, setLoading] = useState(false);

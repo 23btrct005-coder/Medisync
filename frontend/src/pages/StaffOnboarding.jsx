@@ -53,8 +53,21 @@ const StaffOnboarding = () => {
         
         canPrescribe: true, canEditPatientData: false, 
         canAccessReports: true, canManageAppointments: true,
+        pacsAccess: false,
+        labIntegration: false,
         services: ''
     });
+
+    useEffect(() => {
+        const saved = sessionStorage.getItem('staffOnboardFormData');
+        if (saved) {
+            try { setOnboardData(prev => ({ ...prev, ...JSON.parse(saved) })); } catch (e) {}
+        }
+    }, []);
+
+    useEffect(() => {
+        sessionStorage.setItem('staffOnboardFormData', JSON.stringify(onboardData));
+    }, [onboardData]);
 
     const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const labelClass = "block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1";

@@ -181,6 +181,17 @@ const Register = () => {
     services: "",
   });
   
+  useEffect(() => {
+    const saved = sessionStorage.getItem('registerFormData');
+    if (saved) {
+      try { setFormData(prev => ({ ...prev, ...JSON.parse(saved) })); } catch (e) {}
+    }
+  }, []);
+
+  useEffect(() => {
+    sessionStorage.setItem('registerFormData', JSON.stringify(formData));
+  }, [formData]);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
