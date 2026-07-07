@@ -216,7 +216,7 @@ const AiConcierge = () => {
         // Diagnostics & Scans
         if (!sections.service) {
             if (fullTextLower.includes('mri')) sections.service = 'MRI Scan';
-            else if (fullTextLower.includes('ct scan') || fullTextLower.includes('ct ')) sections.service = 'CT Scan';
+            else if (fullTextLower.includes('ct scan') || fullTextLower.match(/\bct\b/)) sections.service = 'CT Scan';
             else if (fullTextLower.includes('x-ray') || fullTextLower.includes('xray')) sections.service = 'X-Ray';
             else if (fullTextLower.includes('ultrasound')) sections.service = 'Ultrasound';
             else if (fullTextLower.includes('pet scan')) sections.service = 'PET Scan';

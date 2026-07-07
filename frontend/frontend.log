@@ -18,3 +18,4 @@ warn - The class `duration-[4000ms]` is ambiguous and matches multiple utilities
 warn - If this is content and not a class, replace it with `duration-&lsqb;4000ms&rsqb;` to silence this warning.
 6:34:21 PM [vite] hmr update /src/components/AiConcierge.jsx, /src/index.css
 6:41:35 PM [vite] hmr update /src/components/AiConcierge.jsx, /src/index.css
+7:14:19 PM [vite] hmr update /src/components/AiConcierge.jsx, /src/index.css
