@@ -44,13 +44,16 @@ public class AiService {
                 java.util.Map<String, Object> body = response.getBody();
                 String diagnosis = (String) body.get("diagnosis");
                 Double confidence = ((Number) body.get("confidence")).doubleValue();
+                String specialist = (String) body.get("specialist");
+                String solution = (String) body.get("solution");
                 
-                return "1. Copilot Assessment: Analysis complete via Kaggle Dataset Model.\n" +
-                       "2. " + diagnosis + "\n" +
-                       "3. Confidence Score: " + String.format("%.1f%%", confidence * 100) + "\n" +
-                       "4. Triage Level: " + (confidence > 0.8 ? "HIGH" : "MODERATE") + "\n" +
-                       "5. Engine: " + body.get("engine") + "\n" +
-                       "6. Suggested Next Steps: Please schedule a consultation with the appropriate specialist based on the predicted condition.";
+                String severity = confidence > 0.8 ? "HIGH" : "MODERATE";
+                
+                return "Based on your clinical signals, our Kaggle-trained Machine Learning model has predicted **" + diagnosis + "** (Confidence: " + String.format("%.1f%%", confidence * 100) + ").\n\n" +
+                       solution + "\n\n" +
+                       "Triage Level: " + severity + "\n" +
+                       "Recommended Specialist: " + specialist + "\n" +
+                       "Suggested Next Steps: Please schedule a consultation with a " + specialist + " for a formal evaluation.";
             }
         } catch (Exception e) {
             System.err.println("Failed to reach Python AI Engine: " + e.getMessage());

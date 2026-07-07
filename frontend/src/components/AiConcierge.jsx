@@ -384,26 +384,33 @@ const AiConcierge = () => {
                                                     <p className="text-xs font-bold text-red-700 leading-relaxed">{s.warning}</p>
                                                 </div>
                                             )}
-                                            {(s.severity === 'CRITICAL' || s.severity === 'HIGH') && (
+                                            {s.severity === 'CRITICAL' && (
                                                 <div className="flex gap-2">
                                                     <button onClick={() => { setIsOpen(false); navigate(`/dashboard/booking?mode=service&service=Ambulance`); }} className="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold text-[10px] uppercase flex items-center justify-center gap-2"><HeartPulse size={14} /> Ambulance</button>
-                                                    <button onClick={() => { setIsOpen(false); if (s.mapUrl) window.open(s.mapUrl, '_blank'); else navigate(`/dashboard/booking?mode=service&service=Emergency`); }} className="flex-1 py-3 bg-slate-900 text-white rounded-xl font-bold text-[10px] uppercase flex items-center justify-center gap-2"><MapPin size={14} /> Nearest Hospital</button>
+                                                    <button onClick={() => { setIsOpen(false); navigate(`/dashboard/booking?mode=service&service=Emergency`); }} className="flex-1 py-3 bg-slate-900 text-white rounded-xl font-bold text-[10px] uppercase flex items-center justify-center gap-2"><MapPin size={14} /> Nearest Hospital</button>
                                                 </div>
                                             )}
-                                            {(user?.role === 'ROLE_PATIENT' || !user?.role) && (
+                                            {(s.severity === 'HIGH' && s.specialist) && (
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => { setIsOpen(false); navigate(`/dashboard/booking?mode=specialist&specialist=${encodeURIComponent(s.specialist)}`); }} className="flex-1 py-3 bg-slate-900 text-white rounded-xl font-bold text-[10px] uppercase flex items-center justify-center gap-2"><MapPin size={14} /> Nearest {s.specialist}</button>
+                                                </div>
+                                            )}
+                                            {(user?.role === 'ROLE_PATIENT' || !user?.role) && (s.specialist || s.service) && (
                                                 <button 
                                                     onClick={() => { 
                                                         setIsOpen(false); 
                                                         const targetUrl = s.physician 
                                                             ? `/dashboard/booking?doctor=${encodeURIComponent(s.physician)}` 
-                                                            : s.service 
-                                                                ? `/dashboard/booking?mode=service&service=${encodeURIComponent(s.service)}` 
-                                                                : '/dashboard/booking';
+                                                            : s.specialist
+                                                                ? `/dashboard/booking?mode=specialist&specialist=${encodeURIComponent(s.specialist)}`
+                                                                : s.service 
+                                                                    ? `/dashboard/booking?mode=service&service=${encodeURIComponent(s.service)}` 
+                                                                    : '/dashboard/booking';
                                                         navigate(targetUrl);
                                                     }}
                                                     className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-3 shadow-xl"
                                                 >
-                                                    Secure Clinical Booking <ChevronRight size={16} />
+                                                    {s.specialist ? `Book ${s.specialist}` : 'Secure Clinical Booking'} <ChevronRight size={16} />
                                                 </button>
                                             )}
                                         </div>

@@ -10,6 +10,43 @@ import os
 
 app = FastAPI(title="MediSync MONAI AI Engine")
 
+DISEASE_INFO = {
+    "Psoriasis": {"specialist": "Dermatologist", "solution": "Psoriasis is a skin condition that causes red, itchy scaly patches. Keep your skin moisturized, avoid harsh soaps, and consult a dermatologist for topical treatments."},
+    "Arthritis": {"specialist": "Rheumatologist", "solution": "Arthritis causes joint pain and stiffness. Gentle exercise and anti-inflammatory medication can help manage symptoms."},
+    "Migraine": {"specialist": "Neurologist", "solution": "A migraine is a severe headache often accompanied by nausea and light sensitivity. Resting in a dark, quiet room and staying hydrated is recommended."},
+    "Cervical spondylosis": {"specialist": "Orthopedist", "solution": "This is an age-related wear and tear of the spinal disks in your neck. Neck exercises and physical therapy can alleviate discomfort."},
+    "Jaundice": {"specialist": "Gastroenterologist", "solution": "Jaundice is a yellowing of the skin and eyes, often indicating a liver issue. Please seek medical evaluation promptly."},
+    "Malaria": {"specialist": "General Physician", "solution": "Malaria is a mosquito-borne disease causing fever and chills. Immediate blood testing and antimalarial medication are crucial."},
+    "Chicken pox": {"specialist": "Pediatrician", "solution": "Chickenpox causes an itchy, blister-like rash. Rest, calamine lotion, and staying isolated until blisters crust over is advised."},
+    "Dengue": {"specialist": "General Physician", "solution": "Dengue fever is mosquito-borne and causes severe flu-like symptoms. Stay hydrated and monitor your blood platelet levels closely."},
+    "Typhoid": {"specialist": "General Physician", "solution": "Typhoid is a bacterial infection causing high fever and gastrointestinal issues. Antibiotic treatment is necessary."},
+    "hepatitis A": {"specialist": "Gastroenterologist", "solution": "Hepatitis A is a highly contagious liver infection. Rest and hydration are key to recovery."},
+    "Hepatitis B": {"specialist": "Gastroenterologist", "solution": "Hepatitis B is a serious liver infection. Long-term medical management may be required."},
+    "Hepatitis C": {"specialist": "Gastroenterologist", "solution": "Hepatitis C is a viral infection affecting the liver. Antiviral medications can often cure it."},
+    "Hepatitis D": {"specialist": "Gastroenterologist", "solution": "Hepatitis D is a severe viral disease of the liver. It requires specialized hepatology care."},
+    "Hepatitis E": {"specialist": "Gastroenterologist", "solution": "Hepatitis E is a liver disease usually transmitted through contaminated water. Ensure hydration and rest."},
+    "Alcoholic hepatitis": {"specialist": "Gastroenterologist", "solution": "This is liver inflammation caused by drinking alcohol. Abstaining from alcohol is the critical first step."},
+    "Tuberculosis": {"specialist": "Pulmonologist", "solution": "Tuberculosis is an infectious disease primarily affecting the lungs. A strict, long-term course of antibiotics is required."},
+    "Common Cold": {"specialist": "General Physician", "solution": "The common cold is a viral infection. Rest, hydration, and over-the-counter cold medicines can help relieve symptoms."},
+    "Pneumonia": {"specialist": "Pulmonologist", "solution": "Pneumonia is an infection that inflames the air sacs in one or both lungs. It often requires antibiotics and rest."},
+    "Dimorphic hemmorhoids(piles)": {"specialist": "Proctologist", "solution": "Hemorrhoids are swollen veins in your lower rectum. High-fiber diets and topical treatments can provide relief."},
+    "Heart attack": {"specialist": "Cardiologist", "solution": "A heart attack is a severe medical emergency. Please call emergency services immediately."},
+    "Varicose veins": {"specialist": "Vascular Surgeon", "solution": "Varicose veins are twisted, enlarged veins. Elevating your legs and wearing compression stockings can help."},
+    "Hypothyroidism": {"specialist": "Endocrinologist", "solution": "Hypothyroidism occurs when your thyroid gland doesn't produce enough hormones. Thyroid hormone replacement therapy is the standard treatment."},
+    "Hyperthyroidism": {"specialist": "Endocrinologist", "solution": "Hyperthyroidism is an overactive thyroid. Treatments include anti-thyroid medications and sometimes radioactive iodine."},
+    "Hypoglycemia": {"specialist": "Endocrinologist", "solution": "Hypoglycemia is low blood sugar. Consuming fast-acting carbohydrates (like juice or candy) immediately is important."},
+    "Osteoarthristis": {"specialist": "Orthopedist", "solution": "Osteoarthritis is the most common form of arthritis. Physical therapy and pain management are key."},
+    "(vertigo) Paroymsal  Positional Vertigo": {"specialist": "ENT Specialist", "solution": "This condition causes episodes of dizziness. Specific head movements (like the Epley maneuver) can often resolve it."},
+    "Acne": {"specialist": "Dermatologist", "solution": "Acne is a skin condition that occurs when hair follicles plug with oil and dead skin cells. Topical treatments or antibiotics can help."},
+    "Urinary tract infection": {"specialist": "Urologist", "solution": "A UTI is an infection in any part of your urinary system. Antibiotics are usually required."},
+    "Fungal infection": {"specialist": "Dermatologist", "solution": "Fungal infections can affect skin, nails, or hair. Antifungal creams or medications are typically effective."},
+    "Allergy": {"specialist": "Allergist", "solution": "Allergies are your immune system reacting to a foreign substance. Antihistamines and avoiding triggers are recommended."},
+    "GERD": {"specialist": "Gastroenterologist", "solution": "GERD is a digestive disorder that affects the lower esophageal sphincter. Dietary changes and antacids can provide relief."},
+    "Chronic cholestasis": {"specialist": "Gastroenterologist", "solution": "This is a condition where bile flow from the liver is reduced or blocked. Medical management is required."},
+    "Drug Reaction": {"specialist": "General Physician", "solution": "An adverse drug reaction can be serious. Stop taking the suspected medication and consult a doctor immediately."},
+    "Peptic ulcer diseae": {"specialist": "Gastroenterologist", "solution": "Peptic ulcers are open sores that develop on the inside lining of your stomach. Medication to reduce stomach acid is the usual treatment."}
+}
+
 # Lazy-loaded globals for X-Ray model
 xray_model = None
 preprocess = None
@@ -46,9 +83,13 @@ async def analyze_chat(request: ChatRequest):
         probabilities = chatbot_model.predict_proba([query])[0]
         confidence = float(max(probabilities))
         
+        info = DISEASE_INFO.get(prediction, {"specialist": "General Physician", "solution": "Please consult a healthcare professional for a detailed evaluation."})
+        
         return {
-            "diagnosis": f"Predicted Condition: {prediction}",
+            "diagnosis": prediction,
             "confidence": confidence,
+            "specialist": info["specialist"],
+            "solution": info["solution"],
             "status": "success",
             "engine": "Scikit-Learn (TF-IDF + Random Forest)"
         }
