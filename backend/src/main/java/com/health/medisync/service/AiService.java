@@ -97,6 +97,11 @@ public class AiService {
             if (llmResponse != null && !llmResponse.contains("\"error\"")) {
                 return llmResponse;
             }
+            if (llmResponse != null) {
+                return "Condition Summary:\nOpenAI API Error: " + llmResponse + "\n\n" +
+                       "Triage Level: MODERATE\n" +
+                       "Recommended Specialist: General Physician";
+            }
         } catch (Exception e) {
             System.err.println("Failed to reach Groq AI Engine: " + e.getMessage());
         }
