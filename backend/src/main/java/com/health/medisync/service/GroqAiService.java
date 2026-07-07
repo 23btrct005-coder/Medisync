@@ -128,6 +128,11 @@ public class GroqAiService implements AiProvider {
         }
         return "Groq AI Analysis failed due to persistent service issues.";
     }
+
+    public String getCompletion(String prompt) {
+        return getCompletion("You are a helpful AI medical assistant.", prompt);
+    }
+
     public String getCompletion(String systemPrompt, String prompt) {
         if (apiKey == null || apiKey.trim().isEmpty() || apiKey.equals("YOUR_API_KEY_HERE")) {
             return "{\"error\": \"AI is disabled. Configure groq.api.key.\"}";
