@@ -48,6 +48,17 @@ const AiConcierge = () => {
         "Synthesizing recommendations..."
     ];
 
+    const renderBoldText = (text) => {
+        if (!text) return null;
+        const parts = text.split(/(\*\*.*?\*\*)/g);
+        return parts.map((part, i) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+                return <strong key={i} className="font-bold text-slate-900">{part.slice(2, -2)}</strong>;
+            }
+            return part;
+        });
+    };
+
     useEffect(() => {
         if (isLoading) {
             const interval = setInterval(() => {
@@ -359,7 +370,7 @@ const AiConcierge = () => {
                                                     <button onClick={() => { setIsOpen(false); navigate(`/dashboard/booking?mode=service&service=${encodeURIComponent(s.service)}`); }} className="px-3 py-1.5 bg-indigo-600 text-white text-[9px] font-black uppercase rounded-lg shadow-lg">Book {s.service}</button>
                                                 )}
                                             </div>
-                                            <p className="text-sm text-slate-700 leading-relaxed font-medium">{s.assessment || s.other}</p>
+                                            <p className="text-sm text-slate-700 leading-relaxed font-medium">{renderBoldText(s.assessment || s.other)}</p>
                                             <div className="grid grid-cols-2 gap-3">
                                                 <div className={`p-4 rounded-2xl border ${ui.bg} ${ui.border} flex flex-col gap-1`}>
                                                     <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">TRIAGE LEVEL</span>
