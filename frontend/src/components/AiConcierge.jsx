@@ -50,12 +50,31 @@ const AiConcierge = () => {
 
     const renderBoldText = (text) => {
         if (!text) return null;
-        const parts = text.split(/(\*\*.*?\*\*)/g);
-        return parts.map((part, i) => {
-            if (part.startsWith('**') && part.endsWith('**')) {
-                return <strong key={i} className="font-bold text-slate-900">{part.slice(2, -2)}</strong>;
+        
+        return text.split('\n').map((line, lineIndex) => {
+            if (!line.trim()) return null;
+            
+            const isBullet = line.trim().startsWith('* ') || line.trim().startsWith('- ');
+            const cleanLine = isBullet ? line.trim().substring(2) : line;
+            
+            const parts = cleanLine.split(/(\*\*.*?\*\*)/g);
+            const renderedParts = parts.map((part, i) => {
+                if (part.startsWith('**') && part.endsWith('**')) {
+                    return <strong key={i} className="font-black text-indigo-700">{part.slice(2, -2)}</strong>;
+                }
+                return part;
+            });
+            
+            if (isBullet) {
+                return (
+                    <div key={lineIndex} className="flex items-start gap-2 mt-2 mb-1 ml-1">
+                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 flex-shrink-0"></div>
+                        <span className="leading-relaxed">{renderedParts}</span>
+                    </div>
+                );
             }
-            return part;
+            
+            return <div key={lineIndex} className="mb-2 leading-relaxed">{renderedParts}</div>;
         });
     };
 
@@ -158,15 +177,15 @@ const AiConcierge = () => {
             if (lowerL.match(/^[\d.\s]*(initial|clinical|copilot|condition)\s+(assessment|summary)/)) {
                 currentSection = 'assessment';
                 const content = l.replace(/^[\d.\s]*(initial|clinical|copilot|condition)\s+(assessment|summary):?/i, '').trim();
-                if (content) sections.assessment += content + ' ';
+                if (content) sections.assessment += content + '\n';
             } else if (lowerL.match(/^[\d.\s]*(possible\s+(causes|conditions|features|diagnosis)|differential\s+diagnosis)/)) {
                 currentSection = 'possibleConditions';
                 const content = l.replace(/^[\d.\s]*(possible\s+(causes|conditions|features|diagnosis)|differential\s+diagnosis):?/i, '').trim();
-                if (content) sections.possibleConditions += content + ' ';
+                if (content) sections.possibleConditions += content + '\n';
             } else if (lowerL.match(/^[\d.\s]*risk\s+indicators/)) {
                 currentSection = 'riskIndicators';
                 const content = l.replace(/^[\d.\s]*risk\s+indicators:?/i, '').trim();
-                if (content) sections.riskIndicators += content + ' ';
+                if (content) sections.riskIndicators += content + '\n';
             } else if (lowerL.match(/^[\d.\s]*triage\s+level/)) {
                 currentSection = 'severity';
                 const content = l.replace(/^[\d.\s]*triage\s+level:?/i, '').replace(/[\[\]:]/g, '').trim();
@@ -174,7 +193,7 @@ const AiConcierge = () => {
             } else if (lowerL.match(/^[\d.\s]*recommended\s+specialist/)) {
                 currentSection = 'specialist';
                 const content = l.replace(/^[\d.\s]*recommended\s+specialist:?/i, '').trim();
-                if (content) sections.specialist += content + ' ';
+                if (content) sections.specialist += content + '\n';
             } else if (lowerL.match(/^[\d.\s]*(suggested\s+next\s+steps|recommended\s+(action|tests)|treatment\s+options|medication\s+information|lifestyle\s+advice|follow-up)/)) {
                 currentSection = 'action';
                 const content = l.replace(/^[\d.\s]*(suggested\s+next\s+steps|recommended\s+(action|tests)|treatment\s+options|medication\s+information|lifestyle\s+advice|follow-up):?/i, '').trim();
@@ -184,26 +203,26 @@ const AiConcierge = () => {
             } else if (lowerL.match(/^[\d.\s]*(emergency\s+warning(\s+signs)?)/)) {
                 currentSection = 'warning';
                 const content = l.replace(/^[\d.\s]*(emergency\s+warning(\s+signs)?):?/i, '').trim();
-                if (content) sections.warning += content + ' ';
+                if (content) sections.warning += content + '\n';
             } else {
                 if (currentSection === 'questions' && l.match(/^[-*\d.]\s*/)) {
                     sections.questions.push(l.replace(/^[-*\d.]\s*/, ''));
                 } else if (currentSection === 'assessment') {
-                    sections.assessment += l + ' ';
+                    sections.assessment += l + '\n';
                 } else if (currentSection === 'possibleConditions') {
-                    sections.possibleConditions += l + ' ';
+                    sections.possibleConditions += l + '\n';
                 } else if (currentSection === 'riskIndicators') {
-                    sections.riskIndicators += l + ' ';
+                    sections.riskIndicators += l + '\n';
                 } else if (currentSection === 'specialist') {
-                    sections.specialist += l + ' ';
+                    sections.specialist += l + '\n';
                 } else if (currentSection === 'action') {
-                    sections.action += l + ' ';
+                    sections.action += l + '\n';
                 } else if (currentSection === 'warning') {
-                    sections.warning += l + ' ';
+                    sections.warning += l + '\n';
                 } else if (currentSection === 'severity') {
                     sections.severity = l.toUpperCase().trim();
                 } else {
-                    sections.other += l + ' ';
+                    sections.other += l + '\n';
                 }
             }
         });
