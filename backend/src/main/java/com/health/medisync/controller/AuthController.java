@@ -206,7 +206,7 @@ public class AuthController {
             org.springframework.http.ResponseCookie cookie = org.springframework.http.ResponseCookie.from("jwt", jwt)
                     .httpOnly(true)
                     .secure(true) // Should be true in production with HTTPS
-                    .sameSite("Strict")
+                    .sameSite("None")
                     .path("/")
                     .maxAge(86400) // 24 hours
                     .build();
@@ -241,7 +241,7 @@ public class AuthController {
         org.springframework.http.ResponseCookie cookie = org.springframework.http.ResponseCookie.from("jwt", "")
                 .httpOnly(true)
                 .secure(true)
-                .sameSite("Strict")
+                .sameSite("None")
                 .path("/")
                 .maxAge(0) // Expire immediately
                 .build();
