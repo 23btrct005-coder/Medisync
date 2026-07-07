@@ -14,12 +14,9 @@ import api from '../api/axiosConfig';
 import ProfilePhotoUpload from '../components/ProfilePhotoUpload';
 import DocumentUpload from '../components/DocumentUpload';
 import LegalFooter from '../components/LegalFooter';
+import { PHYSICIAN_DEPARTMENTS } from '../utils/clinicalRegistry';
 
-const HospitalDepartments = [
-  "Cardiology", "Neurology", "Pediatrics", "Orthopedics", "Oncology", 
-  "Gynecology", "Dermatology", "Urology", "Ophthalmology", "ENT", 
-  "Psychiatry", "Emergency Medicine", "Radiology", "General Surgery"
-];
+const HospitalDepartments = PHYSICIAN_DEPARTMENTS.map(d => d.name);
 
 // ─── Doctor Registration Form ───────────────────────────────────────────────
 const DoctorRegisterForm = ({ onBack }) => {

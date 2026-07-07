@@ -17,7 +17,15 @@ export const PHYSICIAN_DEPARTMENTS = [
   { name: 'ENT', icon: Siren, color: 'text-indigo-400', bg: 'bg-indigo-50' },
   { name: 'Psychiatry', icon: Brain, color: 'text-violet-500', bg: 'bg-violet-50' },
   { name: 'General Medicine', icon: Stethoscope, color: 'text-indigo-500', bg: 'bg-indigo-50' },
-  { name: 'Radiology', icon: Microscope, color: 'text-slate-500', bg: 'bg-slate-50' }
+  { name: 'General Practitioner', icon: Stethoscope, color: 'text-teal-500', bg: 'bg-teal-50' },
+  { name: 'Radiology', icon: Microscope, color: 'text-slate-500', bg: 'bg-slate-50' },
+  { name: 'Urology', icon: Droplets, color: 'text-cyan-600', bg: 'bg-cyan-100' },
+  { name: 'Diabetology', icon: Activity, color: 'text-blue-600', bg: 'bg-blue-100' },
+  { name: 'Hepatology', icon: FlaskRound, color: 'text-amber-500', bg: 'bg-amber-50' },
+  { name: 'Rheumatology', icon: Activity, color: 'text-rose-400', bg: 'bg-rose-50' },
+  { name: 'Allergy & Immunology', icon: ShieldCheck, color: 'text-emerald-400', bg: 'bg-emerald-50' },
+  { name: 'Emergency Medicine', icon: Siren, color: 'text-red-600', bg: 'bg-red-100' },
+  { name: 'General Surgery', icon: Scissors, color: 'text-slate-700', bg: 'bg-slate-100' }
 ];
 
 export const INSTITUTIONAL_SERVICE_CATALOG = [
