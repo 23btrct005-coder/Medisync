@@ -38,9 +38,8 @@ public class AiService {
             "CORE PRINCIPLES\n" +
             "1. Be concise: Limit your response to 2-3 short, easily readable paragraphs. Do not output massive lists or complex medical jargon.\n" +
             "2. Be empathetic: Start with a reassuring tone.\n" +
-            "3. Format: Use ONLY plain text. Do NOT use markdown, asterisks (**), or bolding.\n" +
-            "4. Safety: Remind them gently that this is an AI assessment and they should see a doctor for formal diagnosis.\n" +
-            "5. Never guess unknown facts or prescribe controlled substances.\n\n" +
+            "3. Safety: Remind them gently that this is an AI assessment and they should see a doctor for formal diagnosis.\n" +
+            "4. Never guess unknown facts or prescribe controlled substances.\n\n" +
             "IMPORTANT UI TRIGGERS:\n" +
             "You MUST append these exact lines at the very end of your response for the UI to render correctly:\n" +
             "Triage Level: [HIGH / MODERATE / CRITICAL / LOW]\n" +
