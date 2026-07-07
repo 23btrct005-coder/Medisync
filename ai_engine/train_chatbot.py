@@ -6,36 +6,19 @@ from sklearn.pipeline import Pipeline
 import joblib
 import os
 import sys
-
-# Default to Kaggle Symptom2Disease dataset format if available
-DATASET_PATH = "Symptom2Disease.csv"
+import kagglehub
 
 def train_model():
-    if not os.path.exists(DATASET_PATH):
-        print(f"ERROR: Dataset '{DATASET_PATH}' not found in ai_engine directory.")
-        print("Please download it from Kaggle (e.g., Symptom2Disease) and place it here.")
-        print("For testing, I will create a small mock dataset.")
-        
-        # Create a mock dataset for testing purposes
-        mock_data = {
-            "label": ["Psoriasis", "Psoriasis", "Arthritis", "Arthritis", "Migraine", "Migraine", "Covid", "Covid"],
-            "text": [
-                "I have red scaly patches on my skin.",
-                "My skin is peeling and extremely itchy with red spots.",
-                "My joints are stiff and hurt when I wake up.",
-                "I have severe pain in my knees and fingers.",
-                "My head is throbbing and I hate bright lights.",
-                "I have a terrible headache and feel nauseous.",
-                "I lost my sense of smell and have a fever.",
-                "I have a dry cough, fever, and feel very tired."
-            ]
-        }
-        df = pd.DataFrame(mock_data)
-        df.to_csv(DATASET_PATH, index=False)
-        print(f"Created mock {DATASET_PATH} for training.")
-        
-    print(f"Loading dataset {DATASET_PATH}...")
-    df = pd.read_csv(DATASET_PATH)
+    dataset_path = "Symptom2Disease.csv"
+    print(f"Loading dataset from {dataset_path}...")
+    try:
+        df = pd.read_csv(dataset_path)
+        # Drop the first unnamed column if it exists (Kaggle/GitHub index column)
+        if df.columns[0] == "Unnamed: 0":
+            df = df.drop(df.columns[0], axis=1)
+    except Exception as e:
+        print(f"Failed to read dataset: {e}")
+        sys.exit(1)
     
     # Assuming columns 'text' for symptoms and 'label' for disease.
     # Adjust column names if the downloaded Kaggle dataset is different.
