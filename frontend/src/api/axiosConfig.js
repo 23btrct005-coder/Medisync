@@ -60,8 +60,8 @@ api.interceptors.response.use(
        localStorage.removeItem('token');
        localStorage.removeItem('userRole');
        localStorage.removeItem('userEmail');
-       const publicPaths = ['/login', '/register', '/doctor-login', '/forgot-password', '/reset-password', '/'];
-       if (!publicPaths.includes(window.location.pathname) && !window.location.pathname.startsWith('/emergency/')) {
+       const isPublic = ['/login', '/register', '/doctor-login', '/forgot-password', '/reset-password', '/emergency/'].some(p => window.location.pathname.startsWith(p)) || window.location.pathname === '/';
+       if (!isPublic) {
           toast.error('Clinical session invalid or expired. Please re-authenticate.');
           window.location.href = '/login';
        }
