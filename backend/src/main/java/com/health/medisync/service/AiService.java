@@ -93,12 +93,13 @@ public class AiService {
         String userPrompt = "Patient History: " + history + "\n\nCurrent Query: " + query;
 
         try {
-            String llmResponse = openAiService.getCompletion(systemPrompt, userPrompt);
+            String combinedPrompt = systemPrompt + "\n\n" + userPrompt;
+            String llmResponse = geminiAiService.getCompletion(combinedPrompt);
             if (llmResponse != null && !llmResponse.contains("\"error\"")) {
                 return llmResponse;
             }
             if (llmResponse != null) {
-                return "Condition Summary:\nOpenAI API Error: " + llmResponse + "\n\n" +
+                return "Condition Summary:\nAPI Error: " + llmResponse + "\n\n" +
                        "Triage Level: MODERATE\n" +
                        "Recommended Specialist: General Physician";
             }
