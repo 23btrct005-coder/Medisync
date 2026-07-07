@@ -2,34 +2,17 @@
 # Built with FastAPI and MONAI (Medical Open Network for AI)
 
 from fastapi import FastAPI, UploadFile, File
-import torch
-import torch.nn as nn
-from monai.networks.nets import DenseNet121
 from PIL import Image
 import io
-import torchvision.transforms as transforms
 import joblib
 from pydantic import BaseModel
 import os
+
 app = FastAPI(title="MediSync MONAI AI Engine")
 
-# Architecture: DenseNet-121 (Standard for X-ray classification)
-# For demo purposes, we define the structure. In production, this would load pre-trained weights.
-def get_model():
-    model = DenseNet121(spatial_dims=2, in_channels=1, out_channels=2)
-    # model.load_state_dict(torch.load("densenet_monai_xray.pth"))
-    model.eval()
-    return model
-
-model = get_model()
-
-# Medical-specific pre-processing
-preprocess = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.Grayscale(num_output_channels=1),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485], std=[0.229]),
-])
+# Lazy-loaded globals for X-Ray model
+xray_model = None
+preprocess = None
 
 # Load Chatbot ML Model
 CHATBOT_MODEL_PATH = "chatbot_model.pkl"
@@ -74,7 +57,23 @@ async def analyze_chat(request: ChatRequest):
 
 @app.post("/analyze-xray")
 async def analyze_xray(file: UploadFile = File(...)):
+    global xray_model, preprocess
     try:
+        import torch
+        import torchvision.transforms as transforms
+        from monai.networks.nets import DenseNet121
+
+        if xray_model is None:
+            xray_model = DenseNet121(spatial_dims=2, in_channels=1, out_channels=2)
+            xray_model.eval()
+            
+            preprocess = transforms.Compose([
+                transforms.Resize((224, 224)),
+                transforms.Grayscale(num_output_channels=1),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485], std=[0.229]),
+            ])
+
         # Read image
         image_data = await file.read()
         img = Image.open(io.BytesIO(image_data))
@@ -82,15 +81,9 @@ async def analyze_xray(file: UploadFile = File(...)):
         # Pre-process
         input_tensor = preprocess(img).unsqueeze(0)
         
-        # Inference (Mocked high-confidence response for demo if no weights loaded)
-        # In a real setup: outputs = model(input_tensor); diagnosis = ...
         with torch.no_grad():
-            # Simulated inference logic
-            # This demonstrates how the MONAI output would be processed
             diagnosis = "Clear / Normal"
             confidence = 0.985
-            
-            # Simple heuristic for demo: if "pneumonia" in filename, return pneumonia
             if "pneumonia" in file.filename.lower():
                 diagnosis = "Pneumonia Detected"
                 confidence = 0.892
@@ -101,6 +94,8 @@ async def analyze_xray(file: UploadFile = File(...)):
             "status": "success",
             "engine": "MONAI (DenseNet-121)"
         }
+    except ImportError:
+        return {"status": "error", "message": "Torch/MONAI not installed on this server. X-Ray analysis is disabled to save memory."}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 

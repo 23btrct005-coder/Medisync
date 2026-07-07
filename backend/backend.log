@@ -1,0 +1,130 @@
+[INFO] Scanning for projects...
+Downloading from central: https://repo.maven.apache.org/maven2/org/flywaydb/maven-metadata.xml
+Downloading from central: https://repo.maven.apache.org/maven2/org/jooq/maven-metadata.xml
+Downloading from central: https://repo.maven.apache.org/maven2/org/springframework/boot/maven-metadata.xml
+Downloading from central: https://repo.maven.apache.org/maven2/io/github/git-commit-id/maven-metadata.xml
+Progress (1): 249 BProgress (2): 249 B | 398 BProgress (3): 249 B | 398 B | 255 BProgress (4): 249 B | 398 B | 255 B | 234 B                                           Downloaded from central: https://repo.maven.apache.org/maven2/org/springframework/boot/maven-metadata.xml (249 B at 344 B/s)
+Downloaded from central: https://repo.maven.apache.org/maven2/io/github/git-commit-id/maven-metadata.xml (255 B at 352 B/s)
+Downloaded from central: https://repo.maven.apache.org/maven2/org/flywaydb/maven-metadata.xml (234 B at 323 B/s)
+Downloaded from central: https://repo.maven.apache.org/maven2/org/jooq/maven-metadata.xml (398 B at 549 B/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/maven-metadata.xml
+Downloading from central: https://repo.maven.apache.org/maven2/org/liquibase/maven-metadata.xml
+Downloading from central: https://repo.maven.apache.org/maven2/org/graalvm/buildtools/maven-metadata.xml
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-metadata.xml
+Progress (1): 242 B                   Downloaded from central: https://repo.maven.apache.org/maven2/org/graalvm/buildtools/maven-metadata.xml (242 B at 3.5 kB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/mojo/maven-metadata.xml
+Progress (1): 375 BProgress (2): 375 B | 4.8 kB                            Downloaded from central: https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/maven-metadata.xml (375 B at 4.9 kB/s)
+Progress (1): 9.3 kBProgress (1): 14 kB                    Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-metadata.xml (14 kB at 181 kB/s)
+Progress (1): 394 B                   Downloaded from central: https://repo.maven.apache.org/maven2/org/liquibase/maven-metadata.xml (394 B at 3.6 kB/s)
+Progress (1): 3.1 kBProgress (1): 7.7 kBProgress (1): 12 kB Progress (1): 17 kBProgress (1): 20 kBProgress (1): 21 kB                   Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/mojo/maven-metadata.xml (21 kB at 193 kB/s)
+[INFO] 
+[INFO] ------------------------< com.health:medisync >-------------------------
+[INFO] Building medisync 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:3.2.4:run (default-cli) > test-compile @ medisync >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ medisync ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Copying 21 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ medisync ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 112 source files with javac [debug release 17] to target/classes
+[INFO] /Users/studies/medical/backend/src/main/java/com/health/medisync/service/GroqAiService.java: Some input files use unchecked or unsafe operations.
+[INFO] /Users/studies/medical/backend/src/main/java/com/health/medisync/service/GroqAiService.java: Recompile with -Xlint:unchecked for details.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ medisync ---
+[INFO] skip non existing resourceDirectory /Users/studies/medical/backend/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ medisync ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] <<< spring-boot:3.2.4:run (default-cli) < test-compile @ medisync <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:3.2.4:run (default-cli) @ medisync ---
+[INFO] Attaching agents: []
+=================================================
+[DIAGNOSTIC] JVM Started
+[DIAGNOSTIC] DB_HEALTH: Attempting connection to Session Pooler (6543)
+[DIAGNOSTIC] PROJECT: bwjmzottkkxrdztqqeju
+[DIAGNOSTIC] SPRING_DATASOURCE_URL: Not Set
+[DIAGNOSTIC] DB_USER env: null
+[DIAGNOSTIC] Port (env): null
+=================================================
+Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.4)
+
+2026-07-07T18:11:27.775+05:30  INFO 48433 --- [           main] c.health.medisync.MedisyncApplication    : Starting MedisyncApplication using Java 25.0.2 with PID 48433 (/Users/studies/medical/backend/target/classes started by studies in /Users/studies/medical/backend)
+2026-07-07T18:11:27.777+05:30  INFO 48433 --- [           main] c.health.medisync.MedisyncApplication    : No active profile set, falling back to 1 default profile: "default"
+2026-07-07T18:11:28.828+05:30  INFO 48433 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-07-07T18:11:28.906+05:30  INFO 48433 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 72 ms. Found 19 JPA repository interfaces.
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.apache.tomcat.jni.Library in an unnamed module (file:/Users/studies/.m2/repository/org/apache/tomcat/embed/tomcat-embed-core/10.1.19/tomcat-embed-core-10.1.19.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+2026-07-07T18:11:29.693+05:30  INFO 48433 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-07-07T18:11:29.702+05:30  INFO 48433 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-07-07T18:11:29.702+05:30  INFO 48433 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.19]
+2026-07-07T18:11:29.741+05:30  INFO 48433 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-07-07T18:11:29.742+05:30  INFO 48433 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1928 ms
+Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+2026-07-07T18:11:30.004+05:30  INFO 48433 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-07-07T18:11:30.045+05:30  INFO 48433 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-07-07T18:11:30.067+05:30  INFO 48433 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-07-07T18:11:33.105+05:30  WARN 48433 --- [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-07-07T18:11:36.476+05:30  INFO 48433 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-07-07T18:11:49.058+05:30  INFO 48433 --- [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-07-07T18:11:51.044+05:30  INFO 48433 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
+2026-07-07T18:11:51.049+05:30  INFO 48433 --- [           main] o.s.m.s.b.SimpleBrokerMessageHandler     : Starting...
+2026-07-07T18:11:51.050+05:30  INFO 48433 --- [           main] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@7b10f0cd]]
+2026-07-07T18:11:51.051+05:30  INFO 48433 --- [           main] o.s.m.s.b.SimpleBrokerMessageHandler     : Started.
+2026-07-07T18:11:51.081+05:30  INFO 48433 --- [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-07-07T18:11:51.309+05:30  INFO 48433 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint(s) beneath base path '/actuator'
+2026-07-07T18:11:51.337+05:30  INFO 48433 --- [           main] c.health.medisync.MedisyncApplication    : Started MedisyncApplication in 23.867 seconds (process running for 24.183)
+2026-07-07T18:11:51.466+05:30  INFO 48433 --- [           main] c.health.medisync.config.SchemaHardener  : Starting Institutional Schema Hardening...
+2026-07-07T18:11:51.959+05:30  INFO 48433 --- [           main] c.health.medisync.config.SchemaHardener  : Checked/Added column: medical_council
+2026-07-07T18:11:52.110+05:30  INFO 48433 --- [           main] c.health.medisync.config.SchemaHardener  : Checked/Added column: license_expiry_date
+2026-07-07T18:11:52.259+05:30  INFO 48433 --- [           main] c.health.medisync.config.SchemaHardener  : Checked/Added column: license_document_url
+2026-07-07T18:11:52.400+05:30  INFO 48433 --- [           main] c.health.medisync.config.SchemaHardener  : Checked/Added column: registration_year
+2026-07-07T18:11:52.549+05:30  INFO 48433 --- [           main] c.health.medisync.config.SchemaHardener  : Checked/Added column: sub_specialties
+2026-07-07T18:11:52.693+05:30  INFO 48433 --- [           main] c.health.medisync.config.SchemaHardener  : Checked/Added column: procedures_handled
+2026-07-07T18:11:52.844+05:30  INFO 48433 --- [           main] c.health.medisync.config.SchemaHardener  : Checked/Added column: treatment_focus
+2026-07-07T18:11:52.994+05:30  INFO 48433 --- [           main] c.health.medisync.config.SchemaHardener  : Checked/Added column: languages_spoken
+2026-07-07T18:11:53.155+05:30  INFO 48433 --- [           main] c.health.medisync.config.SchemaHardener  : Checked/Added column: publications
+2026-07-07T18:11:53.300+05:30  INFO 48433 --- [           main] c.health.medisync.config.SchemaHardener  : Checked/Added column: slot_duration
+2026-07-07T18:11:53.439+05:30  INFO 48433 --- [           main] c.health.medisync.config.SchemaHardener  : Checked/Added column: slot_buffer
+2026-07-07T18:11:53.580+05:30  INFO 48433 --- [           main] c.health.medisync.config.SchemaHardener  : Checked/Added column: max_patients_per_day
+2026-07-07T18:11:53.786+05:30  INFO 48433 --- [           main] c.health.medisync.config.SchemaHardener  : Checked/Added column: break_timings
+2026-07-07T18:11:53.945+05:30  INFO 48433 --- [           main] c.health.medisync.config.SchemaHardener  : Checked/Added column: institutional
+2026-07-07T18:11:54.090+05:30  INFO 48433 --- [           main] c.health.medisync.config.SchemaHardener  : Checked/Added column: employee_id
+2026-07-07T18:11:54.241+05:30  INFO 48433 --- [           main] c.health.medisync.config.SchemaHardener  : Checked/Added column: opd_room_number
+2026-07-07T18:11:54.382+05:30  INFO 48433 --- [           main] c.health.medisync.config.SchemaHardener  : Checked/Added column: staff_id
+2026-07-07T18:11:54.609+05:30  INFO 48433 --- [           main] c.health.medisync.config.SchemaHardener  : Checked/Added column: joining_date
+2026-07-07T18:11:54.750+05:30  INFO 48433 --- [           main] c.health.medisync.config.SchemaHardener  : Checked/Added column: salary
+2026-07-07T18:11:54.911+05:30  INFO 48433 --- [           main] c.health.medisync.config.SchemaHardener  : Checked/Added column: contract_type
+2026-07-07T18:11:54.912+05:30  INFO 48433 --- [           main] c.health.medisync.config.SchemaHardener  : Schema Hardening Complete.
+DIAGNOSTIC: Checking user abhi0925abhishek@gmail.com
+DIAGNOSTIC: User found in users table. Role: ROLE_PATIENT, Enabled: true
+DIAGNOSTIC: Doctor NOT found in doctors table by email.
+[BOOTSTRAP] Checking for Patient ID updates/migrations...
+[BOOTSTRAP] All patients are already using the regional ID format.
+[BOOTSTRAP] Verifying User Schema integrity...
+[BOOTSTRAP] User Schema synchronized.
+[BOOTSTRAP] Checking for global admin account...
+[BOOTSTRAP] Admin user exists. Persistence mode active.
+[CLEANUP] Requested deletion of User ID: 48 (abhi7892596@gmail.com)
+[CLEANUP] User ID 48 not found. Node already clean.
+🔧 MediSync Clinical Schema Audit Started...
+✅ Schema Corrected: Institutional appointments now support physician-free booking.
+2026-07-07T18:12:50.880+05:30  INFO 48433 --- [MessageBroker-1] o.s.w.s.c.WebSocketMessageBrokerStats    : WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 1, active threads = 1, queued tasks = 0, completed tasks = 0]
