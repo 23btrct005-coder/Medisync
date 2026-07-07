@@ -391,10 +391,12 @@ const AiConcierge = () => {
                                             </div>
                                             <p className="text-sm text-slate-700 leading-relaxed font-medium">{renderBoldText(s.assessment || s.other)}</p>
                                             <div className="grid grid-cols-2 gap-3">
-                                                <div className={`p-4 rounded-2xl border ${ui.bg} ${ui.border} flex flex-col gap-1`}>
-                                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">TRIAGE LEVEL</span>
-                                                    <span className={`text-xs font-black ${ui.color}`}>{ui.label}</span>
-                                                </div>
+                                                {s.severity === 'CRITICAL' && (
+                                                    <div className={`p-4 rounded-2xl border ${ui.bg} ${ui.border} flex flex-col gap-1`}>
+                                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">TRIAGE LEVEL</span>
+                                                        <span className={`text-xs font-black ${ui.color}`}>{ui.label}</span>
+                                                    </div>
+                                                )}
                                                 {s.specialist && (
                                                     <div className="p-4 rounded-2xl border border-slate-50 bg-slate-50/50 flex flex-col gap-1">
                                                         <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">RECOMMENDED SPECIALIST</span>
