@@ -128,7 +128,7 @@ public class GroqAiService implements AiProvider {
         }
         return "Groq AI Analysis failed due to persistent service issues.";
     }
-    public String getCompletion(String prompt) {
+    public String getCompletion(String systemPrompt, String prompt) {
         if (apiKey == null || apiKey.trim().isEmpty() || apiKey.equals("YOUR_API_KEY_HERE")) {
             return "{\"error\": \"AI is disabled. Configure groq.api.key.\"}";
         }
@@ -141,14 +141,18 @@ public class GroqAiService implements AiProvider {
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setBearerAuth(apiKey);
 
-            Map<String, Object> message = new HashMap<>();
-            message.put("role", "user");
-            message.put("content", prompt);
+            Map<String, Object> systemMessage = new HashMap<>();
+            systemMessage.put("role", "system");
+            systemMessage.put("content", systemPrompt);
+
+            Map<String, Object> userMessage = new HashMap<>();
+            userMessage.put("role", "user");
+            userMessage.put("content", prompt);
 
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("model", "llama-3.3-70b-versatile");
-            requestBody.put("messages", Arrays.asList(message));
-            requestBody.put("temperature", 0.5);
+            requestBody.put("messages", Arrays.asList(systemMessage, userMessage));
+            requestBody.put("temperature", 0.1);
 
             HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
             ResponseEntity<Map> response = restTemplate.postForEntity(url, requestEntity, Map.class);

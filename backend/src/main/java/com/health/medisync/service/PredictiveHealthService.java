@@ -48,7 +48,7 @@ public class PredictiveHealthService {
         String prompt = "As a clinical predictive AI, analyze the following patient data and identify top 3 health risks and actionable recommendations. Return in a concise JSON format with keys 'risks' (list of strings) and 'recommendations' (list of strings).\n\n" + context.toString();
 
         try {
-            return groqAiService.getCompletion(prompt);
+            return groqAiService.getCompletion("You are a predictive health analyzer.", prompt);
         } catch (Exception e) {
             return "{\"error\": \"Predictive engine currently recalibrating.\"}";
         }

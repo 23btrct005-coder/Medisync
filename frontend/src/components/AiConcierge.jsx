@@ -144,13 +144,13 @@ const AiConcierge = () => {
 
         lines.forEach(l => {
             const lowerL = l.toLowerCase().trim();
-            if (lowerL.match(/^[\d.\s]*(initial|clinical|copilot)\s+assessment/)) {
+            if (lowerL.match(/^[\d.\s]*(initial|clinical|copilot|condition)\s+(assessment|summary)/)) {
                 currentSection = 'assessment';
-                const content = l.replace(/^[\d.\s]*(initial|clinical|copilot)\s+assessment:?/i, '').trim();
+                const content = l.replace(/^[\d.\s]*(initial|clinical|copilot|condition)\s+(assessment|summary):?/i, '').trim();
                 if (content) sections.assessment += content + ' ';
-            } else if (lowerL.match(/^[\d.\s]*possible\s+(causes|conditions|features)/)) {
+            } else if (lowerL.match(/^[\d.\s]*(possible\s+(causes|conditions|features|diagnosis)|differential\s+diagnosis)/)) {
                 currentSection = 'possibleConditions';
-                const content = l.replace(/^[\d.\s]*possible\s+(causes|conditions|features):?/i, '').trim();
+                const content = l.replace(/^[\d.\s]*(possible\s+(causes|conditions|features|diagnosis)|differential\s+diagnosis):?/i, '').trim();
                 if (content) sections.possibleConditions += content + ' ';
             } else if (lowerL.match(/^[\d.\s]*risk\s+indicators/)) {
                 currentSection = 'riskIndicators';
@@ -164,15 +164,15 @@ const AiConcierge = () => {
                 currentSection = 'specialist';
                 const content = l.replace(/^[\d.\s]*recommended\s+specialist:?/i, '').trim();
                 if (content) sections.specialist += content + ' ';
-            } else if (lowerL.match(/^[\d.\s]*(suggested\s+next\s+steps|recommended\s+action)/)) {
+            } else if (lowerL.match(/^[\d.\s]*(suggested\s+next\s+steps|recommended\s+(action|tests)|treatment\s+options|medication\s+information|lifestyle\s+advice|follow-up)/)) {
                 currentSection = 'action';
-                const content = l.replace(/^[\d.\s]*(suggested\s+next\s+steps|recommended\s+action):?/i, '').trim();
-                if (content) sections.action += content + ' ';
+                const content = l.replace(/^[\d.\s]*(suggested\s+next\s+steps|recommended\s+(action|tests)|treatment\s+options|medication\s+information|lifestyle\s+advice|follow-up):?/i, '').trim();
+                if (content) sections.action += "\n" + (content ? content : l.trim());
             } else if (lowerL.match(/^[\d.\s]*follow-up\s+questions/)) {
                 currentSection = 'questions';
-            } else if (lowerL.match(/^[\d.\s]*emergency\s+warning/)) {
+            } else if (lowerL.match(/^[\d.\s]*(emergency\s+warning(\s+signs)?)/)) {
                 currentSection = 'warning';
-                const content = l.replace(/^[\d.\s]*emergency\s+warning:?/i, '').trim();
+                const content = l.replace(/^[\d.\s]*(emergency\s+warning(\s+signs)?):?/i, '').trim();
                 if (content) sections.warning += content + ' ';
             } else {
                 if (currentSection === 'questions' && l.match(/^[-*\d.]\s*/)) {

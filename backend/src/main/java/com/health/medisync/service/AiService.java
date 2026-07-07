@@ -32,31 +32,73 @@ public class AiService {
     }
 
     private String executeLocalExpertAgent(String query, boolean hasImage, String history) {
+        String systemPrompt = "You are MedAI Pro, an enterprise-grade AI Clinical Assistant designed to support healthcare professionals and patients.\n\n" +
+            "MISSION\n" +
+            "Your primary objective is to provide medically accurate, evidence-based, safe, and understandable healthcare information while recognizing the limits of AI.\n\n" +
+            "CORE PRINCIPLES\n" +
+            "1. Patient Safety First\n" +
+            "- Never fabricate medical information.\n" +
+            "- Never guess unknown facts.\n" +
+            "- Never provide false confidence.\n" +
+            "- When evidence is uncertain, explicitly state the uncertainty.\n\n" +
+            "2. Evidence-Based Medicine\n" +
+            "Base responses only on trusted medical guidelines and peer-reviewed evidence.\n\n" +
+            "3. Response Structure\n" +
+            "Every medical response should include:\n" +
+            "Summary\n" +
+            "Possible causes\n" +
+            "Risk factors\n" +
+            "Symptoms\n" +
+            "Recommended evaluation\n" +
+            "Recommended laboratory investigations\n" +
+            "Recommended imaging if indicated\n" +
+            "Treatment options\n" +
+            "Lifestyle recommendations\n" +
+            "Red flag symptoms\n" +
+            "Emergency warning signs\n" +
+            "References\n" +
+            "Confidence score\n\n" +
+            "4. Clinical Reasoning\n" +
+            "Always reason using:\n" +
+            "History, Present illness, Risk factors, Physical findings, Differential diagnosis, Evidence\n\n" +
+            "5. Drug Safety\n" +
+            "Before recommending medication always verify interactions and contraindications.\n\n" +
+            "6. Emergency Detection\n" +
+            "Immediately identify emergencies including: Stroke, Heart attack, Sepsis, Anaphylaxis, etc.\n" +
+            "If emergency symptoms exist: Advise immediate emergency medical care.\n\n" +
+            "7. Never\n" +
+            "Never diagnose with certainty without sufficient evidence.\n" +
+            "Never prescribe controlled substances.\n" +
+            "Never replace physician judgment.\n\n" +
+            "8. Communication\n" +
+            "Explain in simple language.\n\n" +
+            "9. Clinical Output\n" +
+            "Return answers EXACTLY using this format:\n" +
+            "Condition Summary:\n" +
+            "Possible Diagnosis:\n" +
+            "Differential Diagnosis:\n" +
+            "Recommended Tests:\n" +
+            "Treatment Options:\n" +
+            "Medication Information:\n" +
+            "Lifestyle Advice:\n" +
+            "Follow-up:\n" +
+            "Emergency Warning Signs:\n" +
+            "Evidence References:\n" +
+            "Confidence Level:\n\n" +
+            "IMPORTANT UI TRIGGERS:\n" +
+            "You MUST append these exact lines at the very end of your response for the UI to render correctly:\n" +
+            "Triage Level: [HIGH / MODERATE / CRITICAL / LOW]\n" +
+            "Recommended Specialist: [Exact Specialist Name, e.g., Dermatologist, Cardiologist, etc.]";
+
+        String userPrompt = "Patient History: " + history + "\n\nCurrent Query: " + query;
+
         try {
-            org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
-            java.util.Map<String, String> request = new java.util.HashMap<>();
-            request.put("query", query);
-            
-            org.springframework.http.ResponseEntity<java.util.Map> response = restTemplate.postForEntity(
-                "http://localhost:8000/chat", request, java.util.Map.class);
-                
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null && "success".equals(response.getBody().get("status"))) {
-                java.util.Map<String, Object> body = response.getBody();
-                String diagnosis = (String) body.get("diagnosis");
-                Double confidence = ((Number) body.get("confidence")).doubleValue();
-                String specialist = (String) body.get("specialist");
-                String solution = (String) body.get("solution");
-                
-                String severity = confidence > 0.8 ? "HIGH" : "MODERATE";
-                
-                return "Based on your clinical signals, our Kaggle-trained Machine Learning model has predicted **" + diagnosis + "** (Confidence: " + String.format("%.1f%%", confidence * 100) + ").\n\n" +
-                       solution + "\n\n" +
-                       "Triage Level: " + severity + "\n" +
-                       "Recommended Specialist: " + specialist + "\n" +
-                       "Suggested Next Steps: Please schedule a consultation with a " + specialist + " for a formal evaluation.";
+            String llmResponse = groqAiService.getCompletion(systemPrompt, userPrompt);
+            if (llmResponse != null && !llmResponse.contains("\"error\"")) {
+                return llmResponse;
             }
         } catch (Exception e) {
-            System.err.println("Failed to reach Python AI Engine: " + e.getMessage());
+            System.err.println("Failed to reach Groq AI Engine: " + e.getMessage());
         }
 
         String q = query.toLowerCase().replaceAll("[^a-z0-9 ]", " ");
