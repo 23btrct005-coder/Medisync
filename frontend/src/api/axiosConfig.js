@@ -35,6 +35,11 @@ api.interceptors.request.use(
     if (email) {
        config.headers['X-Supabase-User'] = email;
     }
+    // Fallback for mobile browsers (like iOS Safari) that block cross-origin cookies via ITP
+    const token = localStorage.getItem('token');
+    if (token) {
+       config.headers['Authorization'] = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {

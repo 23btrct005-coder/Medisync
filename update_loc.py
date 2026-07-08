@@ -8,6 +8,7 @@ conn = psycopg2.connect(
     port="5432"
 )
 cur = conn.cursor()
-cur.execute("SELECT id, name, latitude, longitude FROM doctors WHERE name LIKE '%Abishek%';")
-print(cur.fetchall())
+cur.execute("UPDATE doctors SET latitude = 12.9716, longitude = 77.5946 WHERE name LIKE '%Abishek%';")
+conn.commit()
+print("Updated coordinates.")
 conn.close()

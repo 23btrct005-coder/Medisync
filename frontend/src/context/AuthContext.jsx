@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (username, password) => {
     try {
       const response = await api.post('/auth/login', { username, password });
-      const { role, emailVerified } = response.data;
+      const { role, emailVerified, token } = response.data;
       
       const baseUserData = {
         username: username,
@@ -60,6 +60,9 @@ export const AuthProvider = ({ children }) => {
       };
 
       localStorage.setItem('user', JSON.stringify(baseUserData));
+      if (token) {
+        localStorage.setItem('token', token);
+      }
       setUser(baseUserData);
       
       // Immediately fetch full profile details
