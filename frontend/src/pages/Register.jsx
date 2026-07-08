@@ -4,7 +4,7 @@ import {
   ArrowLeft, UserPlus, Building2, Mail, Lock, User, Phone, MapPin, 
   Camera, AlertCircle, CheckCircle, GraduationCap, Briefcase, Stethoscope,
   ShieldCheck, Heart, Eye, EyeOff, Navigation, ChevronRight, Activity,
-  ClipboardList, Globe, CreditCard
+  ClipboardList, Globe, CreditCard, Check
 } from 'lucide-react';
 import api from '../api/axiosConfig';
 import ProfilePhotoUpload from '../components/ProfilePhotoUpload';
