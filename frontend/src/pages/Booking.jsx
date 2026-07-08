@@ -18,6 +18,15 @@ import {
   ALL_INSTITUTIONAL_SERVICES 
 } from '../utils/clinicalRegistry';
 
+// ── Haversine Distance (km) ──
+const haversineKm = (lat1, lng1, lat2, lng2) => {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+};
+
 const Booking = () => {
   const navigate = useNavigate();
   const [doctors, setDoctors] = useState([]);
@@ -73,6 +82,12 @@ const Booking = () => {
 
   useEffect(() => {
     fetchDoctors();
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+            (err) => console.warn("Location not provided for distance calculation.")
+        );
+    }
   }, []);
 
   useEffect(() => {
@@ -153,14 +168,7 @@ const Booking = () => {
     }
   };
 
-  // ── Haversine Distance (km) ──
-  const haversineKm = (lat1, lng1, lat2, lng2) => {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  };
+  // haversineKm moved outside component
 
   // ── Handle Service Card Click ──
   const handleServiceSelect = (service) => {
@@ -636,6 +644,7 @@ const Booking = () => {
                             key={doctor.id}
                             doctor={doctor}
                             onSelect={() => { setSelectedDoctor(doctor); setBookingStep('slots'); }}
+                            userLocation={userLocation}
                         />
                         ))}
                     </div>
@@ -1488,7 +1497,12 @@ const Booking = () => {
   );
 };
 
-const DoctorCard = ({ doctor, onSelect }) => (
+const DoctorCard = ({ doctor, onSelect, userLocation }) => {
+  const distance = (userLocation && doctor.latitude && doctor.longitude)
+    ? haversineKm(userLocation.lat, userLocation.lng, doctor.latitude, doctor.longitude)
+    : null;
+
+  return (
   <div
     onClick={onSelect}
     className="glass-panel p-4 md:p-6 bg-white hover:border-primary/40 transition-all cursor-pointer group relative overflow-hidden flex flex-col h-full shadow-sm"
@@ -1498,7 +1512,7 @@ const DoctorCard = ({ doctor, onSelect }) => (
     </div>
 
     <div className="flex items-center gap-4 mb-4 relative z-10">
-      <div className="w-14 h-14 md:w-16 md:h-16 bg-slate-100 rounded-2xl overflow-hidden border-2 border-white shadow-inner flex items-center justify-center text-slate-400">
+      <div className="w-14 h-14 md:w-16 md:h-16 bg-slate-100 rounded-2xl overflow-hidden border-2 border-white shadow-inner flex items-center justify-center text-slate-400 shrink-0">
         {doctor.profilePictureUrl ? (
           <img src={doctor.profilePictureUrl} className="w-full h-full object-cover" alt={doctor.name} />
         ) : <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${doctor.name}`} className="w-full h-full object-cover" alt={doctor.name} />}
@@ -1510,9 +1524,14 @@ const DoctorCard = ({ doctor, onSelect }) => (
     </div>
 
     <div className="space-y-3 mb-6">
-      <div className="flex items-center gap-2 text-slate-500 text-[11px] font-medium">
-        <MapPin size={12} className="text-slate-400" />
-        <span className="truncate">{doctor.hospital || "Care Center"}</span>
+      <div className="flex items-center gap-2 text-slate-500 text-[11px] font-medium flex-wrap">
+        <MapPin size={12} className="text-slate-400 shrink-0" />
+        <span className="truncate flex-1">{doctor.hospital || "Care Center"}</span>
+        {distance !== null && (
+          <span className="text-primary-600 font-bold whitespace-nowrap bg-primary-50 px-2 py-0.5 rounded-md border border-primary-100 ml-auto text-[9px] uppercase tracking-widest">
+            {distance < 1 ? `${(distance * 1000).toFixed(0)}m` : `${distance.toFixed(1)}km`} away
+          </span>
+        )}
       </div>
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
@@ -1535,5 +1554,6 @@ const DoctorCard = ({ doctor, onSelect }) => (
     </div>
   </div>
 );
+};
 
 export default Booking;
