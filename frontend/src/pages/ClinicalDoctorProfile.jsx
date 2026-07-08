@@ -89,7 +89,10 @@ const DoctorProfile = () => {
       breakTimings: user.breakTimings || '',
       slotDuration: user.slotDuration || '',
       slotBuffer: user.slotBuffer || '',
-      maxPatientsPerDay: user.maxPatientsPerDay || ''
+      maxPatientsPerDay: user.maxPatientsPerDay || '',
+      preferredPaymentMode: user.preferredPaymentMode || '',
+      razorpayAccountId: user.razorpayAccountId || '',
+      upiId: user.upiId || ''
     });
     setIsEditing(true);
   };
@@ -637,15 +640,53 @@ const DoctorProfile = () => {
                 <Section title="Transactional Identity" icon={Wallet}>
                     <div className="py-6 border-b border-slate-50">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Preferred Payout Channel</p>
-                        <div className="flex items-center gap-3">
-                        {user.preferredPaymentMode === 'RAZORPAY' && <span className="px-6 py-3 bg-indigo-50 text-indigo-700 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl border border-indigo-100 flex items-center gap-3 shadow-sm"><CreditCard size={18} /> Razorpay Standard</span>}
-                        {user.preferredPaymentMode === 'UPI' && <span className="px-6 py-3 bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl border border-emerald-100 flex items-center gap-3 shadow-sm"><Activity size={18} /> Direct Peer-to-Peer</span>}
-                        {user.preferredPaymentMode === 'BOTH' && <span className="px-6 py-3 bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl border border-blue-100 flex items-center gap-3 shadow-sm"><CheckCircle size={18} /> Dual Hybrid Model</span>}
-                        {!user.preferredPaymentMode && <span className="text-slate-300 italic font-bold">Channel Not Configured</span>}
-                        </div>
+                        {isEditing ? (
+                            <select
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                                value={formData.preferredPaymentMode}
+                                onChange={(e) => setFormData({ ...formData, preferredPaymentMode: e.target.value })}
+                            >
+                                <option value="">Select Channel</option>
+                                <option value="RAZORPAY">Razorpay Standard</option>
+                                <option value="UPI">Direct Peer-to-Peer (UPI)</option>
+                                <option value="BOTH">Dual Hybrid Model</option>
+                            </select>
+                        ) : (
+                            <div className="flex items-center gap-3">
+                                {user.preferredPaymentMode === 'RAZORPAY' && <span className="px-6 py-3 bg-indigo-50 text-indigo-700 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl border border-indigo-100 flex items-center gap-3 shadow-sm"><CreditCard size={18} /> Razorpay Standard</span>}
+                                {user.preferredPaymentMode === 'UPI' && <span className="px-6 py-3 bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl border border-emerald-100 flex items-center gap-3 shadow-sm"><Activity size={18} /> Direct Peer-to-Peer</span>}
+                                {user.preferredPaymentMode === 'BOTH' && <span className="px-6 py-3 bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl border border-blue-100 flex items-center gap-3 shadow-sm"><CheckCircle size={18} /> Dual Hybrid Model</span>}
+                                {!user.preferredPaymentMode && <span className="text-slate-300 italic font-bold">Channel Not Configured</span>}
+                            </div>
+                        )}
                     </div>
-                    <InfoRow icon={CreditCard} label="Razorpay Gateway ID" value={user.razorpayAccountId} color="text-indigo-500" isLocked={user.institutional} />
-                    <InfoRow icon={Activity} label="Verified UPI VPA" value={user.upiId} color="text-emerald-500" isLocked={user.institutional} />
+                    {isEditing ? (
+                        <div className="px-6 py-4 space-y-4 border-b border-slate-50">
+                            <div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Razorpay Gateway ID</p>
+                                <input 
+                                    type="text" 
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                                    value={formData.razorpayAccountId}
+                                    onChange={(e) => setFormData({ ...formData, razorpayAccountId: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Verified UPI VPA</p>
+                                <input 
+                                    type="text" 
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                                    value={formData.upiId}
+                                    onChange={(e) => setFormData({ ...formData, upiId: e.target.value })}
+                                />
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            <InfoRow icon={CreditCard} label="Razorpay Gateway ID" value={user.razorpayAccountId} color="text-indigo-500" isLocked={user.institutional} />
+                            <InfoRow icon={Activity} label="Verified UPI VPA" value={user.upiId} color="text-emerald-500" isLocked={user.institutional} />
+                        </>
+                    )}
                     <div className="py-6 bg-slate-50/50 rounded-2xl px-6 border border-slate-100 mt-4">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 italic">Node Integrity Warning</p>
                         <p className="text-[10px] font-bold text-slate-500 leading-relaxed">
