@@ -133,12 +133,22 @@ const HospitalDoctorRoster = () => {
     return (
         <div className="p-8 lg:p-12 space-y-12 animate-in fade-in duration-700">
             {/* Header */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-                <div>
-                    <h1 className="text-4xl font-black text-slate-900 tracking-tighter italic uppercase">Staff<span className="not-italic text-primary">Roster</span></h1>
-                    <p className="text-slate-400 text-xs font-black uppercase tracking-[0.3em] mt-2">Managing {doctors.length} Clinical Professionals</p>
+            <div className="flex flex-col gap-6 mb-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-4xl font-black text-slate-900 tracking-tighter italic uppercase">Staff<span className="not-italic text-primary">Roster</span></h1>
+                        <p className="text-slate-400 text-xs font-black uppercase tracking-[0.3em] mt-2">Managing {doctors.length} Clinical Professionals</p>
+                    </div>
+                    <button 
+                        onClick={() => navigate('/hospital-dashboard/staff/onboard')}
+                        className="px-8 py-5 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-[2rem] shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-3 shrink-0"
+                    >
+                        <UserPlus size={18} />
+                        Onboard New Staff
+                    </button>
                 </div>
-                <div className="flex-1">
+                
+                <div className="w-full">
                     <FilterBar 
                         searchTerm={searchTerm}
                         onSearchChange={setSearchTerm}
@@ -161,13 +171,6 @@ const HospitalDoctorRoster = () => {
                         onFilterChange={(key, val) => setSpecialtyFilter(val)}
                     />
                 </div>
-                <button 
-                    onClick={() => navigate('/hospital-dashboard/staff/onboard')}
-                    className="px-8 py-5 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-[2rem] shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-3 mb-8"
-                >
-                    <UserPlus size={18} />
-                    Onboard New Staff
-                </button>
             </div>
 
             {/* Roster Table */}

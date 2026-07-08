@@ -12,7 +12,7 @@ const FilterBar = ({
     onFilterChange
 }) => {
     return (
-        <div className="flex flex-col md:flex-row gap-4 items-center bg-white/50 backdrop-blur-md p-4 rounded-[2rem] border border-slate-200/60 shadow-sm mb-8">
+        <div className="flex flex-col xl:flex-row gap-4 items-center bg-white/50 backdrop-blur-md p-4 rounded-[2rem] border border-slate-200/60 shadow-sm w-full">
             {/* Search Input */}
             <div className="relative flex-1 group w-full">
                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors" size={18} />
