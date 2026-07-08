@@ -187,12 +187,14 @@ const DoctorProfile = () => {
                 </div>
             ) : (
                 <div className="flex items-center gap-3">
-                    <button 
-                        onClick={startEditing}
-                        className="flex items-center justify-center gap-3 bg-blue-600 text-white font-black uppercase tracking-widest text-[10px] px-8 py-4 rounded-[2rem] hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 active:scale-95 group"
-                    >
-                        <Edit3 size={16} /> {user.institutional ? 'Manage Expertise' : 'Edit Profile'}
-                    </button>
+                    {!user.institutional && (
+                        <button 
+                            onClick={startEditing}
+                            className="flex items-center justify-center gap-3 bg-blue-600 text-white font-black uppercase tracking-widest text-[10px] px-8 py-4 rounded-[2rem] hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 active:scale-95 group"
+                        >
+                            <Edit3 size={16} /> Edit Profile
+                        </button>
+                    )}
                     {user.institutional && (
                         <div className="flex flex-col items-end">
                             <div className="flex items-center gap-2 px-6 py-3 bg-blue-50 text-blue-700 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm border border-blue-100">

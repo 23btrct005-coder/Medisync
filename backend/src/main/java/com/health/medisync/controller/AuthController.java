@@ -408,7 +408,7 @@ public class AuthController {
             } catch (NumberFormatException ignored) {}
         }
         doctor.setHospital(request.get("hospitalName") != null ? String.valueOf(request.get("hospitalName")) : hospitalIdStr);
-        if (hospitalIdStr != null && !hospitalIdStr.isEmpty()) {
+        if (hospitalIdStr != null && !hospitalIdStr.isEmpty() && !hospitalIdStr.equals("other")) {
             doctor.setInstitutional(true);
         }
         
