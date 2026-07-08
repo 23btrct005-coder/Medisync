@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
+import { useMemo } from 'react';
 import { LayoutDashboard, Users, LogOut, Activity, UserCircle, Calendar, Building2, TrendingUp, MessageSquare, DollarSign } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
@@ -11,8 +12,8 @@ const DoctorSidebar = ({ isOpen, setIsOpen }) => {
 
   const isAdmin = user?.role === 'ROLE_HOSPITAL_ADMIN';
   const prefix = isAdmin ? '/hospital-dashboard' : '/doctor-dashboard';
-  const photoUrl = user?.profilePictureUrl ? `${user.profilePictureUrl}?t=${Date.now()}` : (user?.id ? `${api.defaults.baseURL}/auth/${isAdmin ? 'hospital' : 'doctor'}/photo/${user.id}?t=${Date.now()}` : null);
-  const hospitalLogo = user?.hospital?.logoUrl ? `${user.hospital.logoUrl}?t=${Date.now()}` : null;
+  const photoUrl = useMemo(() => user?.profilePictureUrl ? `${user.profilePictureUrl}?t=${Date.now()}` : (user?.id ? `${api.defaults.baseURL}/auth/${isAdmin ? 'hospital' : 'doctor'}/photo/${user.id}?t=${Date.now()}` : null), [user?.profilePictureUrl, user?.id, isAdmin]);
+  const hospitalLogo = useMemo(() => user?.hospital?.logoUrl ? `${user.hospital.logoUrl}?t=${Date.now()}` : null, [user?.hospital?.logoUrl]);
 
   const handleLogout = () => {
     logout();
