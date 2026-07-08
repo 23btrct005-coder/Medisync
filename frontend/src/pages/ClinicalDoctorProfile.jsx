@@ -365,13 +365,32 @@ const DoctorProfile = () => {
                         <div className="py-4 border-b border-slate-50">
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Active Roster Days</p>
                             {isEditing ? (
-                                <input 
-                                    type="text" 
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
-                                    placeholder="e.g. Mon, Tue, Wed, Thu, Fri"
-                                    value={formData.workingDays}
-                                    onChange={(e) => setFormData({ ...formData, workingDays: e.target.value })}
-                                />
+                                <div className="flex flex-wrap gap-3">
+                                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => {
+                                        const isSelected = formData.workingDays ? formData.workingDays.split(', ').includes(day) : false;
+                                        return (
+                                            <label key={day} className={`flex items-center gap-2 px-4 py-2 rounded-xl border cursor-pointer transition-all ${isSelected ? 'bg-indigo-50 border-indigo-200 text-indigo-700 shadow-sm' : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'}`}>
+                                                <input 
+                                                    type="checkbox" 
+                                                    className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300"
+                                                    checked={isSelected}
+                                                    onChange={(e) => {
+                                                        const currentDays = formData.workingDays ? formData.workingDays.split(', ') : [];
+                                                        let newDays;
+                                                        if (e.target.checked) {
+                                                            newDays = [...currentDays, day];
+                                                        } else {
+                                                            newDays = currentDays.filter(d => d !== day);
+                                                        }
+                                                        const orderedDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].filter(d => newDays.includes(d));
+                                                        setFormData({ ...formData, workingDays: orderedDays.join(', ') });
+                                                    }}
+                                                />
+                                                <span className="text-[10px] font-black uppercase tracking-widest">{day}</span>
+                                            </label>
+                                        );
+                                    })}
+                                </div>
                             ) : (
                                 <div className="flex flex-wrap gap-2">
                                     {user.workingDays ? user.workingDays.split(', ').map(day => (
