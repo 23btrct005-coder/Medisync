@@ -70,22 +70,22 @@ const DropZone = ({
 
     if (type === 'portrait') {
         return (
-            <div className="flex items-center gap-6 relative z-10">
+            <div className="flex flex-col items-center gap-4 relative z-10 text-center">
                 <div 
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
                     onClick={() => fileInputRef.current?.click()}
-                    className={`w-24 h-24 rounded-[2rem] border-2 border-dashed transition-all duration-300 flex items-center justify-center overflow-hidden cursor-pointer group
-                        ${preview ? 'border-primary/30 bg-primary/5' : 'border-white/10 bg-white/5'}
-                        ${isDragging ? 'border-primary bg-primary/20 scale-105' : 'hover:border-primary/50'}
+                    className={`relative w-32 h-32 rounded-[2.5rem] border-2 border-dashed transition-all duration-300 flex items-center justify-center overflow-hidden cursor-pointer group shrink-0
+                        ${preview ? 'border-primary-300 bg-primary-50' : 'border-slate-200 bg-white'}
+                        ${isDragging ? 'border-primary bg-primary-50 scale-105' : 'hover:border-primary-300'}
                     `}
                 >
                     {preview ? (
                         <img src={preview} alt="Preview" className="w-full h-full object-cover" />
                     ) : (
                         <div className="flex flex-col items-center">
-                            <Camera className="text-white/20 group-hover:text-primary/50 transition-colors" size={32} />
+                            <Camera className="text-slate-300 group-hover:text-primary-400 transition-colors" size={32} />
                         </div>
                     )}
                     
@@ -94,7 +94,7 @@ const DropZone = ({
                     </div>
                 </div>
                 
-                <div className="space-y-2">
+                <div className="space-y-3 w-full">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">{label}</label>
                     <input 
                         type="file" 
@@ -103,11 +103,11 @@ const DropZone = ({
                         accept={accept}
                         onChange={handleFileChange}
                     />
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap justify-center gap-2">
                         <button 
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            className="px-4 py-2 bg-white/10 hover:bg-primary text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all"
+                            className="px-4 py-2 bg-slate-100 hover:bg-primary text-slate-600 hover:text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all"
                         >
                             {preview ? 'Change Photo' : 'Upload Portrait'}
                         </button>
@@ -115,7 +115,7 @@ const DropZone = ({
                             <button 
                                 type="button"
                                 onClick={handleRemove}
-                                className="px-3 py-2 bg-red-500/20 hover:bg-red-500 text-red-500 hover:text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all"
+                                className="px-3 py-2 bg-red-50 hover:bg-red-500 text-red-500 hover:text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all"
                             >
                                 <X size={12} />
                             </button>
