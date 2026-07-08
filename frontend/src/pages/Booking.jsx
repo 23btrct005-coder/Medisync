@@ -428,9 +428,9 @@ const Booking = () => {
       d.specialization?.toLowerCase().includes(filterSpecialty.toLowerCase().trim()) ||
       (d.services?.toLowerCase().includes(filterSpecialty.toLowerCase().trim()));
     
-    // Price enforcement: must have at least one fee configured
-    const hasPrice = (d.onlineConsultationFee && d.onlineConsultationFee > 0) || 
-                    (d.offlineConsultationFee && d.offlineConsultationFee > 0) ||
+    // Price enforcement: must have at least one fee configured (or fall back to defaults if not set)
+    const hasPrice = d.onlineConsultationFee === null || d.onlineConsultationFee === undefined || d.onlineConsultationFee > 0 || 
+                    d.offlineConsultationFee === null || d.offlineConsultationFee === undefined || d.offlineConsultationFee > 0 ||
                     (d.serviceFees && d.serviceFees !== '{}');
                     
     return matchesSearch && matchesFilter && hasPrice;
