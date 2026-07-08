@@ -83,7 +83,13 @@ const DoctorProfile = () => {
       onlineConsultation: user.onlineConsultation || false,
       appointmentsEnabled: user.appointmentsEnabled || false,
       onlineConsultationFee: user.onlineConsultationFee || '',
-      offlineConsultationFee: user.offlineConsultationFee || ''
+      offlineConsultationFee: user.offlineConsultationFee || '',
+      workingDays: user.workingDays || '',
+      consultationTimings: user.consultationTimings || '',
+      breakTimings: user.breakTimings || '',
+      slotDuration: user.slotDuration || '',
+      slotBuffer: user.slotBuffer || '',
+      maxPatientsPerDay: user.maxPatientsPerDay || ''
     });
     setIsEditing(true);
   };
@@ -356,20 +362,91 @@ const DoctorProfile = () => {
                     <Section title="Operational Availability" icon={Clock}>
                         <div className="py-4 border-b border-slate-50">
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Active Roster Days</p>
-                            <div className="flex flex-wrap gap-2">
-                                {user.workingDays ? user.workingDays.split(', ').map(day => (
-                                    <span key={day} className="px-4 py-2 bg-indigo-50 text-indigo-700 text-[10px] font-black uppercase tracking-widest rounded-xl border border-indigo-100 shadow-sm">
-                                        {day}
-                                    </span>
-                                )) : <span className="text-slate-300 italic text-sm">No active roster</span>}
-                            </div>
+                            {isEditing ? (
+                                <input 
+                                    type="text" 
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                                    placeholder="e.g. Mon, Tue, Wed, Thu, Fri"
+                                    value={formData.workingDays}
+                                    onChange={(e) => setFormData({ ...formData, workingDays: e.target.value })}
+                                />
+                            ) : (
+                                <div className="flex flex-wrap gap-2">
+                                    {user.workingDays ? user.workingDays.split(', ').map(day => (
+                                        <span key={day} className="px-4 py-2 bg-indigo-50 text-indigo-700 text-[10px] font-black uppercase tracking-widest rounded-xl border border-indigo-100 shadow-sm">
+                                            {day}
+                                        </span>
+                                    )) : <span className="text-slate-300 italic text-sm">No active roster</span>}
+                                </div>
+                            )}
                         </div>
-                        <InfoRow icon={Clock} label="Daily Timings" value={user.consultationTimings} color="text-blue-500" isLocked={user.institutional} />
-                        <InfoRow icon={Clock} label="Break Intervals" value={user.breakTimings} color="text-slate-400" isLocked={user.institutional} />
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pb-4 border-b border-slate-50">
-                            <InfoRow icon={Activity} label="Slot Duration" value={`${user.slotDuration || 15} Min`} color="text-blue-600" isLocked={user.institutional} />
-                            <InfoRow icon={Activity} label="Clinical Gap" value={`${user.slotBuffer || 0} Min`} color="text-indigo-600" isLocked={user.institutional} />
-                            <InfoRow icon={Users} label="Max Daily Load" value={`${user.maxPatientsPerDay || 0} Patients`} color="text-emerald-600" isLocked={user.institutional} />
+                        {isEditing ? (
+                            <div className="space-y-4 py-4 border-b border-slate-50">
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Daily Timings</p>
+                                    <input 
+                                        type="text" 
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                                        placeholder="e.g. 09:00 - 18:00"
+                                        value={formData.consultationTimings}
+                                        onChange={(e) => setFormData({ ...formData, consultationTimings: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Break Intervals</p>
+                                    <input 
+                                        type="text" 
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                                        placeholder="e.g. 13:00 - 14:00"
+                                        value={formData.breakTimings}
+                                        onChange={(e) => setFormData({ ...formData, breakTimings: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <InfoRow icon={Clock} label="Daily Timings" value={user.consultationTimings} color="text-blue-500" isLocked={user.institutional} />
+                                <InfoRow icon={Clock} label="Break Intervals" value={user.breakTimings} color="text-slate-400" isLocked={user.institutional} />
+                            </>
+                        )}
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 py-4 border-b border-slate-50">
+                            {isEditing ? (
+                                <>
+                                    <div>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Slot Duration (Min)</p>
+                                        <input 
+                                            type="number" 
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                                            value={formData.slotDuration}
+                                            onChange={(e) => setFormData({ ...formData, slotDuration: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Clinical Gap (Min)</p>
+                                        <input 
+                                            type="number" 
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                                            value={formData.slotBuffer}
+                                            onChange={(e) => setFormData({ ...formData, slotBuffer: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Max Daily Load</p>
+                                        <input 
+                                            type="number" 
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                                            value={formData.maxPatientsPerDay}
+                                            onChange={(e) => setFormData({ ...formData, maxPatientsPerDay: e.target.value })}
+                                        />
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <InfoRow icon={Activity} label="Slot Duration" value={`${user.slotDuration || 15} Min`} color="text-blue-600" isLocked={user.institutional} />
+                                    <InfoRow icon={Activity} label="Clinical Gap" value={`${user.slotBuffer || 0} Min`} color="text-indigo-600" isLocked={user.institutional} />
+                                    <InfoRow icon={Users} label="Max Daily Load" value={`${user.maxPatientsPerDay || 0} Patients`} color="text-emerald-600" isLocked={user.institutional} />
+                                </>
+                            )}
                         </div>
                         <div className="py-4 space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -25,3 +25,10 @@ warn - If this is content and not a class, replace it with `duration-&lsqb;4000m
 7:31:17 PM [vite] hmr update /src/components/HealthSyncScore.jsx, /src/index.css
 7:40:41 PM [vite] page reload ios/App/App/public/index.html
 7:40:42 PM [vite] page reload android/app/src/main/assets/public/index.html
+7:51:51 PM [vite] vite.config.js changed, restarting server...
+Re-optimizing dependencies because lockfile has changed
+7:51:53 PM [vite] server restarted.
+7:52:36 PM [vite] vite.config.js changed, restarting server...
+7:52:36 PM [vite] server restarted.
+8:28:46 PM [vite] page reload android/app/build/intermediates/assets/debug/mergeDebugAssets/public/index.html
+8:29:41 PM [vite] page reload android/build/reports/problems/problems-report.html
