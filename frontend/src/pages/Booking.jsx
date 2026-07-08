@@ -1229,9 +1229,9 @@ const Booking = () => {
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Fee Payable</p>
                     <p className="text-3xl font-black text-slate-900">₹{upiOrderData.amount}</p>
                   </div>
-                  <div className="w-24 h-24 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
+                  <div className="w-40 h-40 bg-white p-3 rounded-3xl border border-slate-100 shadow-sm">
                     <img 
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=upi://pay?pa=${upiOrderData.upiId}%26pn=MEDISYNC%26am=${upiOrderData.amount}%26cu=INR`} 
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiOrderData.upiId}%26pn=MEDISYNC%26am=${upiOrderData.amount}%26cu=INR`} 
                       alt="UPI QR" 
                       className="w-full h-full object-contain"
                     />
