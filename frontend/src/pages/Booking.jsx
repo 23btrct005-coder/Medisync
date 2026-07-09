@@ -75,12 +75,19 @@ const Booking = () => {
 
   useEffect(() => {
     fetchDoctors();
+    let watchId;
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
+        watchId = navigator.geolocation.watchPosition(
             (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-            (err) => console.warn("Location not provided for distance calculation.")
+            (err) => console.warn("Location not provided for distance calculation."),
+            { enableHighAccuracy: true, maximumAge: 0 }
         );
     }
+    return () => {
+        if (watchId !== undefined && navigator.geolocation) {
+            navigator.geolocation.clearWatch(watchId);
+        }
+    };
   }, []);
 
   useEffect(() => {
