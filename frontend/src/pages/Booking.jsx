@@ -145,7 +145,7 @@ const Booking = () => {
         const res = await api.get(`appointments/hospitals-by-service?${params.toString()}`);
         let hospitals = res.data || [];
 
-        // Sort by distance if user location is available
+        // Sort by straight-line distance initially for instant UI
         if (userLocation) {
             hospitals = hospitals
                 .map(h => ({
@@ -161,6 +161,39 @@ const Booking = () => {
                 });
         }
         setServiceHospitals(hospitals);
+
+        // Fetch accurate routing driving distances asynchronously
+        if (userLocation && hospitals.length > 0 && hospitals.length <= 25) {
+            const validHospitals = hospitals.filter(h => h.latitude && h.longitude);
+            if (validHospitals.length > 0) {
+                const source = `${userLocation.lng},${userLocation.lat}`;
+                const destinations = validHospitals.map(h => `${h.longitude},${h.latitude}`).join(';');
+                fetch(`https://router.project-osrm.org/table/v1/driving/${source};${destinations}?sources=0&annotations=distance`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.code === 'Ok' && data.distances && data.distances[0]) {
+                            const routeDistances = data.distances[0];
+                            setServiceHospitals(prev => {
+                                const updated = prev.map(h => {
+                                    if (h.latitude && h.longitude) {
+                                        const index = validHospitals.findIndex(vh => vh.id === h.id);
+                                        if (index !== -1 && routeDistances[index + 1] !== undefined) {
+                                            return { ...h, distance: routeDistances[index + 1] / 1000 };
+                                        }
+                                    }
+                                    return h;
+                                });
+                                return updated.sort((a, b) => {
+                                    if (a.distance === null) return 1;
+                                    if (b.distance === null) return -1;
+                                    return a.distance - b.distance;
+                                });
+                            });
+                        }
+                    })
+                    .catch(e => console.warn("Routing API fallback failed, keeping straight-line distance", e));
+            }
+        }
     } catch (e) {
         toast.error("Failed to fetch hospitals for this service.");
     } finally {
