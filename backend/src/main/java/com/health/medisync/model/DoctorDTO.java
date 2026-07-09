@@ -153,8 +153,8 @@ public class DoctorDTO {
         this.canAccessReports = d.isCanAccessReports();
         this.canManageAppointments = d.isCanManageAppointments();
         this.preferredPaymentMode = d.getPreferredPaymentMode();
-        this.latitude = d.getLatitude();
-        this.longitude = d.getLongitude();
+        this.latitude = d.getLatitude() != null ? d.getLatitude() : (d.getHospitalEntity() != null ? d.getHospitalEntity().getLatitude() : null);
+        this.longitude = d.getLongitude() != null ? d.getLongitude() : (d.getHospitalEntity() != null ? d.getHospitalEntity().getLongitude() : null);
         this.userId = d.getUser() != null ? d.getUser().getId() : null;
     }
 
