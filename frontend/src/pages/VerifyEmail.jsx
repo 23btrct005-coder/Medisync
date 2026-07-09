@@ -17,7 +17,7 @@ const VerifyEmail = () => {
     
     const [loading, setLoading] = useState(false);
     const [sending, setSending] = useState(false);
-    const [resendTimer, setResendTimer] = useState(0);
+    const [resendTimer, setResendTimer] = useState(30);
     const [resendCount, setResendCount] = useState(() => {
         return parseInt(localStorage.getItem(`resend_count_${user?.id}`) || '0');
     });

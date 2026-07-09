@@ -173,7 +173,8 @@ export const NotificationProvider = ({ children }) => {
       unreadChatCount, setUnreadChatCount, fetchUnreadChatCount, lastMessage,
       markChatAsRead,
       isAiOpen, setAiOpen,
-      serverTime
+      serverTime,
+      lastNotification: notifications.length > 0 ? notifications[0] : null
     }}>
       {children}
     </NotificationContext.Provider>

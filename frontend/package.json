@@ -1,7 +1,7 @@
 {
   "name": "frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,9 +11,11 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@capacitor/app": "^8.1.0",
     "@capacitor/camera": "^8.2.1",
     "@capacitor/core": "^8.4.1",
     "@capacitor/geolocation": "^8.2.0",
+    "@capgo/capacitor-updater": "^8.50.2",
     "@supabase/supabase-js": "^2.102.1",
     "axios": "^1.6.8",
     "bcryptjs": "^3.0.3",

@@ -1,7 +1,8 @@
 /* DEPLOY_SYNC_STAMP: 2026-04-27-13:46 */
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { App as CapacitorApp } from '@capacitor/app';
 import { Activity } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
@@ -109,6 +110,35 @@ const SmartProfileRedirect = ({ type = 'view' }) => {
 import { useIsMobile } from './hooks/useIsMobile';
 import MobileApp from './mobile/MobileApp';
 
+const HardwareBackButtonHandler = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    let listener = null;
+    import('@capacitor/core').then(({ Capacitor }) => {
+      if (Capacitor.isNativePlatform()) {
+        CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+          const exitPaths = ['/', '/login', '/doctor-login', '/dashboard', '/doctor-dashboard', '/hospital-dashboard', '/admin-dashboard'];
+          if (exitPaths.includes(location.pathname)) {
+            CapacitorApp.exitApp();
+          } else {
+            navigate(-1);
+          }
+        }).then(l => listener = l);
+      }
+    });
+
+    return () => {
+      if (listener) {
+        listener.remove();
+      }
+    };
+  }, [navigate, location]);
+
+  return null;
+};
+
 function App() {
   const isMobile = useIsMobile();
 
@@ -146,6 +176,7 @@ function App() {
 
   return (
     <Router>
+      <HardwareBackButtonHandler />
       <ErrorBoundary>
         <ThemeProvider>
           <AuthProvider>

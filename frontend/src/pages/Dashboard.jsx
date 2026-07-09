@@ -19,6 +19,7 @@ import ClinicalAlertBanner from '../components/ClinicalAlertBanner';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { lastNotification } = useNotifications();
   const [stats, setStats] = useState({ recordsCount: 0, latestDiagnosis: 'None', doctor: 'None' });
   const [loading, setLoading] = useState(true);
   const [requests, setRequests] = useState([]);
@@ -40,6 +41,21 @@ const Dashboard = () => {
     };
     initDashboard();
   }, []);
+
+  useEffect(() => {
+    if (lastNotification && lastNotification.type === 'SECURITY') {
+      fetchRequests();
+    }
+  }, [lastNotification]);
+
+  useEffect(() => {
+    if (!loading && window.location.hash === '#access-requests') {
+      setTimeout(() => {
+        const el = document.getElementById('access-requests');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 300);
+    }
+  }, [loading]);
 
   const fetchPatientData = async () => {
     try {
@@ -165,6 +181,44 @@ const Dashboard = () => {
           </div>
         )}
 
+        {/* Access Requests (Moved up for Mobile visibility) */}
+        {requests.length > 0 && (
+          <div id="access-requests" className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-xl relative overflow-hidden group scroll-mt-24 mb-8">
+            <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500" />
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl"><Bell size={24} /></div>
+                <h2 className="text-xl font-black text-slate-800 tracking-tight uppercase tracking-tighter">Access Requests</h2>
+              </div>
+              <span className="px-3 py-1 bg-emerald-500 text-white text-[10px] font-black rounded-full animate-pulse uppercase tracking-widest">{requests.length} Pending</span>
+            </div>
+            
+            <div className="space-y-4">
+              {requests.map(req => (
+                <div key={req.id} className="flex items-center justify-between p-6 bg-slate-50 hover:bg-emerald-50/50 rounded-2xl border border-slate-100 transition-all group/item">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-white rounded-xl border border-slate-200 flex items-center justify-center font-black text-emerald-500 shadow-sm overflow-hidden">
+                      {req.doctor?.profilePictureUrl ? (
+                        <img src={req.doctor.profilePictureUrl} className="w-full h-full object-cover" alt="Dr." />
+                      ) : "Dr"}
+                    </div>
+                    <div>
+                      <p className="font-black text-slate-800">Dr. {req.doctor?.name || 'Physician'}</p>
+                      <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Medical License: Verified</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => handleApproveRequest(req.id)}
+                    className="px-6 py-2.5 bg-[#0A1A1A] text-white text-[10px] font-black rounded-xl hover:bg-emerald-500 transition-all uppercase tracking-widest active:scale-95"
+                  >
+                    Authorize
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Stats Grid: Operating Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCardPro 
@@ -205,44 +259,6 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
           
           <div className="xl:col-span-8 space-y-8">
-            {/* Access Requests */}
-            {requests.length > 0 && (
-              <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-xl relative overflow-hidden group">
-                <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500" />
-                <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-3">
-                    <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl"><Bell size={24} /></div>
-                    <h2 className="text-xl font-black text-slate-800 tracking-tight uppercase tracking-tighter">Access Requests</h2>
-                  </div>
-                  <span className="px-3 py-1 bg-emerald-500 text-white text-[10px] font-black rounded-full animate-pulse uppercase tracking-widest">{requests.length} Pending</span>
-                </div>
-                
-                <div className="space-y-4">
-                  {requests.map(req => (
-                    <div key={req.id} className="flex items-center justify-between p-6 bg-slate-50 hover:bg-emerald-50/50 rounded-2xl border border-slate-100 transition-all group/item">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-white rounded-xl border border-slate-200 flex items-center justify-center font-black text-emerald-500 shadow-sm overflow-hidden">
-                          {req.doctor?.profilePictureUrl ? (
-                            <img src={req.doctor.profilePictureUrl} className="w-full h-full object-cover" alt="Dr." />
-                          ) : "Dr"}
-                        </div>
-                        <div>
-                          <p className="font-black text-slate-800">Dr. {req.doctor?.name || 'Physician'}</p>
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Medical License: Verified</p>
-                        </div>
-                      </div>
-                      <button 
-                        onClick={() => handleApproveRequest(req.id)}
-                        className="px-6 py-2.5 bg-[#0A1A1A] text-white text-[10px] font-black rounded-xl hover:bg-emerald-500 transition-all uppercase tracking-widest active:scale-95"
-                      >
-                        Authorize
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Main Action Hub */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-xl group hover:shadow-2xl transition-all relative overflow-hidden">

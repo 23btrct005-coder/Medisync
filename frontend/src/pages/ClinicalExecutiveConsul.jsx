@@ -333,7 +333,7 @@ const DoctorDashboard = () => {
           </div>
 
           {/* Authorization Log Stream */}
-          <div className="xl:col-span-4 h-full">
+          <div className="xl:col-span-4 h-full order-first xl:order-last mb-8 xl:mb-0">
             <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-xl h-full flex flex-col min-h-[500px]">
                <div className="flex items-center justify-between mb-10">
                   <div className="flex items-center gap-3">

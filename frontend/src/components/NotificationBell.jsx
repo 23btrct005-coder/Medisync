@@ -19,12 +19,24 @@ const NotificationBell = () => {
   };
 
   const handleAction = (n) => {
-    if (n.actionLink) {
-      if (window.location.pathname === n.actionLink) {
+    let targetLink = n.actionLink;
+    if (n.type === 'SECURITY' && targetLink === '/dashboard') {
+      targetLink = '/dashboard#access-requests';
+    }
+
+    if (targetLink) {
+      if (window.location.pathname === targetLink.split('#')[0]) {
         // Force refresh or just close menu if already there
         setIsOpen(false);
+        if (targetLink.includes('#')) {
+          const id = targetLink.split('#')[1];
+          setTimeout(() => {
+            const el = document.getElementById(id);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+        }
       } else {
-        navigate(n.actionLink);
+        navigate(targetLink);
         setIsOpen(false);
       }
     }
