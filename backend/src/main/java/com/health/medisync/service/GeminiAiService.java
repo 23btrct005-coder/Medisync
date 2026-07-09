@@ -13,7 +13,7 @@ public class GeminiAiService implements AiProvider {
     @Value("${gemini.api.key:}")
     private String apiKey;
 
-    @Value("${gemini.model:gemini-pro}")
+    @Value("${gemini.model:gemini-flash-latest}")
     private String model;
 
     @Override
