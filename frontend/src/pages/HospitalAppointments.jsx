@@ -121,8 +121,8 @@ const HospitalAppointments = () => {
     }
 
     return (
-        <div className="p-8 animate-in fade-in duration-500 space-y-12 pb-32">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="p-8 animate-in fade-in duration-500 space-y-8 pb-32">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
                 <div>
                     <h1 className="text-4xl font-black uppercase tracking-tight italic">Institutional <span className="not-italic text-primary">Pulse</span></h1>
                     <div className="flex items-center gap-2 mt-2 ml-1">
@@ -130,8 +130,38 @@ const HospitalAppointments = () => {
                         <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Real-time Cross-departmental orchestration active</p>
                     </div>
                 </div>
+                <div className="xl:w-[60%]">
+                    <FilterBar 
+                        searchTerm={searchTerm}
+                        onSearchChange={setSearchTerm}
+                        placeholder="Filter ledger by patient, doctor, service, or date..."
+                        sortValue={sortBy}
+                        onSortChange={setSortBy}
+                        sortOptions={[
+                            { label: 'Date (Newest)', value: 'date-desc' },
+                            { label: 'Date (Oldest)', value: 'date-asc' },
+                            { label: 'Patient (A-Z)', value: 'patient-asc' }
+                        ]}
+                        filters={[
+                            {
+                                key: 'status',
+                                label: 'All Statuses',
+                                value: statusFilter,
+                                options: [
+                                    { label: 'Confirmed', value: 'BOOKED' },
+                                    { label: 'Awaiting Verification', value: 'AWAITING_VERIFICATION' },
+                                    { label: 'Pending', value: 'PENDING' },
+                                    { label: 'Completed', value: 'COMPLETED' },
+                                    { label: 'Cancelled', value: 'CANCELLED' }
+                                ]
+                            }
+                        ]}
+                        onFilterChange={(key, val) => setStatusFilter(val)}
+                    />
+                </div>
+            </div>
                 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
                     { label: 'Emergency', count: appointments.filter(a => a.serviceName?.includes('Emergency') || a.serviceName?.includes('Trauma') || a.serviceName?.includes('Ambulance')).length, color: 'text-red-500', bg: 'bg-red-50' },
                     { label: 'Diagnostics', count: appointments.filter(a => a.serviceName?.includes('Scan') || a.serviceName?.includes('Test') || a.serviceName?.includes('X-Ray')).length, color: 'text-blue-500', bg: 'bg-blue-50' },
@@ -143,35 +173,6 @@ const HospitalAppointments = () => {
                         <span className="text-3xl font-black text-slate-900">{stat.count}</span>
                     </div>
                 ))}
-            </div>
-
-            <FilterBar 
-                searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
-                placeholder="Filter ledger by patient, doctor, service, or date..."
-                sortValue={sortBy}
-                onSortChange={setSortBy}
-                sortOptions={[
-                    { label: 'Date (Newest)', value: 'date-desc' },
-                    { label: 'Date (Oldest)', value: 'date-asc' },
-                    { label: 'Patient (A-Z)', value: 'patient-asc' }
-                ]}
-                filters={[
-                    {
-                        key: 'status',
-                        label: 'All Statuses',
-                        value: statusFilter,
-                        options: [
-                            { label: 'Confirmed', value: 'BOOKED' },
-                            { label: 'Awaiting Verification', value: 'AWAITING_VERIFICATION' },
-                            { label: 'Pending', value: 'PENDING' },
-                            { label: 'Completed', value: 'COMPLETED' },
-                            { label: 'Cancelled', value: 'CANCELLED' }
-                        ]
-                    }
-                ]}
-                onFilterChange={(key, val) => setStatusFilter(val)}
-            />
             </div>
 
             {/* Blood Bank Triage Summary */}
