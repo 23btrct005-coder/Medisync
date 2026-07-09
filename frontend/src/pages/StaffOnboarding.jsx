@@ -396,30 +396,6 @@ const StaffOnboarding = () => {
                             </div>
                         </div>
 
-                        <div className="space-y-6">
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Diagnostic Infrastructure</p>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                {PREDEFINED_INSTITUTIONAL_SERVICES.map(service => {
-                                    const isSelected = onboardData.services?.split(', ').includes(service);
-                                    return (
-                                        <button
-                                            key={service}
-                                            type="button"
-                                            onClick={() => {
-                                                const current = onboardData.services ? onboardData.services.split(', ').filter(s => s) : [];
-                                                const next = isSelected ? current.filter(s => s !== service) : [...current, service];
-                                                setOnboardData({ ...onboardData, services: next.join(', ') });
-                                            }}
-                                            className={`px-6 py-4 rounded-[1.5rem] border text-[10px] font-black uppercase tracking-widest transition-all ${
-                                                isSelected ? 'bg-slate-900 text-white border-slate-900 shadow-xl shadow-slate-900/20 scale-105' : 'bg-white border-slate-100 text-slate-400 hover:bg-slate-50'
-                                            }`}
-                                        >
-                                            {service}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
                     </div>
                 </div>
 
