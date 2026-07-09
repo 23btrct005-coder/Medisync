@@ -216,12 +216,12 @@ const StaffOnboarding = () => {
                         <h3 className="text-[14px] font-black text-slate-900 uppercase tracking-[0.5em]">2. Academic & Licensing</h3>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 relative z-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 relative z-30">
                         <PremiumDropdown label="Primary Degree" options={['MBBS', 'MD', 'MS', 'DM', 'MCh', 'PhD']} value={onboardData.medicalDegree} onChange={(val) => setOnboardData({...onboardData, medicalDegree: val})} />
                         <PremiumDropdown label="Clinical Specialization" options={['Cardiology', 'Neurology', 'Oncology', 'Pediatrics', 'Orthopedics', 'Dermatology', 'Psychiatry', 'Radiology']} value={onboardData.specialization} onChange={(val) => setOnboardData({...onboardData, specialization: val})} searchable={true} />
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10 relative z-10">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10 relative z-20">
                         <div><label className={labelClass}>License Number</label><input type="text" required value={onboardData.medicalLicenseNumber} onChange={(e) => setOnboardData({...onboardData, medicalLicenseNumber: e.target.value})} className={inputClass} /></div>
                         <div><label className={labelClass}>Medical Council</label><input type="text" value={onboardData.medicalCouncil} onChange={(e) => setOnboardData({...onboardData, medicalCouncil: e.target.value})} className={inputClass} placeholder="e.g. Karnataka Medical Council" /></div>
                         <div><label className={labelClass}>License Expiry</label><input type="date" value={onboardData.licenseExpiryDate} onChange={(e) => setOnboardData({...onboardData, licenseExpiryDate: e.target.value})} className={inputClass} /></div>
@@ -272,13 +272,13 @@ const StaffOnboarding = () => {
                         <h3 className="text-[14px] font-black text-slate-900 uppercase tracking-[0.5em]">4. Operational Mapping</h3>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10 relative z-10">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10 relative z-30">
                         <div><label className={labelClass}>Employee ID</label><input type="text" required value={onboardData.employeeId} onChange={(e) => setOnboardData({...onboardData, employeeId: e.target.value})} className={inputClass} placeholder="EMP-2026-X" /></div>
                         <div><label className={labelClass}>OPD Room Unit</label><input type="text" required value={onboardData.opdRoomNumber} onChange={(e) => setOnboardData({...onboardData, opdRoomNumber: e.target.value})} className={inputClass} placeholder="BLOCK-A-204" /></div>
                         <PremiumDropdown label="Contract Nature" options={['PERMANENT', 'VISITING', 'CONSULTANT', 'INTERN']} value={onboardData.contractType} onChange={(val) => setOnboardData({...onboardData, contractType: val})} />
                     </div>
 
-                    <div className="space-y-8 relative z-10">
+                    <div className="space-y-8 relative z-20">
                         <label className={labelClass}>Institutional Availability</label>
                         <div className="flex flex-wrap gap-4">
                             {daysOfWeek.map(day => (
