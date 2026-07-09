@@ -68,7 +68,7 @@ export const AuthProvider = ({ children }) => {
       // Immediately fetch full profile details
       await fetchUserProfile(role);
       
-      return { success: true, role: role };
+      return { success: true, role: role, emailVerified: emailVerified };
     } catch (error) {
       console.error("Login Error:", error);
       return { 

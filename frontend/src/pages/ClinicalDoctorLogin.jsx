@@ -872,6 +872,10 @@ const DoctorLogin = () => {
       const result = await login(formData.username, formData.password);
       clearTimeout(statusTimerRef.current); setStatusMsg('');
       if (result.success) {
+        if (!result.emailVerified) {
+          navigate('/verify-email', { state: { email: formData.username } });
+          return;
+        }
         if (result.role === 'ROLE_ADMIN') {
           navigate('/admin-dashboard');
         } else if (result.role === 'ROLE_DOCTOR') {

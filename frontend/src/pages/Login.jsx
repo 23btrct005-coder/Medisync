@@ -36,6 +36,10 @@ const Login = () => {
     setStatusMsg('');
     
     if (result.success) {
+      if (!result.emailVerified) {
+        navigate('/verify-email', { state: { email: username } });
+        return;
+      }
       if (result.role === 'ROLE_HOSPITAL_ADMIN' || result.role === 'ROLE_DOCTOR') {
         navigate('/hospital-dashboard/staff');
       } else if (result.role === 'ROLE_ADMIN') {
