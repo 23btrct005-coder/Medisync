@@ -76,7 +76,6 @@ const VerifyEmail = () => {
                 otp: otp 
             });
             toast.success("Identity verified successfully!");
-            await refreshUser();
             setStep('SET_PASSWORD');
         } catch (err) {
             toast.error(err.response?.data?.message || "Invalid or expired code.");
@@ -95,6 +94,7 @@ const VerifyEmail = () => {
         try {
             await api.post('/auth/update-password', { newPassword });
             toast.success("Password updated successfully!");
+            await refreshUser();
             const role = localStorage.getItem('role');
             if (role === 'ROLE_DOCTOR') navigate('/doctor-dashboard');
             else if (role === 'ROLE_HOSPITAL_ADMIN') navigate('/hospital-dashboard');
