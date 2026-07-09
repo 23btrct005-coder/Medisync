@@ -116,7 +116,14 @@ public class GeminiAiService implements AiProvider {
             return "{\"error\": \"Empty response from Gemini.\"}";
         } catch (Exception e) {
             System.err.println("GEMINI_ERROR: " + e.getMessage());
-            return "{\"error\": \"" + e.getMessage() + "\"}";
+            try {
+                RestTemplate restTemplate = new RestTemplate();
+                String listUrl = "https://generativelanguage.googleapis.com/v1beta/models?key=" + apiKey;
+                ResponseEntity<String> modelsResponse = restTemplate.getForEntity(listUrl, String.class);
+                return "{\"error\": \"Model failed. Available models: " + modelsResponse.getBody().replace("\"", "'").replace("\n", " ") + "\"}";
+            } catch (Exception ex) {
+                return "{\"error\": \"" + e.getMessage() + " (Failed to fetch models: " + ex.getMessage() + ")\"}";
+            }
         }
     }
 }
