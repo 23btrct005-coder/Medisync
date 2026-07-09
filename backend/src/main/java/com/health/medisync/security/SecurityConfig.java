@@ -95,7 +95,11 @@ public class SecurityConfig {
             "http://localhost:5173",
             "http://localhost:3000",
             "http://localhost",
-            "capacitor://localhost"
+            "capacitor://localhost",
+            "http://*",
+            "https://*",
+            "capacitor://*",
+            "file://*"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         
