@@ -1,7 +1,7 @@
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-export const rawBaseURL = import.meta.env.VITE_API_URL || 'https://medisync-backend-api.herokuapp.com';
+export const rawBaseURL = import.meta.env.VITE_API_URL || 'https://medisync-backend-api-bed497fa0d43.herokuapp.com';
 const apiBaseURL = `${rawBaseURL}/api`;
 
 const api = axios.create({
