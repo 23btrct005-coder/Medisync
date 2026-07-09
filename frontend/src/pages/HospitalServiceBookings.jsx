@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Calendar, Clock, User, ChevronRight, Activity, Search, ClipboardCheck, AlertCircle, MapPin, Navigation, Phone, X, CheckCircle } from 'lucide-react';
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
@@ -13,7 +14,7 @@ const PatientLocationModal = ({ appointment, onClose }) => {
     if (!appointment) return null;
     const { patient, latitude, longitude, serviceName } = appointment;
 
-    return (
+    return createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
             <div className="bg-white rounded-[2.5rem] shadow-2xl max-w-2xl w-full overflow-hidden animate-in zoom-in-95 duration-300 border border-slate-100 flex flex-col max-h-[90vh]">
                 <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
@@ -118,7 +119,8 @@ const PatientLocationModal = ({ appointment, onClose }) => {
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 
