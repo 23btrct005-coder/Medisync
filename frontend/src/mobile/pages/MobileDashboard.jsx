@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import ActivityHub from '../../components/ActivityHub';
 
 const MobileDashboard = () => {
     const { user } = useAuth();
@@ -254,6 +255,11 @@ const MobileDashboard = () => {
                     </div>
                 )}
             </motion.button>
+
+            {/* ── ACTIVITY HUB (NOTIFICATIONS) ── */}
+            <motion.div variants={item}>
+                <ActivityHub />
+            </motion.div>
         </motion.div>
     );
 };
