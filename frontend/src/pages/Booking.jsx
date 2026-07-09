@@ -78,7 +78,19 @@ const Booking = () => {
     let watchId;
     if (navigator.geolocation) {
         watchId = navigator.geolocation.watchPosition(
-            (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+            (pos) => {
+                setUserLocation(prev => {
+                    const newLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    if (!prev) return newLoc;
+                    // Only update if moved more than 50 meters to prevent jitter
+                    if (haversineKm(prev.lat, prev.lng, newLoc.lat, newLoc.lng) > 0.05) {
+                        setDoctors(curr => curr.map(d => ({ ...d, distance: undefined })));
+                        setServiceHospitals(curr => curr.map(h => ({ ...h, distance: undefined })));
+                        return newLoc;
+                    }
+                    return prev;
+                });
+            },
             (err) => console.warn("Location not provided for distance calculation."),
             { enableHighAccuracy: true, maximumAge: 0 }
         );
@@ -164,52 +176,51 @@ const Booking = () => {
         }
         fetchHospitalsByService(selectedService, extra);
     }
-  }, [selectedService, selectedBloodGroup, userLocation]);
+  }, [selectedService, selectedBloodGroup]);
+
+  useEffect(() => {
+    if (userLocation && serviceHospitals.length > 0) {
+      const needsUpdate = serviceHospitals.some(h => h.distance === undefined);
+      if (needsUpdate) {
+        const withStraightLine = serviceHospitals.map(h => ({
+          ...h,
+          distance: (h.latitude && h.longitude) ? haversineKm(userLocation.lat, userLocation.lng, h.latitude, h.longitude) : null
+        }));
+        
+        const sortedWithStraightLine = withStraightLine.map(h => h.distance === undefined ? { ...h, distance: null } : h).sort((a, b) => {
+            if (a.distance === null) return 1;
+            if (b.distance === null) return -1;
+            return a.distance - b.distance;
+        });
+        setServiceHospitals(sortedWithStraightLine);
+
+        fetchOSRMRouteDistances(userLocation, serviceHospitals).then(distanceMap => {
+          if (distanceMap.size > 0) {
+            setServiceHospitals(prev => {
+                const updated = prev.map(h => {
+                  if (distanceMap.has(h.id)) {
+                    return { ...h, distance: distanceMap.get(h.id) };
+                  }
+                  return h;
+                });
+                return updated.sort((a, b) => {
+                    if (a.distance === null) return 1;
+                    if (b.distance === null) return -1;
+                    return a.distance - b.distance;
+                });
+            });
+          }
+        });
+      }
+    }
+  }, [userLocation, serviceHospitals]);
 
   const fetchHospitalsByService = async (service, extraParams = {}) => {
     setLoadingHospitals(true);
     try {
         const params = new URLSearchParams({ service, ...extraParams });
         const res = await api.get(`appointments/hospitals-by-service?${params.toString()}`);
-        let hospitals = res.data || [];
-
-        // Sort by straight-line distance initially for instant UI
-        if (userLocation) {
-            hospitals = hospitals
-                .map(h => ({
-                    ...h,
-                    distance: h.latitude && h.longitude
-                        ? haversineKm(userLocation.lat, userLocation.lng, h.latitude, h.longitude)
-                        : null
-                }))
-                .sort((a, b) => {
-                    if (a.distance === null) return 1;
-                    if (b.distance === null) return -1;
-                    return a.distance - b.distance;
-                });
-        }
-        setServiceHospitals(hospitals);
-
-        // Fetch accurate routing driving distances asynchronously
-        if (userLocation && hospitals.length > 0) {
-            fetchOSRMRouteDistances(userLocation, hospitals).then(distanceMap => {
-                if (distanceMap.size > 0) {
-                    setServiceHospitals(prev => {
-                        const updated = prev.map(h => {
-                            if (distanceMap.has(h.id)) {
-                                return { ...h, distance: distanceMap.get(h.id) };
-                            }
-                            return h;
-                        });
-                        return updated.sort((a, b) => {
-                            if (a.distance === null) return 1;
-                            if (b.distance === null) return -1;
-                            return a.distance - b.distance;
-                        });
-                    });
-                }
-            });
-        }
+        setServiceHospitals(res.data || []);
     } catch (e) {
         toast.error("Failed to fetch hospitals for this service.");
     } finally {
