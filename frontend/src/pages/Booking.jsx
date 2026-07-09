@@ -18,14 +18,7 @@ import {
   ALL_INSTITUTIONAL_SERVICES 
 } from '../utils/clinicalRegistry';
 
-// ── Haversine Distance (km) ──
-const haversineKm = (lat1, lng1, lat2, lng2) => {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLng = (lng2 - lng1) * Math.PI / 180;
-  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-};
+import { haversineKm, fetchOSRMRouteDistances } from '../utils/distanceUtils';
 
 const Booking = () => {
   const navigate = useNavigate();
@@ -129,6 +122,34 @@ const Booking = () => {
   }, [selectedDoctor, bookingDate]);
 
   useEffect(() => {
+    if (userLocation && doctors.length > 0) {
+      const needsUpdate = doctors.some(d => d.distance === undefined);
+      if (needsUpdate) {
+        // Compute initial straight-line
+        const withStraightLine = doctors.map(d => ({
+          ...d,
+          distance: (d.latitude && d.longitude) ? haversineKm(userLocation.lat, userLocation.lng, d.latitude, d.longitude) : null
+        }));
+        
+        // Prevent re-triggering this effect by setting distance = null if no coordinates
+        setDoctors(withStraightLine.map(d => d.distance === undefined ? { ...d, distance: null } : d));
+
+        // Fetch accurate routing
+        fetchOSRMRouteDistances(userLocation, doctors).then(distanceMap => {
+          if (distanceMap.size > 0) {
+            setDoctors(prev => prev.map(d => {
+              if (distanceMap.has(d.id)) {
+                return { ...d, distance: distanceMap.get(d.id) };
+              }
+              return d;
+            }));
+          }
+        });
+      }
+    }
+  }, [userLocation, doctors]);
+
+  useEffect(() => {
     if (selectedService) {
         const extra = {};
         if (selectedService === 'Blood Bank' && selectedBloodGroup) {
@@ -163,36 +184,24 @@ const Booking = () => {
         setServiceHospitals(hospitals);
 
         // Fetch accurate routing driving distances asynchronously
-        if (userLocation && hospitals.length > 0 && hospitals.length <= 25) {
-            const validHospitals = hospitals.filter(h => h.latitude && h.longitude);
-            if (validHospitals.length > 0) {
-                const source = `${userLocation.lng},${userLocation.lat}`;
-                const destinations = validHospitals.map(h => `${h.longitude},${h.latitude}`).join(';');
-                fetch(`https://router.project-osrm.org/table/v1/driving/${source};${destinations}?sources=0&annotations=distance`)
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.code === 'Ok' && data.distances && data.distances[0]) {
-                            const routeDistances = data.distances[0];
-                            setServiceHospitals(prev => {
-                                const updated = prev.map(h => {
-                                    if (h.latitude && h.longitude) {
-                                        const index = validHospitals.findIndex(vh => vh.id === h.id);
-                                        if (index !== -1 && routeDistances[index + 1] !== undefined) {
-                                            return { ...h, distance: routeDistances[index + 1] / 1000 };
-                                        }
-                                    }
-                                    return h;
-                                });
-                                return updated.sort((a, b) => {
-                                    if (a.distance === null) return 1;
-                                    if (b.distance === null) return -1;
-                                    return a.distance - b.distance;
-                                });
-                            });
-                        }
-                    })
-                    .catch(e => console.warn("Routing API fallback failed, keeping straight-line distance", e));
-            }
+        if (userLocation && hospitals.length > 0) {
+            fetchOSRMRouteDistances(userLocation, hospitals).then(distanceMap => {
+                if (distanceMap.size > 0) {
+                    setServiceHospitals(prev => {
+                        const updated = prev.map(h => {
+                            if (distanceMap.has(h.id)) {
+                                return { ...h, distance: distanceMap.get(h.id) };
+                            }
+                            return h;
+                        });
+                        return updated.sort((a, b) => {
+                            if (a.distance === null) return 1;
+                            if (b.distance === null) return -1;
+                            return a.distance - b.distance;
+                        });
+                    });
+                }
+            });
         }
     } catch (e) {
         toast.error("Failed to fetch hospitals for this service.");
@@ -1531,9 +1540,11 @@ const Booking = () => {
 };
 
 const DoctorCard = ({ doctor, onSelect, userLocation }) => {
-  const distance = (userLocation && doctor.latitude && doctor.longitude)
-    ? haversineKm(userLocation.lat, userLocation.lng, doctor.latitude, doctor.longitude)
-    : null;
+  const distance = doctor.distance !== undefined
+    ? doctor.distance
+    : (userLocation && doctor.latitude && doctor.longitude)
+      ? haversineKm(userLocation.lat, userLocation.lng, doctor.latitude, doctor.longitude)
+      : null;
 
   return (
   <div
