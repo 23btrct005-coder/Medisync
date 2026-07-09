@@ -12,6 +12,7 @@ const DropZone = ({
     maxSize = 2 // MB
 }) => {
     const [preview, setPreview] = useState(initialPreview);
+    const [selectedFile, setSelectedFile] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef(null);
 
@@ -22,6 +23,8 @@ const DropZone = ({
             toast.error(`File size too large. Max ${maxSize}MB allowed.`);
             return;
         }
+
+        setSelectedFile(file);
 
         if (file.type.startsWith('image/')) {
             const reader = new FileReader();
@@ -64,6 +67,7 @@ const DropZone = ({
     const handleRemove = (e) => {
         e.stopPropagation();
         setPreview(null);
+        setSelectedFile(null);
         onFileSelect(null);
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
@@ -134,28 +138,31 @@ const DropZone = ({
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
                 className={`relative cursor-pointer border-2 border-dashed rounded-3xl transition-all duration-300 group
-                    ${preview || isDragging
+                    ${selectedFile || isDragging
                         ? 'border-primary-300 bg-primary-50/30' 
                         : 'border-slate-100 bg-slate-50/50 hover:border-primary-200 hover:bg-primary-50/10'
                     }`}
             >
                 <div className="p-8 flex flex-col items-center justify-center gap-3 text-center">
                     <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm transition-all duration-300
-                        ${preview ? 'bg-primary text-white scale-110' : 'bg-white text-slate-400 group-hover:text-primary group-hover:scale-105'}`}>
-                        {preview ? <Upload size={28} /> : <FileText size={28} />}
+                        ${selectedFile ? 'bg-primary text-white scale-110' : 'bg-white text-slate-400 group-hover:text-primary group-hover:scale-105'}`}>
+                        {selectedFile ? <Upload size={28} /> : <FileText size={28} />}
                     </div>
                     <div>
                         <p className="text-[11px] font-black text-slate-900 uppercase tracking-widest mb-1">{label}</p>
                         <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{subLabel}</p>
                     </div>
-                    {preview && (
-                        <div className="mt-2 flex items-center gap-2 px-3 py-1 bg-green-50 text-green-600 rounded-full animate-in slide-in-from-bottom-2">
-                            <span className="text-[9px] font-black uppercase tracking-widest">File Ready</span>
+                    {selectedFile && (
+                        <div className="mt-2 flex flex-col items-center gap-1 animate-in slide-in-from-bottom-2">
+                            <div className="flex items-center gap-2 px-3 py-1 bg-green-50 text-green-600 rounded-full">
+                                <span className="text-[9px] font-black uppercase tracking-widest">File Ready</span>
+                            </div>
+                            <span className="text-[10px] font-bold text-slate-500 max-w-[200px] truncate">{selectedFile.name}</span>
                         </div>
                     )}
                 </div>
 
-                {preview && (
+                {selectedFile && (
                     <button
                         type="button"
                         onClick={handleRemove}
