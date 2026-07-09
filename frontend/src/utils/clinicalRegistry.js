@@ -37,6 +37,7 @@ export const INSTITUTIONAL_SERVICE_CATALOG = [
     description: 'Critical life-safety protocols and rapid response.',
     services: [
         { name: "Ambulance Booking", icon: Ambulance },
+        { name: "Blood Bank", icon: Droplet },
         { name: "Emergency Room", icon: Siren },
         { name: "Trauma Care", icon: HeartPulse },
         { name: "Stroke Care", icon: Brain },
