@@ -14,7 +14,7 @@ const PatientLocationModal = ({ appointment, onClose }) => {
     const { patient, latitude, longitude, serviceName } = appointment;
 
     return (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
             <div className="bg-white rounded-[2.5rem] shadow-2xl max-w-2xl w-full overflow-hidden animate-in zoom-in-95 duration-300 border border-slate-100 flex flex-col max-h-[90vh]">
                 <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                     <div className="flex items-center gap-4">
@@ -41,10 +41,17 @@ const PatientLocationModal = ({ appointment, onClose }) => {
                             <div>
                                 <h4 className="text-lg font-black text-slate-900 italic">{patient?.name}</h4>
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Protocol ID: {patient?.patientId}</p>
-                                <div className="flex items-center gap-2 mt-2 px-3 py-1 bg-white rounded-full border border-slate-200 w-fit">
-                                    <Phone size={12} className="text-emerald-500" />
-                                    <span className="text-[10px] font-black text-slate-700">{patient?.phone || "No Contact Bound"}</span>
-                                </div>
+                                {patient?.phone ? (
+                                    <a href={`tel:${patient.phone}`} className="flex items-center gap-2 mt-2 px-3 py-1 bg-white hover:bg-emerald-50 transition-colors rounded-full border border-slate-200 hover:border-emerald-200 w-fit cursor-pointer group">
+                                        <Phone size={12} className="text-emerald-500 group-hover:animate-pulse" />
+                                        <span className="text-[10px] font-black text-slate-700 group-hover:text-emerald-700">{patient.phone}</span>
+                                    </a>
+                                ) : (
+                                    <div className="flex items-center gap-2 mt-2 px-3 py-1 bg-slate-50 rounded-full border border-slate-200 w-fit opacity-50">
+                                        <Phone size={12} className="text-slate-400" />
+                                        <span className="text-[10px] font-black text-slate-400">No Contact Bound</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                         <div className="text-right">
@@ -209,10 +216,17 @@ const HospitalServiceBookings = () => {
                                                     <p className="font-black text-slate-800 text-sm italic">{app.patient?.name}</p>
                                                     <p className="text-[10px] font-bold text-slate-400 uppercase">ID: {app.patient?.patientId}</p>
                                                     {requiresContact.includes(app.serviceName) && (
-                                                        <div className="flex items-center gap-1 mt-1 text-slate-500">
-                                                            <Phone size={10} className="text-emerald-500" />
-                                                            <span className="text-[10px] font-bold">{app.patient?.phone || "Not provided"}</span>
-                                                        </div>
+                                                        app.patient?.phone ? (
+                                                            <a href={`tel:${app.patient.phone}`} className="flex items-center gap-1 mt-1 text-slate-500 hover:text-emerald-600 transition-colors cursor-pointer w-fit" onClick={(e) => e.stopPropagation()}>
+                                                                <Phone size={10} className="text-emerald-500" />
+                                                                <span className="text-[10px] font-bold">{app.patient.phone}</span>
+                                                            </a>
+                                                        ) : (
+                                                            <div className="flex items-center gap-1 mt-1 text-slate-400 opacity-70">
+                                                                <Phone size={10} />
+                                                                <span className="text-[10px] font-bold">Not provided</span>
+                                                            </div>
+                                                        )
                                                     )}
                                                 </div>
                                             </div>
