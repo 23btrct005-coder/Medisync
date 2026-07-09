@@ -438,7 +438,7 @@ public class HospitalController {
             newUser.setUsername(email);
             newUser.setRole("ROLE_DOCTOR");
             newUser.setEnabled(true);
-            newUser.setEmailVerified(true);
+            newUser.setEmailVerified(false);
             newUser.setPassword(passwordEncoder.encode("MediSync@2026"));
             newUser = userRepository.save(newUser);
 
