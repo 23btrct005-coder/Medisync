@@ -35,7 +35,7 @@ export const NotificationProvider = ({ children }) => {
     try {
       const res = await api.get('/chat/unread-counts');
       const data = res.data || {};
-      const total = Object.values(data).reduce((acc, count) => acc + count, 0);
+      const total = Object.values(data).reduce((acc, count) => acc + Number(count), 0);
       setUnreadCountsMap(data);
       setUnreadChatCount(total);
     } catch (e) {
