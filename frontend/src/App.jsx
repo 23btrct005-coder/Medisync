@@ -128,6 +128,18 @@ function App() {
         Notification.requestPermission();
       }, 5000);
     }
+    
+    // Request Native Mobile Permissions on Startup
+    import('@capacitor/core').then(({ Capacitor }) => {
+      if (Capacitor.isNativePlatform()) {
+        import('@capacitor/geolocation').then(({ Geolocation }) => {
+          Geolocation.requestPermissions().catch(console.error);
+        });
+        import('@capacitor/camera').then(({ Camera }) => {
+          Camera.requestPermissions().catch(console.error);
+        });
+      }
+    });
 
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
