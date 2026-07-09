@@ -3,6 +3,11 @@ import { Calendar, Clock, User, ChevronRight, Activity, Search, ClipboardCheck, 
 import api from '../api/axiosConfig';
 import toast from 'react-hot-toast';
 import ClinicMap from '../components/ClinicMap';
+import { INSTITUTIONAL_SERVICE_CATALOG } from '../utils/clinicalRegistry';
+
+const emergencyServices = INSTITUTIONAL_SERVICE_CATALOG.find(c => c.category === 'Emergency Services')?.services.map(s => s.name) || [];
+const homeServices = INSTITUTIONAL_SERVICE_CATALOG.find(c => c.category === 'Home & Remote Services')?.services.map(s => s.name) || [];
+const requiresContact = [...emergencyServices, ...homeServices];
 
 const PatientLocationModal = ({ appointment, onClose }) => {
     if (!appointment) return null;
@@ -203,6 +208,12 @@ const HospitalServiceBookings = () => {
                                                 <div>
                                                     <p className="font-black text-slate-800 text-sm italic">{app.patient?.name}</p>
                                                     <p className="text-[10px] font-bold text-slate-400 uppercase">ID: {app.patient?.patientId}</p>
+                                                    {requiresContact.includes(app.serviceName) && (
+                                                        <div className="flex items-center gap-1 mt-1 text-slate-500">
+                                                            <Phone size={10} className="text-emerald-500" />
+                                                            <span className="text-[10px] font-bold">{app.patient?.phone || "Not provided"}</span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </td>
