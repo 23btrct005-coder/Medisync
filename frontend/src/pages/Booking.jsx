@@ -723,7 +723,7 @@ const Booking = () => {
                                         <p className="text-[10px] font-black text-primary-600 uppercase tracking-widest mt-0.5">Clinical Protocol Active</p>
                                     </div>
                                 </div>
-                                {selectedService === 'Ambulance Services' && userLocation && (
+                                {selectedService === 'Ambulance Booking' && userLocation && (
                                         <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-2xl border border-blue-100 text-[10px] font-black uppercase tracking-widest">
                                             <Navigation size={12} className="animate-pulse" />
                                             Sorted by distance from your location
