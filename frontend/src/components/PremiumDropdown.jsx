@@ -62,7 +62,7 @@ const PremiumDropdown = ({
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full border-none p-0 text-xs font-bold focus:ring-0 placeholder:text-slate-300"
+                                className="w-full border-none p-0 text-xs font-bold focus:ring-0 focus:outline-none placeholder:text-slate-300"
                                 placeholder="Search options..."
                                 autoFocus
                             />
