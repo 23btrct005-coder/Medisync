@@ -188,6 +188,12 @@ public class AiService {
             specialist = "Radiologist";
             action = "Navigate to /dashboard/booking?mode=service&category=Diagnostic%20Services.";
             service = "Diagnostic Services";
+        } else if (matchesWord(q, "blood") || matchesWord(q, "plasma") || matchesWord(q, "platelets") || matchesWord(q, "blood type") || matchesWord(q, "donate")) {
+            assessment = safetyPrefix + "Blood banking or transfusion services identified.";
+            severity = "MODERATE";
+            specialist = "Blood Bank";
+            action = "Navigate to /dashboard/booking?mode=specialist&specialist=Blood%20Bank";
+            service = "Blood Bank";
         } else if (matchesWord(q, "surgery") || matchesWord(q, "operation") || matchesWord(q, "surgical") || matchesWord(q, "pre-op")) {
             assessment = safetyPrefix + "Surgical intervention requirement identified.";
             severity = "HIGH";
