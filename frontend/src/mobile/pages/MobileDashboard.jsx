@@ -16,22 +16,25 @@ const MobileDashboard = () => {
     const [vitals, setVitals] = useState(null);
     const [appointments, setAppointments] = useState([]);
     const [unreadChatCount, setUnreadChatCount] = useState(0);
+    const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchMobileData = async () => {
             try {
-                const [vitalsRes, apptsRes, chatRes] = await Promise.all([
+                const [vitalsRes, apptsRes, chatRes, reqsRes] = await Promise.all([
                     api.get('/patient/vitals'),
                     api.get('/appointments/my-appointments'),
-                    api.get('/chat/unread-count')
+                    api.get('/chat/unread-count'),
+                    api.get('patient/requests')
                 ]);
                 if (vitalsRes.data && vitalsRes.data.length > 0) {
                     setVitals(vitalsRes.data[vitalsRes.data.length - 1]);
                 }
                 setAppointments(apptsRes.data || []);
                 setUnreadChatCount(chatRes.data || 0);
+                setRequests(reqsRes.data || []);
             } catch (e) {
                 console.error("Clinical sync failed", e);
             } finally {
@@ -50,6 +53,16 @@ const MobileDashboard = () => {
             })
             .sort((a,b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime())[0]
         : null;
+
+    const handleApproveRequest = async (id) => {
+        try {
+            await api.post(`patient/requests/${id}/accept`);
+            toast.success("Clinical access granted");
+            setRequests(requests.filter(r => r.id !== id));
+        } catch (err) {
+            toast.error("Failed to approve request");
+        }
+    };
 
     const container = {
         hidden: { opacity: 0 },
@@ -91,6 +104,44 @@ const MobileDashboard = () => {
                     <h2 className="text-3xl font-black text-slate-900 tracking-tight">Hello, {(user?.name || 'User').split(' ')[0]}</h2>
                 </div>
             </motion.div>
+
+            {/* ── ACCESS REQUESTS ── */}
+            {requests.length > 0 && (
+                <motion.div variants={item} className="bg-white border border-slate-100 rounded-[2.5rem] p-6 shadow-xl relative overflow-hidden group">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500" />
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl"><Bell size={18} /></div>
+                            <h2 className="text-lg font-black text-slate-800 tracking-tight uppercase">Access Requests</h2>
+                        </div>
+                        <span className="px-2 py-1 bg-emerald-500 text-white text-[9px] font-black rounded-full animate-pulse uppercase tracking-widest">{requests.length} Pending</span>
+                    </div>
+                    
+                    <div className="space-y-3">
+                        {requests.map(req => (
+                            <div key={req.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-white rounded-xl border border-slate-200 flex items-center justify-center font-black text-emerald-500 overflow-hidden shrink-0">
+                                        {req.doctor?.profilePictureUrl ? (
+                                            <img src={req.doctor.profilePictureUrl} className="w-full h-full object-cover" alt="Dr." />
+                                        ) : "Dr"}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="font-black text-slate-800 text-xs truncate">Dr. {req.doctor?.name || 'Physician'}</p>
+                                        <p className="text-[8px] text-slate-500 font-bold uppercase tracking-widest truncate">License Verified</p>
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={() => handleApproveRequest(req.id)}
+                                    className="px-4 py-2 bg-[#0A1A1A] text-white text-[9px] font-black rounded-xl hover:bg-emerald-500 transition-all uppercase tracking-widest shrink-0 active:scale-95"
+                                >
+                                    Authorize
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </motion.div>
+            )}
 
             {/* ── PRIORITY 1: EMERGENCY & URGENT ── */}
             <motion.div variants={item} className="grid grid-cols-2 gap-4">
