@@ -59,13 +59,25 @@ public class AiService {
             if (llmResponse != null && !llmResponse.contains("\"error\"")) {
                 return llmResponse;
             }
-            if (llmResponse != null) {
-                return "Condition Summary:\nAPI Error: " + llmResponse + "\n\n" +
-                       "Triage Level: MODERATE\n" +
-                       "Recommended Specialist: General Physician";
+            
+            System.out.println("Gemini failed, falling back to OpenAI...");
+            llmResponse = openAiService.getCompletion(combinedPrompt);
+            if (llmResponse != null && !llmResponse.contains("\"error\"") && !llmResponse.contains("disabled")) {
+                return llmResponse;
             }
+
+            System.out.println("OpenAI failed, falling back to Groq...");
+            llmResponse = groqAiService.getCompletion(combinedPrompt);
+            if (llmResponse != null && !llmResponse.contains("\"error\"") && !llmResponse.contains("disabled")) {
+                return llmResponse;
+            }
+
+            return "Condition Summary:\nAPI Error: All AI providers failed. Last response: " + llmResponse + "\n\n" +
+                   "Triage Level: MODERATE\n" +
+                   "Recommended Specialist: General Physician";
+            
         } catch (Exception e) {
-            System.err.println("Failed to reach Groq AI Engine: " + e.getMessage());
+            System.err.println("Failed to reach AI Engines: " + e.getMessage());
         }
 
         String q = query.toLowerCase().replaceAll("[^a-z0-9 ]", " ");
