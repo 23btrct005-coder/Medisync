@@ -7,10 +7,12 @@ import {
   Stethoscope, Database, Globe, Smartphone, Download
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { Capacitor } from '@capacitor/core';
 
 const Landing = () => {
   const navigate = useNavigate();
   const { user, userRole, loading } = useAuth();
+  const isNative = Capacitor.isNativePlatform();
 
   const dashboardPath = userRole === 'ROLE_DOCTOR' ? '/doctor-dashboard' : '/dashboard';
 
@@ -99,22 +101,24 @@ const Landing = () => {
               </button>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-200 mt-4">
-              <a 
-                href="/downloads/medisync.ipa" download
-                className="flex flex-1 items-center justify-center gap-3 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold text-sm transition-all shadow-lg active:scale-95"
-              >
-                <Smartphone size={18} />
-                Download iOS (.ipa)
-              </a>
-              <a 
-                href="/downloads/medisync.apk" download
-                className="flex flex-1 items-center justify-center gap-3 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-sm transition-all shadow-lg active:scale-95"
-              >
-                <Download size={18} />
-                Download Android (.apk)
-              </a>
-            </div>
+            {!isNative && (
+              <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-200 mt-4">
+                <a 
+                  href="/downloads/medisync.ipa" download
+                  className="flex flex-1 items-center justify-center gap-3 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold text-sm transition-all shadow-lg active:scale-95"
+                >
+                  <Smartphone size={18} />
+                  Download iOS (.ipa)
+                </a>
+                <a 
+                  href="/downloads/medisync.apk" download
+                  className="flex flex-1 items-center justify-center gap-3 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-sm transition-all shadow-lg active:scale-95"
+                >
+                  <Download size={18} />
+                  Download Android (.apk)
+                </a>
+              </div>
+            )}
           </motion.div>
 
           {/* Visual Showcase */}

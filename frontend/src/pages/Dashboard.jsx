@@ -106,7 +106,7 @@ const Dashboard = () => {
   const emergencyUrl = `${window.location.origin}/emergency/${patient?.patientId || user?.id}`;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-8 selection:bg-emerald-100">
+    <div className="min-h-screen bg-[#F8FAFC] px-4 pb-4 pt-[calc(env(safe-area-inset-top,0px)+1rem)] md:p-8 selection:bg-emerald-100">
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Pro Banner */}

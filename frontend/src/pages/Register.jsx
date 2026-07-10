@@ -563,7 +563,7 @@ const Register = () => {
                   {currentStep === 3 && (
                     <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                       <h3 className={sectionHeadClass}><Activity size={16} /> 3. Medical Metrics</h3>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                         <div><label className={labelClass}>Blood Group</label>
                           <select name="bloodGroup" value={formData.bloodGroup} onChange={handleChange} className={inputClass}>
                             <option value="">Select</option>{['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(bg => <option key={bg} value={bg}>{bg}</option>)}
@@ -672,7 +672,7 @@ const Register = () => {
                     </div>
                   )}
 
-                  <div className={`flex ${isMobile ? 'flex-col-reverse p-4 gap-3 fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]' : 'justify-between items-center pt-6'}`}>
+                  <div className={`flex ${isMobile ? 'flex-col-reverse p-4 pb-[calc(env(safe-area-inset-bottom,0px)+1rem)] gap-3 fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]' : 'justify-between items-center pt-6'}`}>
                     {currentStep > 1 && (
                       <button 
                         type="button" 
@@ -749,7 +749,7 @@ const Register = () => {
                       <div className="flex flex-col items-center gap-4 py-4"><ProfilePhotoUpload onFileSelect={setProfilePicture} required={true} /></div>
                       <div className="space-y-6">
                           <div><label className={labelClass}>Full Name <span className="text-red-500">*</span></label><input type="text" name="name" required value={formData.name} onChange={handleChange} className={inputClass} placeholder="Dr. John Smith" /></div>
-                          <div className="grid grid-cols-2 gap-6">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                               <div><label className={labelClass}>Gender <span className="text-red-500">*</span></label>
                                 <select name="gender" required value={formData.gender} onChange={handleChange} className={inputClass}>
                                   <option value="">Select Gender</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option>
@@ -772,7 +772,7 @@ const Register = () => {
                       <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
                       <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
                         <h3 className={sectionHeadClass}><GraduationCap size={16} /> 3. Qualifications</h3>
-                        <div className="grid grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <select name="medicalDegree" required value={formData.medicalDegree} onChange={handleChange} className={inputClass}><option value="">Degree</option><option value="MBBS">MBBS</option><option value="MD">MD</option><option value="MS">MS</option></select>
                           <select name="specialization" required value={formData.specialization} onChange={handleChange} className={inputClass}><option value="">Specialization</option>{PHYSICIAN_DEPARTMENTS.map(d => <option key={d.name} value={d.name}>{d.name}</option>)}</select>
                         </div>
@@ -780,7 +780,7 @@ const Register = () => {
 
                       <div className="bg-white rounded-3xl p-8 border border-blue-50 shadow-sm space-y-8">
                         <h3 className={sectionHeadClass}><ShieldCheck size={16} /> 4. License & Certification</h3>
-                        <div className="grid grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <input type="text" name="medicalCouncil" required value={formData.medicalCouncil} onChange={handleChange} className={inputClass} placeholder="Council" />
                           <input type="text" name="medicalLicenseNumber" required value={formData.medicalLicenseNumber} onChange={handleChange} className={inputClass} placeholder="License No" />
                         </div>
@@ -799,7 +799,7 @@ const Register = () => {
                             </button>
                         </div>
                         <div className="space-y-6">
-                            <div className="grid grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div><label className={labelClass}>Years of Experience <span className="text-red-500">*</span></label><input type="number" name="yearsOfExperience" required value={formData.yearsOfExperience} onChange={handleChange} className={inputClass} placeholder="e.g. 10" /></div>
                                 <div><label className={labelClass}>Base OPD Fee (₹) <span className="text-red-500">*</span></label><input type="number" name="onlineConsultationFee" required value={formData.onlineConsultationFee} onChange={handleChange} className={inputClass} placeholder="e.g. 500" /></div>
                             </div>
@@ -1114,7 +1114,7 @@ const Register = () => {
                             <div>
                                 <label className={labelClass}>Medical Departments <span className="text-red-500">*</span></label>
                                 <p className="text-[9px] text-slate-400 mb-4 uppercase font-bold tracking-widest">Select all active departments in your facility</p>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                                     {PHYSICIAN_DEPARTMENTS.map(dept => {
                                         const isSelected = formData.departments.split(', ').includes(dept.name);
                                         return (
@@ -1156,7 +1156,7 @@ const Register = () => {
                                                 <category.icon size={12} className={category.color} />
                                                 {category.category}
                                             </h4>
-                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                                                 {category.services.map(service => {
                                                     const isSelected = formData.services.split(', ').includes(service.name);
                                                     return (
@@ -1200,7 +1200,7 @@ const Register = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 pt-4">
                             <div><label className={labelClass}>Total Beds <span className="text-red-500">*</span></label><input type="number" name="totalBeds" required value={formData.totalBeds} onChange={handleChange} className={inputClass} /></div>
                             <div><label className={labelClass}>Doctor Count <span className="text-red-500">*</span></label><input type="number" name="doctorCount" required value={formData.doctorCount} onChange={handleChange} className={inputClass} /></div>
                             <div><label className={labelClass}>Nurses <span className="text-red-500">*</span></label><input type="number" name="nurseCount" required value={formData.nurseCount} onChange={handleChange} className={inputClass} /></div>
@@ -1250,7 +1250,7 @@ const Register = () => {
                         <h3 className={sectionHeadClass}><Globe size={16} /> 8. Capabilities & Settlement</h3>
                         
                         <div className="space-y-6">
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                                 {[
                                     { name: 'hasEhr', label: 'EHR System' },
                                     { name: 'hasPacs', label: 'PACS (X-Ray)' },
