@@ -47,5 +47,9 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Medisync requires camera access for telemedicine video consultations and document scanning.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Medisync requires your location to find the nearest hospital and dispatch ambulances.</string>
 </dict>
 </plist>
