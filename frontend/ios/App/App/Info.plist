@@ -51,5 +51,9 @@
 	<string>Medisync requires camera access for telemedicine video consultations and document scanning.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Medisync requires your location to find the nearest hospital and dispatch ambulances.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Medisync requires access to your photo library so you can upload medical documents and prescription images.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Medisync requires permission to save generated prescriptions and medical reports to your photo library.</string>
 </dict>
 </plist>
