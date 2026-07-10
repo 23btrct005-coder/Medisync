@@ -92,7 +92,7 @@ const Login = () => {
               type="text"
               required
               className="appearance-none rounded-xl block w-full px-4 py-4 bg-blue-50/50 border border-blue-100 placeholder-slate-400 text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-sm"
-              placeholder="23btrct005@jainuniversity.ac.in"
+              placeholder="Email ID"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
             />
@@ -103,7 +103,7 @@ const Login = () => {
                 type={showPassword ? "text" : "password"}
                 required
                 className="appearance-none rounded-xl block w-full px-4 py-4 bg-blue-50/50 border border-blue-100 placeholder-slate-400 text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-sm"
-                placeholder="********"
+                placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
