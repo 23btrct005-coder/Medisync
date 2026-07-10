@@ -9,7 +9,7 @@
     "CapacitorUpdater": {
       "autoUpdate": "always",
       "appId": "com.health.medisync",
-      "version": "0.0.13",
+      "version": "0.0.14",
       "autoSplashscreen": true
     },
     "SplashScreen": {

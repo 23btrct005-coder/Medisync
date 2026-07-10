@@ -23,9 +23,9 @@ services:
       - key: OPENAI_API_KEY
         sync: false
       - key: JWT_SECRET
-        value: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+        sync: false
       - key: GROQ_API_KEY
-        value: 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
+        sync: false
       - key: GOOGLE_API_KEY
         sync: false
       - key: RAZORPAY_KEY_ID
@@ -33,6 +33,6 @@ services:
       - key: RAZORPAY_KEY_SECRET
         sync: false
       - key: SUPABASE_URL
-        value: https://ggcecwmxxuhadtihmjxf.supabase.co
+        sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
