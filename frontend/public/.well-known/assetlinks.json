@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.health.medisync",
+      "sha256_cert_fingerprints": [
+        "48:0B:46:68:AF:54:8F:FC:32:BB:79:EA:A0:86:F3:70:CD:1C:9C:47:D4:CA:87:CF:F3:AC:A4:15:6A:6F:9F:02"
+      ]
+    }
+  }
+]
